@@ -3,14 +3,30 @@ concrete CandidateEng of Candidate = CatEng **
 
 -- lincat Quality, Kind, Phrase = {s : Str} ;
 lincat
-	Phrase	= Cl;
-	-- Item	= NP;
+	Event	= Cl;
+	Item	= NP;
 	Quality	= AP;
 	Kind	= CN;
-
+	Act	= V;
+	Act_on	= V2;
+	Act_on_to	= V2V;
+	Att	= VV;
+	Express	= VS;
+	Predicate	= VP;
 lin
+	Is item quality =	mkCl item quality;
+	Happening action =	mkVP action;
+	Changing action patient =	mkVP action patient;
+	Causative causal patient predicate =	mkVP causal patient predicate;
+	Intens predicate	= mkVP predicate;
+	Positing posit event =	mkVP posit (mkS event);
+	Statement subject predicate = mkCl subject predicate;
 
-	Is quality kind = ss ( quality.s ++ kind.s );
+	An kind =	mkNP a_Det kind ;
+	The kind =	mkNP the_Det kind ;
+	QKind quality kind =	mkCN quality kind ;
+	Very quality =	mkAP very_AdA quality ;
+
 
 	ambitious =	mkAP (mkA "ambitious");
 	bad =	mkAP (mkA "bad");
@@ -31,12 +47,11 @@ lin
 	outgoing =	mkAP (mkA "outgoing");
 	past =	mkAP (mkA "past");
 	patient =	mkAP (mkA "patient");
-	Polish =	mkAP (mkA "Polish");
+	polish =	mkAP (mkA "Polish");
 	poor =	mkAP (mkA "poor");
 	possible =	mkAP (mkA "possible");
 	realistic =	mkAP (mkA "realistic");
 	safe =	mkAP (mkA "safe");
-	soon =	mkAP (mkA "soon");
 	successful =	mkAP (mkA "successful");
 	true =	mkAP (mkA "true");
 	unable =	mkAP (mkA "unable");
@@ -45,13 +60,15 @@ lin
 	ability =	mkCN (mkN "ability");
 	administration =	mkCN (mkN "administration");
 	aim =	mkCN (mkN "aim");
-	business =	mkCN (mkN "business");
-	club =	mkCN (mkN "club");
+	business_club =	mkCN (mkN "business" (mkN "club"));
+	-- club =	mkCN (mkN "club");
 	company =	mkCN (mkN "company");
+	training_course =	mkCN (mkN "training" course);
 	course =	mkCN (mkN "course");
-	department =	mkCN (mkN "department");
+	sales_department =	mkCN (mkN "sales" (mkN "department"));
 	director =	mkCN (mkN "director");
 	effort =	mkCN (mkN "effort");
+	sales_experience =	mkCN (mkN "sales" experience);
 	experience =	mkCN (mkN "experience");
 	hand =	mkCN (mkN "hand");
 	head =	mkCN (mkN "head");
@@ -63,61 +80,50 @@ lin
 	market =	mkCN (mkN "market");
 	material =	mkCN (mkN "material");
 	pair =	mkCN (mkN "pair");
-	people =	mkCN (mkN "people");
+	person =	mkCN (mkN "person" "people");
 	personality =	mkCN (mkN "personality");
 	respect =	mkCN (mkN "respect");
 	result =	mkCN (mkN "result");
 	risk =	mkCN (mkN "risk");
-	sales =	mkCN (mkN "sales");
+	sales_person =	mkCN (mkN "sales" person);
 	share =	mkCN (mkN "share");
 	system =	mkCN (mkN "system");
+	sales_team =	mkCN (mkN "sales" team);
 	team =	mkCN (mkN "team");
 	term =	mkCN (mkN "term");
 	thing =	mkCN (mkN "thing");
 	time =	mkCN (mkN "time");
 	top =	mkCN (mkN "top");
-	training =	mkCN (mkN "training");
 	way =	mkCN (mkN "way");
 	year =	mkCN (mkN "year");
 
-	--although_Adv = mkAdv "although";
-	--always_AdV = mkAdv "always";
-	--especially_Adv = mkAdv "especially";
-	--frankly_Adv = mkAdv "frankly";
-	--really_AdV = mkAdv "really";
-	--slowly_Adv = mkAdv "slowly";
-	--too_Adv = mkAdv "too";
-	--very_AdA = mkAdA "very";
-	--well_AdA = mkAdA "well";
-	--wherever_Adv = mkAdv "wherever";
+	barbara =	mkNP (mkPN "Barbara");
+	dr_bean =	mkNP (mkPN "Dr Bean");
+	eva =	mkNP (mkPN "Eva");
+	fast_track =	mkNP (mkPN "Fast-Track");
+	tadeusz =	mkNP (mkPN "Tadeusz");
 
-}
---
---barbara_PN = mkPN "barbara"
---dr_bean_PN = mkPN "dr_bean"
---eva_PN = mkPN "eva"
---fast-track_PN = mkPN "fast-track"
---tadeusz_PN = mkPN "tadeusz"
+	allow =	mkV2V (mkV "allow") noPrep to_Prep;
+	apply =	mkV2 "apply" "for";
+	can =	can_VV;
+	become =	mkV2 "become";
+	choose =	mkV2 "choose";
+	enjoy =	mkV2 "enjoy";
+	expand =	mkV "expand";
+	feel =	mkVS (mkV "feel");
+	improve =	mkV2 "improve";
+	increase =	mkV2 "increase";
+	go =	go_V;
+	have =	mkV2 have_V;
+	help =	mkV2 (mkV "help");
+	know =	mkVS know_V;
+	lead =	mkV2 lead_V;
+	must =	must_VV;
+	think =	mkVS (mkV "think");
+	want_NP_to =	mkV2V (mkV "want") noPrep to_Prep;
+	want_to =	want_VV;
 
---allow_V = mkV "allow"
---apply_V = mkV "apply"
---become_V = mkV "become"
---been_V = mkV "been"
---can_V = mkV "can"
---choose_V = mkV "choose"
---could_V = mkV "could"
---couldn't_V = mkV "couldn"
---enjoy_V = mkV "enjoy"
---expand_V = mkV "expand"
---feel_V = mkV "feel"
 --get_V = mkV "get"
---go_V = mkV "go"
---have_V = mkV "have"
---help_V = mkV "help"
---improve_V = mkV "improve"
---increase_V = mkV "increase"
---know_V = mkV "know"
---lead_V = mkV "lead"
 --motivate_V = mkV "motivate"
 --offer_V = mkV "offer"
 --organize_V = mkV "organize"
@@ -128,12 +134,23 @@ lin
 --start_V = mkV "start"
 --take_V = mkV "take"
 --tell_V = mkV "tell"
---think_V = mkV "think"
 --try_V = mkV "try"
---want_V = mkV "want"
 --win_V = mkV "win"
 --work_V = mkV "work"
---
+
+	--although_Adv = mkAdv "although";
+	--always_AdV = mkAdv "always";
+	--especially_Adv = mkAdv "especially";
+	--frankly_Adv = mkAdv "frankly";
+	--really_AdV = mkAdv "really";
+	--slowly_Adv = mkAdv "slowly";
+	--soon =	mkAP (mkA "soon");
+	--too_Adv = mkAdv "too";
+	--well_AdA = mkAdA "well";
+	--wherever_Adv = mkAdv "wherever";
+
+}
+
 ---- -- and
 ---- -- any
 ---- -- as

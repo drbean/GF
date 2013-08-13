@@ -3,12 +3,30 @@ abstract Candidate = Cat ** {
   cat
     Quality ;
     Kind;
-    Phrase;
+    Item;
+    Act;
+    Act_on;
+    Att;
+    Act_on_to;
+    Express;
+    Predicate;
+    Event;
 
-  flags startcat = Quality ;
+  flags startcat = Event ;
 
 fun
-	Is : Quality -> Kind -> Phrase ;
+	Is :	Item -> Quality -> Event;
+	Happening :	Act -> Predicate ;
+	Changing :	Act_on -> Item -> Predicate;
+	Causative:	Act_on_to -> Item -> Predicate -> Predicate;
+	Intens:	Att -> Predicate -> Predicate;
+	Positing:	Express -> Event -> Predicate;
+	Statement :	Item -> Predicate -> Event;
+
+	An :	Kind -> Item;
+	The :	Kind -> Item;
+	QKind :	Quality -> Kind -> Kind;
+	Very :	Quality -> Quality;
 
 	ambitious :	Quality;
 	bad :	Quality;
@@ -29,12 +47,11 @@ fun
 	outgoing :	Quality;
 	past :	Quality;
 	patient :	Quality;
-	Polish :	Quality;
+	polish :	Quality;
 	poor :	Quality;
 	possible :	Quality;
 	realistic :	Quality;
 	safe :	Quality;
-	soon :	Quality;
 	successful :	Quality;
 	true :	Quality;
 	unable :	Quality;
@@ -43,13 +60,14 @@ fun
 	ability :	Kind;
 	administration :	Kind;
 	aim :	Kind;
-	business :	Kind;
-	club :	Kind;
+	business_club :	Kind;
 	company :	Kind;
+	training_course :	Kind;
 	course :	Kind;
-	department :	Kind;
+	sales_department :	Kind;
 	director :	Kind;
 	effort :	Kind;
+	sales_experience :	Kind;
 	experience :	Kind;
 	hand :	Kind;
 	head :	Kind;
@@ -61,22 +79,48 @@ fun
 	market :	Kind;
 	material :	Kind;
 	pair :	Kind;
-	people :	Kind;
+	person :	Kind;
 	personality :	Kind;
 	respect :	Kind;
 	result :	Kind;
 	risk :	Kind;
-	sales :	Kind;
+	sales_person :	Kind;
 	share :	Kind;
 	system :	Kind;
+	sales_team :	Kind;
 	team :	Kind;
 	term :	Kind;
 	thing :	Kind;
 	time :	Kind;
 	top :	Kind;
-	training :	Kind;
 	way :	Kind;
 	year :	Kind;
+
+	barbara :	Item;
+	dr_bean :	Item;
+	eva :	Item;
+	fast_track :	Item;
+	tadeusz :	Item;
+
+	allow :	Act_on_to;
+	apply :	Act_on;
+	become :	Act_on;
+	can :	Att;
+	choose :	Act_on;
+	enjoy :	Act_on;
+	expand :	Act;
+	go :	Act;
+	feel :	Express;
+	have :	Act_on;
+	help :	Act_on;
+	improve :	Act_on;
+	increase :	Act_on;
+	lead :	Act_on;
+	know :	Express;
+	must :	Att;
+	think :	Express;
+	want_NP_to :	Act_on_to;
+	want_to :	Att;
 
 }
 
@@ -87,76 +131,13 @@ fun
 --frankly_Adv = mkAdv "frankly";
 --really_AdV = mkAdv "really";
 --slowly_Adv = mkAdv "slowly";
+-- soon :	Quality;
 --too_Adv = mkAdv "too";
 --very_AdA = mkAdA "very";
 --well_AdA = mkAdA "well";
 --wherever_Adv = mkAdv "wherever";
---
---
---barbara_PN = mkPN "barbara"
---dr_bean_PN = mkPN "dr_bean"
---eva_PN = mkPN "eva"
---fast-track_PN = mkPN "fast-track"
---tadeusz_PN = mkPN "tadeusz"
---
----- noun
---ability_N = mkN "ability"
---administration_N = mkN "administration"
---aim_N = mkN "aim"
---business_N = mkN "business"
---club_N = mkN "club"
---company_N = mkN "company"
---course_N = mkN "course"
---department_N = mkN "department"
---director_N = mkN "director"
---effort_N = mkN "effort"
---experience_N = mkN "experience"
---hand_N = mkN "hand"
---head_N = mkN "head"
---job_N = mkN "job"
---judgement_N = mkN "judgement"
---learner_N = mkN "learner"
---lot_N = mkN "lot"
---main_N = mkN "main"
---market_N = mkN "market"
---material_N = mkN "material"
---pair_N = mkN "pair"
---people_N = mkN "people"
---personality_N = mkN "personality"
---respect_N = mkN "respect"
---result_N = mkN "result"
---risk_N = mkN "risk"
---sales_N = mkN "sales"
---share_N = mkN "share"
---system_N = mkN "system"
---team_N = mkN "team"
---term_N = mkN "term"
---thing_N = mkN "thing"
---time_N = mkN "time"
---top_N = mkN "top"
---training_N = mkN "training"
---way_N = mkN "way"
---year_N = mkN "year"
---
---allow_V = mkV "allow"
---apply_V = mkV "apply"
---become_V = mkV "become"
---been_V = mkV "been"
---can_V = mkV "can"
---choose_V = mkV "choose"
---could_V = mkV "could"
---couldn't_V = mkV "couldn"
---enjoy_V = mkV "enjoy"
---expand_V = mkV "expand"
---feel_V = mkV "feel"
+
 --get_V = mkV "get"
---go_V = mkV "go"
---have_V = mkV "have"
---help_V = mkV "help"
---improve_V = mkV "improve"
---increase_V = mkV "increase"
---know_V = mkV "know"
---lead_V = mkV "lead"
 --motivate_V = mkV "motivate"
 --offer_V = mkV "offer"
 --organize_V = mkV "organize"
@@ -167,9 +148,7 @@ fun
 --start_V = mkV "start"
 --take_V = mkV "take"
 --tell_V = mkV "tell"
---think_V = mkV "think"
 --try_V = mkV "try"
---want_V = mkV "want"
 --win_V = mkV "win"
 --work_V = mkV "work"
 --
