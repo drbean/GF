@@ -14,7 +14,7 @@ answer p = case p of
 
 value :: GObject -> Int
 value e = case e of
-  GNumber (GInt i) -> fromInteger i
+  GNumber (GInt i) -> fromIntegral i
 
 test :: (Int -> Bool) -> GObject -> GAnswer
 test f x = if f (value x) then GYes else GNo
