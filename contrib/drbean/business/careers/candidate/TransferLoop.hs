@@ -5,7 +5,7 @@ import TransferDef (transfer)
 
 main :: IO () 
 main = do
-  gr <- readPGF "Query.pgf"
+  gr <- readPGF "Candidate.pgf"
   loop (translate transfer gr)
 
 loop :: (String -> String) -> IO ()
