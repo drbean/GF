@@ -1,23 +1,23 @@
 module TransferDef where
 
 import PGF (Tree)
-import Query   -- generated from GF
+import Candidate   -- generated from GF
 
 transfer :: Tree -> Tree
 transfer = gf . answer . fg
 
-answer :: GQuestion -> GAnswer
+answer :: GEvent -> GEvent
 answer p = case p of
-  GOdd x   -> test odd x
-  GEven x  -> test even x
-  GPrime x -> test prime x
+  GStatement x y -> GStatement Gdr_bean (GPositing Gthink (GIs x Ggood) )
+  GIs Gdr_bean y  -> GIs (GThe Gresult) y
+  _   -> GIs (GThe Gresult) Gbad
 
-value :: GObject -> Int
-value e = case e of
-  GNumber (GInt i) -> fromIntegral i
+--value :: GObject -> Int
+--value e = case e of
+--  GNumber (GInt i) -> fromIntegral i
 
-test :: (Int -> Bool) -> GObject -> GAnswer
-test f x = if f (value x) then GYes else GNo
+--test :: (Int -> Bool) -> GObject -> GAnswer
+--test f x = if f (value x) then GYes else GNo
 
 prime :: Int -> Bool
 prime x = elem x primes where
