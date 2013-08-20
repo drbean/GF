@@ -1,4 +1,4 @@
-abstract Candidate = Cat ** {
+abstract Candidate = Cat -[S] ** {
 
   cat
     Quality ;
@@ -21,7 +21,7 @@ fun
 	Causative:	Act_on_to -> Item -> Predicate -> Predicate;
 	Intens:	Att -> Predicate -> Predicate;
 	Positing:	Express -> Event -> Predicate;
-	Statement :	Item -> Predicate -> Event;
+	S :	Item -> Predicate -> Event;
 
 	An :	Kind -> Item;
 	The :	Kind -> Item;

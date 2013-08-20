@@ -1,4 +1,4 @@
-concrete CandidateEng of Candidate = CatEng **
+concrete CandidateEng of Candidate = CatEng -[S] **
   open SyntaxEng, ParadigmsEng, IrregEng, Prelude in {
 
 -- lincat Quality, Kind, Phrase = {s : Str} ;
@@ -20,7 +20,7 @@ lin
 	Causative causal patient predicate =	mkVP causal patient predicate;
 	Intens predicate	= mkVP predicate;
 	Positing posit event =	mkVP posit (mkS event);
-	Statement subject predicate = mkCl subject predicate;
+	S subject predicate = mkCl subject predicate;
 
 	An kind =	mkNP a_Det kind ;
 	The kind =	mkNP the_Det kind ;
