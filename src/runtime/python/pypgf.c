@@ -1228,7 +1228,7 @@ Concr_parse(ConcrObject* self, PyObject *args, PyObject *keywds)
 }
 
 static IterObject*
-Concr_getCompletions(ConcrObject* self, PyObject *args, PyObject *keywds)
+Concr_complete(ConcrObject* self, PyObject *args, PyObject *keywds)
 {
 	static char *kwlist[] = {"sentence", "tokens", "cat", 
 	                         "prefix", "n", NULL};
@@ -1295,7 +1295,7 @@ Concr_getCompletions(ConcrObject* self, PyObject *args, PyObject *keywds)
 	}
 
 	pyres->res =
-		pgf_get_completions(self->concr, catname, lexer, prefix, pyres->pool);
+		pgf_complete(self->concr, catname, lexer, prefix, pyres->pool);
 
 	if (pyres->res == NULL) {
 		Py_DECREF(pyres);
@@ -1654,10 +1654,125 @@ Concr_getName(ConcrObject *self, void *closure)
     return gu2py_string(pgf_concrete_name(self->concr));
 }
 
+static PyObject*
+Concr_getLanguageCode(ConcrObject *self, void *closure)
+{
+    return gu2py_string(pgf_language_code(self->concr));
+}
+
+static PyObject*
+Concr_graphvizParseTree(ConcrObject* self, PyObject *args) {
+	ExprObject* pyexpr;
+	if (!PyArg_ParseTuple(args, "O!", &pgf_ExprType, &pyexpr))
+        return NULL;
+
+	GuPool* tmp_pool = gu_local_pool();
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+	GuStringBuf* sbuf = gu_string_buf(tmp_pool);
+	GuWriter* wtr = gu_string_buf_writer(sbuf);
+	
+	pgf_graphviz_parse_tree(self->concr, pyexpr->expr, wtr, err);
+	if (!gu_ok(err)) {
+		PyErr_SetString(PGFError, "The parse tree cannot be visualized");
+		return NULL;
+	}
+
+	GuString str = gu_string_buf_freeze(sbuf, tmp_pool);
+	PyObject* pystr = gu2py_string(str);
+
+	gu_pool_free(tmp_pool);
+	return pystr;
+}
+
+typedef struct {
+	PgfMorphoCallback fn;
+	PyObject* analyses;
+} PyMorphoCallback;
+
+static void
+pypgf_collect_morpho(PgfMorphoCallback* self, PgfTokens tokens,
+	                 PgfCId lemma, GuString analysis, prob_t prob,
+	                 GuExn* err)
+{
+	PyMorphoCallback* callback = (PyMorphoCallback*) self;
+
+	PyObject* py_lemma = gu2py_string(lemma);
+	PyObject* py_analysis = gu2py_string(analysis);
+	PyObject* res = 
+		Py_BuildValue("OOf", py_lemma, py_analysis, prob);
+
+    if (PyList_Append(callback->analyses, res) != 0) {
+		gu_raise(err, PgfExn);
+	}
+	
+	Py_DECREF(py_lemma);
+	Py_DECREF(py_analysis);
+	Py_DECREF(res);
+}
+
+static PyObject*
+Concr_lookupMorpho(ConcrObject* self, PyObject *args, PyObject *keywds) {
+	static char *kwlist[] = {"sentence", "tokens", NULL};
+
+	int len;
+	const uint8_t *buf = NULL;
+	PyObject* py_lexer = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|s#O", kwlist,
+                                     &buf, &len, &py_lexer))
+        return NULL;
+
+    if ((buf == NULL && py_lexer == NULL) || 
+        (buf != NULL && py_lexer != NULL)) {
+		PyErr_SetString(PyExc_TypeError, "either the sentence or the tokens argument must be provided");
+		return NULL;
+	}
+
+    GuPool* tmp_pool = gu_local_pool();
+
+	PgfLexer *lexer = NULL;
+	if (buf != NULL) {
+		GuIn* in = gu_data_in(buf, len, tmp_pool);
+		GuReader* rdr = gu_new_utf8_reader(in, tmp_pool);
+		lexer = pgf_new_simple_lexer(rdr, tmp_pool);
+	} 
+	if (py_lexer != NULL) {
+		// get an iterator out of the iterable object
+		py_lexer = PyObject_GetIter(py_lexer);
+		if (py_lexer == NULL) {
+			gu_pool_free(tmp_pool);
+			return NULL;
+		}
+
+		lexer = pypgf_new_python_lexer(py_lexer, tmp_pool);
+	}
+
+    GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+
+	PyObject* analyses = PyList_New(0);
+
+	PyMorphoCallback callback = { { pypgf_collect_morpho }, analyses };
+	pgf_lookup_morpho(self->concr, lexer, &callback.fn, err);
+
+	Py_XDECREF(py_lexer);
+
+	gu_pool_free(tmp_pool);
+
+	if (!gu_ok(err)) {
+		Py_DECREF(analyses);
+		return NULL;
+	}
+
+    return analyses;
+}
+
 static PyGetSetDef Concr_getseters[] = {
     {"name", 
      (getter)Concr_getName, NULL,
      "the name of the concrete syntax",
+    },
+    {"languageCode", 
+     (getter)Concr_getLanguageCode, NULL,
+     "the language code for this concrete syntax",
     },
     {NULL}  /* Sentinel */
 };
@@ -1674,7 +1789,7 @@ static PyMethodDef Concr_methods[] = {
      "- n (int), max. trees; OPTIONAL, default: extract all trees\n"
      "- heuristics (double >= 0.0); OPTIONAL, default: taken from the flags in the grammar"
     },
-    {"getCompletions", (PyCFunction)Concr_getCompletions, METH_VARARGS | METH_KEYWORDS,
+    {"complete", (PyCFunction)Concr_complete, METH_VARARGS | METH_KEYWORDS,
      "Parses a partial string and returns a list with the top n possible next tokens"
     },
     {"parseval", (PyCFunction)Concr_parseval, METH_VARARGS,
@@ -1688,6 +1803,12 @@ static PyMethodDef Concr_methods[] = {
     },
     {"bracketedLinearize", (PyCFunction)Concr_bracketedLinearize, METH_VARARGS,
      "Takes an abstract tree and linearizes it to a bracketed string"
+    },
+    {"graphvizParseTree", (PyCFunction)Concr_graphvizParseTree, METH_VARARGS,
+     "Renders an abstract syntax tree as a parse tree in Graphviz format"
+    },
+    {"lookupMorpho", (PyCFunction)Concr_lookupMorpho, METH_VARARGS | METH_KEYWORDS,
+     "Looks up a word in the lexicon of the grammar"
     },
     {NULL}  /* Sentinel */
 };
@@ -1984,7 +2105,7 @@ PGF_functionType(PGFObject* self, PyObject *args)
 }
 
 static IterObject*
-PGF_generate(PGFObject* self, PyObject *args, PyObject *keywds)
+PGF_generateAll(PGFObject* self, PyObject *args, PyObject *keywds)
 {
 	static char *kwlist[] = {"cat", "n", NULL};
 
@@ -2013,7 +2134,7 @@ PGF_generate(PGFObject* self, PyObject *args, PyObject *keywds)
     GuString catname = gu_str_string(catname_s, tmp_pool);
 
 	pyres->res =
-		pgf_generate(self->pgf, catname, pyres->pool);
+		pgf_generate_all(self->pgf, catname, pyres->pool);
 	if (pyres->res == NULL) {
 		Py_DECREF(pyres);
 		gu_pool_free(tmp_pool);
@@ -2034,6 +2155,30 @@ PGF_compute(PGFObject* self, PyObject *args)
 
 	Py_INCREF(py_expr);
 	return py_expr;
+}
+
+static PyObject*
+PGF_graphvizAbstractTree(PGFObject* self, PyObject *args) {
+	ExprObject* pyexpr;
+	if (!PyArg_ParseTuple(args, "O!", &pgf_ExprType, &pyexpr))
+        return NULL;
+
+	GuPool* tmp_pool = gu_local_pool();
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+	GuStringBuf* sbuf = gu_string_buf(tmp_pool);
+	GuWriter* wtr = gu_string_buf_writer(sbuf);
+	
+	pgf_graphviz_abstract_tree(self->pgf, pyexpr->expr, wtr, err);
+	if (!gu_ok(err)) {
+		PyErr_SetString(PGFError, "The abstract tree cannot be visualized");
+		return NULL;
+	}
+
+	GuString str = gu_string_buf_freeze(sbuf, tmp_pool);
+	PyObject* pystr = gu2py_string(str);
+
+	gu_pool_free(tmp_pool);
+	return pystr;
 }
 
 static PyGetSetDef PGF_getseters[] = {
@@ -2071,11 +2216,14 @@ static PyMethodDef PGF_methods[] = {
     {"functionType", (PyCFunction)PGF_functionType, METH_VARARGS,
      "Returns the type of a function"
     },
-    {"generate", (PyCFunction)PGF_generate, METH_VARARGS | METH_KEYWORDS,
+    {"generateAll", (PyCFunction)PGF_generateAll, METH_VARARGS | METH_KEYWORDS,
      "Generates abstract syntax trees of given category in decreasing probability order"
     },
     {"compute", (PyCFunction)PGF_compute, METH_VARARGS,
      "Computes the normal form of an abstract syntax tree"
+    },
+    {"graphvizAbstractTree", (PyCFunction)PGF_graphvizAbstractTree, METH_VARARGS,
+     "Renders an abstract syntax tree in a Graphviz format"
     },
     {NULL}  /* Sentinel */
 };

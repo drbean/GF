@@ -51,6 +51,7 @@ typedef struct PgfConcr PgfConcr;
 
 #include <pgf/expr.h>
 #include <pgf/lexer.h>
+#include <pgf/graphviz.h>
 
 /// An enumeration of #PgfExpr elements.
 typedef GuEnum PgfExprEnum;
@@ -94,6 +95,9 @@ pgf_get_language(PgfPGF*, PgfCId lang);
 GuString
 pgf_concrete_name(PgfConcr*);
 
+GuString
+pgf_language_code(PgfConcr* concr);
+
 void
 pgf_iter_categories(PgfPGF* pgf, GuMapItor* fn, GuExn* err);
 
@@ -120,21 +124,32 @@ PgfExprEnum*
 pgf_parse(PgfConcr* concr, PgfCId cat, PgfLexer *lexer, 
           GuPool* pool, GuPool* out_pool);
 
+typedef struct PgfMorphoCallback PgfMorphoCallback;
+struct PgfMorphoCallback {
+	void (*callback)(PgfMorphoCallback* self, PgfTokens tokens, 
+	                 PgfCId lemma, GuString analysis, prob_t prob,
+	                 GuExn* err);
+};
+
+void
+pgf_lookup_morpho(PgfConcr *concr, PgfLexer *lexer,
+                  PgfMorphoCallback* callback, GuExn* err);
+
 PgfExprEnum*
 pgf_parse_with_heuristics(PgfConcr* concr, PgfCId cat, PgfLexer *lexer, 
                           double heuristics, 
                           GuPool* pool, GuPool* out_pool);
 
 GuEnum*
-pgf_get_completions(PgfConcr* concr, PgfCId cat, PgfLexer *lexer, 
-                    GuString prefix, GuPool* pool);
+pgf_complete(PgfConcr* concr, PgfCId cat, PgfLexer *lexer, 
+             GuString prefix, GuPool* pool);
 
 bool
 pgf_parseval(PgfConcr* concr, PgfExpr expr, PgfCId cat, 
              double *precision, double *recall, double *exact);
                     
 PgfExprEnum*
-pgf_generate(PgfPGF* pgf, PgfCId cat, GuPool* pool);
+pgf_generate_all(PgfPGF* pgf, PgfCId cat, GuPool* pool);
 
 /// @}
 
