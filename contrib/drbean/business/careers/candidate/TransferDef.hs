@@ -8,15 +8,15 @@ transfer = gf . answer . fg
 
 answer :: GEvent -> GEvent
 answer p = case p of
-  GS x (GHappening y) | y == Ggo-> GS (Gdr_bean ) (GHappening Gexpand)
-  GS x y -> GS Gdr_bean (GPositing Gthink (GIs x Ggood) )
-  GIs Gdr_bean y  -> GIs (GThe Gresult) y
+  GS x y | value y == "go"-> GS (Geva ) (GHappening Gexpand)
+  -- GS x y -> GS (GPN2NP (Gdr_bean)) (GPositing Gthink (GIs x Ggood) )
+  GIs Geva y  -> GIs (GThe Gresult) y
   _  -> GIs (GThe Gresult) Gbad
   -- GS x y | y == 
 
---value :: GObject -> Int
---value e = case e of
---  GNumber (GInt i) -> fromIntegral i
+value :: GPredicate -> String
+value e = case e of
+  GHappening (Ggo) -> "go"
 
 --test :: (Int -> Bool) -> GObject -> GAnswer
 --test f x = if f (value x) then GYes else GNo
