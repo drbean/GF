@@ -8,9 +8,11 @@ transfer = gf . answer . fg
 
 answer :: GEvent -> GEvent
 answer p = case p of
-  GStatement x y -> GStatement Gdr_bean (GPositing Gthink (GIs x Ggood) )
+  GS x (GHappening y) | y == Ggo-> GS (Gdr_bean ) (GHappening Gexpand)
+  GS x y -> GS Gdr_bean (GPositing Gthink (GIs x Ggood) )
   GIs Gdr_bean y  -> GIs (GThe Gresult) y
-  _   -> GIs (GThe Gresult) Gbad
+  _  -> GIs (GThe Gresult) Gbad
+  -- GS x y | y == 
 
 --value :: GObject -> Int
 --value e = case e of
