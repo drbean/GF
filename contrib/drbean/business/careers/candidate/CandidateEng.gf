@@ -98,7 +98,7 @@ lin
 	year =	mkCN (mkN "year");
 
 	barbara =	mkNP (mkPN "Barbara");
-	dr_bean =	mkNP (mkPN "Dr Bean");
+	dr_bean =	(mkPN "Dr Bean");
 	eva =	mkNP (mkPN "Eva");
 	fast_track =	mkNP (mkPN "Fast-Track");
 	tadeusz =	mkNP (mkPN "Tadeusz");

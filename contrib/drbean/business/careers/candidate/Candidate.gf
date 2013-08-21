@@ -4,6 +4,7 @@ abstract Candidate = Cat -[S] ** {
     Quality ;
     Kind;
     Item;
+    PN;
     Act;
     Act_on;
     Att;
@@ -12,7 +13,7 @@ abstract Candidate = Cat -[S] ** {
     Predicate;
     Event;
 
-  flags startcat = Event ;
+  flags startcat = PN ;
 
 fun
 	Is :	Item -> Quality -> Event;
@@ -97,7 +98,7 @@ fun
 	year :	Kind;
 
 	barbara :	Item;
-	dr_bean :	Item;
+	dr_bean :	PN;
 	eva :	Item;
 	fast_track :	Item;
 	tadeusz :	Item;
