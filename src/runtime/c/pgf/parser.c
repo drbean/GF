@@ -1814,6 +1814,49 @@ typedef struct {
 	PgfParseState* state;
 } PgfPrefixTokenState;
 
+static GuString
+pgf_get_tokens(PgfSequence seq,
+               uint16_t seq_idx, uint8_t tok_idx,
+               GuPool* pool)
+{
+	GuPool* tmp_pool = gu_new_pool();
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+	GuStringBuf* sbuf = gu_string_buf(tmp_pool);
+	GuWriter* wtr = gu_string_buf_writer(sbuf);
+
+	// collect the tokens in the production
+	size_t len = gu_seq_length(seq);
+	for (size_t i = seq_idx; i < len; i++) {
+		PgfSymbol sym = gu_seq_get(seq, PgfSymbol, i);
+
+		GuVariantInfo i = gu_variant_open(sym);
+		switch (i.tag) {
+		case PGF_SYMBOL_KS: {
+			PgfSymbolKS* symks = i.data;
+			size_t len = gu_seq_length(symks->tokens);
+			for (size_t i = tok_idx; i < len; i++) {
+				if (i > 0) {
+					gu_putc(' ', wtr, err);
+				}
+
+				PgfToken tok = gu_seq_get(symks->tokens, PgfToken, i);
+				gu_string_write(tok, wtr, err);						
+			}
+			
+			tok_idx = 0;
+		}
+		default:
+			continue;
+		}
+	}
+	
+	GuString tokens = gu_string_buf_freeze(sbuf, pool);
+	
+	gu_pool_free(tmp_pool);
+	
+	return tokens;
+}
+
 static bool
 pgf_prefix_match_token(PgfTokenState* ts0, PgfToken tok, PgfItem* item)
 {
@@ -1821,8 +1864,23 @@ pgf_prefix_match_token(PgfTokenState* ts0, PgfToken tok, PgfItem* item)
 		gu_container(ts0, PgfPrefixTokenState, ts);
 
 	if (gu_string_is_prefix(ts->prefix, tok)) {
+		size_t lin_idx;
+		PgfSequence seq;
+		pgf_item_sequence(item, &lin_idx, &seq, ts->pool);
+
+		uint16_t seq_idx = item->seq_idx;
+		uint8_t  tok_idx = item->tok_idx;
+
+		// go one token back
+		if (tok_idx > 0)
+			tok_idx--;
+		else
+			seq_idx--;
+
 		ts->tp = gu_new(PgfTokenProb, ts->pool);
-		ts->tp->tok  = tok;
+		ts->tp->tok  =
+			pgf_get_tokens(seq, seq_idx, tok_idx, ts->pool);
+		ts->tp->cat  = item->conts->ccat->cnccat->abscat->name;
 		ts->tp->prob = item->inside_prob+item->conts->outside_prob;
 	}
 
@@ -2339,40 +2397,42 @@ pgf_morpho_iter(GuMapItor* fn, const void* key, void* value, GuExn* err)
 		case PGF_PRODUCTION_APPLY: {
 			PgfProductionApply* papp = i.data;
 
-			// match the tokens with the production
-			size_t pos = 0;
-			PgfSequence seq = papp->fun->lins[cfc.lin_idx];
-			size_t len = gu_seq_length(seq);
-			for (size_t i = 0; i < len; i++) {
-				PgfSymbol sym = gu_seq_get(seq, PgfSymbol, i);
+			if (!gu_seq_is_null(clo->tokens)) {
+				// match the tokens with the production
+				size_t pos = 0;
+				PgfSequence seq = papp->fun->lins[cfc.lin_idx];
+				size_t len = gu_seq_length(seq);
+				for (size_t i = 0; i < len; i++) {
+					PgfSymbol sym = gu_seq_get(seq, PgfSymbol, i);
 
-				GuVariantInfo i = gu_variant_open(sym);
-				switch (i.tag) {
-				case PGF_SYMBOL_KS: {
-					PgfSymbolKS* symks = i.data;
-					size_t len = gu_seq_length(symks->tokens);
-					for (size_t i = 0; i < len; i++) {
-						if (pos >= gu_seq_length(clo->tokens))
-							goto cont;
+					GuVariantInfo i = gu_variant_open(sym);
+					switch (i.tag) {
+					case PGF_SYMBOL_KS: {
+						PgfSymbolKS* symks = i.data;
+						size_t len = gu_seq_length(symks->tokens);
+						for (size_t i = 0; i < len; i++) {
+							if (pos >= gu_seq_length(clo->tokens))
+								goto cont;
 
-						PgfToken tok1 = gu_seq_get(symks->tokens, PgfToken, i);
-						PgfToken tok2 = gu_seq_get(clo->tokens, PgfToken, pos++);
-						
-						if (!gu_string_eq(tok1, tok2))
-							goto cont;
+							PgfToken tok1 = gu_seq_get(symks->tokens, PgfToken, i);
+							PgfToken tok2 = gu_seq_get(clo->tokens, PgfToken, pos++);
+							
+							if (!gu_string_eq(tok1, tok2))
+								goto cont;
+						}
+					}
+					default:
+						continue;
 					}
 				}
-				default:
-					continue;
-				}
+				
+				if (pos != gu_seq_length(clo->tokens))
+					goto cont;
 			}
-			
-			if (pos != gu_seq_length(clo->tokens))
-				goto cont;
 
 			PgfCId lemma = papp->fun->absfun->name;
 			prob_t prob = papp->fun->absfun->ep.prob;
-			clo->callback->callback(clo->callback, clo->tokens,
+			clo->callback->callback(clo->callback,
 			                        lemma, analysis, prob, err);
 		}
 		}
@@ -2410,8 +2470,126 @@ pgf_lookup_morpho(PgfConcr *concr, PgfLexer *lexer,
 
 	PgfMorphoFn clo = { { pgf_morpho_iter }, gu_buf_seq(tokens), callback };
 	gu_map_iter(lexicon_idx, &clo.fn, err);
-	
+
 	gu_pool_free(tmp_pool);
+}
+
+typedef struct {
+	GuEnum en;
+	GuEnum* map_en1;
+	GuEnum* map_en2;
+	
+	GuMapItor fn;
+	PgfLeftcornerTokIdx* new_idx;
+
+	GuPool* pool;
+} PgfFullFormState;
+
+static void
+pgf_fullform_iter(GuMapItor* fn, const void* key, void* value, GuExn* err)
+{
+	PgfFullFormState* st = gu_container(fn, PgfFullFormState, fn);
+	PgfCFCat cfc = *((PgfCFCat*) key);
+	PgfProductionSeq prods = *((PgfProductionSeq*) value);
+	
+	if (gu_seq_is_null(prods))
+		return;
+
+	size_t n_prods = gu_seq_length(prods);
+	for (size_t i = 0; i < n_prods; i++) {
+		PgfProduction prod =
+			gu_seq_get(prods, PgfProduction, i);
+
+		GuVariantInfo i = gu_variant_open(prod);
+		switch (i.tag) {
+		case PGF_PRODUCTION_APPLY: {
+			PgfProductionApply* papp = i.data;
+
+			PgfSequence seq = papp->fun->lins[cfc.lin_idx];
+			GuString tokens = pgf_get_tokens(seq, 0, 0, st->pool);
+
+			// create a new production index with keys that 
+			// are multiword units
+			PgfProductionIdx* lexicon_idx =
+				gu_map_get(st->new_idx, &tokens, PgfProductionIdx*);
+			if (lexicon_idx == NULL) {
+				lexicon_idx = gu_map_type_new(PgfProductionIdx, st->pool);
+				gu_map_put(st->new_idx, &tokens, PgfProductionIdx*, lexicon_idx);
+			}
+
+			PgfProductionSeq prods =
+				gu_map_get(lexicon_idx, &cfc, PgfProductionSeq);
+			if (gu_seq_is_null(prods)) {
+				prods = gu_buf_seq(gu_new_buf(PgfProduction, st->pool));
+				gu_map_put(lexicon_idx, &cfc, PgfProductionSeq, prods);
+			}
+			
+			gu_buf_push(gu_seq_buf(prods), PgfProduction, prod);
+		}
+		}
+	}
+}
+
+static void
+gu_fullform_enum_next(GuEnum* self, void* to, GuPool* pool)
+{
+	PgfFullFormState* st = gu_container(self, PgfFullFormState, en);
+
+	for (;;) {
+		if (st->new_idx == NULL) {
+			GuMapKeyValue* kv = gu_next(st->map_en1, GuMapKeyValue*, pool);
+			if (kv == NULL) {
+				*((PgfFullFormEntry**)to) = NULL;
+				return;
+			}
+
+			PgfProductionIdx* lexicon_idx = *((PgfProductionIdx**) kv->value);
+
+			// we have an index by the first token but we must re-index
+			// by taking into account the multiword units
+			st->pool    = pool;
+			st->new_idx = gu_map_type_new(PgfLeftcornerTokIdx, pool);
+			st->fn.fn   = pgf_fullform_iter;
+			gu_map_iter(lexicon_idx, &st->fn, NULL);
+
+			st->map_en2 = gu_map_enum(st->new_idx, pool);
+		}
+		PgfFullFormEntry* entry =
+			gu_next(st->map_en2, PgfFullFormEntry*, pool);
+		if (entry != NULL) {
+			*((PgfFullFormEntry**)to) = entry;
+			break;
+		}
+
+		st->new_idx = NULL;
+	}
+}
+
+GuEnum*
+pgf_fullform_lexicon(PgfConcr *concr, GuPool* pool)
+{
+	PgfFullFormState* st = gu_new(PgfFullFormState, pool);
+	st->en.next  = gu_fullform_enum_next;
+	st->map_en1  = gu_map_enum(concr->leftcorner_tok_idx, pool);
+	st->map_en2  = NULL;
+	st->new_idx  = NULL;
+	st->pool     = NULL;
+	return &st->en;
+}
+
+GuString
+pgf_fullform_get_string(PgfFullFormEntry* entry)
+{
+	return *((GuString*) entry->key);
+}
+
+void
+pgf_fullform_get_analyses(PgfFullFormEntry* entry,
+                          PgfMorphoCallback* callback, GuExn* err)
+{
+	PgfProductionIdx* lexicon_idx = *((PgfProductionIdx**) entry->value);
+	PgfMorphoFn clo = { { pgf_morpho_iter }, gu_null_seq, callback };
+	gu_map_iter(lexicon_idx, &clo.fn, err);
 }
 
 static void
