@@ -7,6 +7,7 @@ lincat
 	Item	= NP;
 	Quality	= AP;
 	Kind	= CN;
+	PN_	= PN;
 	Act	= V;
 	Act_on	= V2;
 	Act_on_to	= V2V;
@@ -97,8 +98,10 @@ lin
 	way =	mkCN (mkN "way");
 	year =	mkCN (mkN "year");
 
+	Str2PN	= regPN;
+	-- PN2NP	= mkNP;
 	barbara =	mkNP (mkPN "Barbara");
-	dr_bean =	(mkPN "Dr Bean");
+	-- dr_bean =	(mkPN "Dr Bean");
 	eva =	mkNP (mkPN "Eva");
 	fast_track =	mkNP (mkPN "Fast-Track");
 	tadeusz =	mkNP (mkPN "Tadeusz");

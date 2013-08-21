@@ -4,7 +4,7 @@ abstract Candidate = Cat -[S] ** {
     Quality ;
     Kind;
     Item;
-    PN;
+    PN_;
     Act;
     Act_on;
     Att;
@@ -13,7 +13,7 @@ abstract Candidate = Cat -[S] ** {
     Predicate;
     Event;
 
-  flags startcat = PN ;
+  flags startcat = Event ;
 
 fun
 	Is :	Item -> Quality -> Event;
@@ -23,6 +23,8 @@ fun
 	Intens:	Att -> Predicate -> Predicate;
 	Positing:	Express -> Event -> Predicate;
 	S :	Item -> Predicate -> Event;
+	-- PN2NP:	PN -> Item;
+	Str2PN:	Str -> PN_;
 
 	An :	Kind -> Item;
 	The :	Kind -> Item;
@@ -98,7 +100,7 @@ fun
 	year :	Kind;
 
 	barbara :	Item;
-	dr_bean :	PN;
+	-- dr_bean :	PN;
 	eva :	Item;
 	fast_track :	Item;
 	tadeusz :	Item;
