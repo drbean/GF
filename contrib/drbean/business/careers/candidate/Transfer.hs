@@ -1,4 +1,4 @@
-module Transfer where
+module Main where
 
 import PGF
 import Candidate
@@ -6,7 +6,7 @@ import Candidate
 main :: IO () 
 main = do
   gr <- readPGF "Candidate.pgf"
-  putStrLn $ functions gr
+  putStrLn $ unwords $ map showCId ( categories gr )
   loop (translate transfer gr)
 
 loop :: (String -> String) -> IO ()
@@ -17,23 +17,27 @@ loop trans = do
     loop trans
 
 translate :: (Tree -> Tree) -> PGF -> String -> String
-translate tr gr s = case parseAllLang gr (startCat gr) s of
-  (lg,t:_):_ -> linearize gr lg (tr t)
-  _ -> "NO PARSE"
+translate tr gr s = show $ head ( parseAll gr (startCat gr) s )
+--translate tr gr s = case parseAllLang gr (startCat gr) s of
+--  (lg,t:_):_ -> linearize gr lg (tr t)
+--  -- (lg,t:_):_ -> showCId t
+--  _ -> "NO PARSE"
 
 
 transfer :: Tree -> Tree
 transfer = gf . answer . fg
 
-answer :: GEvent -> GEvent
-answer p = case p of
-  GS x y | value y == "go"-> GS (Geva ) (GHappening Gexpand)
-  -- GS x y -> GS (GPN2NP (Gdr_bean)) (GPositing Gthink (GIs x Ggood) )
-  GIs Geva y  -> GIs (GThe Gresult) y
-  _  -> GIs (GThe Gresult) Gbad
-  -- GS x y | y == 
+answer :: GCl -> GCl
+answer = id
+--answer :: GCl -> String
+--answer p = case p of
+--  GS x y -> linearize GS x y
+--  -- GS x y -> GS (GPN2NP (Gdr_bean)) (GPositing Gthink (GIs x Ggood) )
+--  -- GIs Geva y  -> GIs (GThe Gresult) y
+--  _  -> GIs (GThe Gresult) Gbad
+--  -- GS x y | y == 
 
-value :: GPredicate -> String
+value :: GVP -> String
 value e = case e of
   GHappening (Ggo) -> "go"
   GHappening (Gexpand) -> "expand"
