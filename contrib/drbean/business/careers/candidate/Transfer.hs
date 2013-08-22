@@ -1,11 +1,12 @@
-module Main where
+module Transfer where
 
 import PGF
-import TransferDef (transfer)
+import Candidate
 
 main :: IO () 
 main = do
   gr <- readPGF "Candidate.pgf"
+  putStrLn $ functions gr
   loop (translate transfer gr)
 
 loop :: (String -> String) -> IO ()
@@ -19,10 +20,7 @@ translate :: (Tree -> Tree) -> PGF -> String -> String
 translate tr gr s = case parseAllLang gr (startCat gr) s of
   (lg,t:_):_ -> linearize gr lg (tr t)
   _ -> "NO PARSE"
-module TransferDef where
 
-import PGF (Tree)
-import Candidate   -- generated from GF
 
 transfer :: Tree -> Tree
 transfer = gf . answer . fg
@@ -38,6 +36,7 @@ answer p = case p of
 value :: GPredicate -> String
 value e = case e of
   GHappening (Ggo) -> "go"
+  GHappening (Gexpand) -> "expand"
 
 --test :: (Int -> Bool) -> GObject -> GAnswer
 --test f x = if f (value x) then GYes else GNo
