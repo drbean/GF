@@ -2,30 +2,19 @@ concrete CandidateEng of Candidate = CatEng -[S] **
   open SyntaxEng, ParadigmsEng, IrregEng, Prelude in {
 
 -- lincat Quality, Kind, Phrase = {s : Str} ;
-lincat
-	Event	= Cl;
-	Item	= NP;
-	Quality	= AP;
-	Kind	= CN;
-	-- PN_	= PN;
-	Act	= V;
-	Act_on	= V2;
-	Act_on_to	= V2V;
-	Att	= VV;
-	Express	= VS;
-	Predicate	= VP;
+
 lin
 	Is item quality =	mkCl item quality;
 	Happening action =	mkVP action;
 	Changing action patient =	mkVP action patient;
 	Causative causal patient predicate =	mkVP causal patient predicate;
-	Intens predicate	= mkVP predicate;
+	Intens attitude predicate	= mkVP attitude predicate;
 	Positing posit event =	mkVP posit (mkS event);
 	S subject predicate = mkCl subject predicate;
 
-	An kind =	mkNP a_Det kind ;
-	The kind =	mkNP the_Det kind ;
-	QKind quality kind =	mkCN quality kind ;
+	-- An kind =	mkNP a_Det kind ;
+	-- The kind =	mkNP the_Det kind ;
+	-- QCN quality kind =	mkCN quality kind ;
 	Very quality =	mkAP very_AdA quality ;
 
 
@@ -98,10 +87,8 @@ lin
 	way =	mkCN (mkN "way");
 	year =	mkCN (mkN "year");
 
-	Str2PN	= regPN;
-	-- PN2NP	= mkNP;
 	barbara =	mkNP (mkPN "Barbara");
-	-- dr_bean =	(mkPN "Dr Bean");
+	dr_bean =	mkNP (mkPN "Dr Bean");
 	eva =	mkNP (mkPN "Eva");
 	fast_track =	mkNP (mkPN "Fast-Track");
 	tadeusz =	mkNP (mkPN "Tadeusz");
