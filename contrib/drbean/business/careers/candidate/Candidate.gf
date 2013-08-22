@@ -24,7 +24,7 @@ fun
 	Positing:	Express -> Event -> Predicate;
 	S :	Item -> Predicate -> Event;
 	-- PN2NP:	PN -> Item;
-	Str2PN:	Str -> PN_;
+	-- Str2PN:	Str -> PN_;
 
 	An :	Kind -> Item;
 	The :	Kind -> Item;

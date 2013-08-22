@@ -7,7 +7,7 @@ lincat
 	Item	= NP;
 	Quality	= AP;
 	Kind	= CN;
-	PN_	= PN;
+	-- PN_	= PN;
 	Act	= V;
 	Act_on	= V2;
 	Act_on_to	= V2V;
