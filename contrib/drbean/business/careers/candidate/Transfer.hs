@@ -17,7 +17,7 @@ loop trans = do
     loop trans
 
 translate :: (Tree -> Tree) -> PGF -> String -> String
-translate tr gr s = show $ head ( parseAll gr (startCat gr) s )
+translate tr gr s = (show (fmap (showCId . fst) (unApp (gf Geva)))) ++ (show $ head ( parseAll gr (startCat gr) s ) )
 --translate tr gr s = case parseAllLang gr (startCat gr) s of
 --  (lg,t:_):_ -> linearize gr lg (tr t)
 --  -- (lg,t:_):_ -> showCId t
