@@ -7,17 +7,17 @@ fun
 	Is :	NP -> AP -> Cl;
 	Happening :	V -> VP ;
 	Changing :	V2 -> NP -> VP;
-	Causative:	V2V -> NP -> VP -> VP;
-	Intens:	VV -> VP -> VP;
+	-- Causative:	V2V -> NP -> VP -> VP;
+	-- Intens:	VV -> VP -> VP;
 	Positing:	VS -> Cl -> VP;
-	S :	NP -> VP -> Cl;
+	UttS :	NP -> VP -> Cl;
 	-- PN2NP:	PN -> NP;
 	-- Str2PN:	Str -> PN_;
 
 	-- An :	CN -> NP;
 	-- The :	CN -> NP;
 	-- QCN :	AP -> CN -> CN;
-	Very :	AP -> AP;
+	-- Very :	AP -> AP;
 
 	ambitious :	AP;
 	bad :	AP;
@@ -52,6 +52,7 @@ fun
 	administration :	CN;
 	aim :	CN;
 	business_club :	CN;
+	a_business_club: NP;
 	company :	CN;
 	training_course :	CN;
 	course :	CN;
@@ -93,7 +94,7 @@ fun
 	fast_track :	NP;
 	tadeusz :	NP;
 
-	allow :	V2V;
+	-- allow :	V2V;
 	apply :	V2;
 	become :	V2;
 	can :	VV;
@@ -108,10 +109,10 @@ fun
 	increase :	V2;
 	lead :	V2;
 	know :	VS;
-	must :	VV;
+	-- must :	VV;
 	think :	VS;
-	want_NP_to :	V2V;
-	want_to :	VV;
+	-- want_NP_to :	V2V;
+	-- want_to :	VV;
 
 }
 

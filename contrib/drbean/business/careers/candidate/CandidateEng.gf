@@ -1,5 +1,5 @@
 concrete CandidateEng of Candidate = CatEng -[S] **
-  open SyntaxEng, ParadigmsEng, IrregEng, Prelude in {
+  open SyntaxEng, ParadigmsEng, IrregEng in {
 
 -- lincat Quality, Kind, Phrase = {s : Str} ;
 
@@ -10,12 +10,12 @@ lin
 	Causative causal patient predicate =	mkVP causal patient predicate;
 	Intens attitude predicate	= mkVP attitude predicate;
 	Positing posit event =	mkVP posit (mkS event);
-	S subject predicate = mkCl subject predicate;
+	UttS subject predicate = mkCl subject predicate;
 
 	-- An kind =	mkNP a_Det kind ;
 	-- The kind =	mkNP the_Det kind ;
 	-- QCN quality kind =	mkCN quality kind ;
-	Very quality =	mkAP very_AdA quality ;
+	-- Very quality =	mkAP very_AdA quality ;
 
 
 	ambitious =	mkAP (mkA "ambitious");
@@ -50,6 +50,7 @@ lin
 	ability =	mkCN (mkN "ability");
 	administration =	mkCN (mkN "administration");
 	aim =	mkCN (mkN "aim");
+	a_business_club = mkNP a_Det business_club;
 	business_club =	mkCN (mkN "business" (mkN "club"));
 	-- club =	mkCN (mkN "club");
 	company =	mkCN (mkN "company");
@@ -93,7 +94,7 @@ lin
 	fast_track =	mkNP (mkPN "Fast-Track");
 	tadeusz =	mkNP (mkPN "Tadeusz");
 
-	allow =	mkV2V (mkV "allow") noPrep to_Prep;
+	-- allow =	mkV2V (mkV "allow") noPrep to_Prep;
 	apply =	mkV2 "apply" "for";
 	can =	can_VV;
 	become =	mkV2 "become";
@@ -108,10 +109,10 @@ lin
 	help =	mkV2 (mkV "help");
 	know =	mkVS know_V;
 	lead =	mkV2 lead_V;
-	must =	must_VV;
+	-- must =	must_VV;
 	think =	mkVS (mkV "think");
-	want_NP_to =	mkV2V (mkV "want") noPrep to_Prep;
-	want_to =	want_VV;
+	-- want_NP_to =	mkV2V (mkV "want") noPrep to_Prep;
+	-- want_to =	want_VV;
 
 --get_V = mkV "get"
 --motivate_V = mkV "motivate"
