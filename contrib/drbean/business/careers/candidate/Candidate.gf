@@ -7,8 +7,8 @@ fun
 	Is	: NP -> AP -> Cl;
 	Happening	: V -> VP ;
 	Changing	: V2 -> NP -> VP;
-	-- Causative:	V2V -> NP -> VP -> VP;
-	-- Intens:	VV -> VP -> VP;
+	Causative:	V2V -> NP -> VP -> VP;
+	Intens:	VV -> VP -> VP;
 	Positing:	VS -> Cl -> VP;
 	UttS	: NP -> VP -> Cl;
 	-- PN2NP:	PN -> NP;
@@ -96,10 +96,10 @@ fun
 	fast_track	: NP;
 	tadeusz	: NP;
 
-	-- allow	: V2V;
+	allow	: V2V;
 	apply	: V2;
 	become	: V2;
-	-- can	: VV;
+	can	: VV;
 	choose	: V2;
 	enjoy	: V2;
 	expand	: V;
@@ -111,10 +111,10 @@ fun
 	increase	: V2;
 	lead	: V2;
 	know	: VS;
-	-- must	: VV;
+	must	: VV;
 	think	: VS;
-	-- want_NP_to	: V2V;
-	-- want_to	: VV;
+	want_NP_to	: V2V;
+	want_to	: VV;
 
 }
 

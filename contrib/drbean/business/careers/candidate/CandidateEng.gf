@@ -1,5 +1,5 @@
 concrete CandidateEng of Candidate = CatEng **
-  open ConstructorsEng, GrammarEng, ParadigmsEng, IrregEng in {
+  open ConstructorsEng, GrammarEng, ParadigmsEng, IrregEng, Prelude in {
 
 -- lincat Quality, Kind, Phrase = {s : Str} ;
 
@@ -7,8 +7,8 @@ lin
 	Is item quality	=	mkCl item quality;
 	Happening action	=	mkVP action;
 	Changing action patient	= mkVP action patient;
-	-- Causative causal patient predicate	= mkVP causal patient predicate;
-	-- Intens attitude predicate	= mkVP attitude predicate;
+	Causative causal patient predicate	= mkVP causal patient predicate;
+	Intens attitude predicate	= mkVP attitude predicate;
 	Positing posit event	= mkVP posit (mkS event);
 	UttS subject predicate	= mkCl subject predicate;
 	-- Item det noun	= ConstructorsEng.mkNP det noun;
@@ -52,7 +52,7 @@ lin
 	a_Det = GrammarEng.DetQuant GrammarEng.IndefArt GrammarEng.NumSg;
 	the_Det = GrammarEng.DetQuant GrammarEng.DefArt GrammarEng.NumSg;
 	ability	= mkCN (mkN "ability");
-	administration	= mkCN (mkN "administration");
+	administration	= mkCN (mkN "administration" nonExist);
 	aim	= mkCN (mkN "aim");
 	business_club	= mkCN (mkN "business" (mkN "club"));
 	-- club	= mkCN (mkN "club");
@@ -63,7 +63,7 @@ lin
 	director	= mkCN (mkN "director");
 	effort	= mkCN (mkN "effort");
 	sales_experience	= mkCN (mkN "sales" experience);
-	experience	= mkCN (mkN "experience");
+	experience	= mkCN (mkN "experience" nonExist);
 	hand	= mkCN (mkN "hand");
 	head	= mkCN (mkN "head");
 	job	= mkCN (mkN "job");
@@ -97,9 +97,9 @@ lin
 	fast_track	= mkNP (mkPN "Fast-Track");
 	tadeusz	= mkNP (mkPN "Tadeusz");
 
-	-- allow	= mkV2V (mkV "allow") noPrep to_Prep;
+	allow	= mkV2V (mkV "allow") noPrep to_Prep;
 	apply	= mkV2 "apply" "for";
-	-- can	= can_VV;
+	can	= can_VV;
 	become	= mkV2 "become";
 	choose	= mkV2 "choose";
 	enjoy	= mkV2 "enjoy";
@@ -112,10 +112,10 @@ lin
 	help	= mkV2 (mkV "help");
 	know	= mkVS know_V;
 	lead	= mkV2 lead_V;
-	-- must	= must_VV;
+	must	= must_VV;
 	think	= mkVS (mkV "think");
-	-- want_NP_to	= mkV2V (mkV "want") noPrep to_Prep;
-	-- want_to	= want_VV;
+	want_NP_to	= mkV2V (mkV "want") noPrep to_Prep;
+	want_to	= want_VV;
 
 --get_V = mkV "get"
 --motivate_V = mkV "motivate"
