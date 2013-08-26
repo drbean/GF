@@ -51,6 +51,7 @@ lin
 
 	a_Det = GrammarEng.DetQuant GrammarEng.IndefArt GrammarEng.NumSg;
 	the_Det = GrammarEng.DetQuant GrammarEng.DefArt GrammarEng.NumSg;
+	thePl_Det = GrammarEng.DetQuant GrammarEng.DefArt GrammarEng.NumPl;
 	ability	= mkCN (mkN "ability");
 	administration	= mkCN (mkN "administration" nonExist);
 	aim	= mkCN (mkN "aim");
