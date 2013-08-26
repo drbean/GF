@@ -51,7 +51,7 @@ fun
 
 	a_Det : Det; -- (\d,f -> exists (\x -> and (d x) (f x)));
 	the_Det : Det; -- (\d,f -> exists (\x -> and (d x) (f x)));
-	thePl_Det : Det; -- (\d,f -> exists (\x -> and (d x) (f x)));
+	-- thePlural_Det : Det; -- (\d,f -> exists (\x -> and (d x) (f x)));
 	ability	: CN;
 	administration	: CN;
 	aim	: CN;
