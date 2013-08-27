@@ -3,6 +3,9 @@ abstract Candidate = Cat ** {
 
   flags startcat = Cl ;
 
+--cat
+--	NP; AP; Cl; V; VP; V2; V2V; VV; VS; Det; CN;
+
 fun
 	Is	: NP -> AP -> Cl;
 	Happening	: V -> VP ;
@@ -114,8 +117,9 @@ fun
 	know	: VS;
 	must	: VV;
 	think	: VS;
-	want_NP_to	: V2V;
-	want_to	: VV;
+	want	: VV;
+	-- want_NP_to	: V2V;
+	-- want_to	: VV;
 
 }
 
