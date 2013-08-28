@@ -19,5 +19,11 @@ public class Test {
 		for (Map.Entry<String,Concr> entry : gr.getLanguages().entrySet()) {
 			System.out.println(entry.getKey()+" "+entry.getValue()+" "+entry.getValue().getName());
 		}
+		
+		Concr eng = gr.getLanguages().get("ParseEng");
+		for (ExprProb ep : eng.parse("Phr", "where are you")) {
+			System.out.println("["+ep.getProb()+"] "+ep.getExpr());
+			System.out.println(eng.linearize(ep.getExpr()));
+		}
 	}
 }

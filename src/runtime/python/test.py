@@ -2,6 +2,7 @@ import pgf
 import sys
 import sets
 import readline
+import locale
 
 sys.stdout.write("loading...")
 sys.stdout.flush();
@@ -24,7 +25,7 @@ class Completer():
 		if state == 0:
 			line = readline.get_line_buffer()
 			line = line[0:readline.get_begidx()]
-			self.i = source_lang.getCompletions(line, prefix=prefix)
+			self.i = source_lang.complete(line, prefix=prefix)
 			self.tokens = sets.Set()
 
 		if len(self.tokens) > 50:
@@ -32,7 +33,7 @@ class Completer():
 
 		while True:
 			try:
-				(p,t) = self.i.next()
+				(p,t,c) = self.i.next()
 				if t not in self.tokens:
 					self.tokens.add(t)
 					return t
@@ -42,6 +43,7 @@ class Completer():
 completer = Completer(source_lang)
 readline.set_completer(completer.complete)
 readline.parse_and_bind("tab: complete")
+locale.setlocale(locale.LC_CTYPE, "")
 
 while True:
 	try:

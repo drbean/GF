@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 public class PGF {
-	public static native PGF readPGF(String path) throws FileNotFoundException; 
+	public static native PGF readPGF(String path) throws FileNotFoundException;
 
 	public native String getAbstractName();
 
@@ -30,18 +30,18 @@ public class PGF {
 	private static native void free(long pool);
 
 	private long pool;
-	private long gr;
+	private long ref;
 
-	private PGF(long pool, long gr) {
+	private PGF(long pool, long ref) {
 		this.pool = pool;
-		this.gr   = gr;
+		this.ref  = ref;
 	}
 
 	protected void finalize () throws Throwable {
 		if (pool != 0) {
 			free(pool);
 			pool = 0;
-			gr = 0;
+			ref = 0;
 		}
 	}
 	
