@@ -13,10 +13,10 @@ abstract ParseEngAbs =
   Question,
   Relative,
   Idiom [NP, VP, Cl, Tense, ProgrVP, ExistNP],
-  Extra [NP, Quant, VPSlash, VP, GenNP, PassVPSlash,
-         Temp, Tense, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
-         VPI, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV,
-         ClSlash, RCl, EmptyRelSlash],
+  ExtraEngAbs [NP, Quant, VPSlash, VP, GenNP, PassVPSlash,
+               Temp, Tense, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
+               VPI, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV, ComplSlashPartLast,
+               ClSlash, RCl, EmptyRelSlash],
   DictEngAbs ** {
 
 flags
@@ -32,9 +32,8 @@ fun CompoundCN : Num -> N -> CN -> CN ;
     himself_NP : NP ;
     herself_NP : NP ;
     itself_NP : NP ;
-    ourself_NP : NP ;
+    ourselves_NP : NP ;
     yourselfPl_NP : NP ;
-    themself_NP : NP ;
     themselves_NP : NP ;
     OrdCompar : A -> Ord ;
 

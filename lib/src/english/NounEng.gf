@@ -22,12 +22,17 @@ concrete NounEng of Noun = CatEng ** open MorphoEng, ResEng, Prelude in {
       } ;
 
     RelNP np rs = {
-      s = \\c => np.s ! c ++ "," ++ rs.s ! np.a ;
+      s = \\c => np.s ! c ++ "," ++ rs.s ! np.a ++ finalComma ;
       a = np.a
       } ;
 
     AdvNP np adv = {
       s = \\c => np.s ! c ++ adv.s ;
+      a = np.a
+      } ;
+
+    ExtAdvNP np adv = {
+      s = \\c => np.s ! c ++ "," ++ adv.s ++ finalComma;
       a = np.a
       } ;
 

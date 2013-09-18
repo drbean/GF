@@ -14,21 +14,16 @@ guinclude_HEADERS = \
 	gu/bits.h \
 	gu/choice.h \
 	gu/defs.h \
-	gu/dump.h \
 	gu/enum.h \
 	gu/exn.h \
 	gu/file.h \
 	gu/fun.h \
 	gu/hash.h \
 	gu/in.h \
-	gu/intern.h \
-	gu/list.h \
-	gu/log.h \
 	gu/map.h \
 	gu/mem.h \
 	gu/out.h \
 	gu/prime.h \
-	gu/read.h \
 	gu/seq.h \
 	gu/str.h \
 	gu/string.h \
@@ -36,13 +31,12 @@ guinclude_HEADERS = \
 	gu/type.h \
 	gu/ucs.h \
 	gu/utf8.h \
-	gu/variant.h \
-	gu/write.h \
-	gu/yaml.h
+	gu/variant.h
 
 pgfincludedir=$(includedir)/pgf
 pgfinclude_HEADERS = \
 	pgf/expr.h \
+	pgf/reader.h \
 	pgf/linearizer.h \
 	pgf/parser.h \
 	pgf/lexer.h \
@@ -56,29 +50,22 @@ libgu_la_SOURCES = \
 	gu/choice.c \
 	gu/defs.c \
 	gu/seq.c \
-	gu/dump.c \
 	gu/enum.c \
 	gu/exn.c \
 	gu/file.c \
 	gu/fun.c \
 	gu/hash.c \
 	gu/in.c \
-	gu/intern.c \
-	gu/list.c \
-	gu/log.c \
 	gu/map.c \
 	gu/mem.c \
 	gu/out.c \
 	gu/prime.c \
-	gu/read.c \
 	gu/str.c \
 	gu/string.c \
 	gu/type.c \
 	gu/utf8.c \
-	gu/write.c \
 	gu/ucs.c \
-	gu/variant.c \
-	gu/yaml.c
+	gu/variant.c
 
 libteyjus_la_SOURCES = \
 	teyjus/simulator/abstmachine.c \

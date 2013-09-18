@@ -9,8 +9,9 @@ public class ExprProb {
 		this.prob = prob;
 	}
 	
-	private static ExprProb mkExprProb(Pool pool, long expr, double prob) {
-		return new ExprProb(new Expr(pool, expr), prob);
+	@SuppressWarnings("unused")
+	private static ExprProb mkExprProb(Pool pool, PGF gr, long expr, double prob) {
+		return new ExprProb(new Expr(pool, gr, expr), prob);
 	}
 	
 	public Expr getExpr() {

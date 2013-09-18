@@ -17,6 +17,7 @@ concrete ParseEng of ParseEngAbs =
   ExtraEng [NP, Quant, VPSlash, VP, Tense, GenNP, PassVPSlash,
             Temp, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
             VPI, VPIForm, VPIInf, VPIPresPart, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV,
+            ComplSlashPartLast,
             ClSlash, RCl, EmptyRelSlash],
 
   DictEng ** 
@@ -32,9 +33,8 @@ lin
   himself_NP = regNP "himself" singular ;
   herself_NP = regNP "herself" singular ;
   itself_NP = regNP "itself" singular ;
-  ourself_NP = regNP "ourself" plural ;
+  ourselves_NP = regNP "ourselves" plural ;
   yourselfPl_NP = regNP "yourself" plural ;
-  themself_NP = regNP "themself" plural ;
   themselves_NP = regNP "themselves" plural ;
 
   CompoundCN num noun cn = {
@@ -103,7 +103,7 @@ lin
           compl = vp.s2 ! np.a
         in
         case o of {
-          ODir => compl ++ verb.aux ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom ;
+          ODir => compl ++ "," ++ verb.aux ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom ;
           OQuest => verb.aux ++ compl ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom
           }
     } ;
@@ -133,7 +133,7 @@ lin
   } ;
 
   ApposNP np1 np2 = {
-    s = \\c => np1.s ! c ++ "," ++ np2.s ! npNom ;
+    s = \\c => np1.s ! c ++ "," ++ np2.s ! npNom ++ finalComma ;
     a = np1.a
   } ;
   
