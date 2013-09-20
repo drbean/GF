@@ -2,17 +2,22 @@ module Main where
 
 import PGF
 import Candidate
+import WordsCharacters
 
 import Data.List
 import Data.Char
 
 main :: IO () 
 main = do
-  gr <- readPGF "/home/drbean/bett/branch/gf/bin/Candidate.pgf"
+  gr <- readPGF "/home/drbean/GF/contrib/drbean/business/careers/candidate/Candidate.pgf"
   s <- getLine
-  let l = lc_first s
+  let l = (chomp . lc_first) s
+  putStrLn (unknown l)
   let ls = linear transform gr (parses l gr)
   putStrLn (concat ls)
+
+unknown :: String -> String
+unknown str = unwords ( filter (\x -> not (elem x wordlist)) (words str) )
 
 parses :: String -> PGF -> [Tree]
 parses s gr = concat ( parseAll gr (startCat gr) s )
@@ -32,7 +37,7 @@ lc_first str@(s:ss) = case ( or $ map (flip isPrefixOf str) ["Barbara", "Tadeusz
 	False -> ((toLower s):ss)
 
 chomp :: String -> String
-chomp str = let rev@(c:cs) = reverse string
-		in dot = case (c:cs) of
-			'.':_ -> cs
-			otherwise -> rev
+chomp str = let rev@(c:cs) = reverse str
+		in case (c:cs) of
+			'.':_ -> reverse cs
+			otherwise -> reverse rev
