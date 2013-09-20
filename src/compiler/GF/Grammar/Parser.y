@@ -16,7 +16,6 @@ import GF.Grammar.Predef
 import GF.Grammar.Grammar
 import GF.Grammar.Macros
 import GF.Grammar.Lexer
-import qualified Data.ByteString.Char8 as BS
 import GF.Compile.Update (buildAnyTree)
 import Codec.Binary.UTF8.String(decodeString)
 import Data.Char(toLower)
@@ -508,11 +507,11 @@ Patt3
 
 PattAss :: { [(Label,Patt)] }
 PattAss
-  : ListIdent '=' Patt { [(LIdent (ident2bs i),$3) | i <- $1] } 
+  : ListIdent '=' Patt { [(LIdent (ident2raw i),$3) | i <- $1] } 
 
 Label :: { Label }
 Label
-  : Ident       { LIdent (ident2bs $1)   } 
+  : Ident       { LIdent (ident2raw $1)   } 
   | '$' Integer { LVar (fromIntegral $2) }
 
 Sort :: { Ident }
@@ -622,12 +621,9 @@ optDecode opts =
     else id
 
 mkListId,mkConsId,mkBaseId  :: Ident -> Ident
-mkListId = prefixId (BS.pack "List")
-mkConsId = prefixId (BS.pack "Cons")
-mkBaseId = prefixId (BS.pack "Base")
-
-prefixId :: BS.ByteString -> Ident -> Ident
-prefixId pref id = identC (BS.append pref (ident2bs id))
+mkListId = prefixIdent "List"
+mkConsId = prefixIdent "Cons"
+mkBaseId = prefixIdent "Base"
 
 listCatDef :: L (Ident, Context, Int) -> [(Ident,Info)]
 listCatDef (L loc (id,cont,size)) = [catd,nilfund,consfund]
