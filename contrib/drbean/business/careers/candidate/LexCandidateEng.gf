@@ -32,6 +32,7 @@ oper
 
 	a_Det	= aSg_Det;
 	the_Det	= theSg_Det;
+
 	ability_N	= mkN "ability";
 	administration_N	= mkN "administration" nonExist;
 	aim_N	= mkN "aim";
