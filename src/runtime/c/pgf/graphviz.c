@@ -112,22 +112,18 @@ typedef struct {
 	size_t level;
 	GuBuf* internals;
 	GuBuf* leaves;
-	GuString wildcard;
 } PgfBracketLznState;
 
 static void
-pgf_bracket_lzn_symbol_tokens(PgfLinFuncs** funcs, PgfTokens* toks)
+pgf_bracket_lzn_symbol_token(PgfLinFuncs** funcs, PgfToken tok)
 {
 	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
 
-	size_t len = gu_seq_length(toks);
-	for (size_t i = 0; i < len; i++) {
-		PgfParseNode* node = gu_new(PgfParseNode, state->pool);
-		node->id     = 100000 + gu_buf_length(state->leaves);
-		node->parent = state->parent;
-		node->label  = gu_seq_get(toks, PgfToken, i);
-		gu_buf_push(state->leaves, PgfParseNode*, node);
-	}
+	PgfParseNode* node = gu_new(PgfParseNode, state->pool);
+	node->id     = 100000 + gu_buf_length(state->leaves);
+	node->parent = state->parent;
+	node->label  = tok;
+	gu_buf_push(state->leaves, PgfParseNode*, node);
 }
 
 static void
@@ -135,7 +131,7 @@ pgf_bracket_lzn_expr_literal(PgfLinFuncs** funcs, PgfLiteral lit)
 {
 	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
 
-	GuString label;
+	GuString label = NULL;
 
 	GuVariantInfo i = gu_variant_open(lit);
     switch (i.tag) {
@@ -170,7 +166,7 @@ pgf_bracket_lzn_begin_phrase(PgfLinFuncs** funcs, PgfCId cat, int fid, int linde
 {
 	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
 
-	if (gu_string_eq(cat, state->wildcard))
+	if (strcmp(cat, "_") == 0)
 		return;
 	
 	state->level++;
@@ -206,7 +202,7 @@ pgf_bracket_lzn_end_phrase(PgfLinFuncs** funcs, PgfCId cat, int fid, int lindex,
 {
 	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
 
-	if (gu_string_eq(cat, state->wildcard))
+	if (strcmp(cat, "_") == 0)
 		return;
 
 	state->level--;
@@ -214,10 +210,12 @@ pgf_bracket_lzn_end_phrase(PgfLinFuncs** funcs, PgfCId cat, int fid, int lindex,
 }
 
 static PgfLinFuncs pgf_bracket_lin_funcs = {
-	.symbol_tokens = pgf_bracket_lzn_symbol_tokens,
+	.symbol_token  = pgf_bracket_lzn_symbol_token,
 	.expr_literal  = pgf_bracket_lzn_expr_literal,
 	.begin_phrase  = pgf_bracket_lzn_begin_phrase,
-	.end_phrase    = pgf_bracket_lzn_end_phrase
+	.end_phrase    = pgf_bracket_lzn_end_phrase,
+	.symbol_ne     = NULL,
+	.symbol_bind   = NULL
 };
 
 static void
@@ -282,7 +280,6 @@ pgf_graphviz_parse_tree(PgfConcr* concr, PgfExpr expr, GuOut* out, GuExn* err)
 	state.level     = -1;
 	state.internals = gu_new_buf(GuBuf*, tmp_pool);
 	state.leaves    = gu_new_buf(PgfParseNode*, tmp_pool);
-	state.wildcard  = gu_str_string("_", tmp_pool);
 	pgf_lzr_linearize(concr, ctree, 0, &state.funcs);
 
 	size_t len = gu_buf_length(state.internals);

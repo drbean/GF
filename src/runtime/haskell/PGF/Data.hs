@@ -58,9 +58,10 @@ data Symbol
   = SymCat {-# UNPACK #-} !Int {-# UNPACK #-} !LIndex
   | SymLit {-# UNPACK #-} !Int {-# UNPACK #-} !LIndex
   | SymVar {-# UNPACK #-} !Int {-# UNPACK #-} !Int
-  | SymKS [Token]
-  | SymKP [Token] [Alternative]
-  | SymNE                           -- non exist
+  | SymKS Token
+  | SymKP [Symbol] [([Symbol],[String])]
+  | SymBIND                         -- the special BIND token
+  | SymNE                           -- non exist (this should be last constructor to simplify the binary search in the runtime)
   deriving (Eq,Ord,Show)
 data Production
   = PApply  {-# UNPACK #-} !FunId [PArg]
@@ -74,10 +75,6 @@ type Sequence = Array DotPos Symbol
 type FunId = Int
 type SeqId = Int
 type BCAddr = Int
-
-data Alternative =
-   Alt [Token] [String]
-  deriving (Eq,Ord,Show)
 
 
 -- merge two PGFs; fails is differens absnames; priority to second arg

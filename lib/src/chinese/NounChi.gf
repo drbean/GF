@@ -14,14 +14,15 @@ concrete NounChi of Noun = CatChi ** open ResChi, Prelude in {
 
     PredetNP pred np = mkNP (pred.s ++ possessive_s ++ np.s) ;
 
-    PPartNP np v2 = mkNP ((predV v2).verb.s ++ possessive_s ++ np.s) ; ---- ??
+    PPartNP np v2 = mkNP ((predV v2 v2.part).verb.s ++ possessive_s ++ np.s) ; ---- ??
 
     AdvNP np adv = mkNP (adv.s ++ possessive_s ++ np.s) ;
 
     DetQuant quant num = {
       s = case num.numType of {
-        NTFull => quant.pl ++ num.s ;  -- to avoid yi in indef
-        _ => quant.s ++ num.s
+        NTFull    => quant.pl ++ num.s ;  -- to avoid yi in indef
+        NTVoid Pl => quant.pl ++ num.s ;
+        _         => quant.s ++ num.s
         } ; 
       detType = case num.numType of {
         NTFull => DTNum ;                     -- five
@@ -85,5 +86,7 @@ concrete NounChi of Noun = CatChi ** open ResChi, Prelude in {
     RelNP np rs = mkNP (rs.s ++ np.s) ;
 
     PossNP cn np = {s = np.s ++ possessive_s ++ cn.s ; c = cn.c} ;
+
+    CountNP det np = {s = det.s ++ possessive_s ++ np.s} ; ---- classifier?
 
 }

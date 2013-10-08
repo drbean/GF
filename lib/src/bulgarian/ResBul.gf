@@ -155,6 +155,13 @@ resource ResBul = ParamX ** open Prelude, Predef in {
         GPl    => APl spec
       } ;
 
+    indefAForm : AForm -> AForm
+      = \af -> case af of {
+                 ASg g spec    => ASg g Indef ;
+                 ASgMascDefNom => ASg Masc Indef ;
+                 APl spec      => APl Indef
+               } ;
+
     dgenderSpecies : AGender -> Species -> Role -> CardForm =
       \g,spec,role -> case <g,spec> of {
                         <AMasc a,Indef> => CFMasc Indef a ;
@@ -358,7 +365,7 @@ resource ResBul = ParamX ** open Prelude, Predef in {
     ia2e : Str -> Str =           -- to be used when the next syllable has vowel different from "à","ú","î" or "ó"
       \s -> case s of {
               x@(_*+_) + "ÿ" + y@(("á"|"â"|"ã"|"ä"|"æ"|"ç"|"ê"|"ë"|"ì"|"í"|"ï"|"ð"|"ñ"|"ò"|"ô"|"õ"|"ö"|"÷"|"ø"|"ù")*)
-                => x+"e"+y;
+                => x+"å"+y;
               _ => s
             };
 

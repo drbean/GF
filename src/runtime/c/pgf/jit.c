@@ -14,6 +14,7 @@ struct PgfJitState {
 	GuPool* pool;
 	jit_state jit;
 	jit_insn *buf;
+	char *save_ip_ptr;
 	GuBuf* patches;
 };
 
@@ -71,10 +72,10 @@ pgf_jit_init(GuPool* tmp_pool, GuPool* pool)
 	PgfJitState* state = gu_new(PgfJitState, tmp_pool);
 	state->tmp_pool = tmp_pool;
 	state->pool = pool;
-	state->buf = NULL;
 	state->patches = gu_new_buf(PgfCallPatch, tmp_pool);
 	
 	pgf_jit_alloc_page(state);
+	state->save_ip_ptr = jit_get_ip().ptr;
 
 	return state;
 }
@@ -82,11 +83,15 @@ pgf_jit_init(GuPool* tmp_pool, GuPool* pool)
 static void
 pgf_jit_make_space(PgfJitState* state)
 {
+	assert (state->save_ip_ptr + JIT_CODE_WINDOW > jit_get_ip().ptr);
+
 	size_t page_size = getpagesize();
 	if (jit_get_ip().ptr + JIT_CODE_WINDOW > ((char*) state->buf) + page_size) {
 		jit_flush_code(state->buf, jit_get_ip().ptr);
 		pgf_jit_alloc_page(state);
 	}
+	
+	state->save_ip_ptr = jit_get_ip().ptr;
 }
 
 void
@@ -196,7 +201,7 @@ pgf_jit_predicate(PgfJitState* state, PgfCIdMap* abscats,
 				
 				// call the predicate for the category in hypo->type->cid
 				PgfAbsCat* arg =
-					gu_map_get(abscats, &hypo->type->cid, PgfAbsCat*);
+					gu_map_get(abscats, hypo->type->cid, PgfAbsCat*);
 
 #ifdef PGF_JIT_DEBUG
 				gu_puts("    CALL ", wtr, err);
@@ -309,7 +314,7 @@ pgf_jit_done(PgfJitState* state, PgfAbstr* abstr)
 		PgfCallPatch* patch =
 			gu_buf_index(state->patches, PgfCallPatch, i);
 		PgfAbsCat* arg =
-			gu_map_get(abstr->cats, &patch->cid, PgfAbsCat*);
+			gu_map_get(abstr->cats, patch->cid, PgfAbsCat*);
 		gu_assert(arg != NULL);
 
 		jit_patch_calli(patch->ref,(jit_insn*) arg->predicate);
