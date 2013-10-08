@@ -12,9 +12,9 @@ main = do
   gr <- readPGF "/home/drbean/GF/contrib/drbean/business/careers/candidate/Candidate.pgf"
   s <- getLine
   let l = (chomp . lc_first) s
-  putStrLn (unknown l)
+  putStrLn ("Unknown_words: " ++ (unknown l) )
   let ls = linear transform gr (parses l gr)
-  putStrLn (concat ls)
+  putStrLn ("Parsed: " ++ (concat ls) )
 
 unknown :: String -> String
 unknown str = unwords ( filter (\x -> not (elem x wordlist)) (words str) )
