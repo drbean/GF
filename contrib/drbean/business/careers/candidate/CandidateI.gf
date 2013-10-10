@@ -15,6 +15,7 @@ lincat
 
 lin
 	Is item quality	=	mkCl item quality;
+	Cop item1 item2	= mkCl item1 item2;
 	Happening action	=	mkVP action;
 	Changing action patient	= mkVP action patient;
 	Causative causal patient predicate	= mkVP causal patient predicate;

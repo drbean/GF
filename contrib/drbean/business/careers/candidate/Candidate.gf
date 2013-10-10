@@ -8,6 +8,7 @@ abstract Candidate = Cat ** {
 
 fun
 	Is	: NP -> AP -> Cl;
+	Cop		: NP -> NP -> Cl;
 	Happening	: V -> VP ;
 	Changing	: V2 -> NP -> VP;
 	Causative:	V2V -> NP -> VP -> VP;
