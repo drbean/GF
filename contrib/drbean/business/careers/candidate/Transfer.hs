@@ -7,9 +7,12 @@ import WordsCharacters
 import Data.List
 import Data.Char
 
+import System.Environment.FindBin
+
 main :: IO () 
 main = do
-  gr <- readPGF "/home/drbean/GF/contrib/drbean/business/careers/candidate/Candidate.pgf"
+  path <- getProgPath
+  gr <- readPGF ( path ++ "/Candidate.pgf" )
   s <- getLine
   let l = (chomp . lc_first) s
   putStrLn ("Unknown_words: " ++ (unknown l) )
