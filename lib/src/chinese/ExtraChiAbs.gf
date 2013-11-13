@@ -8,4 +8,11 @@ abstract ExtraChiAbs = Cat,
    ** {
   cat
     Aspect ;
+
+  fun
+    PredBareAP : NP -> AP -> Cl ;  -- adjectival predication without copula
+
+    QuestRepV : Cl -> QCl ;        -- V neg V question
+
+    TopicAdvCl : Adv -> Cl -> Cl ; -- topicalized adverb
   } ;

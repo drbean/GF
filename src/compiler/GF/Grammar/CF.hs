@@ -23,12 +23,13 @@ import GF.Infra.UseIO
 import GF.Data.Operations
 import GF.Data.Utilities (nub')
 
+import qualified Data.Set as S
 import Data.Char
 import Data.List
-import System.FilePath
+--import System.FilePath
 
 getCF :: FilePath -> String -> Err SourceGrammar
-getCF fpath = fmap (cf2gf fpath) . pCF
+getCF fpath = fmap (cf2gf fpath . uniqueFuns) . pCF
 
 ---------------------
 -- the parser -------
@@ -77,6 +78,21 @@ type CFItem = Either CFCat String
 type CFCat = String
 type CFFun = String
 
+
+--------------------------------
+-- make function names unique -- 
+--------------------------------
+
+uniqueFuns :: CF -> CF
+uniqueFuns = snd . mapAccumL uniqueFun S.empty
+  where
+    uniqueFun funs (L l (fun,rule)) = (S.insert fun' funs,L l (fun',rule))
+      where
+        fun' = head [fun'|suffix<-"":map show ([2..]::[Int]),
+                          let fun'=fun++suffix,
+                          not (fun' `S.member` funs)]
+
+
 --------------------------
 -- the compiler ----------
 --------------------------
@@ -102,7 +118,7 @@ cf2grammar rules = (buildTree abs, buildTree conc, cat) where
             _ -> error "empty CF" 
   cats  = [(cat, AbsCat (Just (L NoLoc []))) | 
              cat <- nub' (concat (map cf2cat rules))] ----notPredef cat
-  lincats = [(cat, CncCat (Just (L loc defLinType)) Nothing Nothing Nothing) | (cat,AbsCat (Just (L loc _))) <- cats]
+  lincats = [(cat, CncCat (Just (L loc defLinType)) Nothing Nothing Nothing Nothing) | (cat,AbsCat (Just (L loc _))) <- cats]
   (funs,lins) = unzip (map cf2rule rules)
 
 cf2cat :: CFRule -> [Ident]

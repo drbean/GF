@@ -4,7 +4,6 @@
 #include <pgf/reader.h>
 #include <pgf/linearizer.h>
 #include <pgf/parser.h>
-#include <pgf/lexer.h>
 #include <gu/file.h>
 #include <gu/string.h>
 #include <gu/enum.h>
@@ -34,60 +33,6 @@ pgf_read(const char* fpath,
 
 	gu_pool_free(tmp_pool);
 	return pgf;
-}
-
-void
-pgf_load_meta_child_probs(PgfPGF* pgf, const char* fpath,
-                          GuPool* pool, GuExn* err)
-{
-	FILE *fp = fopen(fpath, "r");
-	if (!fp) {
-		gu_raise_errno(err);
-		return;
-	}
-
-	GuPool* tmp_pool = gu_new_pool();
-	
-	for (;;) {
-		char cat1[21];
-		char cat2[21];
-		prob_t prob;
-
-		if (fscanf(fp, "%20s\t%20s\t%f", cat1, cat2, &prob) < 3)
-			break;
-
-		prob = - log(prob);
-
-		PgfAbsCat* abscat1 =
-			gu_map_get(pgf->abstract.cats, cat1, PgfAbsCat*);
-		if (abscat1 == NULL) {
-			gu_raise(err, PgfExn);
-			goto close;
-		}
-
-		if (strcmp(cat2, "*") == 0) {
-			abscat1->meta_prob = prob;
-		} else if (strcmp(cat2, "_") == 0) {
-			abscat1->meta_token_prob = prob;
-		} else {
-			PgfAbsCat* abscat2 = gu_map_get(pgf->abstract.cats, cat2, PgfAbsCat*);
-			if (abscat2 == NULL) {
-				gu_raise(err, PgfExn);
-				goto close;
-			}
-
-			if (abscat1->meta_child_probs == NULL) {
-				abscat1->meta_child_probs = 
-					gu_map_type_new(PgfMetaChildMap, pool);
-			}
-
-			gu_map_put(abscat1->meta_child_probs, abscat2, prob_t, prob);
-		}
-	}
-	
-close:
-	gu_pool_free(tmp_pool);
-	fclose(fp);
 }
 
 GuString
@@ -212,89 +157,4 @@ pgf_print_name(PgfConcr* concr, PgfCId id)
 	if (*name == 0)
 		name = id;
 	return name;
-}
-
-void
-pgf_linearize(PgfConcr* concr, PgfExpr expr, GuOut* out, GuExn* err)
-{
-	GuPool* tmp_pool = gu_local_pool();
-
-	GuEnum* cts = 
-		pgf_lzr_concretize(concr, expr, tmp_pool);
-	PgfCncTree ctree = gu_next(cts, PgfCncTree, tmp_pool);
-	if (!gu_variant_is_null(ctree)) {
-		pgf_lzr_linearize_simple(concr, ctree, 0, out, err);
-	}
-
-	gu_pool_free(tmp_pool);
-}
-
-GuEnum*
-pgf_parse(PgfConcr* concr, PgfCId cat, PgfLexer *lexer, 
-          GuPool* pool, GuPool* out_pool)
-{
-    return pgf_parse_with_heuristics(concr, cat, lexer, -1.0, pool, out_pool);
-}
-
-GuEnum*
-pgf_parse_with_heuristics(PgfConcr* concr, PgfCId cat, PgfLexer *lexer,
-                          double heuristics,
-                          GuPool* pool, GuPool* out_pool)
-{
-	// Begin parsing a sentence of the specified category
-	PgfParseState* state =
-		pgf_parser_init_state(concr, cat, 0, heuristics, pool, out_pool);
-	if (state == NULL) {
-		return NULL;
-	}
-
-	// Tokenization
-	GuExn* lex_err = gu_new_exn(NULL, gu_kind(type), pool);
-	PgfToken tok = pgf_lexer_read_token(lexer, lex_err);
-	while (!gu_exn_is_raised(lex_err)) {
-		// feed the token to get a new parse state
-		state = pgf_parser_next_state(state, tok);
-		if (state == NULL) {
-			return NULL;
-		}
-
-		tok = pgf_lexer_read_token(lexer, lex_err);
-	}
-
-	if (gu_exn_caught(lex_err) != gu_type(GuEOF))
-		return NULL;
-
-	// Now begin enumerating the resulting syntax trees
-	return pgf_parse_result(state);
-}
-
-GuEnum*
-pgf_complete(PgfConcr* concr, PgfCId cat, PgfLexer *lexer, 
-             GuString prefix, GuPool* pool)
-{
-	// Begin parsing a sentence of the specified category
-	PgfParseState* state =
-		pgf_parser_init_state(concr, cat, 0, -1, pool, pool);
-	if (state == NULL) {
-		return NULL;
-	}
-
-	// Tokenization
-	GuExn* lex_err = gu_new_exn(NULL, gu_kind(type), pool);
-	PgfToken tok = pgf_lexer_read_token(lexer, lex_err);
-	while (!gu_exn_is_raised(lex_err)) {
-		// feed the token to get a new parse state
-		state = pgf_parser_next_state(state, tok);
-		if (state == NULL) {
-			return NULL;
-		}
-
-		tok = pgf_lexer_read_token(lexer, lex_err);
-	}
-
-	if (gu_exn_caught(lex_err) != gu_type(GuEOF))
-		return NULL;
-
-	// Now begin enumerating the resulting syntax trees
-	return pgf_parser_completions(state, prefix);
 }

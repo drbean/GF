@@ -8,9 +8,9 @@
 
 module GF.Compile.PGFtoProlog (grammar2prolog) where
 
-import PGF.CId
+import PGF(mkCId,wildCId,showCId)
 import PGF.Data
-import PGF.Macros
+--import PGF.Macros
 
 import GF.Data.Operations
 
@@ -49,7 +49,7 @@ plAbstract name abs
                     (f, v) <- Map.assocs (aflags abs)] ++++
        plFacts name "cat" 2 "(?Type, ?[X:Type,...])"
                    [[plType cat args, plHypos hypos'] |
-                    (cat, (hypos, _, _)) <- Map.assocs (cats abs),
+                    (cat, (hypos,_,_,_)) <- Map.assocs (cats abs),
                     let ((_, subst), hypos') = mapAccumL alphaConvertHypo emptyEnv hypos,
                         let args = reverse [EFun x | (_,x) <- subst]] ++++
        plFacts name "fun" 3 "(?Fun, ?Type, ?[X:Type,...])"

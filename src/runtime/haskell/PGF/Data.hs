@@ -8,11 +8,11 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.IntMap as IntMap
 import qualified Data.IntSet as IntSet
-import qualified GF.Data.TrieMap as TMap
+import qualified PGF.TrieMap as TMap
 import qualified Data.ByteString as BS
 import Data.Array.IArray
 import Data.Array.Unboxed
-import Data.List
+--import Data.List
 
 
 -- internal datatypes for PGF
@@ -29,10 +29,10 @@ data PGF = PGF {
 data Abstr = Abstr {
   aflags  :: Map.Map CId Literal,                            -- ^ value of a flag
   funs    :: Map.Map CId (Type,Int,Maybe [Equation],Double,BCAddr), -- ^ type, arrity and definition of function + probability
-  cats    :: Map.Map CId ([Hypo],[(Double, CId)],BCAddr),    -- ^ 1. context of a category
-                                                             -- ^ 2. functions of a category. The order in the list is important,
-                                                             -- this is the order in which the type singatures are given in the source.
-                                                             -- The termination of the exhaustive generation might depend on this.
+  cats    :: Map.Map CId ([Hypo],[(Double, CId)],Double,BCAddr),    -- ^ 1. context of a category
+                                                                    --   2. functions of a category. The functions are stored
+                                                                    --      in decreasing probability order.
+                                                                    --   3. probability
   code    :: BS.ByteString
   }
 
@@ -41,6 +41,7 @@ data Concr = Concr {
   printnames   :: Map.Map CId String,                                -- printname of a cat or a fun
   cncfuns      :: Array FunId CncFun,
   lindefs      :: IntMap.IntMap [FunId],
+  linrefs      :: IntMap.IntMap [FunId],
   sequences    :: Array SeqId Sequence,
   productions  :: IntMap.IntMap (Set.Set Production),                -- the original productions loaded from the PGF file
   pproductions :: IntMap.IntMap (Set.Set Production),                -- productions needed for parsing
@@ -61,6 +62,7 @@ data Symbol
   | SymKS Token
   | SymKP [Symbol] [([Symbol],[String])]
   | SymBIND                         -- the special BIND token
+  | SymSOFT_BIND                    -- the special SOFT_BIND token
   | SymNE                           -- non exist (this should be last constructor to simplify the binary search in the runtime)
   deriving (Eq,Ord,Show)
 data Production

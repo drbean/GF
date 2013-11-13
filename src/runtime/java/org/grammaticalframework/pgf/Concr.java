@@ -21,6 +21,10 @@ public class Concr {
 
 	public native String linearize(Expr expr);
 
+	public native Map<String, String> tabularLinearize(Expr expr);
+
+	public native List<MorphoAnalysis> lookupMorpho(String sentence);
+
 	//////////////////////////////////////////////////////////////////
 	// private stuff
 	

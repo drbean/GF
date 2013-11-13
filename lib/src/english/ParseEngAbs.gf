@@ -16,11 +16,14 @@ abstract ParseEngAbs =
   ExtraEngAbs [NP, Quant, VPSlash, VP, GenNP, PassVPSlash,
                Temp, Tense, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
                VPI, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV, ComplSlashPartLast,
-               ClSlash, RCl, EmptyRelSlash],
+               ClSlash, RCl, EmptyRelSlash, VS, V2S, ComplBareVS, SlashBareV2S],
   DictEngAbs ** {
 
 flags
   startcat=Phr;
+  heuristic_search_factor=0.60;
+  meta_prob=1.0e-5;
+  meta_token_prob=1.1965149246222233e-9;
 
 fun CompoundCN : Num -> N -> CN -> CN ;
     DashCN : N -> N -> N ;
@@ -51,6 +54,7 @@ fun CompoundCN : Num -> N -> CN -> CN ;
     PredVPosv,PredVPovs : NP -> VP -> Cl ;
     
     that_RP : RP ;
+    who_RP : RP ;
 
     CompS : S -> Comp ;
     CompQS : QS -> Comp ;

@@ -1,18 +1,18 @@
 module GF.Compile.PGFtoJS (pgf2js) where
 
-import PGF.CId
+import PGF(showCId)
 import PGF.Data hiding (mkStr)
 import qualified PGF.Macros as M
 import qualified GF.JavaScript.AbsJS as JS
 import qualified GF.JavaScript.PrintJS as JS
 
-import GF.Data.ErrM
-import GF.Infra.Option
+--import GF.Data.ErrM
+--import GF.Infra.Option
 
-import Control.Monad (mplus)
-import Data.Array.Unboxed (UArray)
+--import Control.Monad (mplus)
+--import Data.Array.Unboxed (UArray)
 import qualified Data.Array.IArray as Array
-import Data.Maybe (fromMaybe)
+--import Data.Maybe (fromMaybe)
 import Data.Map (Map)
 import qualified Data.Set as Set
 import qualified Data.Map as Map
@@ -89,6 +89,7 @@ sym2js (SymKS t)       = new "SymKS"  [JS.EStr t]
 sym2js (SymKP ts alts) = new "SymKP"  [JS.EArray (map sym2js ts), JS.EArray (map alt2js alts)]
 sym2js SymNE           = new "SymNE"  []
 sym2js SymBIND         = new "SymKS"  [JS.EStr "&+"]
+sym2js SymSOFT_BIND    = new "SymKS"  [JS.EStr "&+"]
 
 alt2js (ps,ts) = new "Alt" [JS.EArray (map sym2js ps), JS.EArray (map JS.EStr ts)]
 

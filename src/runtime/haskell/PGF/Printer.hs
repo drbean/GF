@@ -2,16 +2,14 @@ module PGF.Printer (ppPGF,ppCat,ppFId,ppFunId,ppSeqId,ppSeq,ppFun) where
 
 import PGF.CId
 import PGF.Data
-import PGF.Macros
-
-import GF.Data.Operations
+--import PGF.Macros
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.IntMap as IntMap
 import Data.List
 import Data.Array.IArray
-import Data.Array.Unboxed
+--import Data.Array.Unboxed
 import Text.PrettyPrint
 
 
@@ -28,8 +26,8 @@ ppAbs name a = text "abstract" <+> ppCId name <+> char '{' $$
 ppFlag :: CId -> Literal -> Doc
 ppFlag flag value = text "flag" <+> ppCId flag <+> char '=' <+> ppLit value <+> char ';'
 
-ppCat :: CId -> ([Hypo],[(Double,CId)],BCAddr) -> Doc
-ppCat c (hyps,_,_) = text "cat" <+> ppCId c <+> hsep (snd (mapAccumL (ppHypo 4) [] hyps)) <+> char ';'
+ppCat :: CId -> ([Hypo],[(Double,CId)],Double,BCAddr) -> Doc
+ppCat c (hyps,_,_,_) = text "cat" <+> ppCId c <+> hsep (snd (mapAccumL (ppHypo 4) [] hyps)) <+> char ';'
 
 ppFun :: CId -> (Type,Int,Maybe [Equation],Double,BCAddr) -> Doc
 ppFun f (t,_,Just eqs,_,_) = text "fun" <+> ppCId f <+> colon <+> ppType 0 [] t <+> char ';' $$
@@ -47,7 +45,9 @@ ppCnc name cnc =
           text "productions" $$
           nest 2 (vcat [ppProduction (fcat,prod) | (fcat,set) <- IntMap.toList (productions cnc), prod <- Set.toList set]) $$
           text "lindefs" $$
-          nest 2 (vcat (map ppLinDef (IntMap.toList (lindefs cnc)))) $$
+          nest 2 (vcat (map ppFunList (IntMap.toList (lindefs cnc)))) $$
+          text "linrefs" $$
+          nest 2 (vcat (map ppFunList (IntMap.toList (linrefs cnc)))) $$
           text "lin" $$
           nest 2 (vcat (map ppCncFun (assocs (cncfuns cnc)))) $$
           text "sequences" $$
@@ -73,7 +73,7 @@ ppProduction (fid,PConst _ _ ss) =
 ppCncFun (funid,CncFun fun arr) =
   ppFunId funid <+> text ":=" <+> parens (hcat (punctuate comma (map ppSeqId (elems arr)))) <+> brackets (ppCId fun)
 
-ppLinDef (fid,funids) = 
+ppFunList (fid,funids) = 
   ppFId fid <+> text "->" <+> hcat (punctuate comma (map ppFunId funids))
 
 ppSeq (seqid,seq) = 
@@ -92,6 +92,7 @@ ppSymbol (SymVar d r) = char '<' <> int d <> comma <> char '$' <> int r <> char 
 ppSymbol (SymKS t)    = doubleQuotes (text t)
 ppSymbol SymNE        = text "nonExist"
 ppSymbol SymBIND      = text "BIND"
+ppSymbol SymSOFT_BIND = text "SOFT_BIND"
 ppSymbol (SymKP syms alts) = text "pre" <+> braces (hsep (punctuate semi (hsep (map ppSymbol syms) : map ppAlt alts)))
 
 ppAlt (syms,ps) = hsep (map ppSymbol syms) <+> char '/' <+> hsep (map (doubleQuotes . text) ps)

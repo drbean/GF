@@ -14,14 +14,13 @@ import Prelude hiding (putStrLn)
 
 import PGF
 
-import PGF.VisualizeTree(getDepLabels)
 import PGF.Macros(lookStartCat,functionsToCat,lookValCat,restrictPGF,hasLin)
 import PGF.Data(abstract,funs,cats,Literal(LStr),Expr(EFun,ELit)) ----
-import PGF.Morphology(isInMorpho,morphoKnown)
+--import PGF.Morphology(isInMorpho,morphoKnown)
 import PGF.Printer(ppFun,ppCat)
-import PGF.Probabilistic(rankTreesByProbs,probTree,setProbabilities)
-import PGF.Generate (generateRandomFrom) ----
-import PGF.Tree (Tree(Fun), expr2tree, tree2expr)
+--import PGF.Probabilistic(rankTreesByProbs,probTree,setProbabilities)
+--import PGF.Generate (generateRandomFrom) ----
+--import PGF.Tree (Tree(Fun), expr2tree, tree2expr)
 import PGF.Optimize(optimizePGF)
 
 import GF.Compile.Export
@@ -30,7 +29,7 @@ import GF.Compile.ExampleBased
 import GF.Infra.Option (noOptions, readOutputFormat, outputFormatsExpl)
 import GF.Infra.UseIO(writeUTF8File)
 import GF.Infra.SIO
-import GF.Data.ErrM ----
+--import GF.Data.ErrM ----
 import GF.Command.Abstract
 import GF.Command.Messages
 import GF.Text.Lexing
@@ -43,13 +42,13 @@ import GF.Command.TreeOperations ---- temporary place for typecheck and compute
 import GF.Data.Operations
 
 import Data.Binary (encodeFile)
-import Data.List
+import Data.List(intersperse,nub)
 import Data.Maybe
 import qualified Data.Map as Map
 --import System.Cmd(system) -- use GF.Infra.UseIO.restricedSystem instead!
 import Text.PrettyPrint
 import Data.List (sort)
-import Debug.Trace
+--import Debug.Trace
 --import System.Random (newStdGen) ----
 
 
@@ -517,9 +516,9 @@ allCommands = Map.fromList [
        ],
      exec = \env@(pgf, mos) opts -> return . fromStrings . optLins pgf opts,
      options = [
-       ("all","show all forms and variants, one by line (cf. l -list)"),
+       ("all",    "show all forms and variants, one by line (cf. l -list)"),
        ("bracket","show tree structure with brackets and paths to nodes"),
-       ("groups","all languages, grouped by lang, remove duplicate strings"),
+       ("groups", "all languages, grouped by lang, remove duplicate strings"),
        ("list","show all forms and variants, comma-separated on one line (cf. l -all)"),
        ("multi","linearize to all languages (default)"),
        ("table","show all forms labelled by parameters"),
@@ -529,6 +528,25 @@ allCommands = Map.fromList [
        ("lang","the languages of linearization (comma-separated, no spaces)"),
        ("unlexer","set unlexers separately to each language (space-separated)")
        ]
+     }),
+  ("lc", emptyCommandInfo {
+     longname = "linearize_chunks",
+     synopsis = "linearize a tree that has metavariables in maximal chunks without them",
+     explanation = unlines [
+       "A hopefully temporary command, intended to work around the type checker that fails",
+       "trees where a function node is a metavariable."
+       ],
+     examples = [
+       mkEx "l -lang=LangSwe,LangNor -chunks ? a b (? c d)"
+       ],
+     exec = \env@(pgf, mos) opts -> return . fromStrings . optLins pgf (opts ++ [OOpt "chunks"]),
+     options = [
+       ("treebank","show the tree and tag linearizations with language names")
+       ] ++ stringOpOptions,
+     flags = [
+       ("lang","the languages of linearization (comma-separated, no spaces)")
+       ],
+     needsTypeCheck = False
      }),
   ("ma", emptyCommandInfo {
      longname = "morpho_analyse",
@@ -687,9 +705,15 @@ allCommands = Map.fromList [
        ("to",  "forward-apply transliteration defined in this file")
        ]
      }),
+  ("tt", emptyCommandInfo {
+     longname = "to_trie",
+     syntax = "to_trie",
+     synopsis = "combine a list of trees into a trie",
+     exec = \ _ _ -> return . fromString . trie
+    }),
   ("pt", emptyCommandInfo {
      longname = "put_tree",
-     syntax = "ps OPT? TREE",
+     syntax = "pt OPT? TREE",
      synopsis = "return a tree, possibly processed with a function",
      explanation = unlines [
        "Returns a tree obtained from its argument tree by applying",
@@ -845,10 +869,9 @@ allCommands = Map.fromList [
        let tmpi = "_tmpi" ---
        let tmpo = "_tmpo"
        restricted $ writeFile tmpi $ toString arg
-       let syst = optComm opts ++ " " ++ tmpi
+       let syst = optComm opts  -- ++ " " ++ tmpi
        restrictedSystem $ syst ++ " <" ++ tmpi ++ " >" ++ tmpo
-       s <- restricted $ readFile tmpo
-       return $ fromString s,
+       fmap fromString $ restricted $ readFile tmpo,
      flags = [
        ("command","the system command applied to the argument")
        ],
@@ -934,7 +957,7 @@ allCommands = Map.fromList [
          let outp = valStrOpts "output" "dot" opts
          mlab <- case file of
            "" -> return Nothing
-           _  -> restricted (readFile file) >>= return . Just . getDepLabels . lines
+           _  -> (Just . getDepLabels . lines) `fmap` restricted (readFile file)
          let lang = optLang pgf opts
          let grphs = unlines $ map (graphvizDependencyTree outp debug mlab Nothing pgf lang) es
          if isFlag "view" opts || isFlag "format" opts then do
@@ -1110,15 +1133,19 @@ allCommands = Map.fromList [
        case arg of
          [EFun id] -> case Map.lookup id (funs (abstract pgf)) of
                         Just fd -> do putStrLn $ render (ppFun id fd)
-                                      putStrLn ("Probability: "++show (probTree pgf (EFun id)))
+                                      let (_,_,_,prob,_) = fd
+                                      putStrLn ("Probability: "++show prob)
                                       return void
                         Nothing -> case Map.lookup id (cats (abstract pgf)) of
-                                     Just hyps -> do putStrLn $
-                                                        render (ppCat id hyps $$
+                                     Just cd   -> do putStrLn $
+                                                        render (ppCat id cd $$
                                                                 if null (functionsToCat pgf id)
                                                                   then empty
                                                                   else space $$
-                                                                       vcat [ppFun fid (ty,0,Just [],0,0) | (fid,ty) <- functionsToCat pgf id])
+                                                                       vcat [ppFun fid (ty,0,Just [],0,0) | (fid,ty) <- functionsToCat pgf id] $$
+                                                                       space)
+                                                     let (_,_,prob,_) = cd
+                                                     putStrLn ("Probability: "++show prob)
                                                      return void
                                      Nothing   -> do putStrLn ("unknown category of function identifier "++show id)
                                                      return void
@@ -1147,10 +1174,16 @@ allCommands = Map.fromList [
      _ -> map (optLin pgf opts) ts
    optLin pgf opts t = unlines $
      case opts of
+       _ | isOpt "treebank" opts && isOpt "chunks" opts ->
+         (showCId (abstractName pgf) ++ ": " ++ showExpr [] t) :
+         [showCId lang ++ ": " ++ li | (lang,li) <- linChunks pgf opts t] --linear pgf opts lang t | lang <- optLangs pgf opts]
        _ | isOpt "treebank" opts ->
          (showCId (abstractName pgf) ++ ": " ++ showExpr [] t) :
          [showCId lang ++ ": " ++ linear pgf opts lang t | lang <- optLangs pgf opts]
-       _  -> [linear pgf opts lang t | lang <- optLangs pgf opts]
+       _ | isOpt "chunks" opts -> map snd $ linChunks pgf opts t   
+       _ -> [linear pgf opts lang t | lang <- optLangs pgf opts]
+   linChunks pgf opts t = 
+     [(lang, unwords (intersperse "<+>" (map (linear pgf opts lang) (treeChunks t)))) | lang <- optLangs pgf opts]
 
    linear :: PGF -> [Option] -> CId -> Expr -> String
    linear pgf opts lang = let unl = unlex opts lang in case opts of
@@ -1160,14 +1193,13 @@ allCommands = Map.fromList [
                                    map (map (unl . snd)) . tabularLinearizes pgf lang
        _ | isOpt "table"   opts -> unlines . concat . intersperse [[]] .
                     map (map (\(p,v) -> p+++":"+++unl v)) . tabularLinearizes pgf lang
-       _ | isOpt "bracket" opts -> showBracketedString . bracketedLinearize pgf lang
+       _ | isOpt "bracket" opts -> unwords . map showBracketedString . bracketedLinearize pgf lang
        _                        -> unl . linearize pgf lang
 
    -- replace each non-atomic constructor with mkC, where C is the val cat
-   tree2mk pgf = showExpr [] . tree2expr . t2m . expr2tree where
-     t2m t = case t of
-       Fun cid [] -> t
-       Fun cid ts -> Fun (mk cid) (map t2m ts)
+   tree2mk pgf = showExpr [] . t2m where
+     t2m t = case unApp t of
+       Just (cid,ts@(_:_)) -> mkApp (mk cid) (map t2m ts)
        _ -> t
      mk = mkCId . ("mk" ++) . showCId . lookValCat (abstract pgf)
 
@@ -1407,3 +1439,18 @@ execToktok (pgf, _) opts exprs = do
         getLang [] = Nothing
         getLang (OFlag "lang" (VId l):_) = readLanguage l
         getLang (_:os) = getLang os
+
+
+
+trie = render . pptss . toTrie . map toATree
+  where
+    pptss [ts] = text "*"<+>nest 2 (ppts ts)
+    pptss tss  = vcat [int i<+>nest 2 (ppts ts)|(i,ts)<-zip [1..] tss]
+
+    ppts = vcat . map ppt
+
+    ppt t =
+      case t of
+        Oth e     -> text (showExpr [] e)
+        Ap f [[]] -> text (showCId f)
+        Ap f tss  -> text (showCId f) $$ nest 2 (pptss tss)

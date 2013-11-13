@@ -15,15 +15,14 @@ module PGF.Parse
 import Data.Array.IArray
 import Data.Array.Base (unsafeAt)
 import Data.List (isPrefixOf, foldl')
-import Data.Maybe (fromMaybe, maybe, maybeToList)
+import Data.Maybe (fromMaybe, maybeToList)
 import qualified Data.Map as Map
-import qualified GF.Data.TrieMap as TrieMap
+import qualified PGF.TrieMap as TrieMap
 import qualified Data.IntMap as IntMap
 import qualified Data.IntSet as IntSet
 import qualified Data.Set as Set
 import Control.Monad
 
-import GF.Data.SortedList
 import PGF.CId
 import PGF.Data
 import PGF.Expr(Tree)
@@ -310,10 +309,12 @@ process flit ftok cnc (item@(Active j ppos funid seqid args key0):items) acc cha
       	SymNE      -> process flit ftok cnc items acc chart
       	SymBIND    -> let !acc' = ftok_ ["&+"] (Active j (ppos+1) funid seqid args key0) acc
       	              in process flit ftok cnc items acc' chart
+      	SymSOFT_BIND->process flit ftok cnc ((Active j (ppos+1) funid seqid args key0):items) acc chart
       	SymKP syms vars
-      	           -> let to_tok (SymKS t) = [t]
-      	                  to_tok SymBIND   = ["&+"]
-      	                  to_tok _         = []
+      	           -> let to_tok (SymKS t)    = [t]
+      	                  to_tok SymBIND      = ["&+"]
+      	                  to_tok SymSOFT_BIND = []
+      	                  to_tok _            = []
 
       	                  !acc' = foldl (\acc syms -> ftok_ (concatMap to_tok syms) (Active j (ppos+1) funid seqid args key0) acc) acc
                                         (syms:[syms' | (syms',_) <- vars])

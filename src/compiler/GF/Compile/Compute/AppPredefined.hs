@@ -16,7 +16,7 @@ module GF.Compile.Compute.AppPredefined (
           isInPredefined, typPredefined, arrityPredefined, predefModInfo, appPredefined
 		  ) where
 
-import GF.Infra.Ident(identS)
+--import GF.Infra.Ident(identS)
 import GF.Infra.Option
 import GF.Data.Operations
 import GF.Grammar
@@ -85,6 +85,8 @@ primitives = Map.fromList
   , (cNonExist , ResOper (Just (noLoc (mkProd -- Str
                                          [] typeStr []))) Nothing)
   , (cBIND     , ResOper (Just (noLoc (mkProd -- Str
+                                         [] typeStr []))) Nothing)
+  , (cSOFT_BIND, ResOper (Just (noLoc (mkProd -- Str
                                          [] typeStr []))) Nothing)
   ]
   where

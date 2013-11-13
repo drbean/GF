@@ -94,7 +94,7 @@ not_Predet = ssword "不" ;
 otherwise_PConj = mkPConjL "还是" ;
 to_Prep = mkPrep "往" ;
 
-have_V2 = mkV2 "有" ;
+have_V2 = mkV2 (mkV "有" "了" "着" "在" "过" "没") ;
 
 yes_Utt = ss "对" ;
 no_Utt = ss neg_s ;
@@ -145,7 +145,7 @@ here7from_Adv = mkAdv "从这里" ; -- from here
 here7to_Adv = mkAdv "到这里" ; -- to here
 -- [mark] "从这里" 从(from) 这里(here)
 -- "到这里" 到( to ) 这里(here)
-how8many_IDet = ssword "多少" ;
+how8many_IDet = mkIDet "多少" ;
 how8much_IAdv = ssword "多少" ;
 if_Subj = mkSubj "如果" [] ; --"就" ; -- [mark] "就" often comes between NP and VP
 less_CAdv = {s = than_s ; p = word "没更"} ; -- modified by chenpeng 11.24
@@ -171,7 +171,7 @@ there7from_Adv = mkAdv "从那里" ; -- from there
 there7to_Adv = mkAdv "到那里" ;
 therefore_PConj = ssword "因此" ;
 through_Prep = mkPrep "通过" ;
-which_IQuant = mkIQuant "哪" ;
+which_IQuant = mkIQuant "哪" ; -- 
 --which_IQuant = ssword [] ; -- [mark] in sent, it depends on the context
 without_Prep = mkPrep "没有" [] mannerAdvType ;
 youPol_Pron = ssword "您" ; -- polite you

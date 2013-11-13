@@ -1,14 +1,20 @@
 package org.grammaticalframework.ui.android;
 
-public class Language {
-    private final String mLangCode;
+import java.io.Serializable;
+
+public class Language implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private final String mLangCode;
     private final String mLangName;
     private final String mConcrete;
+    private final int    mInflResource;
 
-    public Language(String langCode, String langName, String concrete) {
+    public Language(String langCode, String langName, String concrete, int inflResource) {
         mLangCode = langCode;
         mLangName = langName;
         mConcrete = concrete;
+        mInflResource = inflResource;
     }
 
     public String getLangCode() {
@@ -17,6 +23,10 @@ public class Language {
 
     public String getLangName() {
         return mLangName;
+    }
+    
+    public int getInflectionResource() {
+    	return mInflResource;
     }
 
     String getConcrete() {
@@ -27,5 +37,10 @@ public class Language {
     public String toString() {
         return getLangName();
     }
-
+    
+    @Override
+    public boolean equals(Object o) {
+        Language other = (Language) o;
+        return mLangCode.equals(other.mLangCode); 
+    }
 }

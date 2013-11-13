@@ -21,6 +21,8 @@ module PGF(
            -- * Identifiers
            CId, mkCId, wildCId,
            showCId, readCId,
+           -- extra
+           ppCId, pIdent, bsCId,
 
            -- * Languages
            Language, 
@@ -32,7 +34,7 @@ module PGF(
            showType, readType,
            mkType, mkHypo, mkDepHypo, mkImplHypo,
            unType,
-           categories, startCat,
+           categories, categoryContext, startCat,
 
            -- * Functions
            functions, functionsByCat, functionType, missingLins,
@@ -50,6 +52,8 @@ module PGF(
            mkInt,    unInt,
            mkDouble, unDouble,
            mkMeta,   unMeta,
+           -- extra
+           pExpr,
 
            -- * Operations
            -- ** Linearization
@@ -111,6 +115,8 @@ module PGF(
            Lemma, Analysis, Morpho,
            lookupMorpho, buildMorpho, fullFormLexicon,
            morphoMissing,
+           -- extra:
+           morphoKnown, isInMorpho,
 
            -- ** Tokenizing
            mkTokenizer,
@@ -124,6 +130,8 @@ module PGF(
            gizaAlignment,
            GraphvizOptions(..),
            graphvizDefaults,
+           -- extra:
+           getDepLabels,
  
            -- * Probabilities
            Probabilities,
@@ -131,12 +139,16 @@ module PGF(
            defaultProbabilities,
            showProbabilities,
            readProbabilitiesFromFile,
+           -- extra:
+           probTree, setProbabilities, rankTreesByProbs,
            
            -- -- ** SortTop
 --         forExample,
 
            -- * Browsing
-           browse
+           browse,
+           -- * Tries
+           ATree(..),Trie(..),toATree,toTrie
           ) where
 
 import PGF.CId
@@ -151,21 +163,20 @@ import PGF.Macros
 import PGF.Expr (Tree)
 import PGF.Morphology
 import PGF.Data
-import PGF.Binary
+import PGF.Binary()
 import PGF.Tokenizer
 import qualified PGF.Forest as Forest
 import qualified PGF.Parse as Parse
+import PGF.Utilities(replace)
 
-import GF.Data.Utilities (replace)
-
-import Data.Char
+--import Data.Char
 import qualified Data.Map as Map
-import qualified Data.IntMap as IntMap
-import Data.Maybe
+--import qualified Data.IntMap as IntMap
+--import Data.Maybe
 import Data.Binary
 import Data.List(mapAccumL)
-import System.Random (newStdGen)
-import Control.Monad
+--import System.Random (newStdGen)
+--import Control.Monad
 import Text.PrettyPrint
 
 ---------------------------------------------------
@@ -218,6 +229,8 @@ abstractName :: PGF -> Language
 -- The categories are defined in the abstract syntax
 -- with the \'cat\' keyword.
 categories :: PGF -> [CId]
+
+categoryContext :: PGF -> CId -> Maybe [Hypo]
 
 -- | The start category is defined in the grammar with
 -- the \'startcat\' flag. This is usually the sentence category
@@ -277,14 +290,19 @@ languageCode pgf lang =
 
 categories pgf = [c | (c,hs) <- Map.toList (cats (abstract pgf))]
 
+categoryContext pgf cat =
+  case Map.lookup cat (cats (abstract pgf)) of
+    Just (hypos,_,_,_) -> Just hypos
+    Nothing            -> Nothing
+
 startCat pgf = DTyp [] (lookStartCat pgf) []
 
 functions pgf = Map.keys (funs (abstract pgf))
 
 functionsByCat pgf cat =
   case Map.lookup cat (cats (abstract pgf)) of
-    Just (_,fns,_) -> map snd fns
-    Nothing        -> []
+    Just (_,fns,_,_) -> map snd fns
+    Nothing          -> []
 
 functionType pgf fun =
   case Map.lookup fun (funs (abstract pgf)) of
@@ -307,8 +325,8 @@ browse pgf id = fmap (\def -> (def,producers,consumers)) definition
                                                                                           in ppCId id <+> hsep ds <+> char '=' <+> ppExpr 0 scope res | Equ patts res <- eqs])
                    Just (ty,_,Nothing, _,_) -> Just $ render (text "data" <+> ppCId id <+> colon <+> ppType 0 [] ty)
                    Nothing   -> case Map.lookup id (cats (abstract pgf)) of
-                                  Just (hyps,_,_) -> Just $ render (text "cat" <+> ppCId id <+> hsep (snd (mapAccumL (ppHypo 4) [] hyps)))
-                                  Nothing         -> Nothing
+                                  Just (hyps,_,_,_) -> Just $ render (text "cat" <+> ppCId id <+> hsep (snd (mapAccumL (ppHypo 4) [] hyps)))
+                                  Nothing           -> Nothing
 
     (producers,consumers) = Map.foldWithKey accum ([],[]) (funs (abstract pgf))
       where
@@ -328,3 +346,34 @@ browse pgf id = fmap (\def -> (def,producers,consumers)) definition
     expIds (EFun id)    ids = id : ids
     expIds (ETyped e _) ids = expIds e ids
     expIds _            ids = ids
+
+-- | A type for plain applicative trees
+data ATree = Other Tree | App CId  [ATree]  deriving Show
+data Trie  = Oth   Tree | Ap  CId [[Trie ]] deriving Show
+-- ^ A type for tries of plain applicative trees
+
+-- | Convert a 'Tree' to an 'ATree'
+toATree :: Tree -> ATree
+toATree e = maybe (Other e) app (unApp e)
+  where
+    app (f,es) = App f (map toATree es)
+
+-- | Combine a list of trees into a trie
+toTrie = combines . map ((:[]) . singleton)
+  where
+    singleton t = case t of
+                    Other e -> Oth e
+                    App f ts -> Ap f [map singleton ts]
+
+    combines [] = []
+    combines (ts:tss) = ts1:combines tss2
+      where
+        (ts1,tss2) = combines2 [] tss ts
+        combines2 ots []        ts1 = (ts1,reverse ots)
+        combines2 ots (ts2:tss) ts1 =
+          maybe (combines2 (ts2:ots) tss ts1) (combines2 ots tss) (combine ts1 ts2)
+
+        combine ts us = mapM combine2 (zip ts us)
+          where
+            combine2 (Ap f ts,Ap g us) | f==g = Just (Ap f (combines (ts++us)))
+            combine2 _ = Nothing

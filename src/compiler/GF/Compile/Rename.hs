@@ -34,8 +34,8 @@ import GF.Infra.Ident
 import GF.Infra.CheckM
 import GF.Grammar.Macros
 import GF.Grammar.Printer
-import GF.Grammar.Lookup
-import GF.Grammar.Printer
+--import GF.Grammar.Lookup
+--import GF.Grammar.Printer
 import GF.Data.Operations
 
 import Control.Monad
@@ -153,7 +153,7 @@ renameInfo status (m,mi) i info =
     ResValue t -> do
       t <- renLoc (renameTerm status []) t
       return (ResValue t)
-    CncCat mty mtr mpr mpmcfg -> liftM4 CncCat (renTerm mty) (renTerm mtr) (renTerm mpr) (return mpmcfg)
+    CncCat mcat mdef mref mpr mpmcfg -> liftM5 CncCat (renTerm mcat) (renTerm mdef) (renTerm mref) (renTerm mpr) (return mpmcfg)
     CncFun mty mtr mpr mpmcfg -> liftM3 (CncFun mty)         (renTerm mtr) (renTerm mpr) (return mpmcfg)
     _ -> return info
   where

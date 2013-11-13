@@ -105,4 +105,44 @@ concrete CatEng of Cat = CommonX - [Pol] ** open ResEng, Prelude in {
     N3 = {s : Number => Case => Str ; g : Gender} ** {c2,c3 : Str} ;
     PN = {s : Case => Str ; g : Gender} ;
 
+  lindef
+    SSlash = \s -> {s = s; c2 = ""} ;
+    ClSlash = \s -> {s = \\t,a,p,o => s; c2 = ""} ;
+
+    VP = \s -> predV {s = \\_ => s; p = ""; isRefl = False} ;
+    VPSlash = \s -> predV {s = \\_ => s; p = ""; isRefl = False} ** {c2 = ""; gapInMiddle = False} ;
+
+    V, VS, VQ, VA = \s -> {s = \\_ => s; p = ""; isRefl = False} ;
+    V2, V2A, V2Q, V2S = \s -> {s = \\_ => s; p = ""; isRefl = False; c2=""} ;
+    V3 = \s -> {s = \\_ => s; p = ""; isRefl = False; c2,c3=""} ;
+    VV = \s -> {s = \\_ => s; p = ""; isRefl = False; typ = VVInf} ;
+    V2V = \s -> {s = \\_ => s; p = ""; isRefl = False; c2,c3="" ; typ = VVInf} ;
+
+    A = \s -> {s = \\_ => s} ;
+    A2 = \s -> {s = \\_ => s; c2 = ""} ;
+
+    N = \s -> {s = \\_,_ => s; g = Neutr} ;
+    N2 = \s -> {s = \\_,_ => s; c2 = ""; g = Neutr} ;
+    N3 = \s -> {s = \\_,_ => s; c2,c3 = ""; g = Neutr} ;
+
+  linref
+    SSlash = \ss -> ss.s ++ ss.c2 ;
+    ClSlash = \cls -> cls.s ! Pres ! Simul ! CPos ! ODir ++ cls.c2 ;
+
+    VP = \vp -> infVP VVAux vp Simul CPos (agrP3 Sg) ;
+    VPSlash = \vps -> infVP VVAux vps Simul CPos (agrP3 Sg) ++ vps.c2;
+
+    V, VS, VQ, VA = \v -> infVP VVAux (predV v) Simul CPos (agrP3 Sg);
+    V2, V2A, V2Q, V2S = \v -> infVP VVAux (predV v) Simul CPos (agrP3 Sg) ++ v.c2;
+    V3 = \v -> infVP VVAux (predV v) Simul CPos (agrP3 Sg) ++ v.c2 ++ v.c3;
+    VV = \v -> infVP VVAux (predVV v) Simul CPos (agrP3 Sg) ;
+    V2V = \v -> infVP VVAux (predVc v) Simul CPos (agrP3 Sg) ;
+
+    A = \a -> a.s ! AAdj Posit Nom ;
+    A2 = \a -> a.s ! AAdj Posit Nom ++ a.c2 ;
+
+    N = \n -> n.s ! Sg ! Nom ;
+    N2 = \n -> n.s ! Sg ! Nom ++ n.c2 ;
+    N3 = \n -> n.s ! Sg ! Nom ++ n.c2 ++ n.c3 ;
+
 }

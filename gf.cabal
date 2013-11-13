@@ -10,7 +10,7 @@ synopsis: Grammatical Framework
 description: GF, Grammatical Framework, is a programming language for multilingual grammar applications
 homepage: http://www.grammaticalframework.org/
 bug-reports: http://code.google.com/p/grammatical-framework/issues/list
-tested-with: GHC==7.4.2, GHC==7.6.2
+tested-with: GHC==7.4.2, GHC==7.6.3
 
 data-dir: src
 data-files: www/*.html
@@ -53,7 +53,11 @@ flag new-comp
   Description: Make -new-comp the default
   Default:     True
 
-library
+flag custom-binary
+  Description: Use a customised version of the binary package
+  Default:     True
+
+Library
   build-depends: base >= 4.2 && <5,
                  array,
                  fst,
@@ -62,48 +66,52 @@ library
                  random,
                  pretty,
                  mtl
-  hs-source-dirs: src/compiler src/runtime/haskell
+  hs-source-dirs: src/runtime/haskell
+
+  if flag(custom-binary)
+    hs-source-dirs: src/binary
+    exposed-modules:
+      -- not really part of GF but I have changed the original binary library
+      -- and we have to keep the copy for now.
+      Data.Binary
+      Data.Binary.Put
+      Data.Binary.Get
+      Data.Binary.Builder
+      Data.Binary.IEEE754
+  else
+    build-depends: binary
+
+  ghc-options: -fwarn-unused-imports
   extensions: 
   exposed-modules: 
     PGF
-  other-modules:
-    PGF.CId
     PGF.Data
     PGF.Macros
+    PGF.Optimize
+    PGF.Printer
+    PGF.Utilities
+  other-modules:
+    PGF.CId
+    PGF.Binary
+    PGF.Expr
     PGF.Generate
     PGF.Linearize
-    PGF.Parse
-    PGF.SortTop
-    PGF.Expr
-    PGF.Type
-    PGF.Tree
-    PGF.Tokenizer
-    PGF.Paraphrase
-    PGF.TypeCheck
-    PGF.Binary
     PGF.Morphology
-    PGF.VisualizeTree
-    PGF.Printer
+    PGF.Paraphrase
+    PGF.Parse
     PGF.Probabilistic
+    PGF.SortTop
+    PGF.Tree
+    PGF.Type
+    PGF.Tokenizer
+    PGF.TypeCheck
     PGF.Forest
-    PGF.Optimize
-    PGF.Signature
-    GF.Data.TrieMap
-    GF.Data.Utilities
-    GF.Data.SortedList
-    GF.Data.ErrM
-    GF.Data.Relation
-    GF.Data.Operations
--- not really part of GF but I have changed the original binary library
--- and we have to keep the copy for now.
-    Data.Binary
-    Data.Binary.Put
-    Data.Binary.Get
-    Data.Binary.Builder
-    Data.Binary.IEEE754
+    PGF.TrieMap
+    PGF.VisualizeTree
 
-executable gf
-  build-depends: base >= 4.2 && <5,
+Executable gf
+  build-depends: gf,
+                 base >= 4.2 && <5,
                  array,
                  containers,
                  bytestring,
@@ -120,7 +128,7 @@ executable gf
                  haskeline,
                  parallel>=3,
                  utf8-string
-  ghc-options: -threaded
+  ghc-options: -threaded -fwarn-unused-imports
   if flag(server)
     build-depends: httpd-shed, network, json, cgi
                    -- ,silently
@@ -142,14 +150,17 @@ executable gf
 
   if impl(ghc>=7.0)
     ghc-options: -rtsopts
-  hs-source-dirs: src/compiler src/runtime/haskell
+  hs-source-dirs: src/compiler
+
+  if !flag(custom-binary)
+    build-depends: binary, data-binary-ieee754
+
   extensions:
   main-is: GF.hs
   other-modules:
     GF.Data.BacktrackM
-    GF.Data.TrieMap
     GF.Data.Utilities
-    GF.Data.SortedList
+--  GF.Data.SortedList
     GF.Data.ErrM
     GF.Data.Operations
     GF.Data.Str
@@ -209,21 +220,6 @@ executable gf
     GF.Compile
     GF.Index
     GF.Quiz
-    PGF
-    PGF.CId
-    PGF.Data
-    PGF.Expr
-    PGF.Type
-    PGF.Tree
-    PGF.Macros
-    PGF.Generate
-    PGF.Linearize
-    PGF.Binary
-    PGF.Paraphrase
-    PGF.TypeCheck
-    PGF.Binary
-    PGF.Printer
-    PGF.Optimize
     GFC
     GFI
 

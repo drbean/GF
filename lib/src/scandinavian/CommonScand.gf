@@ -53,9 +53,10 @@ param
    ;
 
   VInf = 
-     VInfin Voice
-   | VSupin Voice  --# notpresent
+     VInfin  Voice
+   | VSupin  Voice  --# notpresent
    | VPtPret AFormPos Case
+   | VPtPres Number Species Case
    ;
 
   VPForm = 
@@ -181,8 +182,8 @@ oper
       } 
     } ;
 
-  mkVerb : (x1,_,_,_,_,_,_,x8 : Str) -> {s : VForm => Str ; vtype : VType} = 
-   \finna,finner,finn,fann,funnit,funnen,funnet,funna -> {
+  mkVerb9 : (x1,_,_,_,_,_,_,_,x9 : Str) -> {s : VForm => Str ; vtype : VType} = 
+   \finna,finner,finn,fann,funnit,funnen,funnet,funna, finnande -> {
    s = table {
     VF (VPres Act)  => finner ;
     VF (VPres Pass) => mkVoice Pass finn ;
@@ -190,7 +191,13 @@ oper
     VF (VImper v)   => mkVoice v finn ;
     VI (VInfin v)   => mkVoice v finna ;
     VI (VSupin v)   => mkVoice v funnit ;  --# notpresent
-    VI (VPtPret a c)=> mkCase c (mkAdjPos a funnen funnet funna funna)
+    VI (VPtPret a c)=> mkCase c (mkAdjPos a funnen funnet funna funna) ;
+    VI (VPtPres n d c)  => case <n,d> of {
+      <Sg,Indef> => mkCase c finnande ;
+      <Sg,Def>   => mkCase c (finnande + "t") ;
+      <Pl,Indef> => mkCase c (finnande + "n") ;
+      <Pl,Def>   => mkCase c (finnande + "na")   ---- TODO "ne" in Dan, Nor
+      }
     } ;
    vtype = VAct
    } ;
@@ -262,7 +269,7 @@ oper
 -- For $Verb$.
 
   VP = {
-      s : VPForm => {
+      s : Voice => VPForm => {
         fin : Str ;          -- V1 har  ---s1
         inf : Str            -- V2 sagt ---s4
         } ;
@@ -308,6 +315,17 @@ oper
     eext = vp.eext
     } ;
 
+  insertExt : Str -> VP -> VP = \ext,vp -> {
+    s = vp.s ;
+    a1 = vp.a1 ;
+    n2 = vp.n2 ;
+    a2 = vp.a2 ;
+    ext = vp.ext ++ ext ;
+    en2 = vp.en2 ;
+    ea2 = vp.ea2 ;
+    eext = True ;
+    } ;
+
   insertAdV : Str -> VP -> VP = \adv,vp -> {
     s = vp.s ;
     a1 = \\b => vp.a1 ! b ++ adv ;
@@ -319,8 +337,21 @@ oper
     eext = vp.eext
     } ;
 
-  infVP : VP -> Agr -> Str = \vp,a -> 
-    vp.a1 ! Pos ++ (vp.s ! VPInfinit Simul).inf ++ vp.n2 ! a ++ vp.a2 ++ vp.ext ; --- a1
+  passiveVP : VP -> VP = \vp -> {
+    s = \\_ => vp.s ! Pass ; -- forms the s-passive
+    a1 = vp.a1 ;
+    n2 = vp.n2 ;
+    a2 = vp.a2 ;
+    ext = vp.ext ;
+    en2 = vp.en2 ;
+    ea2 = vp.ea2 ;
+    eext = vp.eext
+    } ;
+
+  infVP : VP -> Agr -> Str = \vp,a -> infVPPlus vp a Simul Pos ;
+ 
+  infVPPlus : VP -> Agr -> Anteriority -> Polarity -> Str = \vp,a,ant,pol -> 
+    vp.a1 ! pol ++ (vp.s ! Act ! VPInfinit ant).inf ++ vp.n2 ! a ++ vp.a2 ++ vp.ext ; --- a1
 
 
 -- For $Sentence$.
@@ -332,7 +363,7 @@ oper
   mkClause : Str -> Agr -> VP -> Clause = \subj,agr,vp -> {
       s = \\t,a,b,o => 
         let 
-          verb  = vp.s  ! VPFinite t a ;
+          verb  = vp.s  ! Act ! VPFinite t a ;
           neg   = vp.a1 ! b ;
           compl = vp.n2 ! agr ++ vp.a2 ++ vp.ext
         in

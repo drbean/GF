@@ -68,15 +68,15 @@ import GF.Data.Operations
 
 import PGF.Data (FId, FunId, SeqId, LIndex, Sequence, BindType(..))
 
-import Data.List
+--import Data.List
 import Data.Array.IArray
 import Data.Array.Unboxed
 import qualified Data.Map as Map
-import qualified Data.Set as Set
-import qualified Data.IntMap as IntMap
+--import qualified Data.Set as Set
+--import qualified Data.IntMap as IntMap
 import Text.PrettyPrint
-import System.FilePath
-import Control.Monad.Identity
+--import System.FilePath
+--import Control.Monad.Identity
 
 
 
@@ -325,8 +325,8 @@ data Info =
  | ResOverload [Ident] [(L Type,L Term)]         -- ^ (/RES/) idents: modules inherited
 
 -- judgements in concrete syntax
- | CncCat  (Maybe (L Type))             (Maybe (L Term)) (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) lindef ini'zed, 
- | CncFun  (Maybe (Ident,Context,Type)) (Maybe (L Term)) (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) type info added at 'TC'
+ | CncCat  (Maybe (L Type))             (Maybe (L Term)) (Maybe (L Term)) (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) lindef ini'zed, 
+ | CncFun  (Maybe (Ident,Context,Type)) (Maybe (L Term))                  (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) type info added at 'TC'
 
 -- indirection to module Ident
  | AnyInd Bool Ident                         -- ^ (/INDIR/) the 'Bool' says if canonical

@@ -19,7 +19,7 @@ revealedLang = "Eng"
 -- all languages shown
 apiExxFiles = ["api-examples-" ++ lang ++ ".txt" | lang <- words
 --   "Eng Chi"
-  "Afr Bul Cat Chi Dan Dut Eng Fin Fre Ger Gre Hin Ita Jpn Lav Mlt Nep Nor Pes Pnb Pol Ron Rus Snd Spa Swe Tha Urd"
+  "Afr Bul Cat Chi Dan Dut Eng Est Fin Fre Ger Gre Hin Ita Jpn Lav Mlt Nep Nor Pes Pnb Pol Ron Rus Snd Spa Swe Tha Urd"
    ]
 
 main = do
@@ -203,7 +203,7 @@ mkTable hasEx isLatex aexx cs = inChunks chsize (\rs -> header : map (unwords . 
 -- make an example with hover-popup translations
 mkExample es ex = unwords [
   "#divreveal",
-  itf (maybe ex id (M.lookup revealedLang es)),
+  itf (maybe ex (mkEx revealedLang) (M.lookup revealedLang es)),
   "#divpopup",
   "#UL",
   unwords ["#LI" ++ e | e <- prApiEx es],
@@ -246,6 +246,7 @@ paradigmFiles = [
   ("Danish", srcPath "/danish/ParadigmsDan.gf"),
   ("Dutch", srcPath "/dutch/ParadigmsDut.gf"),
   ("English", srcPath "/english/ParadigmsEng.gf"),
+  ("Estonian", srcPath "/estonian/ParadigmsEst.gf"),
   ("Finnish", srcPath "/finnish/ParadigmsFin.gf"),
   ("French",  srcPath "/french/ParadigmsFre.gf"),
   ("German",  srcPath "/german/ParadigmsGer.gf"),

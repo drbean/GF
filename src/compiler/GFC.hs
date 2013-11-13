@@ -2,7 +2,7 @@ module GFC (mainGFC, writePGF) where
 -- module Main where
 
 import PGF
-import PGF.CId
+--import PGF.CId
 import PGF.Data
 import PGF.Optimize
 import GF.Index
@@ -104,7 +104,7 @@ writeByteCode opts pgf
   where
     addrs = 
       [(id,addr) | (id,(_,_,_,_,addr)) <- Map.toList (funs (abstract pgf))] ++
-      [(id,addr) | (id,(_,_,addr))     <- Map.toList (cats (abstract pgf))]
+      [(id,addr) | (id,(_,_,_,addr))     <- Map.toList (cats (abstract pgf))]
 
 writePGF :: Options -> PGF -> IOE ()
 writePGF opts pgf = do

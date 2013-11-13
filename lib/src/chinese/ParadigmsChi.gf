@@ -40,6 +40,8 @@ oper
           v + "+" + p => lin V (regVerb (v + p)) ;
           _ => lin V (regVerb walk)
           } ;
+    mkV : (walk,out : Str) -> V 
+      = \v,p -> lin V (regVerb (v + p)) ; ----
     mkV : (arrive : Str) -> Str -> Str -> Str -> Str -> V
       = \arrive,pp,ds,dp,ep -> lin V (mkVerb arrive pp ds dp ep neg_s) ;
     mkV : (arrive : Str) -> Str -> Str -> Str -> Str -> Str -> V
@@ -80,10 +82,13 @@ oper
     } ;
 
   mkVS = overload {
-  mkVS : V -> VS =
-    \v -> lin VS v ;
   mkVS : Str -> VS =
     \v -> lin VS (regVerb v) ;
+  mkVS : Str -> Str -> VS =
+    \s,t -> lin VS (regVerb (s + t)) ; ----
+
+  mkVS : V -> VS =
+    \v -> lin VS v ;
   } ;
 
   mkVA = overload {
@@ -131,6 +136,8 @@ oper
   mkAdv = overload {
     mkAdv : Str -> Adv 
       = \s -> lin Adv {s = word s ; advType = getAdvType s} ;
+    mkAdv : Str -> Str -> Adv 
+      = \s,t -> lin Adv {s = word (s + t) ; advType = getAdvType s} ; ----
     mkAdv : Str -> AdvType -> Adv 
       = \s,at -> lin Adv {s = word s ; advType = at} ;
     } ;
@@ -168,12 +175,16 @@ oper
     = \s -> lin AdN {s = word s} ;
   mkSubj : Str -> Subj 
     = \s -> lin Subj (ResChi.mkSubj s []) ;
-  mkConj : Str -> Conj 
-    = \s -> lin Conj {s = \\_ => mkConjForm s} ;
+  mkConj = overload {
+    mkConj : Str -> Conj 
+      = \s -> lin Conj {s = \\_ => mkConjForm s} ;
+    mkConj : (both,and : Str) -> Conj 
+      = \s,t -> lin Conj {s = \\_ => mkConjForm2 s t} ;
+   } ;
   mkpDet : Str -> Det 
     = \s -> lin Det {s = word s ; detType = DTFull Sg} ;
   mkQuant : Str -> Quant 
-    = \s -> lin Quant {s,pl = s ; detType = DTFull Sg} ;
+    = \s -> lin Quant {s,pl = word s ; detType = DTFull Sg} ;
   mkAdA : Str -> AdA 
     = \s -> lin AdA {s = word s} ;
   mkNum : Str -> Num 
@@ -181,7 +192,7 @@ oper
   mkPredet : Str -> Predet 
     = \s -> lin Predet {s = word s} ;
   mkIDet : Str -> IDet 
-    = \s -> lin IDet {s = word s} ;
+    = \s -> lin IDet {s = word s ; detType = DTNum} ; ----
   mkPConj : Str -> PConj 
     = \s -> lin PConj {s = word s} ;
   mkRP : Str -> RP 

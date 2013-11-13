@@ -4,11 +4,11 @@ import PGF.CId
 import PGF.Data
 import Control.Monad
 import qualified Data.Map    as Map
-import qualified Data.Set    as Set
-import qualified Data.IntMap as IntMap
-import qualified Data.IntSet as IntSet
+--import qualified Data.Set    as Set
+--import qualified Data.IntMap as IntMap
+--import qualified Data.IntSet as IntSet
 import qualified Data.Array  as Array
-import Data.Maybe
+--import Data.Maybe
 import Data.List
 import Data.Array.IArray
 import Text.PrettyPrint
@@ -67,7 +67,7 @@ functionsToCat :: PGF -> CId -> [(CId,Type)]
 functionsToCat pgf cat =
   [(f,ty) | (_,f) <- fs, Just (ty,_,_,_,_) <- [Map.lookup f $ funs $ abstract pgf]]
  where 
-   (_,fs,_) = lookMap ([],[],0) cat $ cats $ abstract pgf
+   (_,fs,_,_) = lookMap ([],[],0,0) cat $ cats $ abstract pgf
 
 -- | List of functions that lack linearizations in the given language.
 missingLins :: PGF -> Language -> [CId]
@@ -82,7 +82,7 @@ restrictPGF :: (CId -> Bool) -> PGF -> PGF
 restrictPGF cond pgf = pgf {
   abstract = abstr {
     funs = Map.filterWithKey (\c _ -> cond c) (funs abstr),
-    cats = Map.map (\(hyps,fs,addr) -> (hyps,filter (cond . snd) fs,addr)) (cats abstr)
+    cats = Map.map (\(hyps,fs,p,addr) -> (hyps,filter (cond . snd) fs,p,addr)) (cats abstr)
     }
   }  ---- restrict concrs also, might be needed
  where
@@ -160,6 +160,7 @@ data BracketedTokn
   | LeafKS Token
   | LeafNE
   | LeafBIND
+  | LeafSOFT_BIND
   | LeafKP [BracketedTokn] [([BracketedTokn],[String])]
   deriving Eq
 
@@ -179,11 +180,12 @@ lengthBracketedString :: BracketedString -> Int
 lengthBracketedString (Leaf _)              = 1
 lengthBracketedString (Bracket _ _ _ _ _ bss) = sum (map lengthBracketedString bss)
 
-untokn :: Maybe String -> BracketedTokn -> (Maybe String,[BracketedString])
-untokn nw bs = 
-  case untokn nw bs of
-    (nw,Nothing ) -> (nw,[] )
-    (nw,Just bss) -> (nw,bss)
+untokn :: Maybe String -> [BracketedTokn] -> (Maybe String,[BracketedString])
+untokn nw bss =
+  let (nw',bss') = mapAccumR untokn nw bss
+  in case sequence bss' of
+       Just bss -> (nw,concat bss)
+       Nothing  -> (nw,[])
   where
     untokn nw (Bracket_ cat fid index fun es bss) =
       let (nw',bss') = mapAccumR untokn nw bss
@@ -207,12 +209,12 @@ untokn nw bs =
 
 type CncType = (CId, FId)    -- concrete type is the abstract type (the category) + the forest id
 
-mkLinTable :: Concr -> (CncType -> Bool) -> [CId] -> FunId -> [(CncType,CId,[Expr],LinTable)] -> LinTable
+mkLinTable :: Concr -> (CncType -> Bool) -> [CId] -> FunId -> [(CncType,FId,CId,[Expr],LinTable)] -> LinTable
 mkLinTable cnc filter xs funid args = (xs,listArray (bounds lins) [computeSeq filter (elems (sequences cnc ! seqid)) args | seqid <- elems lins])
   where
     (CncFun _ lins) = cncfuns cnc ! funid
 
-computeSeq :: (CncType -> Bool) -> [Symbol] -> [(CncType,CId,[Expr],LinTable)] -> [BracketedTokn]
+computeSeq :: (CncType -> Bool) -> [Symbol] -> [(CncType,FId,CId,[Expr],LinTable)] -> [BracketedTokn]
 computeSeq filter seq args = concatMap compute seq
   where
     compute (SymCat d r)      = getArg d r
@@ -221,6 +223,7 @@ computeSeq filter seq args = concatMap compute seq
     compute (SymKS t)         = [LeafKS t]
     compute SymNE             = [LeafNE]
     compute SymBIND           = [LeafKS "&+"]
+    compute SymSOFT_BIND      = []
     compute (SymKP syms alts) = [LeafKP (concatMap compute syms) [(concatMap compute syms,cs) | (syms,cs) <- alts]]
 
     getArg d r
@@ -228,12 +231,12 @@ computeSeq filter seq args = concatMap compute seq
         filter ct   = [Bracket_ cat fid r fun es arg_lin]
       | otherwise   = arg_lin
       where
-        arg_lin                    = lin ! r
-        (ct@(cat,fid),fun,es,(xs,lin)) = args !! d
+        arg_lin                          = lin ! r
+        (ct@(cat,fid),_,fun,es,(xs,lin)) = args !! d
 
     getVar d r = [LeafKS (showCId (xs !! r))]
       where
-        (ct,fun,es,(xs,lin)) = args !! d
+        (ct,_,fun,es,(xs,lin)) = args !! d
 
 flattenBracketedString :: BracketedString -> [String]
 flattenBracketedString (Leaf w)              = [w]

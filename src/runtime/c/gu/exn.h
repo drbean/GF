@@ -75,10 +75,8 @@ gu_new_exn(GuExn* parent, GuKind* catch_kind, GuPool* pool);
 
 
 
-static inline bool
-gu_exn_is_raised(GuExn* err) {
-	return err && (err->state == GU_EXN_RAISED);
-}
+bool
+gu_exn_is_raised(GuExn* err);
 
 static inline void
 gu_exn_clear(GuExn* err) {
@@ -91,7 +89,7 @@ gu_exn_clear(GuExn* err) {
 GuType*
 gu_exn_caught(GuExn* err);
 
-inline const void*
+static inline const void*
 gu_exn_caught_data(GuExn* err)
 {
 	return err->data.data;

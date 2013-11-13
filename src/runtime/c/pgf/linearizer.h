@@ -59,7 +59,8 @@ struct PgfLinFuncs
 };
 
 
-
+PgfCncTree
+pgf_lzr_wrap_linref(PgfCncTree ctree, GuPool* pool);
 
 /// Linearize a concrete syntax tree.
 void
@@ -71,10 +72,15 @@ pgf_lzr_linearize(PgfConcr* concr, PgfCncTree ctree, size_t lin_idx,
 void
 pgf_lzr_linearize_simple(PgfConcr* concr, PgfCncTree ctree,
 			 size_t lin_idx, GuOut* out, GuExn* err);
+
+
+void
+pgf_lzr_linearize_table(PgfConcr* concr, PgfCncTree ctree, 
+                        size_t* n_lins, GuString** labels);
 #endif
 
 #ifdef PGF_PARSER_H_
 // Used internally in the parser
 GuString
-pgf_get_tokens(PgfSequence* seq, uint16_t seq_idx, GuPool* pool);
+pgf_get_tokens(PgfSymbols* sym, uint16_t sym_idx, GuPool* pool);
 #endif

@@ -60,7 +60,7 @@ concrete NounChi of Noun = CatChi ** open ResChi, Prelude in {
 
     OrdSuperl a = {s = superlative_s ++ a.s} ;
 
-    DefArt = mkQuant [] [] DTPoss ;             -- use that_Quant if you want the_s
+    DefArt = mkQuant [] [] DTPoss ;          -- use that_Quant if you want the_s
     IndefArt = mkQuant yi_s [] (DTFull Sg) ;    -- empty in the plural
 
     MassNP cn = cn ;
@@ -86,7 +86,8 @@ concrete NounChi of Noun = CatChi ** open ResChi, Prelude in {
     RelNP np rs = mkNP (rs.s ++ np.s) ;
 
     PossNP cn np = {s = np.s ++ possessive_s ++ cn.s ; c = cn.c} ;
+    PartNP cn np = {s = np.s ++ possessive_s ++ cn.s ; c = cn.c} ;
 
-    CountNP det np = {s = det.s ++ possessive_s ++ np.s} ; ---- classifier?
+    CountNP det np = {s = det.s ++ ge_s ++ possessive_s ++ np.s} ; --- classifier from NP?
 
 }

@@ -41,6 +41,7 @@ resource ResChi = ParamX ** open Prelude in {
   the_s = "那" ;
   geng_s = "更" ; -- more, in comparison
   hen_s = "很" ; -- very, or predicating a monosyllabic adjective
+  taN_s = "它" ;
 
   zai_V = mkVerb "在" [] [] [] [] "不" ;
   fullstop_s = "。" ;
@@ -66,6 +67,11 @@ resource ResChi = ParamX ** open Prelude in {
   bword : Str -> Str -> Str = \x,y -> x ++ y ; -- change to x + y to treat words as single tokens
 
   word : Str -> Str = \s -> case s of {
+      x@? + y@? + z@? + u@? + v@? + w@? + a@? + b@? + c@? + d@? + e@? => 
+        bword x (bword y (bword z (bword u (bword v (bword w (bword a (bword b (bword c (bword d e))))))))) ;
+      x@? + y@? + z@? + u@? + v@? + w@? + a@? + b@? + c@? + d@? => 
+        bword x (bword y (bword z (bword u (bword v (bword w (bword a (bword b (bword c d)))))))) ;
+      x@? + y@? + z@? + u@? + v@? + w@? + a@? + b@? + c@? => bword x (bword y (bword z (bword u (bword v (bword w (bword a (bword b c))))))) ;
       x@? + y@? + z@? + u@? + v@? + w@? + a@? + b@? => bword x (bword y (bword z (bword u (bword v (bword w (bword a b)))))) ;
       x@? + y@? + z@? + u@? + v@? + w@? + a@? => bword x (bword y (bword z (bword u (bword v (bword w a))))) ;
       x@? + y@? + z@? + u@? + v@? + w@? => bword x (bword y (bword z (bword u (bword v w)))) ;
@@ -118,10 +124,13 @@ oper
   copula : Verb = mkVerb "是" [] [] [] [] "不" ;
   hen_copula : Verb = 
     {s = hen_s ; sn = [] ; pp = [] ; ds = [] ; dp = [] ; ep = [] ; neg = "不"} ; --- 
-  nocopula : Verb = mkVerb [] [] [] [] [] "不" ;
+  nocopula : Verb = 
+    {s = [] ; sn = [] ; pp = [] ; ds = [] ; dp = [] ; ep = [] ; neg = "不"} ; --- 
+  adjcopula : Verb = 
+    {s = "是" ; sn = [] ; pp = [] ; ds = [] ; dp = [] ; ep = [] ; neg = "不"} ; --- 
 
   regVerb : (walk : Str) -> Verb = \v -> 
-    mkVerb v "了" "着" "在" "过" "没" ;
+    mkVerb v "了" "着" "在" "过" "不" ; -- 没" ;
 
   noVerb : Verb = regVerb [] ; ---?? -- used as copula for verbal adverbs
 
@@ -171,6 +180,11 @@ oper
      compl = vp.compl ;
      prePart = adv.s ++ vp.prePart
      } ; 
+   insertAdvPost : SS -> VP -> VP = \adv,vp -> {
+     verb  = vp.verb ;
+     compl = vp.compl ;
+     prePart = vp.prePart ++ adv.s
+     } ; 
 
    insertPP : SS -> VP -> VP = \pp,vp -> {
      verb  = vp.verb ;
@@ -186,23 +200,25 @@ oper
    Clause : Type = {
      s  : Polarity => Aspect => Str ; 
      np : Str; 
-     vp : Polarity => Aspect => Str
+     vp : VP 
      } ; 
 
 
    mkClause = overload {
-     mkClause : Str -> Verb -> Clause = \np,v -> mkClauseCompl np (useVerb v) [] ;
-     mkClause : Str -> (Polarity => Aspect => Str) -> Str -> Clause = mkClauseCompl ;
+     mkClause : Str -> Verb -> Clause = \np,v -> 
+       mkClauseCompl np (predV v []) [] ;
      mkClause : Str -> Verb -> Str -> Clause = \subj,verb,obj ->
-       mkClauseCompl subj (useVerb verb) obj ;
+       mkClauseCompl subj (predV verb []) obj ;
      mkClause : Str -> VP -> Clause = \np,vp -> 
-       mkClauseCompl np (\\p,a => vp.prePart ++ useVerb vp.verb ! p ! a) vp.compl ;
+       mkClauseCompl np vp [] ;
+     mkClause : Str -> VP -> Str -> Clause = 
+       mkClauseCompl ;
      } ;
  
-   mkClauseCompl : Str -> (Polarity => Aspect => Str) -> Str -> Clause = \np,vp,compl -> {
-     s = \\p,a => np ++ vp ! p ! a ++ compl ;
+   mkClauseCompl : Str -> VP -> Str -> Clause = \np,vp,compl -> {
+     s = \\p,a => np ++ vp.prePart ++ useVerb vp.verb ! p ! a ++ vp.compl ++ compl ;
      np = np ;
-     vp = \\p,a => vp ! p ! a ++ compl
+     vp = insertObj (ss compl) vp ;
      } ;
    
 
@@ -217,15 +233,15 @@ oper
   Quantifier = Determiner ** {pl : Str} ;
 
   mkDet = overload {
-    mkDet : Str ->            Determiner = \s   -> {s = s ; detType = DTFull Sg} ;
-    mkDet : Str -> Number  -> Determiner = \s,n -> {s = s ; detType = DTFull n} ;
-    mkDet : Str -> DetType -> Determiner = \s,d -> {s = s ; detType = d} ;
+    mkDet : Str ->            Determiner = \s   -> {s = word s ; detType = DTFull Sg} ;
+    mkDet : Str -> Number  -> Determiner = \s,n -> {s = word s ; detType = DTFull n} ;
+    mkDet : Str -> DetType -> Determiner = \s,d -> {s = word s ; detType = d} ;
     } ;
 
   mkQuant = overload {
-    mkQuant : Str ->                   Quantifier = \s     -> {s,pl = s ; detType = DTFull Sg} ;
-    mkQuant : Str ->        DetType -> Quantifier = \s,d   -> {s,pl = s ; detType = d} ;
-    mkQuant : Str -> Str -> DetType -> Quantifier = \s,p,d -> {s    = s ; detType = d ; pl = p} ;
+    mkQuant : Str ->                   Quantifier = \s     -> {s,pl = word s ; detType = DTFull Sg} ;
+    mkQuant : Str ->        DetType -> Quantifier = \s,d   -> {s,pl = word s ; detType = d} ;
+    mkQuant : Str -> Str -> DetType -> Quantifier = \s,p,d -> {s    = word s ; detType = d ; pl = p} ;
     } ;
 
   pronNP : (s : Str) -> NP = \s -> {

@@ -1,4 +1,4 @@
-concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in {
+concrete CatChi of Cat = CommonX - [Tense, Temp, Ant, Adv] ** open ResChi, Prelude in {
 
   lincat
 
@@ -22,7 +22,8 @@ concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in
     QCl = {s : Polarity => Aspect => Str} ; 
     IP = {s : Str} ;
     IComp = {s : Str} ;    
-    IDet, IQuant = {s : Str} ;
+    IDet = {s : Str ; detType : DetType} ;
+    IQuant = {s : Str} ;
 
 -- Relative
 
@@ -81,6 +82,6 @@ concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in
 
     Temp  = {s : Str ; t : Aspect} ;
     Tense = {s : Str ; t : Aspect} ;
-
+    Ant   = {s : Str ; t : Aspect} ;
 
 }
