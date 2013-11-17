@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -17,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 
 import org.grammaticalframework.ui.android.ASR.State;
@@ -101,14 +99,14 @@ public class MainActivity extends Activity {
 
         mTranslator = ((GFTranslator) getApplicationContext()).getTranslator();
 
-        mSourceLanguageView.setLanguages(mTranslator.getAvailableSourceLanguages());
+        mSourceLanguageView.setLanguages(mTranslator.getAvailableLanguages());
         mSourceLanguageView.setOnLanguageSelectedListener(new OnLanguageSelectedListener() {
             @Override
             public void onLanguageSelected(Language language) {
                 onSourceLanguageSelected(language);
             }
         });
-        mTargetLanguageView.setLanguages(mTranslator.getAvailableTargetLanguages());
+        mTargetLanguageView.setLanguages(mTranslator.getAvailableLanguages());
         mTargetLanguageView.setOnLanguageSelectedListener(new OnLanguageSelectedListener() {
             @Override
             public void onLanguageSelected(Language language) {
@@ -192,10 +190,16 @@ public class MainActivity extends Activity {
 
     void onSourceLanguageSelected(Language language) {
         mTranslator.setSourceLanguage(language);
+        if (TranslatorInputMethodService.getInstance() != null) {
+        	TranslatorInputMethodService.getInstance().handleChangeSourceLanguage(language);
+        }
     }
 
     void onTargetLanguageSelected(Language language) {
         mTranslator.setTargetLanguage(language);
+        if (TranslatorInputMethodService.getInstance() != null) {
+        	TranslatorInputMethodService.getInstance().handleChangeTargetLanguage(language);
+        }
     }
 
     public String getSourceLanguageCode() {
@@ -211,6 +215,10 @@ public class MainActivity extends Activity {
         Language newTarget = mTranslator.getSourceLanguage();
         mSourceLanguageView.setSelectedLanguage(newSource);
         mTargetLanguageView.setSelectedLanguage(newTarget);
+        
+        if (TranslatorInputMethodService.getInstance() != null) {
+        	TranslatorInputMethodService.getInstance().handleSwitchLanguages();
+        }
     }
 
     private void startRecognition() {

@@ -33,8 +33,9 @@ public class Translator {
 	        new Language("fi-FI", "Finnish", "TranslateFin", 0), 
 	        new Language("sv-SE", "Swedish", "TranslateSwe", R.xml.inflection_sv), 
 	*/
-    	new Language("en-US", "English", "ParseEng", R.xml.inflection_en),
-        new Language("bg-BG", "Bulgarian", "ParseBul", R.xml.inflection_bg),
+    	new Language("en-US", "English", "ParseEng", R.xml.inflection_en, R.xml.qwerty),
+        new Language("bg-BG", "Bulgarian", "ParseBul", R.xml.inflection_bg, R.xml.cyrillic),
+        new Language("sv-SE", "Swedish", "ParseSwe", R.xml.inflection_sv, R.xml.qwerty), 
     };
 
     private Language mSourceLanguage;
@@ -78,11 +79,7 @@ public class Translator {
 		mTargetLanguage = getPrefLang(TARGET_LANG_KEY, 1);
     }
 
-    public List<Language> getAvailableSourceLanguages() {
-        return Arrays.asList(mLanguages);
-    }
-
-    public List<Language> getAvailableTargetLanguages() {
+    public List<Language> getAvailableLanguages() {
         return Arrays.asList(mLanguages);
     }
 
@@ -134,9 +131,10 @@ public class Translator {
         }
     }
 
-    public String linearize(Expr e) {
+    public String generateTranslationEntry(Expr e) {
+        Concr sourceLang = getConcr(getSourceLanguage().getConcrete());
         Concr targetLang = getConcr(getTargetLanguage().getConcrete());
-        return targetLang.linearize(e);
+        return sourceLang.linearize(e) + " - " + targetLang.linearize(e);
     }
 
     public Map<String,String> tabularLinearize(Expr e) {

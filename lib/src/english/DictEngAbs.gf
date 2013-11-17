@@ -1247,7 +1247,6 @@ fun agnosia_N : N;
 fun agnostic_A : A;
 fun agnostic_N : N;
 fun agnosticism_N : N;
-fun ago_A : A;
 fun ago_Adv : Adv;
 fun ago_Prep : Prep ;
 fun agog_A : A;
@@ -14173,8 +14172,9 @@ fun dasyure_N : N;
 fun data_N : N;
 fun database_N : N;
 fun datable_A : A;
-fun date_1_N : N;
-fun date_7_N : N;
+fun date_1_N : N;  -- | the specified day of the month
+fun date_3_N : N;  -- | a meeting arranged in advance
+fun date_7_N : N;  -- | sweet edible fruit of the date palm with a single long woody seed
 fun date_V : V;
 fun date_V2 : V2;
 fun dateless_A : A;
@@ -14686,7 +14686,9 @@ fun degeneration_N : N;
 fun degenerative_A : A;
 fun degradation_N : N;
 fun degrade_V2 : V2;
-fun degree_N : N;
+fun degree_1_N : N;  -- | a position on a scale of intensity or amount or quality
+fun degree_2_N : N;  -- | an award conferred by a college or university signifying that the recipient has satisfactorily completed a course of study
+fun degree_3_N : N;  -- | a unit of temperature on a specified scale
 fun degressive_A : A;
 fun dehiscence_N : N;
 fun dehiscent_A : A;
@@ -20537,7 +20539,8 @@ fun fiord_N : N;
 fun fipple_N : N;
 fun fir_N : N;
 fun fir_cone_N : N;
-fun fire_N : N;
+fun fire_1_N : N;
+fun fire_2_N : N;
 fun fire_V : V;
 fun fire_V2 : V2;
 fun fire_alarm_N : N;
@@ -32754,7 +32757,6 @@ fun marupa_N : N;
 fun marvel_N : N;
 fun marvel_V : V;
 fun marvellous_A : A;
-fun marvelous_A : A;
 fun marxism_N : N;
 fun marxist_N : N;
 fun mary_PN : PN;
@@ -36675,7 +36677,6 @@ fun nostoc_N : N;
 fun nostril_N : N;
 fun nostrum_N : N;
 fun nosy_A : A;
-fun not_Adv : Adv;
 fun notability_N : N;
 fun notable_A : A;
 fun notable_N : N;
@@ -37608,8 +37609,8 @@ fun orang_outan_N : N;
 fun orang_outang_N : N;
 fun orang_utan_N : N;
 fun orange_A : A;
-fun orange_1_N : N;
-fun orange_2_N : N;
+fun orange_1_N : N;  -- | round yellow to orange fruit of any of several citrus trees
+fun orange_2_N : N;  -- | orange color or pigment; any of a range of colors between red and yellow
 fun orangeade_N : N;
 fun orangeman_N : N;
 fun orangery_N : N;
@@ -46113,8 +46114,9 @@ fun rimu_N : N;
 fun rind_N : N;
 fun rinderpest_N : N;
 fun ring_N : N;
-fun ring_V : V;
-fun ring_V2 : V2;
+fun ring_V : V;        -- | sound loudly and sonorously
+fun ring_4_V2 : V2;    -- | get or try to get into communication (with someone) by telephone
+fun ring_6_V2 : V2;    -- | attach a ring to the foot of, in order to identify
 fun ring_armour_N : N;
 fun ring_finger_N : N;
 fun ring_mail_N : N;
@@ -52703,8 +52705,8 @@ fun stridor_N : N;
 fun stridulate_V : V;
 fun stridulation_N : N;
 fun strife_N : N;
-fun strike_1_N : N;
-fun strike_2_N : N;
+fun strike_1_N : N;  -- | a group's refusal to work in protest against low pay or bad work conditions
+fun strike_2_N : N;  -- | an attack that is intended to seize or inflict damage on or destroy an objective
 fun strike_V : V;
 fun strike_V2 : V2;
 fun strike_leader_N : N;
@@ -60050,7 +60052,7 @@ fun votary_N : N;
 fun vote_N : N;
 fun vote_V : V;
 fun vote_V2 : V2;
-fun vote_VS : VS;
+fun vote_V3 : V3;
 fun vote_VV : VV;
 fun voteless_A : A;
 fun voter_N : N;
@@ -64278,7 +64280,7 @@ fun spoil_for_V2 : V2;
 fun sponge_down_V2 : V2;
 fun sponge_off_V2 : V2;
 fun sponge_on_V2 : V2;
-fun spread_out_V : V;
+fun spread_out_V2 : V2;
 fun spring_back_V : V;
 fun spring_for_V2 : V2;
 fun spring_from_V2 : V2;
