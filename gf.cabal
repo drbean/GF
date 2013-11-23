@@ -63,6 +63,7 @@ Library
                  fst,
                  containers,
                  bytestring,
+                 utf8-string,
                  random,
                  pretty,
                  mtl
@@ -228,3 +229,10 @@ Executable gf
     other-modules: GF.System.UseSignal
   else
     other-modules: GF.System.NoSignal
+
+
+test-suite rgl-tests
+  type:           exitcode-stdio-1.0
+  main-is:        run.hs
+  hs-source-dirs: lib/tests/
+  build-depends:  base, HTF, process, HUnit, filepath, directory

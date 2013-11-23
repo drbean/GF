@@ -55,7 +55,7 @@ extendModule gr (name,m)
                                                  return (name,m')
  where
    extOne mo (n,cond) = do
-     m0 <- checkErr $ lookupModule gr n
+     m0 <- lookupModule gr n
 
      -- test that the module types match, and find out if the old is complete
      unless (sameMType (mtype m) (mtype mo)) 
@@ -93,7 +93,7 @@ rebuildModule gr mo@(i,mi@(ModInfo mt stat fs_ me mw ops_ med_ msrc_ env_ js_)) 
                           text "has open interfaces and must therefore be declared incomplete"))
       case mt of
         MTInstance (i0,mincl) -> do
-          m1 <- checkErr $ lookupModule gr i0
+          m1 <- lookupModule gr i0
           unless (isModRes m1)
                  (checkError (text "interface expected instead of" <+> ppIdent i0))
           js' <- extendMod gr False ((i0,m1), isInherited mincl) i (jments mi)
@@ -101,7 +101,7 @@ rebuildModule gr mo@(i,mi@(ModInfo mt stat fs_ me mw ops_ med_ msrc_ env_ js_)) 
           case extends mi of
             []  -> return mi{jments=js'}
             j0s -> do
-                m0s <- checkErr $ mapM (lookupModule gr) j0s
+                m0s <- mapM (lookupModule gr) j0s
                 let notInM0 c _  = all (not . isInBinTree c . jments) m0s
                 let js2 = filterBinTree notInM0 js'
                 return mi{jments=js2}
@@ -114,7 +114,7 @@ rebuildModule gr mo@(i,mi@(ModInfo mt stat fs_ me mw ops_ med_ msrc_ env_ js_)) 
                     [i | i <- is, notElem i infs]
       unless (stat' == MSComplete || stat == MSIncomplete) 
              (checkError (text "module" <+> ppIdent i <+> text "remains incomplete"))
-      ModInfo mt0 _ fs me' _ ops0 _ fpath _ js <- checkErr $ lookupModule gr ext
+      ModInfo mt0 _ fs me' _ ops0 _ fpath _ js <- lookupModule gr ext
       let ops1 = nub $
                    ops_ ++ -- N.B. js has been name-resolved already
                    [OQualif i j | (i,j) <- ops] ++
@@ -145,10 +145,10 @@ extendMod gr isCompl ((name,mi),cond) base new = foldM try new $ Map.toList (jme
                          Just j -> case unifyAnyInfo name i j of
 		                     Ok k  -> return $ updateTree (c,k) new
 		                     Bad _ -> do (base,j) <- case j of 
-		                                               AnyInd _ m -> checkErr $ lookupOrigInfo gr (m,c)
+		                                               AnyInd _ m -> lookupOrigInfo gr (m,c)
 		                                               _          -> return (base,j)
 		                                 (name,i) <- case i of 
-                                                               AnyInd _ m -> checkErr $ lookupOrigInfo gr (m,c)
+                                                               AnyInd _ m -> lookupOrigInfo gr (m,c)
                                                                _          -> return (name,i)
 		                                 checkError (text "cannot unify the information" $$ 
 		                                             nest 4 (ppJudgement Qualified (c,i)) $$
@@ -191,24 +191,24 @@ globalizeLoc fpath i =
 unifyAnyInfo :: Ident -> Info -> Info -> Err Info
 unifyAnyInfo m i j = case (i,j) of
   (AbsCat mc1, AbsCat mc2) -> 
-    liftM AbsCat (unifMaybeL mc1 mc2)
+    liftM AbsCat (unifyMaybeL mc1 mc2)
   (AbsFun mt1 ma1 md1 moper1, AbsFun mt2 ma2 md2 moper2) -> 
-    liftM4 AbsFun (unifMaybeL mt1 mt2) (unifAbsArrity ma1 ma2) (unifAbsDefs md1 md2) (unifMaybe moper1 moper2) -- adding defs
+    liftM4 AbsFun (unifyMaybeL mt1 mt2) (unifAbsArrity ma1 ma2) (unifAbsDefs md1 md2) (unifyMaybe moper1 moper2) -- adding defs
 
   (ResParam mt1 mv1, ResParam mt2 mv2) ->
-    liftM2 ResParam (unifMaybeL mt1 mt2) (unifMaybe mv1 mv2)
+    liftM2 ResParam (unifyMaybeL mt1 mt2) (unifyMaybe mv1 mv2)
   (ResValue (L l1 t1), ResValue (L l2 t2)) 
       | t1==t2    -> return (ResValue (L l1 t1))
       | otherwise -> fail ""
   (_, ResOverload ms t) | elem m ms ->
     return $ ResOverload ms t
   (ResOper mt1 m1, ResOper mt2 m2) -> 
-    liftM2 ResOper (unifMaybeL mt1 mt2) (unifMaybeL m1 m2)
+    liftM2 ResOper (unifyMaybeL mt1 mt2) (unifyMaybeL m1 m2)
 
   (CncCat mc1 md1 mr1 mp1 mpmcfg1, CncCat mc2 md2 mr2 mp2 mpmcfg2) -> 
-    liftM5 CncCat (unifMaybeL mc1 mc2) (unifMaybeL md1 md2) (unifMaybeL mr1 mr2) (unifMaybeL mp1 mp2)  (unifMaybe mpmcfg1 mpmcfg2)
+    liftM5 CncCat (unifyMaybeL mc1 mc2) (unifyMaybeL md1 md2) (unifyMaybeL mr1 mr2) (unifyMaybeL mp1 mp2)  (unifyMaybe mpmcfg1 mpmcfg2)
   (CncFun m mt1 md1 mpmcfg1, CncFun _ mt2 md2 mpmcfg2) -> 
-    liftM3 (CncFun m) (unifMaybeL mt1 mt2) (unifMaybeL md1 md2) (unifMaybe mpmcfg1 mpmcfg2)
+    liftM3 (CncFun m) (unifyMaybeL mt1 mt2) (unifyMaybeL md1 md2) (unifyMaybe mpmcfg1 mpmcfg2)
 
   (AnyInd b1 m1, AnyInd b2 m2) -> do
     testErr (b1 == b2) $ "indirection status"
@@ -218,33 +218,13 @@ unifyAnyInfo m i j = case (i,j) of
   _ -> fail "informations"
 
 -- | this is what happens when matching two values in the same module
-unifMaybe :: Eq a => Maybe a -> Maybe a -> Err (Maybe a)
-unifMaybe Nothing   Nothing   = return Nothing
-unifMaybe (Just p1) Nothing   = return (Just p1)
-unifMaybe Nothing   (Just p2) = return (Just p2)
-unifMaybe (Just p1) (Just p2)
-  | p1==p2                    = return (Just p1)
-  | otherwise                 = fail ""
-
--- | this is what happens when matching two values in the same module
-unifMaybeL :: Eq a => Maybe (L a) -> Maybe (L a) -> Err (Maybe (L a))
-unifMaybeL Nothing          Nothing          = return Nothing
-unifMaybeL (Just p1)        Nothing          = return (Just p1)
-unifMaybeL Nothing          (Just p2)        = return (Just p2)
-unifMaybeL (Just (L l1 p1)) (Just (L l2 p2))
-  | p1==p2                                   = return (Just (L l1 p1))
-  | otherwise                                = fail ""
+unifyMaybeL :: Eq a => Maybe (L a) -> Maybe (L a) -> Err (Maybe (L a))
+unifyMaybeL = unifyMaybeBy unLoc
 
 unifAbsArrity :: Maybe Int -> Maybe Int -> Err (Maybe Int)
-unifAbsArrity Nothing   Nothing   = return Nothing
-unifAbsArrity (Just a ) Nothing   = return (Just a )
-unifAbsArrity Nothing   (Just a ) = return (Just a )
-unifAbsArrity (Just a1) (Just a2)
-  | a1==a2                        = return (Just a1)
-  | otherwise                     = fail ""
+unifAbsArrity = unifyMaybe
 
 unifAbsDefs :: Maybe [L Equation] -> Maybe [L Equation] -> Err (Maybe [L Equation])
-unifAbsDefs Nothing   Nothing   = return Nothing
-unifAbsDefs (Just _ ) Nothing   = fail ""
-unifAbsDefs Nothing   (Just _ ) = fail ""
 unifAbsDefs (Just xs) (Just ys) = return (Just (xs ++ ys))
+unifAbsDefs Nothing   Nothing   = return Nothing
+unifAbsDefs _         _         = fail ""
