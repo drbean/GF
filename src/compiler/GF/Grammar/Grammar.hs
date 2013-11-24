@@ -21,7 +21,7 @@ module GF.Grammar.Grammar (
         MInclude (..), OpenSpec(..),
         extends, isInherited, inheritAll,
         openedModule, depPathModule, allDepsModule, partOfGrammar,
-        allExtends, allExtendSpecs, allExtendsPlus, allExtensions, 
+        allExtends, allExtendsPlus,
         searchPathModule,
         
         lookupModule,
@@ -68,22 +68,21 @@ import GF.Data.Operations
 
 import PGF.Data (FId, FunId, SeqId, LIndex, Sequence, BindType(..))
 
-import Data.List
+--import Data.List
 import Data.Array.IArray
 import Data.Array.Unboxed
 import qualified Data.Map as Map
-import qualified Data.Set as Set
-import qualified Data.IntMap as IntMap
-import qualified Data.ByteString.Char8 as BS
+--import qualified Data.Set as Set
+--import qualified Data.IntMap as IntMap
 import Text.PrettyPrint
-import System.FilePath
-import Control.Monad.Identity
+--import System.FilePath
+--import Control.Monad.Identity
 
 
 
 data SourceGrammar = MGrammar { 
     moduleMap :: Map.Map Ident SourceModInfo,
-    modules :: [(Ident,SourceModInfo)]
+    modules :: [SourceModule]
   }
 
 data SourceModInfo = ModInfo {
@@ -166,25 +165,14 @@ partOfGrammar gr (i,m) = mGrammar [mo | mo@(j,_) <- mods, elem j modsFor]
     mods = modules gr
     modsFor = (i:) $ map openedModule $ allDepsModule gr m
 
--- | all modules that a module extends, directly or indirectly, without restricts
-allExtends :: SourceGrammar -> Ident -> [Ident]
-allExtends gr i =
-  case lookupModule gr i of
-    Ok m -> case extends m of 
-              [] -> [i]
-              is -> i : concatMap (allExtends gr) is
-    _    -> []
-
 -- | all modules that a module extends, directly or indirectly, with restricts
-allExtendSpecs :: SourceGrammar -> Ident -> [(Ident,MInclude)]
-allExtendSpecs gr i =
-  case lookupModule gr i of
-    Ok m -> case mextend m of 
-              [] -> [(i,MIAll)]
-              is ->  (i,MIAll) : concatMap (allExtendSpecs gr . fst) is
-    _    -> []
+allExtends :: SourceGrammar -> Ident -> [SourceModule]
+allExtends gr m =
+  case lookupModule gr m of
+    Ok mi -> (m,mi) : concatMap (allExtends gr . fst) (mextend mi)
+    _     -> []
 
--- | this plus that an instance extends its interface
+-- | the same as 'allExtends' plus that an instance extends its interface
 allExtendsPlus :: SourceGrammar -> Ident -> [Ident]
 allExtendsPlus gr i =
   case lookupModule gr i of
@@ -192,19 +180,6 @@ allExtendsPlus gr i =
     _    -> []
   where
     exts m = extends m ++ [j | MTInstance (j,_) <- [mtype m]]
-
--- | conversely: all modules that extend a given module, incl. instances of interface
-allExtensions :: SourceGrammar -> Ident -> [Ident]
-allExtensions gr i =
-  case lookupModule gr i of
-    Ok m -> let es = exts i in es ++ concatMap (allExtensions gr) es
-    _    -> []
- where
-   exts i = [j | (j,m) <- mods, elem i (extends m) || isInstanceOf i m]
-   mods = modules gr
-   isInstanceOf i m = case mtype m of
-     MTInstance (j,_) -> j == i
-     _ -> False
 
 -- | initial search path: the nonqualified dependencies
 searchPathModule :: SourceModInfo -> [Ident]
@@ -220,17 +195,17 @@ mGrammar ms = MGrammar (Map.fromList ms) ms
 
 -- | we store the module type with the identifier
 
-abstractOfConcrete :: SourceGrammar -> Ident -> Err Ident
+abstractOfConcrete :: ErrorMonad m => SourceGrammar -> Ident -> m Ident
 abstractOfConcrete gr c = do
   n <- lookupModule gr c
   case mtype n of
     MTConcrete a -> return a
-    _ -> Bad $ render (text "expected concrete" <+> ppIdent c)
+    _ -> raise $ render (text "expected concrete" <+> ppIdent c)
 
-lookupModule :: SourceGrammar -> Ident -> Err SourceModInfo
+lookupModule :: ErrorMonad m => SourceGrammar -> Ident -> m SourceModInfo
 lookupModule gr m = case Map.lookup m (moduleMap gr) of
   Just i  -> return i
-  Nothing -> Bad $ render (text "unknown module" <+> ppIdent m <+> text "among" <+> hsep (map (ppIdent . fst) (modules gr)))
+  Nothing -> raise $ render (text "unknown module" <+> ppIdent m <+> text "among" <+> hsep (map (ppIdent . fst) (modules gr)))
 
 isModAbs :: SourceModInfo -> Bool
 isModAbs m =
@@ -350,8 +325,8 @@ data Info =
  | ResOverload [Ident] [(L Type,L Term)]         -- ^ (/RES/) idents: modules inherited
 
 -- judgements in concrete syntax
- | CncCat  (Maybe (L Type))             (Maybe (L Term)) (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) lindef ini'zed, 
- | CncFun  (Maybe (Ident,Context,Type)) (Maybe (L Term)) (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) type info added at 'TC'
+ | CncCat  (Maybe (L Type))             (Maybe (L Term)) (Maybe (L Term)) (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) lindef ini'zed, 
+ | CncFun  (Maybe (Ident,Context,Type)) (Maybe (L Term))                  (Maybe (L Term)) (Maybe PMCFG) -- ^ (/CNC/) type info added at 'TC'
 
 -- indirection to module Ident
  | AnyInd Bool Ident                         -- ^ (/INDIR/) the 'Bool' says if canonical
@@ -472,7 +447,7 @@ data TInfo =
 
 -- | record label
 data Label = 
-    LIdent BS.ByteString
+    LIdent RawIdent
   | LVar Int
    deriving (Show, Eq, Ord)
 
@@ -497,16 +472,15 @@ varLabel :: Int -> Label
 varLabel = LVar
 
 tupleLabel, linLabel :: Int -> Label
-tupleLabel i = LIdent $! BS.pack ('p':show i)
-linLabel   i = LIdent $! BS.pack ('s':show i)
+tupleLabel i = LIdent $! rawIdentS ('p':show i)
+linLabel   i = LIdent $! rawIdentS ('s':show i)
 
 theLinLabel :: Label
-theLinLabel = LIdent (BS.singleton 's')
+theLinLabel = LIdent (rawIdentS "s")
 
 ident2label :: Ident -> Label
-ident2label c = LIdent (ident2bs c)
+ident2label c = LIdent (ident2raw c)
 
 label2ident :: Label -> Ident
 label2ident (LIdent s) = identC s
-label2ident (LVar i)   = identC (BS.pack ('$':show i))
-
+label2ident (LVar i)   = identS ('$':show i)

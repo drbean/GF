@@ -6,18 +6,18 @@
 ----------------------------------------------------------------------
 module GF.Speech.PGFToCFG (bnfPrinter, pgfToCFG) where
 
-import PGF.CId
+import PGF(showCId)
 import PGF.Data as PGF
 import PGF.Macros
-import GF.Infra.Ident
+--import GF.Infra.Ident
 import GF.Speech.CFG hiding (Symbol)
 
 import Data.Array.IArray as Array
-import Data.List
+--import Data.List
 import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
-import Data.Maybe
+--import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -91,11 +91,15 @@ pgfToCFG pgf lang = mkCFG (showCId (lookStartCat pgf)) extCats (startRules ++ co
 
         symbolToCFSymbol :: Symbol -> [CFSymbol]
         symbolToCFSymbol (SymCat n l)    = [let PArg _ fid = args!!n in NonTerminal (fcatToCat fid l)]
-        symbolToCFSymbol (SymKS ts)      = map Terminal ts
-        symbolToCFSymbol (SymKP ts as)   = map Terminal $ ts 
+        symbolToCFSymbol (SymKS t)       = [Terminal t]
+        symbolToCFSymbol (SymKP syms as) = concatMap symbolToCFSymbol syms
                                            ---- ++ [t | Alt ss _ <- as, t <- ss]
                                            ---- should be alternatives in [[CFSymbol]]
                                            ---- AR 3/6/2010
+        symbolToCFSymbol SymBIND         = [Terminal "&+"]
+        symbolToCFSymbol SymSOFT_BIND    = []
+        symbolToCFSymbol SymNE           = []
+
         fixProfile :: Array DotPos Symbol -> Int -> Profile
         fixProfile row i = [k | (k,j) <- nts, j == i]
             where

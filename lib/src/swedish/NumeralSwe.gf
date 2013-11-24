@@ -1,3 +1,4 @@
+--# -coding=latin1
 concrete NumeralSwe of Numeral = CatSwe [Numeral,Digits] ** open ResSwe, MorphoSwe, Prelude in {
 
 lincat 
@@ -50,7 +51,7 @@ lin
     IDig d = d ; 
 
     IIDig d i = {
-      s = \\o => d.s ! NCard neutrum ++ i.s ! o ;
+      s = \\o => d.s ! NCard neutrum ++ BIND ++ i.s ! o ;
       n = Pl
     } ;
 

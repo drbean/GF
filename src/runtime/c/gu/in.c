@@ -87,11 +87,20 @@ gu_in_some(GuIn* in, uint8_t* dst, size_t sz, GuExn* err)
 void
 gu_in_bytes_(GuIn* in, uint8_t* dst, size_t sz, GuExn* err)
 {
-	size_t avail_sz = GU_MIN(sz, (size_t)(-in->buf_curr));
-	memcpy(dst, &in->buf_end[in->buf_curr], avail_sz);
-	in->buf_curr += avail_sz;
-	if (avail_sz < sz) {
-		gu_in_input(in, &dst[avail_sz], sz - avail_sz, err);
+	for (;;) {
+		size_t avail_sz = GU_MIN(sz, (size_t)(-in->buf_curr));
+		memcpy(dst, &in->buf_end[in->buf_curr], avail_sz);
+		in->buf_curr += avail_sz;
+		dst += avail_sz;
+		sz -= avail_sz;
+
+		if (sz == 0)
+			break;
+
+		if (!gu_in_begin_buffering(in, err)) {
+			gu_in_input(in, dst, sz, err);
+			return;
+		}
 	}
 }
 
@@ -244,7 +253,6 @@ gu_in_f64be(GuIn* in, GuExn* err)
 	return gu_decode_double(gu_in_u64le(in, err));
 }
 
-
 static void
 gu_in_fini(GuFinalizer* fin)
 {
@@ -255,69 +263,19 @@ gu_in_fini(GuFinalizer* fin)
 	gu_pool_free(pool);
 }
 
-GuIn
-gu_init_in(GuInStream* stream)
-{
-	return (GuIn) {
-		.buf_end = NULL,
-		.buf_curr = 0,
-		.buf_size = 0,
-		.stream = stream,
-		.fini.fn = gu_in_fini
-	};
-}
-
 GuIn*
 gu_new_in(GuInStream* stream, GuPool* pool)
 {
+	gu_require(stream != NULL);
+
 	GuIn* in = gu_new(GuIn, pool);
-	*in = gu_init_in(stream);
+	in->buf_end = NULL;
+	in->buf_curr = 0;
+	in->buf_size = 0;
+	in->stream = stream;
+	in->fini.fn = gu_in_fini;
 	return in;
 }
-
-
-typedef struct GuProxyInStream GuProxyInStream;
-
-struct GuProxyInStream {
-	GuInStream stream;
-	GuIn* real_in;
-};
-
-static const uint8_t*
-gu_proxy_in_begin_buffer(GuInStream* self, size_t* sz_out, GuExn* err)
-{
-	GuProxyInStream* pis = gu_container(self, GuProxyInStream, stream);
-	return gu_in_begin_span(pis->real_in, sz_out, err);
-}
-
-static void
-gu_proxy_in_end_buffer(GuInStream* self, size_t sz, GuExn* err)
-{
-	GuProxyInStream* pis = gu_container(self, GuProxyInStream, stream);
-	gu_in_end_span(pis->real_in, sz);
-}
-
-static size_t
-gu_proxy_in_input(GuInStream* self, uint8_t* dst, size_t sz, GuExn* err)
-{
-	GuProxyInStream* pis = gu_container(self, GuProxyInStream, stream);
-	return gu_in_some(pis->real_in, dst, sz, err);
-}
-
-GuInStream*
-gu_in_proxy_stream(GuIn* in, GuPool* pool)
-{
-	return &gu_new_s(
-		pool, GuProxyInStream,
-		.stream.begin_buffer = gu_proxy_in_begin_buffer,
-		.stream.end_buffer = gu_proxy_in_end_buffer,
-		.stream.input = gu_proxy_in_input,
-		.real_in = in)->stream;
-}
-
-enum {
-	GU_BUFFERED_IN_BUF_SIZE = 4096
-};
 
 typedef struct GuBufferedInStream GuBufferedInStream;
 
@@ -371,8 +329,9 @@ gu_buffered_in(GuIn* in, size_t buf_sz, GuPool* pool)
 		.end_buffer = gu_buffered_in_end_buffer,
 		.input = gu_buffered_in_input
 	};
-	bis->have = bis->curr = 0;
 	bis->alloc = buf_sz;
+	bis->have = bis->curr = 0;
+	bis->in = in;
 	return gu_new_in(&bis->stream, pool);
 }
 
@@ -401,10 +360,12 @@ gu_data_in_begin_buffer(GuInStream* self, size_t* sz_out, GuExn* err)
 GuIn*
 gu_data_in(const uint8_t* data, size_t sz, GuPool* pool)
 {
-	GuDataIn* di = gu_new_s(pool, GuDataIn,
-				.stream.begin_buffer = gu_data_in_begin_buffer,
-				.data = data,
-				.sz = sz);
+	GuDataIn* di = gu_new(GuDataIn, pool);
+	di->stream.begin_buffer = gu_data_in_begin_buffer;
+	di->stream.end_buffer = NULL;
+	di->stream.input = NULL;
+	di->data = data;
+	di->sz = sz;
 	return gu_new_in(&di->stream, pool);
 }
 

@@ -19,10 +19,11 @@ lin
 
     very_AdA = ssword "非常" ;
 
-    by8means_Prep = mkPrep "旁边" [] ;
-    in_Prep = mkPrep "里" [];
-    possess_Prep = mkPrep "的" [];
-    with_Prep = mkPrep "一起" "和";
+    by8means_Prep = mkPrep [] "旁边" mannerAdvType ;
+--    in_Prep = mkPrep "里" [];  --- in Paris
+    in_Prep = mkPrep "在" "中"  ;  --- in the house, the car, etc
+    possess_Prep = mkPrep [] "的" ;
+    with_Prep = mkPrep "和" "一起" ;
 ----    with_Prep = mkPrep [] "和"; -- an alternative for some uses
  
 and_Conj = {s = table {
@@ -64,14 +65,14 @@ oper
 lin
 
 
-above_Prep = mkPrep "上边" ;
-after_Prep = mkPrep "以后" ;
-under_Prep = mkPrep "下" ;
+above_Prep = mkPrep [] "上边" ;
+after_Prep = mkPrep [] "以后" timeAdvType ;
+under_Prep = mkPrep [] "下" ;
 why_IAdv = mkIAdvL "为什么" ;
 too_AdA = mkAdA "太" ;
 
-before_Prep = mkPrep "从前" ;
-between_Prep = mkPrep "之间" ;
+before_Prep = mkPrep [] "之前" timeAdvType ;
+between_Prep = mkPrep [] "之间" ;
 but_PConj = mkPConjL "但是" ;
 
 
@@ -82,10 +83,10 @@ but_PConj = mkPConjL "但是" ;
 can8know_VV = mkV "会" [] [] [] [] "不" ; ----
 
 
-except_Prep = mkPrep "除了" "以外" ;
+except_Prep = mkPrep "以外" "除了" mannerAdvType ;
 for_Prep = mkPrep "为了" ;
 from_Prep = mkPrep "从" ;
-in8front_Prep = mkPrep "前边" zai_s ;
+in8front_Prep = mkPrep zai_s "前边"  ;
 it_Pron = pronNP "它" ;
 much_Det = mkDet "多" Sg ;
 no_Quant = mkQuant "不" ;
@@ -93,7 +94,7 @@ not_Predet = ssword "不" ;
 otherwise_PConj = mkPConjL "还是" ;
 to_Prep = mkPrep "往" ;
 
-have_V2 = mkV2 "有" ;
+have_V2 = mkV2 (mkV "有" "了" "着" "在" "过" "没") ;
 
 yes_Utt = ss "对" ;
 no_Utt = ss neg_s ;
@@ -114,7 +115,7 @@ almost_AdN = ssword "几乎" ;
 as_CAdv = {s = word "和" ; p = word "一样" } ; -- modified by chenpeng 11.24
 at_least_AdN = ssword "最少" ; -- at least five
 at_most_AdN = ssword "最多" ;
-behind_Prep = mkPrep "后面" "在";
+behind_Prep = mkPrep "在" "后面" ;
   
 both7and_DConj = {s = table { -- modified by chenpeng 11.19
                     CPhr CNPhrase => mkConjForm2 "包括" "和" ;
@@ -124,9 +125,9 @@ both7and_DConj = {s = table { -- modified by chenpeng 11.19
                     }
                 } ;
 
-by8agent_Prep = mkPrep "被" ; -- by for agent in passive
+by8agent_Prep = mkPrep "被" [] mannerAdvType; -- by for agent in passive
                                   -- [mark] 被
-during_Prep = mkPrep "期间" "在" ; -- [mark] often equivalent to nothing
+during_Prep = mkPrep "在" "期间" timeAdvType ; -- [mark] often equivalent to nothing
                                    -- translation for "he swam during this summer. " and "he swam this summer." are often the same
 
 either7or_DConj = {s = table { -- modified by chenpeng 11.19
@@ -144,7 +145,7 @@ here7from_Adv = mkAdv "从这里" ; -- from here
 here7to_Adv = mkAdv "到这里" ; -- to here
 -- [mark] "从这里" 从(from) 这里(here)
 -- "到这里" 到( to ) 这里(here)
-how8many_IDet = ssword "多少" ;
+how8many_IDet = mkIDet "多少" ;
 how8much_IAdv = ssword "多少" ;
 if_Subj = mkSubj "如果" [] ; --"就" ; -- [mark] "就" often comes between NP and VP
 less_CAdv = {s = than_s ; p = word "没更"} ; -- modified by chenpeng 11.24
@@ -159,7 +160,7 @@ if_then_Conj = {s = table { -- added by chenpeng 11.19
                 } ;
 nobody_NP = ssword "没人" ;
 nothing_NP = ssword "没有什么" ;
-on_Prep = mkPrep "上" "在" ;
+on_Prep = mkPrep "在" "上"  ;
 only_Predet = ssword "只有" ; -- only John
 so_AdA = ssword "如此" ;
 somebody_NP = ssword "某人" ;
@@ -170,9 +171,9 @@ there7from_Adv = mkAdv "从那里" ; -- from there
 there7to_Adv = mkAdv "到那里" ;
 therefore_PConj = ssword "因此" ;
 through_Prep = mkPrep "通过" ;
-which_IQuant = mkIQuant "哪" ;
+which_IQuant = mkIQuant "哪" ; -- 
 --which_IQuant = ssword [] ; -- [mark] in sent, it depends on the context
-without_Prep = mkPrep "没有" [];
+without_Prep = mkPrep "没有" [] mannerAdvType ;
 youPol_Pron = ssword "您" ; -- polite you
 
 }

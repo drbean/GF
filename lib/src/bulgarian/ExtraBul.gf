@@ -1,3 +1,4 @@
+--# -coding=cp1251
 concrete ExtraBul of ExtraBulAbs = CatBul ** 
   open ResBul, MorphoFunsBul, Coordination, Prelude, Predef in {
   flags coding=cp1251 ;
@@ -5,7 +6,7 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
 
   lin
     PossIndefPron p = {
-      s = \\_,aform => p.gen ! (indefAForm ! aform) ;
+      s = \\_,aform => p.gen ! (indefAForm aform) ;
       nonEmpty = True;
       spec = Indef
       } ;
@@ -17,7 +18,7 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
     } ;
 
     ReflIndefQuant = {
-      s = \\_,aform => reflPron ! (indefAForm ! aform) ;
+      s = \\_,aform => reflPron ! (indefAForm aform) ;
       nonEmpty = True;
       spec = Indef
     } ;
@@ -64,13 +65,6 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
         ASg Neut Def   => "своето" ;
         APl Indef      => "свои" ;
         APl Def        => "своите"
-      } ;
-      
-    indefAForm : AForm => AForm =
-      table {
-        ASg g _       => ASg g Indef ;
-        ASgMascDefNom => ASg Masc Indef ;
-        APl _         => APl Indef
       } ;
 
   lincat

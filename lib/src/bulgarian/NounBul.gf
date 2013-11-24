@@ -1,3 +1,4 @@
+--# -coding=cp1251
 concrete NounBul of Noun = CatBul ** open ResBul, Prelude in {
   flags optimize=all_subs ; coding=cp1251 ;
 
@@ -61,6 +62,11 @@ concrete NounBul of Noun = CatBul ** open ResBul, Prelude in {
       a = np.a
       } ;
 
+    ExtAdvNP np adv = {
+      s = \\c => np.s ! c ++ comma ++ adv.s ;
+      a = np.a
+      } ;
+
     DetQuant quant num = {
       s  = \\sp,g,c => let sp' = case num.nonEmpty of { True  => True ;
                                                         False => sp   }
@@ -97,7 +103,7 @@ concrete NounBul of Noun = CatBul ** open ResBul, Prelude in {
     
     AdNum adn num = {s = \\gspec => adn.s ++ num.s ! gspec; n = num.n; nonEmpty = num.nonEmpty} ;
 
-    OrdSuperl a = {s = \\aform => "най" ++ "-" ++ a.s ! aform} ;
+    OrdSuperl a = {s = \\aform => "най" ++ hyphen ++ a.s ! aform} ;
 
     DefArt = {
       s  = table {
@@ -167,6 +173,21 @@ concrete NounBul of Noun = CatBul ** open ResBul, Prelude in {
     SentCN cn sc = {s = \\nf => cn.s ! nf ++ sc.s; g=ANeut} ;
 
     ApposCN cn np = {s = \\nf => cn.s ! nf ++ np.s ! RSubj; g=cn.g} ;
+
+    PossNP cn np = {s = \\nf => cn.s ! nf ++ "на" ++ np.s ! (RObj Acc); g = cn.g} ;
+    
+    PartNP cn np = {s = \\nf => cn.s ! nf ++ "от" ++ np.s ! (RObj Acc); g = cn.g} ;
+
+    CountNP det np = {
+      s = \\role => let g = case np.a.gn of { -- this is lossy
+                              GSg Masc => AMasc NonHuman ; 
+                              GSg Neut => ANeut ;
+                              GSg Fem  => AFem ;
+                              GPl      => ANeut
+                            }
+                    in det.s ! False ! g ! role ++ np.s ! (RObj Acc) ;
+      a = {gn = gennum ANeut (numnnum det.nn); p = P3}
+      } ;
 
     RelNP np rs = {
       s = \\r => np.s ! r ++ rs.s ! np.a ;

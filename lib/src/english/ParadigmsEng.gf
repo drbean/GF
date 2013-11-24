@@ -202,6 +202,7 @@ oper
 -- build $PP$s in the resource API, just requires a string.
 
   mkPrep : Str -> Prep ; -- e.g. "in front of"
+  mkPost : Str -> Prep ; -- e.g. "ago"
   noPrep : Prep ;  -- no preposition
 
 -- (These two functions are synonyms.)
@@ -306,6 +307,7 @@ oper
   mkVS  : V -> VS ; -- sentence-compl e.g. say (that S)
   mkV2S : V -> Prep -> V2S ; -- e.g. tell (NP) (that S)
   mkVV  : V -> VV ; -- e.g. want (to VP)
+  infVV : V -> VV ; -- e.g. want (to VP)
   ingVV : V -> VV ; -- e.g. start (VPing)
   mkV2V : V -> Prep -> Prep -> V2V ;  -- e.g. want (noPrep NP) (to VP)
   ingV2V : V -> Prep -> Prep -> V2V ; -- e.g. prevent (noPrep NP) (from VP-ing)
@@ -328,6 +330,8 @@ oper
 --2 Other categories
 
 mkSubj : Str -> Subj = \s -> lin Subj {s = s} ; --%
+mkInterj : Str -> Interj
+  = \s -> lin Interj (ss s) ;
 
 --.
 --2 Definitions of paradigms
@@ -483,7 +487,8 @@ mkSubj : Str -> Subj = \s -> lin Subj {s = s} ; --%
   mkAdA x = lin AdA (ss x) ;
   mkAdN x = lin AdN (ss x) ;
 
-  mkPrep p = lin Prep (ss p) ;
+  mkPrep p = lin Prep {s=p; isPre=True} ;
+  mkPost p = lin Prep {s=p; isPre=False} ;
   noPrep = mkPrep [] ;
 
   mk5V a b c d e = lin V (mkVerb a b c d e ** {s1 = []}) ;
@@ -547,6 +552,11 @@ mkSubj : Str -> Subj = \s -> lin Subj {s = s} ; --%
     s = table {VVF vf => v.s ! vf ; _ => v.s ! VInf} ;
     p = v.p ; 
     typ = VVInf
+    } ;
+  infVV  v = lin VV {
+    s = table {VVF vf => v.s ! vf ; _ => v.s ! VInf} ;
+    p = v.p ; 
+    typ = VVAux
     } ;
   ingVV  v = lin VV {
     s = table {VVF vf => v.s ! vf ; _ => v.s ! VInf} ;

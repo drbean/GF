@@ -1,7 +1,7 @@
 concrete PhraseChi of Phrase = CatChi ** open Prelude, ResChi in {
 
   lin
-    PhrUtt pconj utt voc = {s = pconj.s ++ utt.s ++ voc.s} ;
+    PhrUtt pconj utt voc = {s = pconj.s ++ voc.s ++ utt.s} ;
 
     UttS s = s ;
     UttQS qs = qs ;
@@ -17,11 +17,12 @@ concrete PhraseChi of Phrase = CatChi ** open Prelude, ResChi in {
     UttCard x = x ;
     UttVP vp = ss (infVP vp) ;
     UttAdv adv = adv ;
+    UttInterj i = i ;
 
     NoPConj = {s = []} ;
     PConjConj conj = ss (conj.s ! CSent).s2 ;
 
     NoVoc = {s = []} ;
-    VocNP np = {s = np.s} ; ---- ??
+    VocNP np = {s = np.s ++ chcomma} ; ---- ??
 
 }

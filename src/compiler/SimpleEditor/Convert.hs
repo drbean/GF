@@ -5,7 +5,7 @@ import Control.Monad(unless,foldM,ap,mplus)
 import Data.List(sortBy)
 import Data.Function(on)
 import qualified Data.Map as Map
-import Text.JSON(encode,makeObj)
+import Text.JSON(makeObj) --encode
 import Text.PrettyPrint(render,text,(<+>))
 
 -- 4 extra imports just to deal with the ByteString mess...
@@ -23,6 +23,7 @@ import GF.Grammar.Printer(ppParams,ppTerm,getAbs,TermPrintQual(..))
 import GF.Grammar.Parser(runP,pModDef)
 import GF.Grammar.Lexer(Posn(..))
 import GF.Data.ErrM
+import PGF.Data(Literal(LStr))
 
 import SimpleEditor.Syntax as S
 import SimpleEditor.JSON
@@ -57,7 +58,10 @@ convAbstract (modid,src) =
      let cats = reverse cats0
          funs = reverse funs0
          flags = optionsGFO (mflags src)
-         startcat = maybe "-" id $ lookup "startcat" flags
+         startcat =
+           case lookup "startcat" flags of
+             Just (LStr cat) -> cat
+             _               -> "-"
      return $ Grammar (convId modid) extends (Abstract startcat cats funs) []
 
 convExtends = mapM convExtend
@@ -121,7 +125,7 @@ convCncJment (name,jment) =
     ResParam ops _ ->
       return $ Pa $ Param i (maybe "" (render . ppParams q . unLoc) ops)
     ResValue _ -> return Ignored
-    CncCat (Just (L _ typ)) Nothing pprn _ -> -- ignores printname !!
+    CncCat (Just (L _ typ)) Nothing Nothing pprn _ -> -- ignores printname !!
       return $ LC $ Lincat i (render $ ppTerm q 0 typ)
     ResOper oltyp (Just lterm) -> return $ Op $ Oper lhs rhs
       where
@@ -153,7 +157,7 @@ jmentLocation jment =
     AbsCat ctxt      -> fmap loc ctxt
     AbsFun ty _ _ _  -> fmap loc ty
     ResParam ops _   -> fmap loc ops
-    CncCat ty _ _ _  -> fmap loc ty
+    CncCat ty _ _ _ _ ->fmap loc ty
     ResOper ty rhs   -> fmap loc rhs `mplus` fmap loc ty
     CncFun _ rhs _ _ -> fmap loc rhs
     _ -> Nothing

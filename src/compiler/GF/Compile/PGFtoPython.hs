@@ -8,7 +8,7 @@
 
 module GF.Compile.PGFtoPython (pgf2python) where
 
-import PGF.CId
+import PGF(showCId)
 import PGF.Data
 import qualified PGF.Macros as M
 
@@ -18,7 +18,7 @@ import qualified Data.Array.IArray as Array
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
-import Data.List (intersperse)
+--import Data.List (intersperse)
 
 pgf2python :: PGF -> String
 pgf2python pgf = ("# -*- coding: utf-8 -*-" ++++
@@ -75,9 +75,9 @@ pySymbol :: Symbol -> String
 pySymbol (SymCat n l)    = pyTuple 0 show [n, l]
 pySymbol (SymLit n l)    = pyDict 0 pyStr id [("lit", pyTuple 0 show [n, l])]
 pySymbol (SymVar n l)    = pyDict 0 pyStr id [("var", pyTuple 0 show [n, l])]
-pySymbol (SymKS ts)      = prTList "," (map pyStr ts)
-pySymbol (SymKP ts alts) = pyDict 0 pyStr id [("pre", pyList 0 pyStr ts), ("alts", pyList 0 alt2py alts)]
-    where alt2py (Alt ps ts) = pyTuple 0 (pyList 0 pyStr) [ps, ts]
+pySymbol (SymKS t)       = pyStr t
+pySymbol (SymKP ts alts) = pyDict 0 pyStr id [("pre", pyList 0 pySymbol ts), ("alts", pyList 0 alt2py alts)]
+    where alt2py (ps,ts) = pyTuple 0 (pyList 0 pyStr) [map pySymbol ps, ts]
 
 ----------------------------------------------------------------------
 -- python helpers 

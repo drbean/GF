@@ -1,8 +1,8 @@
 #ifndef EXPR_H_
 #define EXPR_H_
 
-#include <gu/read.h>
-#include <gu/write.h>
+#include <gu/in.h>
+#include <gu/out.h>
 #include <gu/variant.h>
 #include <gu/seq.h>
 
@@ -13,8 +13,6 @@
 typedef GuVariant PgfExpr;
 
 extern GU_DECLARE_TYPE(PgfExpr, GuVariant);
-
-typedef GuList(PgfExpr) PgfExprs;
 
 typedef struct PgfHypo PgfHypo;
 typedef struct PgfType PgfType;
@@ -39,7 +37,7 @@ typedef enum {
 } PgfLiteralTag;
 
 typedef struct {
-	GuString val;
+	char val[0];  // a flexible array that contains the value
 } PgfLiteralStr;
 
 typedef struct {
@@ -63,10 +61,9 @@ struct PgfHypo {
 };
 
 typedef GuSeq PgfHypos;
-extern GU_DECLARE_TYPE(PgfHypos, GuSeq);
 
 struct PgfType {
-	PgfHypos hypos;
+	PgfHypos* hypos;
 	PgfCId cid; /// XXX: resolve to PgfCat*?
 	size_t n_exprs;
 	PgfExpr exprs[];
@@ -105,7 +102,7 @@ typedef struct {
 } PgfExprMeta;
 
 typedef struct {
-	PgfCId fun;
+	char fun[0];
 } PgfExprFun;
 
 typedef struct {
@@ -180,18 +177,21 @@ struct PgfPrintContext {
 };
 
 void
-pgf_print_literal(PgfLiteral lit, GuWriter* wtr, GuExn* err);
+pgf_print_cid(PgfCId id, GuOut* out, GuExn* err);
+
+void
+pgf_print_literal(PgfLiteral lit, GuOut* out, GuExn* err);
 
 void
 pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec, 
-               GuWriter* wtr, GuExn* err);
+               GuOut* out, GuExn* err);
 
 PgfPrintContext*
 pgf_print_hypo(PgfHypo *hypo, PgfPrintContext* ctxt, int prec,
-               GuWriter *wtr, GuExn *err);
+               GuOut* out, GuExn *err);
 
 void
 pgf_print_type(PgfType *type, PgfPrintContext* ctxt, int prec,
-               GuWriter *wtr, GuExn *err);
+               GuOut* out, GuExn *err);
 
 #endif /* EXPR_H_ */

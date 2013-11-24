@@ -7,14 +7,14 @@
 --
 -----------------------------------------------------------------------------
 
-module GF.Grammar.Binary where
+module GF.Grammar.Binary(decodeModule,decodeModuleHeader,encodeModule) where
 
 import Prelude hiding (catch)
 import Control.Exception(catch,ErrorCall(..),throwIO)
 
-import Data.Char
+--import Data.Char
 import Data.Binary
-import Control.Monad
+--import Control.Monad
 import qualified Data.Map as Map
 import qualified Data.ByteString.Char8 as BS
 
@@ -23,18 +23,18 @@ import GF.Infra.Ident
 import GF.Infra.Option
 import GF.Grammar.Grammar
 
-import PGF.Binary
+import PGF() -- Binary instances
+import PGF.Data(Literal(..))
 
 -- Please change this every time when the GFO format is changed
-gfoVersion = "GF02"
-
+gfoVersion = "GF03"
 
 instance Binary Ident where
   put id = put (ident2bs id)
   get    = do bs <- get
               if bs == BS.pack "_"
                 then return identW
-                else return (identC bs)
+                else return (identC (rawIdentC bs))
 
 instance Binary SourceGrammar where
   put = put . modules
@@ -92,9 +92,13 @@ instance Binary ModuleStatus where
 instance Binary Options where
   put = put . optionsGFO
   get = do opts <- get
-           case parseModuleOptions ["--" ++ flag ++ "=" ++ value | (flag,value) <- opts] of
+           case parseModuleOptions ["--" ++ flag ++ "=" ++ toString value | (flag,value) <- opts] of
              Ok  x   -> return x
              Bad msg -> fail msg
+           where
+             toString (LStr s) = s
+             toString (LInt n) = show n
+             toString (LFlt d) = show d
 
 instance Binary Production where
   put (Production res funid args) = put (res,funid,args)
@@ -116,7 +120,7 @@ instance Binary Info where
   put (ResValue x)     = putWord8 3 >> put x
   put (ResOper x y)    = putWord8 4 >> put (x,y)
   put (ResOverload x y)= putWord8 5 >> put (x,y)
-  put (CncCat w x y z) = putWord8 6 >> put (w,x,y,z)
+  put (CncCat v w x y z)=putWord8 6 >> put (v,w,x,y,z)
   put (CncFun w x y z) = putWord8 7 >> put (w,x,y,z)
   put (AnyInd x y)     = putWord8 8 >> put (x,y)
   get = do tag <- getWord8
@@ -127,7 +131,7 @@ instance Binary Info where
              3 -> get >>= \x         -> return (ResValue x)
              4 -> get >>= \(x,y)     -> return (ResOper x y)
              5 -> get >>= \(x,y)     -> return (ResOverload x y)
-             6 -> get >>= \(w,x,y,z) -> return (CncCat w x y z)
+             6 -> get >>= \(v,w,x,y,z)->return (CncCat v w x y z)
              7 -> get >>= \(w,x,y,z) -> return (CncFun w x y z)
              8 -> get >>= \(x,y)     -> return (AnyInd x y)
              _ -> decodingError
@@ -244,6 +248,7 @@ instance Binary Patt where
   put (PMacro x)   = putWord8 17 >> put x
   put (PM x)       = putWord8 18 >> put x
   put (PTilde x)   = putWord8 19 >> put x
+  put (PImplArg x) = putWord8 20 >> put x
   get = do tag <- getWord8
            case tag of
              0  -> get >>= \(x,y)   -> return (PC x y)
@@ -265,6 +270,7 @@ instance Binary Patt where
              17 -> get >>= \x       -> return (PMacro x)
              18 -> get >>= \x       -> return (PM x)
              19 -> get >>= \x       -> return (PTilde x)
+             20 -> get >>= \x       -> return (PImplArg x)
              _  -> decodingError
 
 instance Binary TInfo where
@@ -289,14 +295,36 @@ instance Binary Label where
              1 -> fmap LVar   get
              _ -> decodingError
 
+instance Binary RawIdent where
+  put = put . rawId2bs
+  get = fmap rawIdentC get
 
-putGFOVersion = mapM_ (putWord8 . fromIntegral . ord) gfoVersion
-getGFOVersion = replicateM (length gfoVersion) (fmap (chr . fromIntegral) getWord8)
+--putGFOVersion = mapM_ (putWord8 . fromIntegral . ord) gfoVersion
+--getGFOVersion = replicateM (length gfoVersion) (fmap (chr . fromIntegral) getWord8)
+--putGFOVersion = put gfoVersion
+--getGFOVersion = get :: Get VersionMagic
+
+
+data VersionTagged a = Tagged {unV::a} | WrongVersion
+
+instance Binary a => Binary (VersionTagged a) where
+  put (Tagged a) = put (gfoBinVersion,a)
+  get = do ver <- get
+           if ver==gfoBinVersion
+             then fmap Tagged get
+             else return WrongVersion
+
+gfoBinVersion = (b1,b2,b3,b4)
+  where [b1,b2,b3,b4] = map (toEnum.fromEnum) gfoVersion :: [Word8]
+
 
 decodeModule :: FilePath -> IO SourceModule
-decodeModule fpath = decodeFile' fpath (getGFOVersion >> get)
-
-decodeModuleHeader fpath = decodeFile' fpath getVersionedMod
+decodeModule fpath = check =<< decodeFile' fpath
+  where
+    check (Tagged m) = return m
+    check _ = fail ".gfo file version mismatch"
+{-
+decodeModuleHeader fpath = decodeFile_ fpath getVersionedMod
   where
     getVersionedMod = do
       ver <- getGFOVersion
@@ -304,16 +332,24 @@ decodeModuleHeader fpath = decodeFile' fpath getVersionedMod
         then do (m,mtype,mstatus,mflags,mextend,mwith,mopens,med,msrc) <- get
                 return (Just (m,ModInfo mtype mstatus mflags mextend mwith mopens med msrc Nothing Map.empty))
         else return Nothing
-
+--}
+--{-
+decodeModuleHeader fpath = fmap check $ decodeFile' fpath
+  where
+    check (Tagged (m,mtype,mstatus,mflags,mextend,mwith,mopens,med,msrc)) =
+        (Just (m,ModInfo mtype mstatus mflags mextend mwith mopens med msrc Nothing Map.empty))
+    check _ = Nothing
+--}
 encodeModule :: FilePath -> SourceModule -> IO ()
-encodeModule fpath mo =
-  encodeFile_ fpath (putGFOVersion >> put mo)
+encodeModule fpath mo = encodeFile fpath (Tagged mo)
 
--- | like decodeFile_ but adds file name to error message if there was an error
-decodeFile' fpath get = addFPath fpath (decodeFile_ fpath get)
+-- | like 'decodeFile' but adds file name to error message if there was an error
+decodeFile' fpath = addFPath fpath (decodeFile fpath)
 
 -- | Adds file name to error message if there was an error,
 -- | but laziness can cause errors to slip through
 addFPath fpath m = m `catch` handle
   where
     handle (ErrorCall msg) = throwIO (ErrorCall (fpath++": "++msg))
+
+decodingError = fail "This file was compiled with different version of GF"

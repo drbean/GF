@@ -1,4 +1,5 @@
 --# -path=.:prelude
+--# -coding=latin1
 
 concrete LexiconFin of Lexicon = CatFin ** open MorphoFin, StemFin, ParadigmsFin in {
 
@@ -8,6 +9,7 @@ flags
 
 lin
   airplane_N = mkN "lentokone" ;
+  alas_Interj = mkInterj "voi" ;
   answer_V2S = mkV2 (mkV "vastata") (casePrep allative) ;
   apartment_N = mkN "asunto" ;
   apple_N = mkN "omena" ; --- omenia, not omenoita
@@ -88,7 +90,7 @@ lin
   girl_N = mkN "tyttö" ;
   glove_N = mkN "käsine" ;
   gold_N = mkN "kulta" ;
-  good_A = mkA (mkN "hyvä") "parempi" "parhain" ; --- paras
+  good_A = mkA (mkN "hyvä") (mkN "parempi" "paremman" "parempia") (exceptNomN (mkN "parhas" "parhaan" "parhaita" "parasta") "paras") "hyvin" "paremmin" "parhaiten" ;
   go_V = mkV "mennä" ;
   green_A = mkA (mkN "vihreä") "vihreämpi" "vihrein" ;
   harbour_N = mkN "satama" "sataman" "satamia" ;

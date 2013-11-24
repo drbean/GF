@@ -1,4 +1,5 @@
 --# -path=.:../abstract:../common:../../prelude
+--# -coding=cp1251
 
 --1 Bulgarian auxiliary operations.
 
@@ -154,6 +155,13 @@ resource ResBul = ParamX ** open Prelude, Predef in {
                   } ;
         GPl    => APl spec
       } ;
+
+    indefAForm : AForm -> AForm
+      = \af -> case af of {
+                 ASg g spec    => ASg g Indef ;
+                 ASgMascDefNom => ASg Masc Indef ;
+                 APl spec      => APl Indef
+               } ;
 
     dgenderSpecies : AGender -> Species -> Role -> CardForm =
       \g,spec,role -> case <g,spec> of {
@@ -358,7 +366,7 @@ resource ResBul = ParamX ** open Prelude, Predef in {
     ia2e : Str -> Str =           -- to be used when the next syllable has vowel different from "а","ъ","о" or "у"
       \s -> case s of {
               x@(_*+_) + "я" + y@(("б"|"в"|"г"|"д"|"ж"|"з"|"к"|"л"|"м"|"н"|"п"|"р"|"с"|"т"|"ф"|"х"|"ц"|"ч"|"ш"|"щ")*)
-                => x+"e"+y;
+                => x+"е"+y;
               _ => s
             };
 
@@ -487,6 +495,18 @@ resource ResBul = ParamX ** open Prelude, Predef in {
          } ++
          vp.compl ! agr ;
 
+  linrefVP : VP -> Str =
+    \vp ->
+      let agr = {gn = GSg Neut; p = P1};
+          clitic = case vp.vtype of {
+                     VNormal    => {s=[]; agr=agr} ;
+                     VMedial c  => {s=reflClitics ! c; agr=agr} ;
+                     VPhrasal c => {s=personalClitics ! c ! agr.gn ! agr.p; agr={gn=GSg Neut; p=P3}}
+                   } ;
+      in vp.ad.s ++
+         vp.s ! Imperf ! VPres (numGenNum clitic.agr.gn) clitic.agr.p ++ clitic.s ++
+         vp.compl ! agr ;
+
   gerund : VP -> Aspect => Agr => Str =
     \vp -> \\asp,agr =>
       let clitic = case vp.vtype of {
@@ -523,18 +543,19 @@ resource ResBul = ParamX ** open Prelude, Predef in {
       \dva, dvama, dve, vtori ->
                table {
                  NCard dg   => digitGenderSpecies dva dvama dve ! dg ;
-                 NOrd aform => let vtora = init vtori + "а" ;
-                                   vtoro = init vtori + "о"
+                 NOrd aform => let vtora : Str = case vtori of {_+"в" => vtori; _ => init vtori} + "а" ;
+                                   vtoro : Str = case vtori of {_+"в" => vtori; _ => init vtori} + "о";
+                                   i     : Str = case vtori of {_+"в" => "и"; _ => ""}
                                in case aform of {
                                     ASg Masc Indef => vtori ;
-                                    ASg Masc Def   => vtori+"я" ;
-                                    ASgMascDefNom  => vtori+"ят" ;
+                                    ASg Masc Def   => vtori+i+"я" ;
+                                    ASgMascDefNom  => vtori+i+"ят" ;
                                     ASg Fem  Indef => vtora ;
                                     ASg Fem  Def   => vtora+"та" ;
                                     ASg Neut Indef => vtoro ;
                                     ASg Neut Def   => vtoro+"то" ;
-                                    APl Indef      => vtori ;
-                                    APl Def        => vtori+"те"
+                                    APl Indef      => vtori+i ;
+                                    APl Def        => vtori+i+"те"
                                   }
                } ;
 
@@ -558,23 +579,26 @@ resource ResBul = ParamX ** open Prelude, Predef in {
 
     digitGenderSpecies : Str -> Str -> Str -> CardForm => Str =
       \dva, dvama, dve
-            -> let addDef : Str -> Str =
-                     \s -> case s of {
+            -> let addDef : Str -> Gender -> Str =
+                     \s,g -> case s of {
 		             dves+"та" => dves+"тате" ;
 		             dv+"а"    => dv+"ата" ;
+		             "0"       => s+"та" ;
+		             "1"       => s+case g of {Masc => "ят"; Fem => "та"; Neut => "то"} ;
+		             "2"       => s+case g of {Masc => "та"; _ => "те"} ;
 		             x         => x+"те"
-                           }
+                     }
                in table {
                     CFMasc Indef  NonHuman => dva ;
-                    CFMasc Def    NonHuman => addDef dva ;
-                    CFMascDefNom  NonHuman => addDef dva ;
+                    CFMasc Def    NonHuman => addDef dva Masc ;
+                    CFMascDefNom  NonHuman => addDef dva Masc ;
                     CFMasc Indef  Human    => dvama ;
-                    CFMasc Def    Human    => addDef dvama ;
-                    CFMascDefNom  Human    => addDef dvama ;
+                    CFMasc Def    Human    => addDef dvama Masc ;
+                    CFMascDefNom  Human    => addDef dvama Masc ;
                     CFFem  Indef           => dve ;
-                    CFFem  Def             => addDef dve ;
+                    CFFem  Def             => addDef dve Fem ;
                     CFNeut Indef           => dve ;
-                    CFNeut Def             => addDef dve
+                    CFNeut Def             => addDef dve Neut
                   } ;
 
     mkIP : Str -> Str -> GenNum -> {s : Role => QForm => Str ; gn : GenNum} =
@@ -670,4 +694,7 @@ resource ResBul = ParamX ** open Prelude, Predef in {
     
     linCoordSep : Str -> Bool => Ints 2 => Str ;
     linCoordSep s = table {True => linCoord; False=> \\_ => s} ;
+    
+    comma : Str = SOFT_BIND ++ "," ;
+    hyphen : Str = SOFT_BIND ++ "-" ++ SOFT_BIND ;
 }

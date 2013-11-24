@@ -29,7 +29,7 @@ lang:
 api:
 	$(RUNMAKE) alltenses api
 
-dict: DictBul DictEng DictFin DictFre DictRus DictGer DictSwe
+dict: DictBul DictEng DictEst DictFin DictFre DictRus DictGer DictSwe
 
 DictBul:
 	gf -batch bulgarian/DictBul.gf +RTS -K100M
@@ -38,6 +38,10 @@ DictBul:
 DictEng:
 	gf -batch english/DictEng.gf +RTS -K100M
 	cp -p english/DictEng*.gfo ../alltenses
+
+DictEst:
+	gf -batch estonian/DictEst.gf +RTS -K100M
+	cp -p estonian/DictEst*.gfo ../alltenses
 
 DictFin:
 	gf -batch finnish/DictFin.gf +RTS -K100M
@@ -149,6 +153,12 @@ ParseSpa:
 ParseEngSpa:
 	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseEngSpa ParseEng.pgf ParseSpa.pgf
 
+ParseFre:
+	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseFre french/ParseFre.gf
+
+ParseEngFre:
+	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseEngFre ParseEng.pgf ParseFre.pgf
+
 ParseSwe:
 	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseSwe swedish/ParseSwe.gf
 
@@ -156,7 +166,7 @@ ParseEngSwe:
 	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseEngSwe ParseEng.pgf ParseSwe.pgf
 
 ParseChi:
-	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseChi chinese/ParseChi.gf
+	gf -make -s -literal=Symb -probs=$(PROBSFILE) -name=ParseChi chinese/ParseChi.gf
 
 ParseEngChi:
 	gf -make -literal=Symb -probs=$(PROBSFILE) -name=ParseEngChi ParseEng.pgf ParseChi.pgf

@@ -1,4 +1,5 @@
 --# -path=.:../abstract:../common:../../prelude
+--# -coding=latin1
 
 --1 Finnish Lexical Paradigms
 --
@@ -338,6 +339,9 @@ mkVS = overload {
     = \isNeg,nu,noun,_ -> MorphoFin.mkDetPol isNeg nu (snoun2nounBind noun) ;
     } ;
 
+  mkInterj : Str -> Interj
+    = \s -> lin Interj {s = s} ;
+
 --.
 -- THE definitions should not bother the user of the API. So they are
 -- hidden from the document.
@@ -522,9 +526,9 @@ mkVS = overload {
           dSilakka ukko ukon ukkoja ;  -- auto,auton
         <_ + "mpi", _ + ("emman" | "emmän")> => dSuurempi ukko ;
         <_ + "in", _ + ("imman" | "immän")> => dSuurin ukko ;
-        <terv + "e", terv + "een"> => 
+        <terv + "e", terv2 + "een"> => -- was nonlinear
           dRae ukko ukon ;
-        <taiv + ("as" | "äs"), taiv + ("aan" | "ään")> => 
+        <taiv + ("as" | "äs"), taiv2 + ("aan" | "ään")> =>  -- was nonlinear
           dRae ukko ukon ;
         <nukk + "e", nuk + "een"> => dRae ukko ukon ;
         <arp + "i", arv + "en"> => dArpi ukko ukon ;

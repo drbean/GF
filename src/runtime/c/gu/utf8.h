@@ -17,13 +17,6 @@ gu_in_utf8(GuIn* in, GuExn* err)
 	return gu_in_utf8_(in, err);
 }
 
-
-char
-gu_in_utf8_char(GuIn* in, GuExn* err);
-
-void
-gu_out_utf8_long_(GuUCS ucs, GuOut* out, GuExn* err);
-
 inline void
 gu_out_utf8(GuUCS ucs, GuOut* out, GuExn* err)
 {
@@ -31,17 +24,23 @@ gu_out_utf8(GuUCS ucs, GuOut* out, GuExn* err)
 	if (GU_LIKELY(ucs < 0x80)) {
 		gu_out_u8(out, ucs, err);
 	} else {
-		gu_out_utf8_long_(ucs, out, err);
+		extern void gu_out_utf8_(GuUCS ucs, GuOut* out, GuExn* err);
+		gu_out_utf8_(ucs, out, err);
 	}
 }
 
-size_t
-gu_utf32_out_utf8(const GuUCS* src, size_t len, GuOut* out, GuExn* err);
+// Helper functions used in other modules
 
 GuUCS
 gu_utf8_decode(const uint8_t** utf8);
 
-void 
-gu_str_out_utf8(const char* str, GuOut* out, GuExn* err);
+void
+gu_in_utf8_buf(uint8_t** buf, GuIn* in, GuExn* err);
+
+static inline bool
+gu_is_space(uint8_t c) {
+	return (c == '\t' || c == '\n' || c == '\v' ||
+	        c == '\f' || c == '\r' || c == ' ');
+}
 
 #endif // GU_UTF8_H_

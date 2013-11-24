@@ -16,26 +16,26 @@ module GF.Grammar.CF (getCF,CFItem,CFCat,CFFun,cf2gf,CFRule) where
 
 import GF.Grammar.Grammar
 import GF.Grammar.Macros
-import GF.Infra.Ident
+import GF.Infra.Ident(Ident,identS)
 import GF.Infra.Option
 import GF.Infra.UseIO
 
 import GF.Data.Operations
 import GF.Data.Utilities (nub')
 
+import qualified Data.Set as S
 import Data.Char
 import Data.List
-import qualified Data.ByteString.Char8 as BS
-import System.FilePath
+--import System.FilePath
 
-getCF :: FilePath -> String -> Err SourceGrammar
-getCF fpath = fmap (cf2gf fpath) . pCF
+getCF :: ErrorMonad m => FilePath -> String -> m SourceGrammar
+getCF fpath = fmap (cf2gf fpath . uniqueFuns) . pCF
 
 ---------------------
 -- the parser -------
 ---------------------
 
-pCF :: String -> Err CF
+pCF :: ErrorMonad m => String -> m CF
 pCF s = do
   rules <- mapM getCFRule $ filter isRule $ lines s
   return $ concat rules
@@ -48,14 +48,14 @@ pCF s = do
 -- fun. C -> item1 item2 ... where unquoted items are treated as cats
 -- Actually would be nice to add profiles to this.
 
-getCFRule :: String -> Err [CFRule]
+getCFRule :: ErrorMonad m => String -> m [CFRule]
 getCFRule s = getcf (wrds s) where
   getcf ws = case ws of
     fun : cat : a : its | isArrow a -> 
-      Ok [L NoLoc (init fun, (cat, map mkIt its))]
+      return [L NoLoc (init fun, (cat, map mkIt its))]
     cat : a : its | isArrow a -> 
-      Ok [L NoLoc (mkFun cat it, (cat, map mkIt it)) | it <- chunk its]
-    _ -> Bad (" invalid rule:" +++ s)
+      return [L NoLoc (mkFun cat it, (cat, map mkIt it)) | it <- chunk its]
+    _ -> raise (" invalid rule:" +++ s)
   isArrow a = elem a ["->", "::="] 
   mkIt w = case w of
     ('"':w@(_:_)) -> Right (init w)
@@ -77,6 +77,21 @@ type CFItem = Either CFCat String
 
 type CFCat = String
 type CFFun = String
+
+
+--------------------------------
+-- make function names unique -- 
+--------------------------------
+
+uniqueFuns :: CF -> CF
+uniqueFuns = snd . mapAccumL uniqueFun S.empty
+  where
+    uniqueFun funs (L l (fun,rule)) = (S.insert fun' funs,L l (fun',rule))
+      where
+        fun' = head [fun'|suffix<-"":map show ([2..]::[Int]),
+                          let fun'=fun++suffix,
+                          not (fun' `S.member` funs)]
+
 
 --------------------------
 -- the compiler ----------
@@ -103,7 +118,7 @@ cf2grammar rules = (buildTree abs, buildTree conc, cat) where
             _ -> error "empty CF" 
   cats  = [(cat, AbsCat (Just (L NoLoc []))) | 
              cat <- nub' (concat (map cf2cat rules))] ----notPredef cat
-  lincats = [(cat, CncCat (Just (L loc defLinType)) Nothing Nothing Nothing) | (cat,AbsCat (Just (L loc _))) <- cats]
+  lincats = [(cat, CncCat (Just (L loc defLinType)) Nothing Nothing Nothing Nothing) | (cat,AbsCat (Just (L loc _))) <- cats]
   (funs,lins) = unzip (map cf2rule rules)
 
 cf2cat :: CFRule -> [Ident]
@@ -126,6 +141,3 @@ cf2rule (L loc (fun, (cat, items))) = (def,ldef) where
   mkIt (_, Right a) = K a
   foldconcat [] = K ""
   foldconcat tt = foldr1 C tt
-
-identS = identC . BS.pack
-

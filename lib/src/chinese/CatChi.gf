@@ -1,4 +1,4 @@
-concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in {
+concrete CatChi of Cat = CommonX - [Tense, Temp, Ant, Adv] ** open ResChi, Prelude in {
 
   lincat
 
@@ -22,7 +22,8 @@ concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in
     QCl = {s : Polarity => Aspect => Str} ; 
     IP = {s : Str} ;
     IComp = {s : Str} ;    
-    IDet, IQuant = {s : Str} ;
+    IDet = {s : Str ; detType : DetType} ;
+    IQuant = {s : Str} ;
 
 -- Relative
 
@@ -37,7 +38,7 @@ concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in
 
 -- Adjective
 
-    AP = ResChi.Adj ;
+    AP = ResChi.Adj ** {hasAdA : Bool} ;
 
 -- Noun
 
@@ -65,8 +66,8 @@ concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in
 -- Open lexical classes, e.g. Lexicon
 
     V, VS, VQ, VA = Verb ; 
-    V2, V2Q, V2S = Verb ** {c2 : Preposition} ;
-    V3, V2A, V2V = Verb ** {c2, c3 : Preposition} ;
+    V2, V2Q, V2S = Verb ** {c2 : Preposition ; hasPrep : Bool ; part : Str} ;
+    V3, V2A, V2V = Verb ** {c2, c3 : Preposition ; hasPrep : Bool ; part : Str} ;
     VV = Verb ;
 
     A = ResChi.Adj ;
@@ -81,6 +82,6 @@ concrete CatChi of Cat = CommonX - [Tense, Temp, Adv] ** open ResChi, Prelude in
 
     Temp  = {s : Str ; t : Aspect} ;
     Tense = {s : Str ; t : Aspect} ;
-
+    Ant   = {s : Str ; t : Aspect} ;
 
 }

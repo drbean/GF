@@ -17,14 +17,14 @@ concrete ParseEng of ParseEngAbs =
   ExtraEng [NP, Quant, VPSlash, VP, Tense, GenNP, PassVPSlash,
             Temp, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
             VPI, VPIForm, VPIInf, VPIPresPart, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV,
-            ClSlash, RCl, EmptyRelSlash],
+            ComplSlashPartLast,
+            ClSlash, RCl, EmptyRelSlash, VS, V2S, ComplBareVS, SlashBareV2S],
 
   DictEng ** 
 open MorphoEng, ResEng, ParadigmsEng, Prelude in {
 
 flags
   literal=Symb ;
-  beam_size=0.95 ;
 
 lin
   myself_NP = regNP "myself" singular ;
@@ -32,9 +32,8 @@ lin
   himself_NP = regNP "himself" singular ;
   herself_NP = regNP "herself" singular ;
   itself_NP = regNP "itself" singular ;
-  ourself_NP = regNP "ourself" plural ;
+  ourselves_NP = regNP "ourselves" plural ;
   yourselfPl_NP = regNP "yourself" plural ;
-  themself_NP = regNP "themself" plural ;
   themselves_NP = regNP "themselves" plural ;
 
   CompoundCN num noun cn = {
@@ -91,8 +90,8 @@ lin
           compl = vp.s2 ! np.a
         in
         case o of {
-          ODir => compl ++ "," ++ np.s ! npNom ++ verb.aux ++ vp.ad ++ verb.fin ++ verb.adv ++ verb.inf ;
-          OQuest => verb.aux ++ compl ++ "," ++ np.s ! npNom ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf 
+          ODir => compl ++ frontComma ++ np.s ! npNom ++ verb.aux ++ vp.ad ++ verb.fin ++ verb.adv ++ verb.inf ;
+          OQuest => verb.aux ++ compl ++ frontComma ++ np.s ! npNom ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf 
           }
     } ;
     
@@ -103,13 +102,18 @@ lin
           compl = vp.s2 ! np.a
         in
         case o of {
-          ODir => compl ++ verb.aux ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom ;
+          ODir => compl ++ frontComma ++ verb.aux ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom ;
           OQuest => verb.aux ++ compl ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom
           }
     } ;
 
   that_RP = {
     s = \\_ => "that" ;
+    a = RNoAg
+    } ;
+
+  who_RP = {
+    s = \\_ => "who" ;
     a = RNoAg
     } ;
 
@@ -133,7 +137,7 @@ lin
   } ;
 
   ApposNP np1 np2 = {
-    s = \\c => np1.s ! c ++ "," ++ np2.s ! npNom ;
+    s = \\c => np1.s ! c ++ frontComma ++ np2.s ! npNom ++ finalComma ;
     a = np1.a
   } ;
   

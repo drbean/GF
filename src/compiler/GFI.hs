@@ -8,12 +8,10 @@ import GF.Command.Interpreter(CommandEnv(..),commands,mkCommandEnv,emptyCommandE
 import GF.Command.Commands(flags,options)
 import GF.Command.Abstract
 import GF.Command.Parse(readCommandLine,pCommand)
-import GF.Data.ErrM
-import GF.Data.Operations (chunks,err)
-import GF.Grammar hiding (Ident)
+import GF.Data.Operations (Err(..),chunks,err,raise)
+import GF.Grammar hiding (Ident,isPrefixOf)
 import GF.Grammar.Analyse
 import GF.Grammar.Parser (runP, pExp)
-import GF.Grammar.Printer (ppGrammar, ppModule)
 import GF.Grammar.ShowTerm
 import GF.Grammar.Lookup (allOpers,allOpersTo)
 import GF.Compile.Rename(renameSourceTerm)
@@ -25,7 +23,6 @@ import GF.Infra.CheckM
 import GF.Infra.UseIO(ioErrorText)
 import GF.Infra.SIO
 import GF.Infra.Option
-import GF.Infra.Ident (showIdent)
 import qualified System.Console.Haskeline as Haskeline
 import GF.Text.Coding(decodeUnicode,encodeUnicode)
 
@@ -36,7 +33,6 @@ import PGF.Data
 import PGF.Macros
 
 import Data.Char
-import Data.Maybe
 import Data.List(nub,isPrefixOf,isInfixOf,partition)
 import qualified Data.Map as Map
 import qualified Data.ByteString.Char8 as BS
@@ -329,11 +325,11 @@ printException e = maybe (print e) (putStrLn . ioErrorText) (fromException e)
 
 checkComputeTerm = checkComputeTerm' False
 checkComputeTerm' new sgr t = do
-                 mo <- maybe (Bad "no source grammar in scope") return $ greatestResource sgr
+                 mo <- maybe (raise "no source grammar in scope") return $ greatestResource sgr
                  ((t,_),_) <- runCheck $ do t <- renameSourceTerm sgr mo t
                                             inferLType sgr [] t
                  t1 <- if new
-                       then return (CN.normalForm (CN.resourceValues sgr) (L NoLoc IW) t)
+                       then return (CN.normalForm (CN.resourceValues sgr) (L NoLoc identW) t)
                        else computeConcrete sgr t
                  checkPredefError sgr t1
 

@@ -17,21 +17,21 @@ module GF.Compile.Compute.ConcreteLazy (computeConcrete, computeTerm,checkPredef
 import GF.Data.Operations
 import GF.Grammar.Grammar
 import GF.Infra.Ident
-import GF.Infra.Option
+--import GF.Infra.Option
 import GF.Data.Str
-import GF.Grammar.ShowTerm
+--import GF.Grammar.ShowTerm
 import GF.Grammar.Printer
 import GF.Grammar.Predef
 import GF.Grammar.Macros
 import GF.Grammar.Lookup
-import GF.Compile.Refresh
+--import GF.Compile.Refresh
 import GF.Grammar.PatternMatch
 import GF.Grammar.Lockfield (isLockLabel,unlockRecord) ----
 
 import GF.Compile.Compute.AppPredefined
 
-import Data.List (nub,intersperse)
-import Control.Monad (liftM2, liftM)
+import Data.List (nub) --intersperse
+--import Control.Monad (liftM2, liftM)
 import Control.Monad.Identity
 import Text.PrettyPrint
 
@@ -508,8 +508,7 @@ computeTermOpt gr = comput True where
 -- | argument variables cannot be glued
 checkNoArgVars :: Term -> Comp Term
 checkNoArgVars t = case t of
-  Vr (IA _ _)    -> fail $ glueErrorMsg $ ppTerm Unqualified 0 t 
-  Vr (IAV _ _ _) -> fail $ glueErrorMsg $ ppTerm Unqualified 0 t 
+  Vr x | isArgIdent x -> fail $ glueErrorMsg $ ppTerm Unqualified 0 t
   _ -> composOp checkNoArgVars t
 
 glueErrorMsg s = 

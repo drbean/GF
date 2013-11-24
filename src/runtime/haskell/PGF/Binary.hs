@@ -10,11 +10,11 @@ import Data.Array.IArray
 import qualified Data.ByteString as BS
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
-import qualified Data.Set as Set
+--import qualified Data.Set as Set
 import Control.Monad
 
 pgfMajorVersion, pgfMinorVersion :: Word16
-(pgfMajorVersion, pgfMinorVersion) = (1,0)
+(pgfMajorVersion, pgfMinorVersion) = (2,0)
 
 instance Binary PGF where
   put pgf = do putWord16be pgfMajorVersion
@@ -40,13 +40,13 @@ instance Binary CId where
 instance Binary Abstr where
   put abs = put (aflags abs, 
                  fmap (\(w,x,y,z,_) -> (w,x,y,z)) (funs abs),
-                 fmap (\(x,y,_) -> (x,y)) (cats abs))
+                 fmap (\(x,y,z,_) -> (x,y,z)) (cats abs))
   get = do aflags <- get
            funs <- get
            cats <- get
            return (Abstr{ aflags=aflags
                         , funs=fmap (\(w,x,y,z) -> (w,x,y,z,0)) funs
-                        , cats=fmap (\(x,y) -> (x,y,0)) cats
+                        , cats=fmap (\(x,y,z) -> (x,y,z,0)) cats
                         , code=BS.empty                        
                         })
   
@@ -56,6 +56,7 @@ instance Binary Concr where
                putArray2 (sequences cnc)
                putArray (cncfuns cnc)
                put (lindefs cnc)
+               put (linrefs cnc)
                put (productions cnc)
                put (cnccats cnc)
                put (totalCats cnc)
@@ -64,21 +65,19 @@ instance Binary Concr where
            sequences   <- getArray2
            cncfuns     <- getArray
            lindefs     <- get
+           linrefs     <- get
            productions <- get
            cnccats     <- get
            totalCats   <- get
            return (Concr{ cflags=cflags, printnames=printnames
-                        , sequences=sequences, cncfuns=cncfuns, lindefs=lindefs
+                        , sequences=sequences, cncfuns=cncfuns
+                        , lindefs=lindefs, linrefs=linrefs
                         , productions=productions
                         , pproductions = IntMap.empty
                         , lproductions = Map.empty
                         , lexicon = IntMap.empty
                         , cnccats=cnccats, totalCats=totalCats
                         })
-
-instance Binary Alternative where
-  put (Alt v x) = put (v,x)
-  get = liftM2 Alt get get
 
 instance Binary Expr where
   put (EAbs b x exp)  = putWord8 0 >> put (b,x,exp)
@@ -152,7 +151,9 @@ instance Binary Symbol where
   put (SymVar n l)       = putWord8 2 >> put (n,l)
   put (SymKS ts)         = putWord8 3 >> put ts
   put (SymKP d vs)       = putWord8 4 >> put (d,vs)
-  put SymNE              = putWord8 5
+  put SymBIND            = putWord8 5
+  put SymSOFT_BIND       = putWord8 6
+  put SymNE              = putWord8 7
   get = do tag <- getWord8
            case tag of
              0 -> liftM2 SymCat get get
@@ -160,7 +161,9 @@ instance Binary Symbol where
              2 -> liftM2 SymVar get get
              3 -> liftM  SymKS  get
              4 -> liftM2 (\d vs -> SymKP d vs) get get
-             5 -> return SymNE
+             5 -> return SymBIND
+             6 -> return SymSOFT_BIND
+             7 -> return SymNE
              _ -> decodingError
 
 instance Binary PArg where

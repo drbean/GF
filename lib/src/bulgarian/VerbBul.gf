@@ -1,3 +1,4 @@
+--# -coding=cp1251
 concrete VerbBul of Verb = CatBul ** open Prelude, ResBul, ParadigmsBul in {
   flags coding=cp1251 ;
 
@@ -22,7 +23,7 @@ concrete VerbBul of Verb = CatBul ** open Prelude, ResBul, ParadigmsBul in {
                  })
                 (predV vv) ;
 
-    ComplVS v s  = insertObj (\\_ => "," ++ "че" ++ s.s) (predV v) ;
+    ComplVS v s  = insertObj (\\_ => comma ++ "че" ++ s.s) (predV v) ;
     ComplVQ v q  = insertObj (\\_ => q.s ! QDir) (predV v) ;
 
     ComplVA v ap = 
@@ -33,7 +34,7 @@ concrete VerbBul of Verb = CatBul ** open Prelude, ResBul, ParadigmsBul in {
       insertSlashObj2 (\\a => ap.s ! aform a.gn Indef (RObj Acc)) (slashV v v.c2) ;
 
     -- test: I saw a boy to whom she said that they are here
-    SlashV2S v s  = insertSlashObj2 (\\_ => "," ++ "че" ++ s.s) (slashV v v.c2) ;
+    SlashV2S v s  = insertSlashObj2 (\\_ => comma ++ "че" ++ s.s) (slashV v v.c2) ;
 
     -- test: I saw a boy whom she asked who is here
     SlashV2Q v q  = insertSlashObj2 (\\_ => q.s ! QDir) (slashV v v.c2) ;
@@ -82,6 +83,14 @@ concrete VerbBul of Verb = CatBul ** open Prelude, ResBul, ParadigmsBul in {
       ad  = {isEmpty=False; s=vp.ad.s ++ adv.s} ;
       compl = vp.compl ;
       vtype = vp.vtype
+      } ;
+    AdVVPSlash adv vp = {
+      s   = vp.s ;
+      ad  = {isEmpty=False; s=vp.ad.s ++ adv.s} ;
+      compl1 = vp.compl1 ;
+      compl2 = vp.compl2 ;
+      vtype = vp.vtype ;
+      c2 = vp.c2
       } ;
 
     ReflVP slash = {

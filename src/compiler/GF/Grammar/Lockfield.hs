@@ -16,15 +16,13 @@
 
 module GF.Grammar.Lockfield (lockRecType, unlockRecord, lockLabel, isLockLabel) where
 
-import qualified Data.ByteString.Char8 as BS
-
 import GF.Infra.Ident
 import GF.Grammar.Grammar
 import GF.Grammar.Macros
 
-import GF.Data.Operations
+import GF.Data.Operations(ErrorMonad,Err(..))
 
-lockRecType :: Ident -> Type -> Err Type
+lockRecType :: ErrorMonad m => Ident -> Type -> m Type
 lockRecType c t@(RecType rs) = 
   let lab = lockLabel c in
   return $ if elem lab (map fst rs) || elem (showIdent c) ["String","Int"]
@@ -41,12 +39,12 @@ unlockRecord c ft = do
     _ -> return $ mkAbs xs (ExtR t lock)
 
 lockLabel :: Ident -> Label
-lockLabel c = LIdent $! BS.append lockPrefix (ident2bs c)
+lockLabel c = LIdent $! prefixRawIdent lockPrefix (ident2raw c)
 
 isLockLabel :: Label -> Bool
 isLockLabel l = case l of
-  LIdent c -> BS.isPrefixOf lockPrefix c
+  LIdent c -> isPrefixOf lockPrefix c
   _        -> False
 
 
-lockPrefix = BS.pack "lock_"
+lockPrefix = rawIdentS "lock_"

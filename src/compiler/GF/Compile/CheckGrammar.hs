@@ -33,8 +33,8 @@ import qualified GF.Compile.Compute.ConcreteNew as CN
 import GF.Grammar
 import GF.Grammar.Lexer
 import GF.Grammar.Lookup
-import GF.Grammar.Predef
-import GF.Grammar.PatternMatch
+--import GF.Grammar.Predef
+--import GF.Grammar.PatternMatch
 
 import GF.Data.Operations
 import GF.Infra.CheckM
@@ -50,10 +50,10 @@ checkModule opts sgr mo@(m,mi) = do
   checkRestrictedInheritance sgr mo
   mo <- case mtype mi of
           MTConcrete a -> do let gr = prependModule sgr mo
-                             abs <- checkErr $ lookupModule gr a
+                             abs <- lookupModule gr a
                              checkCompleteGrammar opts gr (a,abs) mo
           _            -> return mo
-  infoss <- checkErr $ topoSortJments2 mo
+  infoss <- topoSortJments2 mo
   foldM updateCheckInfos mo infoss
   where
     updateCheckInfos mo = fmap (foldl update mo) . parallelCheck . map check
@@ -106,8 +106,8 @@ checkCompleteGrammar opts gr (am,abs) (cm,cnc) = checkIn (ppLocation (msrc cnc) 
                                                     return info
                                  _            -> return info
                        case info of
-                         CncCat (Just (L loc (RecType []))) _ _ _ -> return (foldr (\_ -> Abs Explicit identW) (R []) cxt)
-                         _                                        -> Bad "no def lin"
+                         CncCat (Just (L loc (RecType []))) _ _ _ _ -> return (foldr (\_ -> Abs Explicit identW) (R []) cxt)
+                         _                                          -> Bad "no def lin"
 
                  case lookupIdent c js of
                    Ok (AnyInd _ _) -> return js
@@ -129,13 +129,13 @@ checkCompleteGrammar opts gr (am,abs) (cm,cnc) = checkIn (ppLocation (msrc cnc) 
                            checkWarn (text "no linearization of" <+> ppIdent c)
        AbsCat (Just _) -> case lookupIdent c js of
          Ok (AnyInd _ _) -> return js
-         Ok (CncCat (Just _) _ _ _) -> return js
-         Ok (CncCat Nothing mt mp mpmcfg) -> do
+         Ok (CncCat (Just _) _ _ _ _) -> return js
+         Ok (CncCat Nothing md mr mp mpmcfg) -> do
            checkWarn (text "no linearization type for" <+> ppIdent c <> text ", inserting default {s : Str}")
-           return $ updateTree (c,CncCat (Just (L NoLoc defLinType)) mt mp mpmcfg) js
+           return $ updateTree (c,CncCat (Just (L NoLoc defLinType)) md mr mp mpmcfg) js
          _ -> do
            checkWarn (text "no linearization type for" <+> ppIdent c <> text ", inserting default {s : Str}")
-           return $ updateTree (c,CncCat (Just (L NoLoc defLinType)) Nothing Nothing Nothing) js
+           return $ updateTree (c,CncCat (Just (L NoLoc defLinType)) Nothing Nothing Nothing Nothing) js
        _ -> return js
      
    checkCnc js i@(c,info) =
@@ -147,7 +147,7 @@ checkCompleteGrammar opts gr (am,abs) (cm,cnc) = checkIn (ppLocation (msrc cnc) 
                                            return $ updateTree (c,CncFun (Just linty) d mn mf) js
                              _       -> do checkWarn (text "function" <+> ppIdent c <+> text "is not in abstract")
                                            return js
-       CncCat _ _ _ _   -> case lookupOrigInfo gr (am,c) of
+       CncCat _ _ _ _ _ -> case lookupOrigInfo gr (am,c) of
                              Ok _ -> return $ updateTree i js
                              _    -> do checkWarn (text "category" <+> ppIdent c <+> text "is not in abstract")
                                         return js
@@ -175,7 +175,7 @@ checkInfo opts sgr (m,mo) c info = do
         Nothing  -> return ()
       return (AbsFun (Just (L loc typ)) ma md moper)
 
-    CncCat mty mdef mpr mpmcfg -> do
+    CncCat mty mdef mref mpr mpmcfg -> do
       mty  <- case mty of
                 Just (L loc typ) -> chIn loc "linearization type of" $ 
                                      (if False --flag optNewComp opts
@@ -192,13 +192,19 @@ checkInfo opts sgr (m,mo) c info = do
                        (def,_) <- checkLType gr [] def (mkFunType [typeStr] typ)
                        return (Just (L loc def))
                 _ -> return Nothing
+      mref <- case (mty,mref) of
+                (Just (L _ typ),Just (L loc ref)) -> 
+                    chIn loc "reference linearization of" $ do
+                       (ref,_) <- checkLType gr [] ref (mkFunType [typ] typeStr)
+                       return (Just (L loc ref))
+                _ -> return Nothing
       mpr  <- case mpr of
                 (Just (L loc t)) -> 
                     chIn loc "print name of" $ do
                        (t,_) <- checkLType gr [] t typeStr
                        return (Just (L loc t))
                 _ -> return Nothing
-      return (CncCat mty mdef mpr mpmcfg)
+      return (CncCat mty mdef mref mpr mpmcfg)
 
     CncFun mty mt mpr mpmcfg -> do
       mt <- case (mty,mt) of
@@ -240,7 +246,7 @@ checkInfo opts sgr (m,mo) c info = do
 
     ResOverload os tysts -> chIn NoLoc "overloading" $ do
       tysts' <- mapM (uncurry $ flip (\(L loc1 t) (L loc2 ty) -> checkLType gr [] t ty >>= \(t,ty) -> return (L loc1 t, L loc2 ty))) tysts  -- return explicit ones
-      tysts0 <- checkErr $ lookupOverload gr (m,c)  -- check against inherited ones too
+      tysts0 <- lookupOverload gr (m,c)  -- check against inherited ones too
       tysts1 <- mapM (uncurry $ flip (checkLType gr [])) 
                   [(mkFunType args val,tr) | (args,(val,tr)) <- tysts0]
       --- this can only be a partial guarantee, since matching
@@ -261,7 +267,7 @@ checkInfo opts sgr (m,mo) c info = do
                            nest 2 (text "Happened in" <+> text cat <+> ppIdent c))
 
    mkPar (f,co) = do
-       vs <- checkErr $ liftM combinations $ mapM (\(_,_,ty) -> allParamValues gr ty) co
+       vs <- liftM combinations $ mapM (\(_,_,ty) -> allParamValues gr ty) co
        return $ map (mkApp (QC (m,f))) vs
 
    checkUniq xss = case xss of
@@ -311,13 +317,13 @@ linTypeOfType cnc m typ = do
      let vars = mkRecType varLabel $ replicate n typeStr
 	 symb = argIdent n cat i
      rec <- if n==0 then return val else
-            checkErr $ errIn (render (text "extending" $$
+                       errIn (render (text "extending" $$
                                       nest 2 (ppTerm Unqualified 0 vars) $$
                                       text "with" $$
                                       nest 2 (ppTerm Unqualified 0 val))) $
                              plusRecType vars val
      return (Explicit,symb,rec)
    lookLin (_,c) = checks [ --- rather: update with defLinType ?
-      checkErr (lookupLincat cnc m c) >>= computeLType cnc []
+      lookupLincat cnc m c >>= computeLType cnc []
      ,return defLinType
      ]

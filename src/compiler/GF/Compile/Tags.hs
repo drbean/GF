@@ -8,10 +8,10 @@ import GF.Infra.UseIO
 import GF.Data.Operations
 import GF.Grammar
 
-import Data.List
+--import Data.List
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import Control.Monad
+--import Control.Monad
 import Text.PrettyPrint
 import System.FilePath
 
@@ -19,7 +19,7 @@ writeTags opts gr file mo = do
   let imports = getImports opts gr mo
       locals  = getLocalTags [] mo
       txt     = unlines ((Set.toList . Set.fromList) (imports++locals))
-  putPointE Normal opts ("  write file" +++ file) $ ioeIO $ writeFile file txt
+  putPointE Normal opts ("  write file" +++ file) $ liftIO $ writeFile file txt
 
 getLocalTags x (m,mi) = 
   [showIdent i ++ "\t" ++ k ++ "\t" ++ l ++ "\t" ++ t 
@@ -36,8 +36,9 @@ getLocalTags x (m,mi) =
                                                   maybe (loc "oper-def")     mb_def
     getLocations (ResOverload _ defs)           = list (\(x,y) -> ltype "overload-type" x ++ 
                                                                   loc   "overload-def"  y) defs
-    getLocations (CncCat mty mdef mprn _)       = maybe (loc "lincat")       mty ++ 
-                                                  maybe (loc "lindef")       mdef  ++ 
+    getLocations (CncCat mty md mr mprn _)      = maybe (loc "lincat")       mty ++ 
+                                                  maybe (loc "lindef")       md  ++
+                                                  maybe (loc "linref")       mr  ++
                                                   maybe (loc "printname")    mprn
     getLocations (CncFun _ mlin mprn _)         = maybe (loc "lin")          mlin ++
                                                   maybe (loc "printname")    mprn

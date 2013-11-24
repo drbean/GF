@@ -29,15 +29,15 @@ import GF.Infra.Option
 import GF.Grammar.Values
 import GF.Grammar.Grammar
 
-import PGF.Expr (ppMeta)
+import PGF.Data (ppMeta, ppLit)
 import PGF.Printer (ppFId, ppFunId, ppSeqId, ppSeq)
 
 import Text.PrettyPrint
-import Data.Maybe (maybe, isNothing)
+import Data.Maybe (isNothing)
 import Data.List  (intersperse)
 import qualified Data.Map as Map
-import qualified Data.IntMap as IntMap
-import qualified Data.Set as Set
+--import qualified Data.IntMap as IntMap
+--import qualified Data.Set as Set
 import qualified Data.Array.IArray as Array
 
 data TermPrintQual 
@@ -87,7 +87,7 @@ ppModule q (mn, ModInfo mtype mstat opts exts with opens _ _ mseqs jments) =
 
 ppOptions opts = 
   text "flags" $$
-  nest 2 (vcat [text option <+> equals <+> str value <+> semi | (option,value) <- optionsGFO opts])
+  nest 2 (vcat [text option <+> equals <+> ppLit value <+> semi | (option,value) <- optionsGFO opts])
 
 ppJudgement q (id, AbsCat pcont ) =
   text "cat" <+> ppIdent id <+>
@@ -124,12 +124,15 @@ ppJudgement q (id, ResOverload ids defs) =
   (text "overload" <+> lbrace $$
    nest 2 (vcat [ppIdent id <+> (colon <+> ppTerm q 0 ty $$ equals <+> ppTerm q 0 e <+> semi) | (L _ ty,L _ e) <- defs]) $$
    rbrace) <+> semi
-ppJudgement q (id, CncCat  ptype pexp pprn mpmcfg) =
-  (case ptype of
+ppJudgement q (id, CncCat pcat pdef pref pprn mpmcfg) =
+  (case pcat of
      Just (L _ typ) -> text "lincat" <+> ppIdent id <+> equals <+> ppTerm q 0 typ <+> semi
      Nothing        -> empty) $$
-  (case pexp of
+  (case pdef of
      Just (L _ exp) -> text "lindef" <+> ppIdent id <+> equals <+> ppTerm q 0 exp <+> semi
+     Nothing        -> empty) $$
+  (case pref of
+     Just (L _ exp) -> text "linref" <+> ppIdent id <+> equals <+> ppTerm q 0 exp <+> semi
      Nothing        -> empty) $$
   (case pprn of
      Just (L _ prn) -> text "printname" <+> ppIdent id <+> equals <+> ppTerm q 0 prn <+> semi

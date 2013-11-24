@@ -21,21 +21,20 @@ import GF.Grammar.Printer
 import GF.Grammar.Macros
 import GF.Grammar.Lookup
 import GF.Grammar.Predef
-import GF.Compile.Refresh
+--import GF.Compile.Refresh
 import GF.Compile.Compute.Concrete
-import GF.Compile.CheckGrammar
-import GF.Compile.Update
+--import GF.Compile.CheckGrammar
+--import GF.Compile.Update
 
 import GF.Data.Operations
-import GF.Infra.CheckM
+--import GF.Infra.CheckM
 import GF.Infra.Option
 
 import Control.Monad
-import Data.List
+--import Data.List
 import qualified Data.Set as Set
 import Text.PrettyPrint
 import Debug.Trace
-import qualified Data.ByteString.Char8 as BS
 
 
 -- | partial evaluation of concrete syntax. AR 6\/2001 -- 16\/5\/2003 -- 5\/2\/2005.
@@ -61,7 +60,7 @@ evalInfo opts sgr m c info = do
 
  errIn ("optimizing " ++ showIdent c) $ case info of
 
-  CncCat ptyp pde ppr mpmcfg -> do
+  CncCat ptyp pde pre ppr mpmcfg -> do
     pde' <- case (ptyp,pde) of
       (Just (L _ typ), Just (L loc de)) -> do
         de <- partEval opts gr ([(Explicit, varStr, typeStr)], typ) de
@@ -72,9 +71,19 @@ evalInfo opts sgr m c info = do
         return (Just (L loc (factor param c 0 de)))
       _ -> return pde   -- indirection
 
+    pre' <- case (ptyp,pre) of
+      (Just (L _ typ), Just (L loc re)) -> do
+        re <- partEval opts gr ([(Explicit, varStr, typ)], typeStr) re
+        return (Just (L loc (factor param c 0 re)))
+      (Just (L loc typ), Nothing) -> do
+        re <- mkLinReference gr typ
+        re <- partEval opts gr ([(Explicit, varStr, typ)], typeStr) re
+        return (Just (L loc (factor param c 0 re)))
+      _ -> return pre   -- indirection
+
     ppr' <- evalPrintname gr ppr
 
-    return (CncCat ptyp pde' ppr' mpmcfg)
+    return (CncCat ptyp pde' pre' ppr' mpmcfg)
 
   CncFun (mt@(Just (_,cont,val))) pde ppr mpmcfg -> --trace (prt c) $
        eIn (text "linearization in type" <+> ppTerm Unqualified 0 (mkProd cont val []) $$ text "of function") $ do
@@ -104,22 +113,26 @@ evalInfo opts sgr m c info = do
 
 -- | the main function for compiling linearizations
 partEval :: Options -> SourceGrammar -> (Context,Type) -> Term -> Err Term
-partEval opts gr (context, val) trm = errIn (render (text "partial evaluation" <+> ppTerm Qualified 0 trm)) $ do
+partEval opts = if flag optNewComp opts
+                then partEvalNew opts
+                else partEvalOld opts
+
+partEvalNew opts gr (context, val) trm =
+    errIn (render (text "partial evaluation" <+> ppTerm Qualified 0 trm)) $
+    checkPredefError gr trm
+
+partEvalOld opts gr (context, val) trm = errIn (render (text "partial evaluation" <+> ppTerm Qualified 0 trm)) $ do
   let vars  = map (\(bt,x,t) -> x) context
       args  = map Vr vars
       subst = [(v, Vr v) | v <- vars]
       trm1 = mkApp trm args
-  trm2 <- if new then return trm1 else computeTerm gr subst trm1
-  trm3 <- if new
-          then return trm2
-          else if rightType trm2
-               then computeTerm gr subst trm2 -- compute twice??
-               else recordExpand val trm2 >>= computeTerm gr subst
+  trm2 <- computeTerm gr subst trm1
+  trm3 <- if rightType trm2
+          then computeTerm gr subst trm2 -- compute twice??
+          else recordExpand val trm2 >>= computeTerm gr subst
   trm4 <- checkPredefError gr trm3
   return $ mkAbs [(Explicit,v) | v <- vars] trm4
   where
-    new = flag optNewComp opts -- computations moved to GF.Compile.GeneratePMCFG
-
     -- don't eta expand records of right length (correct by type checking)
     rightType (R rs) = case val of
                          RecType ts -> length rs == length ts
@@ -163,6 +176,26 @@ mkLinDefault gr typ = liftM (Abs Explicit varStr) $ mkDefField typ
      _ | Just _ <- isTypeInts typ -> return $ EInt 0 -- exists in all as first val
      _ -> Bad (render (text "linearization type field cannot be" <+> ppTerm Unqualified 0 typ))
 
+mkLinReference :: SourceGrammar -> Type -> Err Term
+mkLinReference gr typ = 
+ liftM (Abs Explicit varStr) $ 
+   case mkDefField typ (Vr varStr) of
+     Bad "no string" -> return Empty
+     x               -> x
+ where
+   mkDefField ty trm = 
+     case ty of
+       Table pty ty -> do ps <- allParamValues gr pty
+                          case ps of
+                            []     -> Bad "no string"
+                            (p:ps) -> mkDefField ty (S trm p)
+       Sort s | s == cStr -> return trm
+       QC p -> Bad "no string"
+       RecType rs  -> do
+         msum (map (\(l,ty) -> mkDefField ty (P trm l)) (sortRec rs))
+       _ | Just _ <- isTypeInts typ -> Bad "no string"
+       _ -> Bad (render (text "linearization type field cannot be" <+> ppTerm Unqualified 0 typ))
+
 evalPrintname :: SourceGrammar -> Maybe (L Term) -> Err (Maybe (L Term))
 evalPrintname gr mpr =
   case mpr of
@@ -190,7 +223,7 @@ factor param c i t =
            else V ty (map snd pvs0)
 
     --- we hope this will be fresh and don't check... in GFC would be safe
-    qvar = identC (BS.pack ("q_" ++ showIdent c ++ "__" ++ show i))
+    qvar = identS ("q_" ++ showIdent c ++ "__" ++ show i)
 
     mkFun (patt, val) = replace (patt2term patt) (Vr qvar) val
     mkCases t = [(PV qvar, t)]

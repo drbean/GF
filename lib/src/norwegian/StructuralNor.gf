@@ -1,3 +1,4 @@
+--# -coding=latin1
 concrete StructuralNor of Structural = CatNor ** 
   open MorphoNor, ParadigmsNor, (X = ConstructX), IrregNor, Prelude in {
 
@@ -99,7 +100,7 @@ concrete StructuralNor of Structural = CatNor **
     {c2 = mkComplement [] ; lock_VV = <>} ;
   we_Pron = MorphoNor.mkNP "vi"  "oss"  "vår" "vårt" "våre"  Utr Pl P1 ;
   whatSg_IP = {s = \\_ => "hva" ; g = Neutr ; n = Sg} ; ---- infl
-  whatPl_IP = {s = \\_ => "hva" ; g = Neutr ; n = Pl} ; ---- infl
+  whatPl_IP = {s = \\_ => "hvilke" ; g = Neutr ; n = Pl} ; ---- infl
   when_IAdv = ss "når" ;
   when_Subj = ss "når" ;
   where_IAdv = ss "hvor" ;

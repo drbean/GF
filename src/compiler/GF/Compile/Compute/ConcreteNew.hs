@@ -9,17 +9,16 @@ import GF.Grammar hiding (Env, VGen, VApp, VRecType)
 import GF.Grammar.Lookup(lookupResDefLoc,allParamValues)
 import GF.Grammar.Predef(cPredef,cErrorType,cTok,cStr)
 import GF.Grammar.PatternMatch(matchPattern,measurePatt)
-import GF.Grammar.Lockfield(unlockRecord,lockLabel,isLockLabel,lockRecType)
+import GF.Grammar.Lockfield(lockLabel,isLockLabel,lockRecType) --unlockRecord
 import GF.Compile.Compute.Value hiding (Error)
 import GF.Compile.Compute.Predef(predef,predefName,delta)
 import GF.Data.Str(Str,glueStr,str2strings,str,sstr,plusStr,strTok)
 import GF.Data.Operations(Err,err,errIn,maybeErr,combinations,mapPairsM)
-import GF.Data.Utilities(mapFst,mapSnd,mapBoth,apBoth,apSnd)
-import Control.Monad(ap,liftM,liftM2,mplus)
-import Data.List (findIndex,intersect,isInfixOf,nub,elemIndex)
-import Data.Char (isUpper,toUpper,toLower)
+import GF.Data.Utilities(mapFst,mapSnd,mapBoth)
+import Control.Monad(ap,liftM,liftM2,mplus,unless)
+import Data.List (findIndex,intersect,nub,elemIndex,(\\)) --,isInfixOf
+--import Data.Char (isUpper,toUpper,toLower)
 import Text.PrettyPrint
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.Map as Map
 --import Debug.Trace(trace)
 
@@ -80,7 +79,7 @@ resource env (m,c) =
 resourceValues :: SourceGrammar -> GlobalEnv
 resourceValues gr = env
   where
-    env = GE gr rvs (L NoLoc IW)
+    env = GE gr rvs (L NoLoc identW)
     rvs = Map.mapWithKey moduleResources (moduleMap gr)
     moduleResources m = Map.mapWithKey (moduleResource m) . jments
     moduleResource m c _info = do L l t <- lookupResDefLoc gr (m,c)
@@ -115,7 +114,7 @@ value env t0 =
     Vr x   -> var env x
     Q x@(m,f)
       | m == cPredef -> if f==cErrorType                -- to be removed
-                        then let p = identC (BS.pack "P")   
+                        then let p = identS "P"
                              in const # value0 env (mkProd [(Implicit,p,typeType)] (Vr p) [])
                         else const . flip VApp [] # predef f
       | otherwise    -> const # resource env x --valueResDef (fst env) x
@@ -325,7 +324,12 @@ valueTable env i cs =
               _ -> False
 
     valueCase (p,t) = do p' <- measurePatt # inlinePattMacro p
-                         let pvs = pattVars p'
+                         let allpvs = allPattVars p'
+                             pvs = nub allpvs
+                             dups = allpvs \\ pvs
+                         unless (null dups) $
+                           fail.render $ hang (text "Pattern is not linear:") 4
+                                              (ppPatt Unqualified 0 p')
                          vt <- value (extend pvs env) t
                          return (p', \ vs -> Bind $ \ bs -> vt (push' p' bs pvs vs))
 --{-

@@ -1,3 +1,4 @@
+--# -coding=cp1251
 --# -path=.:../abstract:../../prelude:../common
 
 resource MorphoFunsBul = open
@@ -53,8 +54,8 @@ oper
   phrasalV : V -> Case -> V ;
   phrasalV v c = {s = v.s; vtype = VPhrasal c; lock_V=<>} ;
   
-  actionV : VTable -> VTable -> V ;
-  actionV imperf perf = { 
+  dualV : VTable -> VTable -> V ;
+  dualV imperf perf = { 
     s = table {Imperf=>imperf; Perf=>perf};
     n = let v0 = init (imperf ! (VImperfect Sg P1)) + "í"
         in (mkNoun (v0+"å")
@@ -66,8 +67,10 @@ oper
     lock_V=<>
     } ;
 
-  stateV : VTable -> V ;
-  stateV vtable = { 
+  actionV : VTable -> VTable -> V = dualV ;
+
+  singleV : VTable -> V ;
+  singleV vtable = { 
     s = \\_=>vtable;
     n = let v0 = init (vtable ! (VImperfect Sg P1)) + "í"
         in (mkNoun (v0+"å")
@@ -78,6 +81,8 @@ oper
     vtype = VNormal;
     lock_V=<>
     } ;
+
+  stateV : VTable -> V = singleV ;
 
 --3 Zero-place verbs
 --
@@ -181,19 +186,26 @@ oper
                        NFPlCount   => n1.s ! NFPlCount     ++ n2.s ! (NF Pl Indef) ;
                        NFVocative  => n1.s ! NFVocative    ++ n2.s ! (NF Sg Indef)
                      } ;
-                 rel = \\aform => n1.rel ! aform; 
-                 g = n1.g ;
-                 g = n1.anim
+                 rel = \\aform => n1.rel ! aform;
+                 g = n1.g
                 } ;
+    compoundN : A -> N -> N 
+      = \a,n -> lin N
+              {s   = \\nf => (a.s ! nform2aform nf n.g) ++ (n.s ! (indefNForm nf)) ;
+               rel = \\aform => a.s ! aform ++ n.rel ! indefAForm aform ;
+               g   = n.g
+              } ;
   } ;
   
-  relativeN : N -> A -> N;
-  relativeN n a = lin N {
+  dualN : N -> A -> N;
+  dualN n a = lin N {
     s   = n.s;
     rel = a.s;
     g   = n.g
   } ;
-  
+
+  relativeN : N -> A -> N = dualN ; -- deprecated
+
   substantiveN : A -> AGender -> N;
   substantiveN a g = lin N {
     s   = \\nform => a.s ! nform2aform nform g;

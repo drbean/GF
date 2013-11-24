@@ -20,13 +20,12 @@ import GF.Data.Operations
 import GF.Grammar.Grammar
 import GF.Grammar.Printer
 import GF.Infra.Ident
-import GF.Compile.Refresh
+--import GF.Compile.Refresh
 import GF.Grammar.Values
 ----import GrammarST
 import GF.Grammar.Macros
 
 import Control.Monad
-import qualified Data.ByteString.Char8 as BS
 import Text.PrettyPrint
 
 {-
@@ -160,12 +159,12 @@ substitute v s = return . substTerm v s
 alphaConv :: [Var] -> (Var,Var) -> Exp -> Err Exp ---
 alphaConv oldvars (x,x') = substitute (x:x':oldvars) [(x,Vr x')]
 
-alphaFresh :: [Var] -> Exp -> Err Exp
-alphaFresh vs = refreshTermN $ maxVarIndex vs
+--alphaFresh :: [Var] -> Exp -> Err Exp
+--alphaFresh vs = refreshTermN $ maxVarIndex vs
 
 -- | done in a state monad
-alphaFreshAll :: [Var] -> [Exp] -> Err [Exp]
-alphaFreshAll vs = mapM $ alphaFresh vs 
+--alphaFreshAll :: [Var] -> [Exp] -> Err [Exp]
+--alphaFreshAll vs = mapM $ alphaFresh vs
 
 -- | for display
 val2exp :: Val -> Err Exp
@@ -215,7 +214,7 @@ freeVarsExp e = case e of
   _ -> [] --- thus applies to abstract syntax only
 
 int2var :: Int -> Ident
-int2var = identC . BS.pack . ('$':) . show
+int2var = identS . ('$':) . show
 
 meta0 :: MetaId
 meta0 = 0
@@ -238,11 +237,11 @@ qualifTerm m  = qualif [] where
     Cn c  -> Q (m,c)
     Con c -> QC (m,c)
     _ -> composSafeOp (qualif xs) t
-  chV x = string2var $ ident2bs x
+  chV x = string2var $ ident2raw x
     
-string2var :: BS.ByteString -> Ident
-string2var s = case BS.unpack s of
-  c:'_':i -> identV (BS.singleton c) (readIntArg i) ---
+string2var :: RawIdent -> Ident
+string2var s = case showRawIdent s of
+  c:'_':i -> identV (rawIdentS [c]) (readIntArg i) ---
   _       -> identC s
 
 -- | reindex variables so that they tell nesting depth level
@@ -254,7 +253,7 @@ reindexTerm = qualif (0,[]) where
     Vr x       -> Vr $ look x g
     _ -> composSafeOp (qualif dg) t
   look x  = maybe x id . lookup x --- if x is not in scope it is unchanged
-  ind x d = identC $ ident2bs x `BS.append` BS.singleton '_' `BS.append` BS.pack (show d)
+  ind x d = identC $ ident2raw x `prefixRawIdent` rawIdentS "_" `prefixRawIdent` rawIdentS (show d)
 
 {-
 -- this method works for context-free abstract syntax

@@ -1,4 +1,5 @@
 --# -path=.:../abstract:../common:../prelude
+--# -coding=cp1251
 
 resource ParadigmsBul = MorphoFunsBul ** open
   Predef,
@@ -1199,10 +1200,10 @@ oper
   mkN075 : Str -> N ;
   mkN075 base = let v0 = base
                 in { s = table {
-                           NF Sg _     => variants {} ;
+                           NF Sg _     => Prelude.nonExist ;
                            NF Pl Indef => v0 ;
                            NF Pl Def   => v0+"те" ;
-                           NFSgDefNom  => variants {} ;
+                           NFSgDefNom  => Prelude.nonExist ;
                            NFPlCount   => v0 ;
                            NFVocative  => v0
                          } ;
@@ -1210,6 +1211,18 @@ oper
                      g = ANeut ;
                      lock_N = <>
                    } ;
+  mkN076 : Str -> N ;
+  mkN076 base = let v0 = tk 1 base;
+                    g  = ANeut
+                in {s = mkNoun (v0+"о")
+                               (v0+"ета")
+                               (v0+"ета")
+                               (v0+"о")
+                               g ;
+                    rel = \\_ => base ;
+                    g   = g ;
+                    lock_N = <>
+                   };
   mkA076 : Str -> A ;
   mkA076 base = let v0 = base
                 in mkAdjective (v0)

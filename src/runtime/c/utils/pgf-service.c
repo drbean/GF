@@ -91,10 +91,9 @@ render(PgfPGF* pgf, PgfExpr expr, GuPool* pool)
 		/* Parent. */
 		FILE* fstream = fdopen(pc[1], "w");
 		GuOut* out = gu_file_out(fstream, pool);
-		GuWriter* wtr = gu_new_utf8_writer(out, pool);
 		GuExn* err = gu_new_exn(NULL, gu_kind(type), pool);
 
-		pgf_graphviz_abstract_tree(pgf, expr, wtr, err);
+		pgf_graphviz_abstract_tree(pgf, expr, out, err);
 		fclose(fstream);
 
 		close(cp[1]);
@@ -138,11 +137,11 @@ static void
 linearize(PgfConcr* concr, PgfExpr expr, GuPool* pool)
 {
 	GuStringBuf* sbuf = gu_string_buf(pool);
-	GuWriter* wtr = gu_string_buf_writer(sbuf);
+	GuOut* out = gu_string_buf_out(sbuf);
 
 	GuExn* err = gu_new_exn(NULL, gu_kind(type), pool);
 	
-	pgf_linearize(concr, expr, wtr, err);
+	pgf_linearize(concr, expr, out, err);
 	
 	GuString s = gu_string_buf_freeze(sbuf, pool);
 	put_gu_string(s);
@@ -201,8 +200,8 @@ int main ()
 		goto fail;
 	}
 
-	GuString cat = gu_str_string("Phr", pool);
-	GuString from_lang = gu_str_string("ParseEng", pool);
+	GuString cat = "Phr";
+	GuString from_lang = "ParseEng";
 	PgfConcr* from_concr =
 		pgf_get_language(pgf, from_lang);
 	if (!from_concr) {
@@ -211,7 +210,7 @@ int main ()
 	}
 
 	// Register a callback for the literal category Symbol
-	pgf_parser_add_literal(from_concr, gu_str_string("Symb", pool),
+	pgf_parser_add_literal(from_concr, "Symb",
 	                       &pgf_nerc_literal_callback);
 
     while (FCGI_Accept() >= 0) {
@@ -234,7 +233,7 @@ int main ()
 
 			PgfConcr* to_concr = NULL;
 			if (strlen(to_lang_buf) > 0) {
-				GuString to_lang = gu_str_string(to_lang_buf, ppool);
+				GuString to_lang = to_lang_buf;
 				to_concr =
 					pgf_get_language(pgf, to_lang);
 				if (!to_concr) {
@@ -249,7 +248,7 @@ int main ()
 			sentence[len+1] = '\0';
 		
 			GuReader *rdr =
-				gu_string_reader(gu_str_string(sentence, ppool), ppool);
+				gu_string_reader(sentence, ppool);
 			PgfLexer *lexer =
 				pgf_new_simple_lexer(rdr, ppool);
 

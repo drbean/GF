@@ -6,21 +6,21 @@
 -----------------------------------------------------------------------------
 module GF.Speech.VoiceXML (grammar2vxml) where
 
-import GF.Data.Operations
-import GF.Data.Str (sstrV)
-import GF.Data.Utilities
+--import GF.Data.Operations
+--import GF.Data.Str (sstrV)
+--import GF.Data.Utilities
 import GF.Data.XML
-import GF.Infra.Ident
+--import GF.Infra.Ident
 import PGF
 import PGF.Data
 import PGF.Macros
 
-import Control.Monad (liftM)
-import Data.List (isPrefixOf, find, intersperse)
+--import Control.Monad (liftM)
+import Data.List (intersperse) -- isPrefixOf, find
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 
-import Debug.Trace
+--import Debug.Trace
 
 -- | the main function
 grammar2vxml :: PGF -> CId -> String
@@ -39,7 +39,7 @@ type Skeleton = [(CId, [(CId, [CId])])]
 
 pgfSkeleton :: PGF -> Skeleton
 pgfSkeleton pgf = [(c,[(f,fst (catSkeleton (lookType (abstract pgf) f))) | (_,f) <- fs]) 
-                   | (c,(_,fs,_)) <- Map.toList (cats (abstract pgf))]
+                   | (c,(_,fs,_,_)) <- Map.toList (cats (abstract pgf))]
 
 --
 -- * Questions to ask 

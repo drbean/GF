@@ -17,6 +17,7 @@ concrete ParseBul of ParseEngAbs =
   ExtraBul [NP, Quant, VPSlash, VP, Tense, GenNP, PassVPSlash,
             Temp, Pol, Conj, VPS, ListVPS, S, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS,
             VPI, VPIForm, VPIInf, VPIPresPart, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV,
+            ComplSlashPartLast,
             ClSlash, RCl, EmptyRelSlash],
 
   DictEngBul ** 
@@ -24,12 +25,11 @@ open ResBul, Prelude in {
 
 flags
   literal=Symb ;
-  beam_size=0.95 ;
   coding = utf8 ;
 
 lin
   CompoundCN num noun cn = {
-    s = \\nf => (noun.rel ! nform2aform nf cn.g) ++ (cn.s ! (indefNForm nf)) ;
+    s = \\nf => num.s ! CFNeut Indef ++ (noun.rel ! nform2aform nf cn.g) ++ (cn.s ! (indefNForm nf)) ;
     g = cn.g
   } ;
 
@@ -146,7 +146,7 @@ lin
        } ;
 
   ApposNP np1 np2 = {
-    s = \\role => np1.s ! role ++ "," ++ np2.s ! RSubj ;
+    s = \\role => np1.s ! role ++ comma ++ np2.s ! RSubj ;
     a = np1.a
   } ;
   

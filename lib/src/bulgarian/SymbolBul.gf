@@ -1,4 +1,5 @@
 --# -path=.:../abstract:../common
+--# -coding=cp1251
 
 concrete SymbolBul of Symbol = CatBul ** open Prelude, ResBul in {
 
@@ -49,6 +50,6 @@ lin
   MkSymb s = s ;
 
   BaseSymb = infixSS "è" ;
-  ConsSymb = infixSS "," ;
+  ConsSymb = infixSS comma ;
 
 }

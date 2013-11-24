@@ -1,6 +1,6 @@
 #include "pgf.h"
-#include <gu/intern.h>
 #include <gu/assert.h>
+#include <gu/utf8.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,20 +92,12 @@ GU_DEFINE_TYPE(PgfHypo, struct,
 	       GU_MEMBER(PgfHypo, cid, PgfCId),
 	       GU_MEMBER_P(PgfHypo, type, PgfType));
 
-GU_DEFINE_TYPE(PgfHypos, GuSeq, gu_type(PgfHypo));
-
-GU_DEFINE_TYPE(PgfType, struct,
-	       GU_MEMBER(PgfType, hypos, PgfHypos),
-	       GU_MEMBER(PgfType, cid, PgfCId),
-	       GU_MEMBER(PgfType, n_exprs, GuLength),
-	       GU_FLEX_MEMBER(PgfType, exprs, PgfExpr));
-
 GU_DEFINE_TYPE(
 	PgfExpr, GuVariant,
 	GU_CONSTRUCTOR_S(
 		PGF_EXPR_ABS, PgfExprAbs,
 		GU_MEMBER(PgfExprAbs, bind_type, PgfBindType),
-		GU_MEMBER(PgfExprAbs, id, GuStr),
+		GU_MEMBER(PgfExprAbs, id, GuString),
 		GU_MEMBER(PgfExprAbs, body, PgfExpr)),
 	GU_CONSTRUCTOR_S(
 		PGF_EXPR_APP, PgfExprApp,
@@ -161,7 +153,7 @@ struct PgfExprParser {
 	GuPool* expr_pool;
 	GuPool* tmp_pool;
 	PGF_TOKEN_TAG token_tag;
-	GuChars token_value;
+	GuBuf* token_value;
 	int ch;
 };
 
@@ -175,6 +167,45 @@ pgf_expr_parser_getc(PgfExprParser* parser)
 	}
 }
 
+static bool
+pgf_is_ident_first(GuUCS ucs)
+{
+	return (ucs == '_') ||
+           (ucs >= 'a' && ucs <= 'z') ||
+           (ucs >= 'A' && ucs <= 'Z') ||
+           (ucs >= 192 && ucs <= 255 && ucs != 247 && ucs != 215);
+}
+
+static bool
+pgf_is_ident_rest(GuUCS ucs)
+{
+	return (ucs == '_') ||
+           (ucs == '\'') ||
+           (ucs >= '0' && ucs <= '9') ||
+           (ucs >= 'a' && ucs <= 'z') ||
+           (ucs >= 'A' && ucs <= 'Z') ||
+           (ucs >= 192 && ucs <= 255 && ucs != 247 && ucs != 215);
+}
+
+static bool
+pgf_is_normal_ident(PgfCId id)
+{
+	const uint8_t* p = (const uint8_t*) id;
+	GuUCS ucs = gu_utf8_decode(&p);
+	if (!pgf_is_ident_first(ucs))
+		return false;
+
+	for (;;) {
+		ucs = gu_utf8_decode(&p);
+		if (ucs == 0)
+			break;
+		if (!pgf_is_ident_rest(ucs))
+			return false;
+	}
+
+	return true;
+}
+
 static void
 pgf_expr_parser_token(PgfExprParser* parser)
 {
@@ -183,7 +214,7 @@ pgf_expr_parser_token(PgfExprParser* parser)
 	}
 
 	parser->token_tag   = PGF_TOKEN_UNKNOWN;
-	parser->token_value = gu_null_seq;
+	parser->token_value = NULL;
 
 	switch (parser->ch) {
 	case EOF:
@@ -236,22 +267,35 @@ pgf_expr_parser_token(PgfExprParser* parser)
 		pgf_expr_parser_getc(parser);
 		parser->token_tag = PGF_TOKEN_COLON;
 		break;
-	case '_':
+	case '\'':
 		pgf_expr_parser_getc(parser);
-		parser->token_tag = PGF_TOKEN_WILD;
-		break;
-	default: {
-		GuCharBuf* chars = gu_new_buf(char, parser->tmp_pool);
 
-		if (isalpha(parser->ch)) {
-			while (isalnum(parser->ch) || 
-			       parser->ch == '_' || 
-			       parser->ch == '\'') {
-				gu_buf_push(chars, char, parser->ch);
+		GuBuf* chars = gu_new_buf(char, parser->tmp_pool);
+		while (parser->ch != '\'' && parser->ch != EOF) {
+			if (parser->ch == '\\') {
 				pgf_expr_parser_getc(parser);
 			}
+			gu_buf_push(chars, char, parser->ch);
+			pgf_expr_parser_getc(parser);
+		}
+		if (parser->ch == '\'') {
+			pgf_expr_parser_getc(parser);
+			gu_buf_push(chars, char, 0);
 			parser->token_tag   = PGF_TOKEN_IDENT;
-			parser->token_value = gu_buf_seq(chars);
+			parser->token_value = chars;
+		}
+		break;
+	default: {
+		GuBuf* chars = gu_new_buf(char, parser->tmp_pool);
+
+		if (pgf_is_ident_first(parser->ch)) {
+			do {
+				gu_buf_push(chars, char, parser->ch);
+				pgf_expr_parser_getc(parser);
+			} while (pgf_is_ident_rest(parser->ch));
+			gu_buf_push(chars, char, 0);
+			parser->token_tag   = PGF_TOKEN_IDENT;
+			parser->token_value = chars;
 		} else if (isdigit(parser->ch)) {
 			while (isdigit(parser->ch)) {
 				gu_buf_push(chars, char, parser->ch);
@@ -266,15 +310,17 @@ pgf_expr_parser_token(PgfExprParser* parser)
 					gu_buf_push(chars, char, parser->ch);
 					pgf_expr_parser_getc(parser);
 				}
+				gu_buf_push(chars, char, 0);
 				parser->token_tag   = PGF_TOKEN_FLT;
-				parser->token_value = gu_buf_seq(chars);
+				parser->token_value = chars;
 			} else {
+				gu_buf_push(chars, char, 0);
 				parser->token_tag   = PGF_TOKEN_INT;
-				parser->token_value = gu_buf_seq(chars);
+				parser->token_value = chars;
 			}
 		} else if (parser->ch == '"') {
 			pgf_expr_parser_getc(parser);
-			
+
 			while (parser->ch != '"' && parser->ch != EOF) {
 				gu_buf_push(chars, char, parser->ch);
 				pgf_expr_parser_getc(parser);
@@ -282,8 +328,9 @@ pgf_expr_parser_token(PgfExprParser* parser)
 			
 			if (parser->ch == '"') {
 				pgf_expr_parser_getc(parser);
+				gu_buf_push(chars, char, 0);
 				parser->token_tag   = PGF_TOKEN_STR;
-				parser->token_value = gu_buf_seq(chars);
+				parser->token_value = chars;
 			}
 		}
 		break;
@@ -350,18 +397,20 @@ pgf_expr_parser_term(PgfExprParser* parser)
 					            0);
 	}
 	case PGF_TOKEN_IDENT: {
-		char* str = 
-			gu_chars_str(parser->token_value, parser->tmp_pool);
-		PgfCId id = gu_str_string(str, parser->expr_pool);
+		PgfCId id = gu_buf_data(parser->token_value);
 		pgf_expr_parser_token(parser);
-		return gu_new_variant_i(parser->expr_pool,
-					PGF_EXPR_FUN,
-					PgfExprFun,
-					id);
+		PgfExpr e;
+		PgfExprFun* fun =
+			gu_new_flex_variant(PGF_EXPR_FUN,
+			                    PgfExprFun,
+                                fun, strlen(id)+1,
+                                &e, parser->expr_pool);
+        strcpy(fun->fun, id);
+		return e;
 	}
 	case PGF_TOKEN_INT: {
 		char* str = 
-			gu_chars_str(parser->token_value, parser->tmp_pool);
+			gu_buf_data(parser->token_value);
 		int n = atoi(str);
 		pgf_expr_parser_token(parser);
 		PgfLiteral lit = 
@@ -376,22 +425,23 @@ pgf_expr_parser_term(PgfExprParser* parser)
 	}
 	case PGF_TOKEN_STR: {
 		char* str =
-			gu_chars_str(parser->token_value, parser->tmp_pool);
-		GuString s = gu_str_string(str, parser->expr_pool);
+			gu_buf_data(parser->token_value);
 		pgf_expr_parser_token(parser);
-		PgfLiteral lit = 
-			gu_new_variant_i(parser->expr_pool,
-			                 PGF_LITERAL_STR,
-			                 PgfLiteralStr,
-			                 s);
+		PgfLiteral lit;
+		PgfLiteralStr* plit = 
+			gu_new_flex_variant(PGF_LITERAL_STR,
+			                    PgfLiteralStr,
+			                    val, strlen(str)+1,
+			                    &lit, parser->expr_pool);
+		strcpy(plit->val, str);
 		return gu_new_variant_i(parser->expr_pool,
-					PGF_EXPR_LIT,
-					PgfExprLit,
-					lit);
+		                        PGF_EXPR_LIT,
+		                        PgfExprLit,
+		                        lit);
 	}
 	case PGF_TOKEN_FLT: {
 		char* str = 
-			gu_chars_str(parser->token_value, parser->tmp_pool);
+			gu_buf_data(parser->token_value);
 		double d = atof(str);
 		pgf_expr_parser_token(parser);
 		PgfLiteral lit = 
@@ -451,12 +501,11 @@ pgf_expr_parser_bind(PgfExprParser* parser, GuBuf* binds)
 
 	for (;;) {
 		if (parser->token_tag == PGF_TOKEN_IDENT) {
-			char* str = 
-				gu_chars_str(parser->token_value, parser->tmp_pool);
-			var = gu_str_string(str, parser->expr_pool);
+			var =
+				gu_string_copy(gu_buf_data(parser->token_value), parser->expr_pool);
 			pgf_expr_parser_token(parser);
 		} else if (parser->token_tag == PGF_TOKEN_WILD) {
-			var = gu_str_string("_", parser->expr_pool);
+			var = "_";
 			pgf_expr_parser_token(parser);
 		} else {
 			return false;
@@ -571,12 +620,11 @@ pgf_expr_parser_hypos(PgfExprParser* parser, GuBuf* hypos)
 		}
 
 		if (parser->token_tag == PGF_TOKEN_IDENT) {
-			char* str = 
-				gu_chars_str(parser->token_value, parser->tmp_pool);
-			var = gu_str_string(str, parser->expr_pool);
+			var =
+				gu_string_copy(gu_buf_data(parser->token_value), parser->expr_pool);
 			pgf_expr_parser_token(parser);
 		} else if (parser->token_tag == PGF_TOKEN_WILD) {
-			var = gu_str_string("_", parser->expr_pool);
+			var = "_";
 			pgf_expr_parser_token(parser);
 		} else {
 			return false;
@@ -612,9 +660,8 @@ pgf_expr_parser_atom(PgfExprParser* parser)
 	if (parser->token_tag != PGF_TOKEN_IDENT)
 		return NULL;
 
-	char* str =
-		gu_chars_str(parser->token_value, parser->tmp_pool);
-	PgfCId cid = gu_str_string(str, parser->expr_pool);
+	PgfCId cid =
+		gu_string_copy(gu_buf_data(parser->token_value), parser->expr_pool);
 	pgf_expr_parser_token(parser);
 
 	GuBuf* args = gu_new_buf(PgfExpr, parser->tmp_pool);
@@ -672,7 +719,7 @@ pgf_expr_parser_type(PgfExprParser* parser)
 			} else {
 				PgfHypo* hypo = gu_buf_extend(hypos);
 				hypo->bind_type = PGF_BIND_TYPE_EXPLICIT;
-				hypo->cid = gu_str_string("_", parser->expr_pool);
+				hypo->cid = "_";
 				hypo->type = NULL;
 			}
 
@@ -708,12 +755,12 @@ pgf_expr_parser_type(PgfExprParser* parser)
 
 			PgfHypo* hypo = gu_buf_extend(hypos);
 			hypo->bind_type = PGF_BIND_TYPE_EXPLICIT;
-			hypo->cid = gu_str_string("_", parser->expr_pool);
+			hypo->cid = "_";
 			hypo->type = type;
 		}
 	}
 
-	type->hypos = gu_buf_seq(hypos);
+	type->hypos = gu_buf_data_seq(hypos);
 
 	return type;
 }
@@ -770,7 +817,7 @@ pgf_literal_eq(PgfLiteral lit1, PgfLiteral lit2)
 	case PGF_LITERAL_STR: {
 		PgfLiteralStr* lit1 = ei1.data;
 		PgfLiteralStr* lit2 = ei2.data;
-        return gu_string_eq(lit1->val, lit2->val);
+        return strcmp(lit1->val, lit2->val) == 0;
     }
     case PGF_LITERAL_INT: {
 		PgfLiteralInt* lit1 = ei1.data;
@@ -802,7 +849,7 @@ pgf_expr_eq(PgfExpr e1, PgfExpr e2)
 	case PGF_EXPR_ABS: {
 		PgfExprAbs* abs1 = ei1.data;
 		PgfExprAbs* abs2 = ei2.data;
-		return gu_string_eq(abs1->id, abs2->id) &&
+		return strcmp(abs1->id, abs2->id) == 0 &&
 		       pgf_expr_eq(abs1->body, abs2->body);
 	}
 	case PGF_EXPR_APP: {
@@ -824,7 +871,7 @@ pgf_expr_eq(PgfExpr e1, PgfExpr e2)
 	case PGF_EXPR_FUN: {
 		PgfExprFun* fun1 = ei1.data;
 		PgfExprFun* fun2 = ei2.data;
-		return gu_string_eq(fun1->fun, fun2->fun);
+		return strcmp(fun1->fun, fun2->fun) == 0;
 	}
 	case PGF_EXPR_VAR: {
 		PgfExprVar* var1 = ei1.data;
@@ -930,26 +977,50 @@ pgf_expr_hash(GuHash h, PgfExpr e)
 }
 
 void
+pgf_print_cid(PgfCId id,
+			  GuOut* out, GuExn* err)
+{
+	if (pgf_is_normal_ident(id))
+		gu_string_write(id, out, err);
+	else {
+		gu_putc('\'', out, err);
+		const uint8_t* p = (const uint8_t*) id;
+		for (;;) {
+			GuUCS ucs = gu_utf8_decode(&p);
+			if (ucs == 0)
+				break;
+			if (ucs == '\'')
+				gu_puts("\\\'", out, err);
+			else if (ucs == '\\')
+				gu_puts("\\\\", out, err);
+			else
+				gu_out_utf8(ucs, out, err);
+		}
+		gu_putc('\'', out, err);
+	}
+}
+
+void
 pgf_print_literal(PgfLiteral lit,
-			  GuWriter* wtr, GuExn* err)
+			      GuOut* out, GuExn* err)
 {
 	GuVariantInfo ei = gu_variant_open(lit);
 	switch (ei.tag) {
 	case PGF_LITERAL_STR: {
 		PgfLiteralStr* lit = ei.data;
-        gu_putc('"', wtr, err);
-		gu_string_write(lit->val, wtr, err);
-        gu_putc('"', wtr, err);
+        gu_putc('"', out, err);
+		gu_string_write(lit->val, out, err);
+        gu_putc('"', out, err);
 		break;
     }
     case PGF_LITERAL_INT: {
         PgfLiteralInt* lit = ei.data;
-		gu_printf(wtr, err, "%d", lit->val);
+		gu_printf(out, err, "%d", lit->val);
         break;
     }
 	case PGF_LITERAL_FLT: {
         PgfLiteralFlt* lit = ei.data;
-		gu_printf(wtr, err, "%lf", lit->val);
+		gu_printf(out, err, "%lg", lit->val);
         break;
     }
 	default:
@@ -959,7 +1030,7 @@ pgf_print_literal(PgfLiteral lit,
 
 void
 pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
-               GuWriter* wtr, GuExn* err)
+               GuOut* out, GuExn* err)
 {
 	GuVariantInfo ei = gu_variant_open(expr);
 	switch (ei.tag) {
@@ -967,20 +1038,20 @@ pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
 		PgfExprAbs* abs = ei.data;
 
 		if (prec > 1) {
-			gu_puts("(", wtr, err);
+			gu_puts("(", out, err);
 		}
 
-		gu_putc('\\', wtr, err);
+		gu_putc('\\', out, err);
 		
 		PgfPrintContext* new_ctxt = ctxt;
 
 		for (;;) {
 			if (abs->bind_type == PGF_BIND_TYPE_IMPLICIT) {
-				gu_putc('{', wtr, err);
+				gu_putc('{', out, err);
 			}
-			gu_string_write(abs->id, wtr, err);
+			pgf_print_cid(abs->id, out, err);
 			if (abs->bind_type == PGF_BIND_TYPE_IMPLICIT) {
-				gu_putc('}', wtr, err);
+				gu_putc('}', out, err);
 			}
 
 			PgfPrintContext* c = malloc(sizeof(PgfPrintContext));
@@ -991,13 +1062,13 @@ pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
 			if (gu_variant_tag(abs->body) != PGF_EXPR_ABS)
 				break;
 				
-			gu_putc(',', wtr, err);
+			gu_putc(',', out, err);
 			
 			abs = gu_variant_data(abs->body);
 		}
 
-		gu_puts(" -> ", wtr, err);
-		pgf_print_expr(abs->body, new_ctxt, 1, wtr, err);
+		gu_puts(" -> ", out, err);
+		pgf_print_expr(abs->body, new_ctxt, 1, out, err);
 
 		while (new_ctxt != ctxt) {
 			PgfPrintContext* next = new_ctxt->next;
@@ -1006,34 +1077,34 @@ pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
 		}
 
 		if (prec > 1) {
-			gu_puts(")", wtr, err);
+			gu_puts(")", out, err);
 		}
 		break;
 	}
 	case PGF_EXPR_APP: {
 		PgfExprApp* app = ei.data;
 		if (prec > 3) {
-			gu_puts("(", wtr, err);
+			gu_puts("(", out, err);
 		}
-		pgf_print_expr(app->fun, ctxt, 3, wtr, err);
-		gu_puts(" ", wtr, err);
-		pgf_print_expr(app->arg, ctxt, 4, wtr, err);
+		pgf_print_expr(app->fun, ctxt, 3, out, err);
+		gu_puts(" ", out, err);
+		pgf_print_expr(app->arg, ctxt, 4, out, err);
 		if (prec > 3) {
-			gu_puts(")", wtr, err);
+			gu_puts(")", out, err);
 		}
 		break;
 	}
 	case PGF_EXPR_LIT: {
 		PgfExprLit* lit = ei.data;
-        pgf_print_literal(lit->lit, wtr, err);
+        pgf_print_literal(lit->lit, out, err);
 		break;
 	}
 	case PGF_EXPR_META:
-		gu_putc('?', wtr, err);
+		gu_putc('?', out, err);
 		break;
 	case PGF_EXPR_FUN: {
 		PgfExprFun* fun = ei.data;
-		gu_string_write(fun->fun, wtr, err);
+		pgf_print_cid(fun->fun, out, err);
 		break;
 	}
 	case PGF_EXPR_VAR: {
@@ -1046,26 +1117,26 @@ pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
 		}
 		
 		if (c == NULL) {
-			gu_printf(wtr, err, "#%d", evar->var);
+			gu_printf(out, err, "#%d", evar->var);
 		} else {
-			gu_string_write(c->name, wtr, err);
+			pgf_print_cid(c->name, out, err);
 		}
 		break;
 	}
 	case PGF_EXPR_TYPED: {
 		PgfExprTyped* typed = ei.data;
-		gu_putc('<', wtr, err);
-		pgf_print_expr(typed->expr, ctxt, 0, wtr, err);
-		gu_puts(" : ", wtr, err);
-		pgf_print_type(typed->type, ctxt, 0, wtr, err);
-		gu_putc('>', wtr, err);
+		gu_putc('<', out, err);
+		pgf_print_expr(typed->expr, ctxt, 0, out, err);
+		gu_puts(" : ", out, err);
+		pgf_print_type(typed->type, ctxt, 0, out, err);
+		gu_putc('>', out, err);
 		break;
 	}
 	case PGF_EXPR_IMPL_ARG: {
 		PgfExprImplArg* impl = ei.data;
-		gu_putc('{', wtr, err);
-		pgf_print_expr(impl->expr, ctxt, 0, wtr, err);
-		gu_putc('}', wtr, err);
+		gu_putc('{', out, err);
+		pgf_print_expr(impl->expr, ctxt, 0, out, err);
+		gu_putc('}', out, err);
 		break;
 	}
 	default:
@@ -1075,26 +1146,25 @@ pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
 
 PgfPrintContext*
 pgf_print_hypo(PgfHypo *hypo, PgfPrintContext* ctxt, int prec,
-               GuWriter *wtr, GuExn *err)
+               GuOut *out, GuExn *err)
 {
     if (hypo->bind_type == PGF_BIND_TYPE_IMPLICIT) {
-        gu_puts("({", wtr, err);
-        gu_string_write(hypo->cid, wtr, err);
-        gu_puts("} : ", wtr, err);
-        pgf_print_type(hypo->type, ctxt, 0, wtr, err);
-        gu_puts(")", wtr, err);
+        gu_puts("({", out, err);
+        pgf_print_cid(hypo->cid, out, err);
+        gu_puts("} : ", out, err);
+        pgf_print_type(hypo->type, ctxt, 0, out, err);
+        gu_puts(")", out, err);
     } else {
         GuPool* tmp_pool = gu_new_pool();
-        GuString tmp = gu_str_string("_", tmp_pool);
-        
-        if (!gu_string_eq(hypo->cid, tmp)) {
-            gu_puts("(", wtr, err);
-            gu_string_write(hypo->cid, wtr, err);
-            gu_puts(" : ", wtr, err);
-            pgf_print_type(hypo->type, ctxt, 0, wtr, err);
-            gu_puts(")", wtr, err);
+
+        if (strcmp(hypo->cid, "_") != 0) {
+            gu_puts("(", out, err);
+            pgf_print_cid(hypo->cid, out, err);
+            gu_puts(" : ", out, err);
+            pgf_print_type(hypo->type, ctxt, 0, out, err);
+            gu_puts(")", out, err);
         } else {
-            pgf_print_type(hypo->type, ctxt, prec, wtr, err);
+            pgf_print_type(hypo->type, ctxt, prec, out, err);
         }
         
         gu_pool_free(tmp_pool);
@@ -1108,26 +1178,26 @@ pgf_print_hypo(PgfHypo *hypo, PgfPrintContext* ctxt, int prec,
 
 void
 pgf_print_type(PgfType *type, PgfPrintContext* ctxt, int prec,
-               GuWriter *wtr, GuExn *err)
+               GuOut *out, GuExn *err)
 {
     size_t n_hypos = gu_seq_length(type->hypos);
     
     if (n_hypos > 0) {
-		if (prec > 0) gu_putc('(', wtr, err);
+		if (prec > 0) gu_putc('(', out, err);
 		
 		PgfPrintContext* new_ctxt = ctxt;
 		for (size_t i = 0; i < n_hypos; i++) {
 			PgfHypo *hypo = gu_seq_index(type->hypos, PgfHypo, i);
-			new_ctxt = pgf_print_hypo(hypo, new_ctxt, 1, wtr, err);
+			new_ctxt = pgf_print_hypo(hypo, new_ctxt, 1, out, err);
 
-			gu_puts(" -> ", wtr, err);
+			gu_puts(" -> ", out, err);
 		}
 
-		gu_string_write(type->cid, wtr, err);
+		pgf_print_cid(type->cid, out, err);
     
 		for (size_t i = 0; i < type->n_exprs; i++) {
-			gu_puts(" ", wtr, err);
-			pgf_print_expr(type->exprs[i], new_ctxt, 4, wtr, err);
+			gu_puts(" ", out, err);
+			pgf_print_expr(type->exprs[i], new_ctxt, 4, out, err);
 		}
 
 		while (new_ctxt != ctxt) {
@@ -1136,20 +1206,20 @@ pgf_print_type(PgfType *type, PgfPrintContext* ctxt, int prec,
 			new_ctxt = next;
 		}
 
-		if (prec > 0) gu_putc(')', wtr, err);
+		if (prec > 0) gu_putc(')', out, err);
 	} else if (type->n_exprs > 0) {
-		if (prec > 3) gu_putc('(', wtr, err);
+		if (prec > 3) gu_putc('(', out, err);
 		
-		gu_string_write(type->cid, wtr, err);
+		gu_string_write(type->cid, out, err);
     
 		for (size_t i = 0; i < type->n_exprs; i++) {
-			gu_puts(" ", wtr, err);
-			pgf_print_expr(type->exprs[i], ctxt, 4, wtr, err);
+			gu_puts(" ", out, err);
+			pgf_print_expr(type->exprs[i], ctxt, 4, out, err);
 		}
 		
-		if (prec > 3) gu_putc(')', wtr, err);
+		if (prec > 3) gu_putc(')', out, err);
 	} else {
-		gu_string_write(type->cid, wtr, err);
+		pgf_print_cid(type->cid, out, err);
 	}
 }
 
@@ -1167,14 +1237,14 @@ pgf_type_eq(PgfType* t1, PgfType* t2)
 		if (hypo1->bind_type != hypo2->bind_type)
 			return false;
 			
-		if (!gu_string_eq(hypo1->cid, hypo2->cid))
+		if (strcmp(hypo1->cid, hypo2->cid) != 0)
 			return false;
 			
 		if (!pgf_type_eq(hypo1->type, hypo2->type))
 			return false;
 	}
     
-	if (!gu_string_eq(t1->cid, t2->cid))
+	if (strcmp(t1->cid, t2->cid) != 0)
 		return false;
 
 	if (t1->n_exprs != t2->n_exprs)

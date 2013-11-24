@@ -1,44 +1,35 @@
 #include <pgf/pgf.h>
+#include <pgf/reader.h>
+#include <pgf/linearizer.h>
 #include <gu/mem.h>
 #include <gu/exn.h>
+#include <gu/utf8.h>
+#include <jni.h>
+#ifndef __MINGW32__
 #include <alloca.h>
-#include "org_grammaticalframework_pgf_PGF.h"
+#else
+#include <malloc.h>
+#endif
+
+#define l2p(x) ((void*) (intptr_t) (x))
+#define p2l(x) ((jlong) (intptr_t) (x))
 
 static jstring
 gu2j_string(JNIEnv *env, GuString s) {
-	GuWord w = s.w_;
-	uint8_t buf[sizeof(GuWord)];
-
-	uint8_t* utf8;
-	size_t len;
-	if (w & 1) {
-		len = (w & 0xff) >> 1;
-		gu_assert(len <= sizeof(GuWord));
-		size_t i = len;
-		while (i > 0) {
-			w >>= 8;
-			buf[--i] = w & 0xff;
-		}
-		utf8 = buf;
-	} else {
-		uint8_t* p = (void*) w;
-		len = (p[0] == 0) ? ((size_t*) p)[-1] : p[0];
-		utf8 = &p[1];
-	}
-
-	const uint8_t* src = utf8;
+	const char* utf8 = s;
+	size_t len = strlen(s);
 
 	jchar* utf16 = alloca(len*sizeof(jchar));
 	jchar* dst   = utf16;
-	while (src-utf8 < len) {
-		GuUCS ucs = gu_utf8_decode(&src);
-		
+	while (s-utf8 < len) {
+		GuUCS ucs = gu_utf8_decode((const uint8_t**) &s);
+
 		if (ucs <= 0xFFFF) {
 			*dst++ = ucs;
 		} else {
 			ucs -= 0x10000;
-			*dst++ = 0xD800+(ucs >> 10) & 0x3FF;
-			*dst++ = 0xDC00+ucs & 0x3FF;
+			*dst++ = 0xD800+((ucs >> 10) & 0x3FF);
+			*dst++ = 0xDC00+(ucs & 0x3FF);
 		}
 	}
 
@@ -47,14 +38,16 @@ gu2j_string(JNIEnv *env, GuString s) {
 
 static GuString
 j2gu_string(JNIEnv *env, jstring s, GuPool* pool) {
-	const char *str = (*env)->GetStringUTFChars(env, s, 0);
-	return gu_str_string(str, pool);
+	GuString str = (*env)->GetStringUTFChars(env, s, 0);
+	GuString copy = gu_string_copy(str, pool);
+	(*env)->ReleaseStringUTFChars(env, s, str);
+	return copy;
 }
 
 static void*
 get_ref(JNIEnv *env, jobject self) {
 	jfieldID refId = (*env)->GetFieldID(env, (*env)->GetObjectClass(env, self), "ref", "J");
-	return (void*) (*env)->GetLongField(env, self, refId);
+	return l2p((*env)->GetLongField(env, self, refId));
 }
 
 static void
@@ -82,7 +75,7 @@ throw_string_exception(JNIEnv *env, const char* class_name, const char* msg)
 }
 
 JNIEXPORT jobject JNICALL 
-Java_org_grammaticalframework_pgf_PGF_readPGF(JNIEnv *env, jclass cls, jstring s)
+Java_org_grammaticalframework_pgf_PGF_readPGF__Ljava_lang_String_2(JNIEnv *env, jclass cls, jstring s)
 { 
 	GuPool* pool = gu_new_pool();
 	GuPool* tmp_pool = gu_local_pool();
@@ -111,7 +104,100 @@ Java_org_grammaticalframework_pgf_PGF_readPGF(JNIEnv *env, jclass cls, jstring s
 	gu_pool_free(tmp_pool);
 
 	jmethodID constrId = (*env)->GetMethodID(env, cls, "<init>", "(JJ)V");
-	return (*env)->NewObject(env, cls, constrId, (jlong) pool, (jlong) pgf);
+	return (*env)->NewObject(env, cls, constrId, p2l(pool), p2l(pgf));
+}
+
+typedef struct {
+	GuInStream stream;
+	jobject java_stream;
+	JNIEnv *env;
+	jmethodID read_method;
+	jbyteArray buf_array;
+	jbyte *buf;
+} JInStream;
+
+static const uint8_t*
+jpgf_jstream_begin_buffer(GuInStream* self, size_t* sz_out, GuExn* err)
+{
+	*sz_out = 0;
+
+	JInStream* jstream = (JInStream*) self;
+	int sz = (*jstream->env)->CallIntMethod(jstream->env, jstream->java_stream, jstream->read_method, jstream->buf_array);
+	if ((*jstream->env)->ExceptionOccurred(jstream->env)) {
+		gu_raise(err, PgfExn);
+		return NULL;
+	}
+
+	jboolean isCopy;
+	jstream->buf = (*jstream->env)->GetByteArrayElements(jstream->env, jstream->buf_array, &isCopy);
+	if ((*jstream->env)->ExceptionOccurred(jstream->env)) {
+		gu_raise(err, PgfExn);
+		return NULL;
+	}
+
+	*sz_out = (size_t) sz;
+	return ((uint8_t*) jstream->buf);
+}
+
+static void
+jpgf_jstream_end_buffer(GuInStream* self, size_t consumed, GuExn* err)
+{
+	JInStream* jstream = (JInStream*) self;
+	(*jstream->env)->ReleaseByteArrayElements(jstream->env, jstream->buf_array, jstream->buf, JNI_ABORT);
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_grammaticalframework_pgf_PGF_readPGF__Ljava_io_InputStream_2(JNIEnv *env, jclass cls, jobject java_stream)
+{
+	GuPool* pool = gu_new_pool();
+	GuPool* tmp_pool = gu_local_pool();
+
+	jclass java_stream_class = (*env)->GetObjectClass(env, java_stream);
+
+	JInStream* jstream = gu_new(JInStream, tmp_pool);
+	jstream->stream.begin_buffer = jpgf_jstream_begin_buffer;
+	jstream->stream.end_buffer = jpgf_jstream_end_buffer;
+	jstream->stream.input = NULL;
+	jstream->java_stream = java_stream;
+	jstream->env = env;
+
+	jstream->read_method = (*env)->GetMethodID(env, java_stream_class, "read", "([B)I");
+	if (!jstream->read_method) {
+		gu_pool_free(pool);
+		gu_pool_free(tmp_pool);
+		return NULL;
+	}
+
+	jstream->buf_array = (*env)->NewByteArray(env, 1024);
+	if (!jstream->buf_array) {
+		gu_pool_free(pool);
+		gu_pool_free(tmp_pool);
+		return NULL;
+	}
+
+	jstream->buf = NULL;
+
+	GuIn* in = gu_new_in(&jstream->stream, tmp_pool);
+
+	// Create an exception frame that catches all errors.
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+
+	// Read the PGF grammar.
+	PgfReader* rdr = pgf_new_reader(in, pool, tmp_pool, err);
+	PgfPGF* pgf = pgf_read_pgf(rdr);
+	pgf_reader_done(rdr, pgf);
+
+	if (!gu_ok(err)) {
+		throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", "The grammar cannot be loaded");
+		gu_pool_free(pool);
+		gu_pool_free(tmp_pool);
+		return NULL;
+	}
+
+	gu_pool_free(tmp_pool);
+
+	jmethodID constrId = (*env)->GetMethodID(env, cls, "<init>", "(JJ)V");
+	return (*env)->NewObject(env, cls, constrId, p2l(pool), p2l(pgf));
 }
 
 JNIEXPORT jstring JNICALL 
@@ -123,16 +209,7 @@ Java_org_grammaticalframework_pgf_PGF_getAbstractName(JNIEnv* env, jobject self)
 JNIEXPORT jstring JNICALL
 Java_org_grammaticalframework_pgf_PGF_getStartCat(JNIEnv* env, jobject self)
 {
-	GuPool* tmp_pool = gu_local_pool();
-	jstring jname = gu2j_string(env, pgf_start_cat(get_ref(env, self), tmp_pool));
-	gu_pool_free(tmp_pool);
-	return jname;
-}
-
-JNIEXPORT void JNICALL 
-Java_org_grammaticalframework_pgf_PGF_free(JNIEnv* env, jclass cls, jlong pool)
-{
-	gu_pool_free((GuPool*) pool);
+	return gu2j_string(env, pgf_start_cat(get_ref(env, self)));
 }
 
 typedef struct {
@@ -145,7 +222,7 @@ typedef struct {
 static void
 pgf_collect_langs(GuMapItor* fn, const void* key, void* value, GuExn* err)
 {
-	PgfCId name = *((PgfCId*) key);
+	PgfCId name = (PgfCId) key;
     PgfConcr* concr = *((PgfConcr**) value);
     JPGFClosure* clo = (JPGFClosure*) fn;
 
@@ -156,7 +233,7 @@ pgf_collect_langs(GuMapItor* fn, const void* key, void* value, GuExn* err)
 
 	jclass concr_class = (*clo->env)->FindClass(clo->env, "org/grammaticalframework/pgf/Concr");
 	jmethodID constrId = (*clo->env)->GetMethodID(clo->env, concr_class, "<init>", "(Lorg/grammaticalframework/pgf/PGF;J)V");
-	jobject jconcr = (*clo->env)->NewObject(clo->env, concr_class, constrId, clo->grammar, (jlong) concr);
+	jobject jconcr = (*clo->env)->NewObject(clo->env, concr_class, constrId, clo->grammar, p2l(concr));
 
 	(*clo->env)->CallObjectMethod(clo->env, clo->object, put_method, jname, jconcr);
 }
@@ -201,54 +278,57 @@ Java_org_grammaticalframework_pgf_Concr_getName(JNIEnv* env, jobject self)
 
 JNIEXPORT jobject JNICALL 
 Java_org_grammaticalframework_pgf_Parser_parse
-  (JNIEnv* env, jclass self, jobject concr, jstring jstartCat, jstring js)
+  (JNIEnv* env, jclass clazz, jobject concr, jstring jstartCat, jstring js)
 {
 	GuPool* pool = gu_new_pool();
 	GuPool* out_pool = gu_new_pool();
 
     GuString startCat = j2gu_string(env, jstartCat, pool);
     GuString s = j2gu_string(env, js, pool);
-
-	GuReader* rdr = gu_string_reader(s, pool);
-	PgfLexer *lexer = pgf_new_simple_lexer(rdr, pool);
+    GuExn* parse_err = gu_new_exn(NULL, gu_kind(type), pool);
 
 	GuEnum* res =
-		pgf_parse(get_ref(env, concr), startCat, lexer, pool, out_pool);
+		pgf_parse(get_ref(env, concr), startCat, s, parse_err, pool, out_pool);
 
-	if (res == NULL) {
-		PgfToken tok =
-			pgf_lexer_current_token(lexer);
-
-		if (gu_string_eq(tok, gu_empty_string))
-			throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", "The sentence cannot be parsed");
-		else
-			throw_jstring_exception(env, "org/grammaticalframework/pgf/ParseError", gu2j_string(env, tok));
+	if (!gu_ok(parse_err)) {
+		if (gu_exn_caught(parse_err) == gu_type(PgfExn)) {
+			GuString msg = (GuString) gu_exn_caught_data(parse_err);
+			throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", msg);
+		} else if (gu_exn_caught(parse_err) == gu_type(PgfParseError)) {
+			GuString tok = (GuString) gu_exn_caught_data(parse_err);
+			throw_string_exception(env, "org/grammaticalframework/pgf/ParseError", tok);
+		}
 
 		gu_pool_free(pool);
 		gu_pool_free(out_pool);
+		return NULL;
 	}
 
+	jfieldID refId = (*env)->GetFieldID(env, (*env)->GetObjectClass(env, concr), "gr", "Lorg/grammaticalframework/pgf/PGF;");
+	jobject jpgf = (*env)->GetObjectField(env, concr, refId);
+
 	jclass expiter_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/ExprIterator");
-	jmethodID constrId = (*env)->GetMethodID(env, expiter_class, "<init>", "(Lorg/grammaticalframework/pgf/Concr;JJJ)V");
-	jobject jexpiter = (*env)->NewObject(env, expiter_class, constrId, concr, (jlong) pool, (jlong) out_pool, (jlong) res);
+	jmethodID constrId = (*env)->GetMethodID(env, expiter_class, "<init>", "(Lorg/grammaticalframework/pgf/PGF;JJJ)V");
+	jobject jexpiter = (*env)->NewObject(env, expiter_class, constrId, jpgf, p2l(pool), p2l(out_pool), p2l(res));
 
 	return jexpiter;
 }
 
 JNIEXPORT jobject JNICALL 
 Java_org_grammaticalframework_pgf_ExprIterator_fetchExprProb
-  (JNIEnv* env, jobject self, jlong enumRef, jobject out_pool)
+  (JNIEnv* env, jobject self, jlong enumRef, jobject pool, jobject gr)
 {
-	GuEnum* res = (GuEnum*) enumRef;
+	GuEnum* res = (GuEnum*) l2p(enumRef);
 
 	PgfExprProb* ep = gu_next(res, PgfExprProb*, NULL);
 	if (ep == NULL)
 		return NULL;
 
 	jclass expprob_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/ExprProb");
-	jmethodID methodId = (*env)->GetStaticMethodID(env, expprob_class, "mkExprProb", "(Lorg/grammaticalframework/pgf/Pool;JD)Lorg/grammaticalframework/pgf/ExprProb;");
+	jmethodID methodId = (*env)->GetStaticMethodID(env, expprob_class, "mkExprProb", 
+	           "(Lorg/grammaticalframework/pgf/Pool;Lorg/grammaticalframework/pgf/PGF;JD)Lorg/grammaticalframework/pgf/ExprProb;");
 	jobject jexpprob = (*env)->CallStaticObjectMethod(env, expprob_class, methodId, 
-	                                  out_pool, (jlong) gu_variant_to_ptr(ep->expr), (double) ep->prob);
+	           pool, gr, p2l(gu_variant_to_ptr(ep->expr)), (double) ep->prob);
 
 	return jexpprob;
 }
@@ -259,9 +339,9 @@ Java_org_grammaticalframework_pgf_Concr_linearize(JNIEnv* env, jobject self, job
 	GuPool* tmp_pool = gu_local_pool();
 	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
 	GuStringBuf* sbuf = gu_string_buf(tmp_pool);
-	GuWriter* wtr = gu_string_buf_writer(sbuf);
+	GuOut* out = gu_string_buf_out(sbuf);
 	
-	pgf_linearize(get_ref(env, self), gu_variant_from_ptr((void*) get_ref(env, jexpr)), wtr, err);
+	pgf_linearize(get_ref(env, self), gu_variant_from_ptr((void*) get_ref(env, jexpr)), out, err);
 	if (!gu_ok(err)) {
 		//
 		return NULL;
@@ -275,10 +355,126 @@ Java_org_grammaticalframework_pgf_Concr_linearize(JNIEnv* env, jobject self, job
 	return jstr;
 }
 
+JNIEXPORT jobject JNICALL 
+Java_org_grammaticalframework_pgf_Concr_tabularLinearize(JNIEnv* env, jobject self, jobject jexpr)
+{
+	jclass map_class = (*env)->FindClass(env, "java/util/HashMap");
+	if (!map_class)
+		return NULL;
+	jmethodID constrId = (*env)->GetMethodID(env, map_class, "<init>", "()V");
+	if (!constrId)
+		return NULL;
+	jobject table = (*env)->NewObject(env, map_class, constrId);
+	if (!table)
+		return NULL;
+
+	jmethodID put_method = (*env)->GetMethodID(env, map_class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	if (!put_method)
+		return NULL;
+		
+	PgfConcr* concr = get_ref(env, self);
+
+	GuPool* tmp_pool = gu_local_pool();
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+
+	GuEnum* cts = 
+		pgf_lzr_concretize(concr,
+		                   gu_variant_from_ptr((void*) get_ref(env, jexpr)),
+		                   tmp_pool);
+	PgfCncTree ctree = gu_next(cts, PgfCncTree, tmp_pool);
+	if (gu_variant_is_null(ctree)) {
+		gu_pool_free(tmp_pool);
+		return NULL;
+	}
+
+	size_t n_lins;
+	GuString* labels;
+	pgf_lzr_linearize_table(concr, ctree, &n_lins, &labels);
+
+	for (size_t lin_idx = 0; lin_idx < n_lins; lin_idx++) {
+		GuStringBuf* sbuf = gu_string_buf(tmp_pool);
+		GuOut* out = gu_string_buf_out(sbuf);
+
+		pgf_lzr_linearize_simple(concr, ctree, lin_idx, out, err);
+
+		jstring jstr = NULL;
+		if (gu_ok(err)) {
+			GuString str = gu_string_buf_freeze(sbuf, tmp_pool);
+			jstr = gu2j_string(env, str);
+		} else {
+			gu_exn_clear(err);
+		}
+		
+		jstring jname = gu2j_string(env, labels[lin_idx]);
+
+		(*env)->CallObjectMethod(env, table, put_method, jname, jstr);
+
+		(*env)->DeleteLocalRef(env, jname);
+		
+		if (jstr != NULL)
+			(*env)->DeleteLocalRef(env, jstr);
+	}
+	
+	gu_pool_free(tmp_pool);
+
+	return table;
+}
+
+typedef struct {
+	PgfMorphoCallback fn;
+	jobject analyses;
+	JNIEnv* env;
+	jmethodID addId;
+	jclass an_class;
+	jmethodID an_constrId;
+} JMorphoCallback;
+
+static void
+jpgf_collect_morpho(PgfMorphoCallback* self,
+                    PgfCId lemma, GuString analysis, prob_t prob,
+	                GuExn* err)
+{
+	JMorphoCallback* callback = (JMorphoCallback*) self;
+	JNIEnv* env = callback->env;
+	
+	jstring jlemma = gu2j_string(env,lemma);
+	jstring janalysis = gu2j_string(env,analysis);
+	jobject jan = (*env)->NewObject(env, 
+	                                callback->an_class,
+	                                callback->an_constrId, 
+	                                jlemma,
+	                                janalysis,
+	                                (double) prob);
+	(*env)->CallBooleanMethod(env, callback->analyses, callback->addId, jan);
+	(*env)->DeleteLocalRef(env, jan);
+	(*env)->DeleteLocalRef(env, janalysis);
+	(*env)->DeleteLocalRef(env, jlemma);
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_grammaticalframework_pgf_Concr_lookupMorpho(JNIEnv* env, jobject self, jstring sentence)
+{
+	jclass list_class = (*env)->FindClass(env, "java/util/ArrayList");
+	jmethodID list_constrId = (*env)->GetMethodID(env, list_class, "<init>", "()V");
+	jobject analyses = (*env)->NewObject(env, list_class, list_constrId);
+	
+	jmethodID addId = (*env)->GetMethodID(env, list_class, "add", "(Ljava/lang/Object;)Z");
+
+	jclass an_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/MorphoAnalysis");
+	jmethodID an_constrId = (*env)->GetMethodID(env, an_class, "<init>", "(Ljava/lang/String;Ljava/lang/String;D)V");
+
+	GuPool* tmp_pool = gu_new_pool();
+	JMorphoCallback callback = { { jpgf_collect_morpho }, analyses, env, addId, an_class, an_constrId };
+	pgf_lookup_morpho(get_ref(env, self), j2gu_string(env, sentence, tmp_pool),
+	                  &callback.fn, NULL);
+
+	return analyses;
+}
+
 JNIEXPORT void JNICALL 
 Java_org_grammaticalframework_pgf_Pool_free(JNIEnv* env, jobject self, jlong ref)
 {
-	gu_pool_free((GuPool*) ref);
+	gu_pool_free((GuPool*) l2p(ref));
 }
 
 JNIEXPORT jstring JNICALL
@@ -288,13 +484,63 @@ Java_org_grammaticalframework_pgf_Expr_showExpr(JNIEnv* env, jclass clazz, jlong
 
 	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
 	GuStringBuf* sbuf = gu_string_buf(tmp_pool);
-	GuWriter* wtr = gu_string_buf_writer(sbuf);
+	GuOut* out = gu_string_buf_out(sbuf);
 
-	pgf_print_expr(gu_variant_from_ptr((void*)ref), NULL, 0, wtr, err);
+	pgf_print_expr(gu_variant_from_ptr(l2p(ref)), NULL, 0, out, err);
 
 	GuString str = gu_string_buf_freeze(sbuf, tmp_pool);
 	jstring jstr = gu2j_string(env, str);
 
 	gu_pool_free(tmp_pool);
 	return jstr;
+}
+
+JNIEXPORT jobject JNICALL 
+Java_org_grammaticalframework_pgf_Expr_readExpr(JNIEnv* env, jclass clazz, jstring s)
+{
+	GuPool* pool = gu_new_pool();
+	
+	GuPool* tmp_pool = gu_local_pool();
+	GuString buf = j2gu_string(env, s, tmp_pool);
+	GuIn* in = gu_data_in((uint8_t*) buf, strlen(buf), tmp_pool);
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+
+	PgfExpr e = pgf_read_expr(in, pool, err);
+	if (!gu_ok(err) || gu_variant_is_null(e)) {
+		throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", "The expression cannot be parsed");
+		gu_pool_free(tmp_pool);
+		gu_pool_free(pool);
+		return NULL;
+	}
+
+	gu_pool_free(tmp_pool);
+
+	jclass pool_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/Pool");
+	jmethodID pool_constrId = (*env)->GetMethodID(env, pool_class, "<init>", "(J)V");
+	jobject jpool = (*env)->NewObject(env, pool_class, pool_constrId, p2l(pool));
+
+	jmethodID constrId = (*env)->GetMethodID(env, clazz, "<init>", "(Lorg/grammaticalframework/pgf/Pool;Lorg/grammaticalframework/pgf/PGF;J)V");
+	return (*env)->NewObject(env, clazz, constrId, jpool, NULL, p2l(gu_variant_to_ptr(e)));
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_grammaticalframework_pgf_Generator_generateAll(JNIEnv* env, jclass clazz, jobject jpgf, jstring jstartCat)
+{
+	GuPool* pool = gu_new_pool();
+
+    GuString startCat = j2gu_string(env, jstartCat, pool);
+
+	GuEnum* res =
+		pgf_generate_all(get_ref(env, jpgf), startCat, pool);
+	if (res == NULL) {
+		throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", "The generation failed");
+		gu_pool_free(pool);
+		return NULL;
+	}
+
+	jclass expiter_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/ExprIterator");
+	jmethodID constrId = (*env)->GetMethodID(env, expiter_class, "<init>", "(Lorg/grammaticalframework/pgf/PGF;JJJ)V");
+	jobject jexpiter = (*env)->NewObject(env, expiter_class, constrId, jpgf, p2l(pool), p2l(pool), p2l(res));
+
+	return jexpiter;
 }

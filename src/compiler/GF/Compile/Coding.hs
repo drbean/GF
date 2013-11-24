@@ -3,10 +3,10 @@ module GF.Compile.Coding where
 import GF.Grammar.Grammar
 import GF.Grammar.Macros
 import GF.Text.Coding
-import GF.Infra.Option
+--import GF.Infra.Option
 import GF.Data.Operations
 
-import Data.Char
+--import Data.Char
 import System.IO
 import qualified Data.ByteString.Char8 as BS
 
@@ -22,7 +22,7 @@ codeSourceModule co (id,mo) = (id,mo{jments = mapTree codj (jments mo)})
     codj (c,info) = case info of
       ResOper     pty pt   -> ResOper (codeLTerms co pty) (codeLTerms co pt) 
       ResOverload es tyts  -> ResOverload es [(codeLTerm co ty,codeLTerm co t) | (ty,t) <- tyts]
-      CncCat mty mt mpr mpmcfg -> CncCat mty (codeLTerms co mt) (codeLTerms co mpr) mpmcfg
+      CncCat mcat mdef mref mpr mpmcfg -> CncCat mcat (codeLTerms co mdef) (codeLTerms co mref) (codeLTerms co mpr) mpmcfg
       CncFun mty mt mpr mpmcfg -> CncFun mty (codeLTerms co mt) (codeLTerms co mpr) mpmcfg
       _ -> info
 

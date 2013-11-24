@@ -1,3 +1,4 @@
+--# -coding=latin1
 --1 A Simple Danish Resource Morphology
 --
 -- Aarne Ranta 2002
@@ -80,6 +81,11 @@ oper
        VI (VSupin v)     => mkVoice v spist ;    --# notpresent
        VI (VPtPret (Strong (GSg _)) c) => mkCase c spist ;
        VI (VPtPret _ c)  => mkCase c (spist + "e") ;
+       VI (VPtPres _ _ c)  => case last spise of {
+         "e" => mkCase c (spise + "nde") ;
+         "i" => mkCase c (spise + "vende") ; --- gi, bli
+         _   => mkCase c (spise + "ende")
+         } ;
        VF (VImper v)     => mkVoice v spis
        }
      } ;

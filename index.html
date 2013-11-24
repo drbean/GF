@@ -40,7 +40,7 @@ August 2013
 | <A HREF="http://groups.google.com/group/gf-dev">UserGroup</A>
 | <A HREF="gf-book">Book</A>
 | <A HREF="https://github.com/GrammaticalFramework/GF/">GitHub</A>
-| <A HREF="http://www.postcrashgames.com/gf_world/">Interactive Map</A><font size=-1 color=red><i>New!</i></font>
+| <A HREF="http://www.postcrashgames.com/gf_world/">Interactive Map</A>
 | <a href="http://cloud.grammaticalframework.org/"><img src="src/www/P/gf-cloud.png" alt="GF Cloud Service" title="GF Cloud Service"></a>
 ]
 </div>
@@ -55,10 +55,11 @@ August 2013
 | <a href="doc/gf-editor-modes.html">GF Editor Modes</a>
 | <a href="eclipse/index.html">GF Eclipse Plugin</a>
 | <A HREF="doc/gf-lrec-2010.pdf">LibTutorial</A>
-| <a href="http://hackage.haskell.org/packages/archive/gf/3.1.6.2/doc/html/PGF.html">PGF library API</a>
+| <a href="http://hackage.haskell.org/package/gf-3.5/docs/PGF.html">PGF library API</a>
 | <A HREF="http://www.molto-project.eu">MOLTO</A>
-| <A HREF="http://school.grammaticalframework.org">SummerSchool</A><font size=-1 color=red><i>New!</i></font>
+| <A HREF="http://school.grammaticalframework.org">SummerSchool</A>
 | <A HREF="/android/">Android</A>
+| <a href="/~hallgren/gf-experiment/browse/">Browse GF Source Code</a><small style="color: red"><em>New!</em></small>
 ]
 </div>
 </div>
@@ -67,6 +68,9 @@ August 2013
 <div class=news2>
 
 <table class=news>
+<tr><td>2013-10-18:<td>New resource grammar language: Estonian.
+    See <a href="lib/doc/synopsis.html">library synopsis</a>.
+<tr><td>2013-09-18:<td>New <a href="https://github.com/GrammaticalFramework/gf-contrib">GF contributions repository</a>, hosted on GitHub.
 <tr><td>2013-08-06:<td><strong>GF 3.5 released!</strong>
     <a href="download/release-3.5.html">Release notes</a>.
 <tr><td>2013-07-26:<td>Started a page with <A HREF="lib/doc/rgl-publications.html">RGL Documentation and Publications</A>.
@@ -80,6 +84,7 @@ August 2013
 <tr><td>2012-12-10:<td>
   <a href="http://www.postcrashgames.com/gf_world/">Resource Grammar Library
   coverage map</a>, created by Tommi Nieminen.
+<!--
 <tr><td>2012-11-18:<td>
   <A HREF="http://school.grammaticalframework.org/2013">GF Summer School</A>
   in Frauenchiemsee, 18-30 August 2013.
@@ -96,7 +101,6 @@ August 2013
   in Copenhagen.
 <tr><td>2012-03-03:<td><strong>GF 3.3.3 released!</strong>
     <a href="download/release-3.3.3.html">Release notes</a>.
-<!--
   <tr><td>2012-02-24:<td>New resource grammar languages: Hindi, Sindhi.
     See <a href="lib/doc/synopsis.html">library synopsis</a>.
 <tr><td>2011-12-29:<td>New resource grammar languages: Latvian, Thai.
@@ -126,16 +130,38 @@ GF, Grammatical Framework, is a programming language for
 <B>multilingual grammar applications</B>. It is
 </P>
 <UL>
-<LI>a <B>special-purpose language for grammars</B>, like YACC, Bison, Happy, BNFC,
+<LI>a <B>special-purpose language for grammars</B>, like
+  <a href="http://dinosaur.compilertools.net/yacc/">YACC</a>,
+  <a href="http://www.gnu.org/software/bison/">Bison</a>,
+  <a href="http://www.haskell.org/happy/">Happy</a>,
+  <a href="http://bnfc.digitalgrammars.com/">BNFC</a>,
   but not restricted to programming languages
-<LI>a <B>functional language</B>, like Haskell, Lisp, OCaml, Scheme, SML,
+<LI>a <B>functional programming language</B>, like
+  <a href="http://www.haskell.org/">Haskell</a>,
+  <a href="http://en.wikipedia.org/wiki/Lisp_(programming_language)">Lisp</a>,
+  <a href="http://ocaml.org/">OCaml</a>,
+  <a href="http://www.smlnj.org/">SML</a>,
+  <a href="http://schemers.org/">Scheme</a>,
   but specialized to grammar writing
-<LI>a <B>natural language processing framework</B>, like LKB, XLE, Regulus,
+<LI>a <B>development platform for natural language grammars</B>, like
+  <a href="http://moin.delph-in.net/LkbTop">LKB</a>,
+  <a href="http://www2.parc.com/isl/groups/nltt/xle/">XLE</a>,
+  <a href="http://www.issco.unige.ch/en/research/projects/regulus/news.shtml">Regulus</a>,
   but based on functional programming and type theory
-<LI>a <B>categorial grammar formalism</B>, like ACG, CCG,
-  but different and equipped with different tools
-<LI>a <B>logical framework</B>, like Agda, Coq, Isabelle,
+<LI>a <B>categorial grammar formalism</B>, like
+  <a href="http://www.loria.fr/equipes/calligramme/acg/">ACG</a>,
+  <a href="http://openccg.sourceforge.net/">CCG</a>,
+  but specialized for multilingual grammars,
+<LI>a <B>logical framework</B>, like
+  <a href="http://wiki.portal.chalmers.se/agda/pmwiki.php">Agda</a>,
+  <a href="http://coq.inria.fr/">Coq</a>,
+  <a href="http://www.cl.cam.ac.uk/research/hvg/Isabelle/">Isabelle</a>,
   but equipped with concrete syntax in addition to logic
+<li>a <b>platform for machine translation</b>, like
+  <a href="http://www.statmt.org/moses/">Moses</a>,
+  <a href="http://www.apertium.org/">Apertium</a>,
+  but based on deep structural analysis (and usually applied for
+  limited fragments of language).
 </UL>
 
 <P>
@@ -147,8 +173,8 @@ least one, it may help you to get a first idea of what GF is.
 GF can be used for building
 </P>
 <UL>
-<LI><A HREF="http://grammaticalframework.org:41296">translation systems</A>
-<LI><A HREF="http://grammaticalframework.org:41296/minibar/minibar.html">multilingual web gadgets</A>
+<LI><A HREF="http://cloud.grammaticalframework.org/translator/">translation systems</A>
+<LI><A HREF="http://cloud.grammaticalframework.org/minibar/minibar.html">multilingual web gadgets</A>
 <LI><A HREF="http://www.cs.chalmers.se/~hallgren/Alfa/Tutorial/GFplugin.html">natural-language interfaces</A>
 <LI><A HREF="http://www.youtube.com/watch?v=1bfaYHWS6zU">dialogue systems</A>
 <LI><A HREF="lib/doc/synopsis.html">natural language resources</A>
@@ -197,8 +223,15 @@ Later projects using GF and involving third parties include, in chronological or
   Swedish morphological dictionary based on rules developed for GF and
   <A HREF="http://www.cse.chalmers.se/alumni/markus/FM/">Functional Morphology</A>
 <LI><a href="http://www.molto-project.eu">MOLTO</a>:
-  multilingual online translation.
+  multilingual online translation
+<LI><a href="http://remu.grammaticalframework.org">REMU</a>:
+  reliable multilingual digital communication.
 </UL>
+<p>
+Here is a <a
+href="http://videos.xrce.xerox.com/index.php/videos/index/618">talk
+about GF at XRCE</a>, 
+14 years later.
 
 <P>
 Academically, GF has been used in at least ten PhD theses and resulted
@@ -253,7 +286,7 @@ syntax, lexicon, and inflection. The
 <A HREF="lib/doc/synopsis.html">GF resource grammar library</A> has
 support for an increasing number of languages, currently including
 </P>
-<OL>
+<ol class=languages>
 <LI>Afrikaans
 <LI>Amharic (partial)
 <LI>Arabic (partial)
@@ -263,6 +296,7 @@ support for an increasing number of languages, currently including
 <LI>Danish
 <LI>Dutch
 <LI>English
+<LI>Estonian
 <LI>Finnish
 <LI>French
 <LI>German
@@ -284,12 +318,12 @@ support for an increasing number of languages, currently including
 <LI>Russian
 <LI>Sindhi
 <LI>Spanish
-<li>Swahili
+<li>Swahili (fragments)
 <LI>Swedish
 <LI>Thai
 <LI>Turkish (fragments)
 <LI>Urdu
-</OL>
+</ol>
 
 <P>
 Adding a language to the resource library takes 3 to 9

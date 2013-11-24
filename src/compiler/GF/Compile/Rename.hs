@@ -34,18 +34,18 @@ import GF.Infra.Ident
 import GF.Infra.CheckM
 import GF.Grammar.Macros
 import GF.Grammar.Printer
-import GF.Grammar.Lookup
-import GF.Grammar.Printer
+--import GF.Grammar.Lookup
+--import GF.Grammar.Printer
 import GF.Data.Operations
 
 import Control.Monad
-import Data.List (nub)
+import Data.List (nub,(\\))
 import Text.PrettyPrint
 
 -- | this gives top-level access to renaming term input in the cc command
 renameSourceTerm :: SourceGrammar -> Ident -> Term -> Check Term
 renameSourceTerm g m t = do
-  mi     <- checkErr $ lookupModule g m
+  mi     <- lookupModule g m
   status <- buildStatus g (m,mi)
   renameTerm status [] t
 
@@ -72,12 +72,12 @@ renameIdentTerm' env@(act,imps) t0 =
     Cn c -> ident (\_ s -> checkError s) c
     Q (m',c) | m' == cPredef {- && isInPredefined c -} -> return t0
     Q (m',c) -> do
-      m <- checkErr (lookupErr m' qualifs)
+      m <- lookupErr m' qualifs
       f <- lookupTree showIdent c m
       return $ f c
     QC (m',c) | m' == cPredef {- && isInPredefined c -} -> return t0
     QC (m',c) -> do
-      m <- checkErr (lookupErr m' qualifs)
+      m <- lookupErr m' qualifs
       f <- lookupTree showIdent c m
       return $ f c
     _ -> return t0
@@ -125,10 +125,10 @@ tree2status o = case o of
 
 buildStatus :: SourceGrammar -> SourceModule -> Check Status
 buildStatus gr mo@(m,mi) = checkIn (ppLocation (msrc mi) NoLoc <> colon) $ do
-  let gr1 = prependModule gr mo
-      ops = [OSimple e | e <- allExtends gr1 m] ++ mopens mi
-  mods <- checkErr $ mapM (lookupModule gr1 . openedModule) ops
-  let sts = map modInfo2status $ zip ops mods    
+  let gr1  = prependModule gr mo
+      exts = [(OSimple m,mi) | (m,mi) <- allExtends gr1 m]
+  ops <- mapM (\o -> lookupModule gr1 (openedModule o) >>= \mi -> return (o,mi)) (mopens mi)
+  let sts = map modInfo2status (exts++ops)
   return (if isModCnc mi
             then (emptyBinTree,    reverse sts)  -- the module itself does not define any names
             else (self2status m mi,reverse sts)) -- so the empty ident is not needed
@@ -153,7 +153,7 @@ renameInfo status (m,mi) i info =
     ResValue t -> do
       t <- renLoc (renameTerm status []) t
       return (ResValue t)
-    CncCat mty mtr mpr mpmcfg -> liftM4 CncCat (renTerm mty) (renTerm mtr) (renTerm mpr) (return mpmcfg)
+    CncCat mcat mdef mref mpr mpmcfg -> liftM5 CncCat (renTerm mcat) (renTerm mdef) (renTerm mref) (renTerm mpr) (return mpmcfg)
     CncFun mty mtr mpr mpmcfg -> liftM3 (CncFun mty)         (renTerm mtr) (renTerm mpr) (return mpmcfg)
     _ -> return info
   where
@@ -235,76 +235,80 @@ renameTerm env vars = ren vars where
 
 -- | vars not needed in env, since patterns always overshadow old vars
 renamePattern :: Status -> Patt -> Check (Patt,[Ident])
-renamePattern env patt = case patt of
+renamePattern env patt =
+    do r@(p',vs) <- renp patt
+       let dupl = vs \\ nub vs
+       unless (null dupl) $ checkError (hang (text "[C.4.13] Pattern is not linear:") 4
+                                             (ppPatt Unqualified 0 patt))
+       return r
+  where
+    renp patt = case patt of
+      PMacro c -> do
+        c' <- renid $ Vr c
+        case c' of
+          Q d -> renp $ PM d
+          _ -> checkError (text "unresolved pattern" <+> ppPatt Unqualified 0 patt)
 
-  PMacro c -> do
-    c' <- renid $ Vr c
-    case c' of
-      Q d -> renp $ PM d
-      _ -> checkError (text "unresolved pattern" <+> ppPatt Unqualified 0 patt)
+      PC c ps -> do
+        c' <- renid $ Cn c
+        case c' of
+          QC c -> do psvss <- mapM renp ps
+                     let (ps,vs) = unzip psvss
+                     return (PP c ps, concat vs)
+          Q  _ -> checkError (text "data constructor expected but" <+> ppTerm Qualified 0 c' <+> text "is found instead")
+          _    -> checkError (text "unresolved data constructor" <+> ppTerm Qualified 0 c')
 
-  PC c ps -> do
-    c' <- renid $ Cn c
-    case c' of
-      QC c -> do psvss <- mapM renp ps
-                 let (ps,vs) = unzip psvss
-                 return (PP c ps, concat vs)
-      Q  _ -> checkError (text "data constructor expected but" <+> ppTerm Qualified 0 c' <+> text "is found instead")
-      _    -> checkError (text "unresolved data constructor" <+> ppTerm Qualified 0 c')
+      PP c ps -> do
+        (QC c') <- renid (QC c)
+        psvss <- mapM renp ps
+        let (ps',vs) = unzip psvss
+        return (PP c' ps', concat vs)
 
-  PP c ps -> do
-    (QC c') <- renid (QC c)
-    psvss <- mapM renp ps
-    let (ps',vs) = unzip psvss
-    return (PP c' ps', concat vs)
+      PM c -> do
+        x <- renid (Q c)
+        c' <- case x of
+                (Q c') -> return c'
+                _      -> checkError (text "not a pattern macro" <+> ppPatt Qualified 0 patt)
+        return (PM c', [])
 
-  PM c -> do
-    x <- renid (Q c)
-    c' <- case x of
-            (Q c') -> return c'
-            _      -> checkError (text "not a pattern macro" <+> ppPatt Qualified 0 patt)
-    return (PM c', [])
+      PV x -> checks [ renid' (Vr x) >>= \t' -> case t' of
+                                                 QC c -> return (PP c [],[])
+                                                 _    -> checkError (text "not a constructor")
+                     , return (patt, [x])
+                     ]
 
-  PV x -> checks [ renid' (Vr x) >>= \t' -> case t' of
-                                             QC c -> return (PP c [],[])
-                                             _    -> checkError (text "not a constructor")
-                 , return (patt, [x])
-                 ]
+      PR r -> do
+        let (ls,ps) = unzip r
+        psvss <- mapM renp ps
+        let (ps',vs') = unzip psvss
+        return (PR (zip ls ps'), concat vs')
 
-  PR r -> do
-    let (ls,ps) = unzip r
-    psvss <- mapM renp ps
-    let (ps',vs') = unzip psvss
-    return (PR (zip ls ps'), concat vs') 
+      PAlt p q -> do
+        (p',vs) <- renp p
+        (q',ws) <- renp q
+        return (PAlt p' q', vs ++ ws)
 
-  PAlt p q -> do
-    (p',vs) <- renp p
-    (q',ws) <- renp q
-    return (PAlt p' q', vs ++ ws)
+      PSeq p q -> do
+        (p',vs) <- renp p
+        (q',ws) <- renp q
+        return (PSeq p' q', vs ++ ws)
 
-  PSeq p q -> do
-    (p',vs) <- renp p
-    (q',ws) <- renp q
-    return (PSeq p' q', vs ++ ws)
+      PRep p -> do
+        (p',vs) <- renp p
+        return (PRep p', vs)
 
-  PRep p -> do
-    (p',vs) <- renp p
-    return (PRep p', vs)
+      PNeg p -> do
+        (p',vs) <- renp p
+        return (PNeg p', vs)
 
-  PNeg p -> do
-    (p',vs) <- renp p
-    return (PNeg p', vs)
+      PAs x p -> do
+        (p',vs) <- renp p
+        return (PAs x p', x:vs)
 
-  PAs x p -> do
-    (p',vs) <- renp p
-    return (PAs x p', x:vs)
+      _ -> return (patt,[])
 
-  _ -> return (patt,[])
-
- where 
-   renp  = renamePattern env
-   renid = renameIdentTerm env
-   renid' = renameIdentTerm' env
+    renid = renameIdentTerm env
+    renid' = renameIdentTerm' env
 
 renameContext :: Status -> Context -> Check Context
 renameContext b = renc [] where

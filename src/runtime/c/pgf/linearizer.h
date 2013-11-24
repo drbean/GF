@@ -1,24 +1,7 @@
-/* 
- * Copyright 2010-2011 University of Helsinki.
- *   
- * This file is part of libpgf.
- * 
- * Libpgf is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or (at your
- * option) any later version.
- * 
- * Libpgf is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
- * License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with libpgf. If not, see <http://www.gnu.org/licenses/>.
- */
+#ifndef PGF_LINEARIZER_H_
+#define PGF_LINEARIZER_H_
 
 #include <gu/type.h>
-#include <gu/dump.h>
 #include <gu/enum.h>
 
 /// Linearization of abstract syntax trees.
@@ -47,12 +30,17 @@ typedef GuEnum PgfCncTreeEnum;
 PgfCncTreeEnum*
 pgf_lzr_concretize(PgfConcr* concr, PgfExpr expr, GuPool* pool);
 
+typedef struct {
+} PgfLinNonExist;
+
+extern GU_DECLARE_TYPE(PgfLinNonExist, abstract);
+
 typedef struct PgfLinFuncs PgfLinFuncs;
 
 struct PgfLinFuncs
 {
 	/// Output tokens
-	void (*symbol_tokens)(PgfLinFuncs** self, PgfTokens toks);
+	void (*symbol_token)(PgfLinFuncs** self, PgfToken tok);
 
 	/// Output literal
 	void (*expr_literal)(PgfLinFuncs** self, PgfLiteral lit);
@@ -62,10 +50,17 @@ struct PgfLinFuncs
 
 	/// End phrase
 	void (*end_phrase)(PgfLinFuncs** self, PgfCId cat, int fid, int lindex, PgfCId fun);
+
+	/// handling nonExist
+	void (*symbol_ne)(PgfLinFuncs** self);
+
+	/// token binding
+	void (*symbol_bind)(PgfLinFuncs** self);
 };
 
 
-
+PgfCncTree
+pgf_lzr_wrap_linref(PgfCncTree ctree, GuPool* pool);
 
 /// Linearize a concrete syntax tree.
 void
@@ -76,4 +71,16 @@ pgf_lzr_linearize(PgfConcr* concr, PgfCncTree ctree, size_t lin_idx,
 /// Linearize a concrete syntax tree as space-separated tokens.
 void
 pgf_lzr_linearize_simple(PgfConcr* concr, PgfCncTree ctree,
-			 size_t lin_idx, GuWriter* wtr, GuExn* err);
+			 size_t lin_idx, GuOut* out, GuExn* err);
+
+
+void
+pgf_lzr_linearize_table(PgfConcr* concr, PgfCncTree ctree, 
+                        size_t* n_lins, GuString** labels);
+#endif
+
+#ifdef PGF_PARSER_H_
+// Used internally in the parser
+GuString
+pgf_get_tokens(PgfSymbols* sym, uint16_t sym_idx, GuPool* pool);
+#endif

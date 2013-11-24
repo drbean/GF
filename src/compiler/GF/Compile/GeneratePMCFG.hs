@@ -13,34 +13,32 @@ module GF.Compile.GeneratePMCFG
     (generatePMCFG, pgfCncCat, addPMCFG, resourceValues
     ) where
 
-import PGF.CId
-import PGF.Data(Alternative(..),CncCat(..),Symbol(..),fidVar)
+--import PGF.CId
+import PGF.Data(CncCat(..),Symbol(..),fidVar)
 
 import GF.Infra.Option
 import GF.Grammar hiding (Env, mkRecord, mkTable)
 import GF.Grammar.Lookup
 import GF.Grammar.Predef
+import GF.Grammar.Lockfield (isLockLabel)
 import GF.Data.BacktrackM
 import GF.Data.Operations
-import GF.Infra.UseIO (IOE)
-import GF.Data.Utilities (updateNthM, updateNth)
+import GF.Infra.UseIO (IOE,ePutStr,ePutStrLn)
+import GF.Data.Utilities (updateNthM) --updateNth
 import GF.Compile.Compute.ConcreteNew(GlobalEnv,normalForm,resourceValues,ppL)
-import System.IO(hPutStr,hPutStrLn,stderr)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.List as List
-import qualified Data.IntMap as IntMap
+--import qualified Data.IntMap as IntMap
 import qualified Data.IntSet as IntSet
-import qualified Data.ByteString.Char8 as BS
 import Text.PrettyPrint hiding (Str)
 import Data.Array.IArray
 import Data.Array.Unboxed
-import Data.Maybe
-import Data.Char (isDigit)
+--import Data.Maybe
+--import Data.Char (isDigit)
 import Control.Monad
 import Control.Monad.Identity
-import Control.Monad.Trans (liftIO)
-import Control.Exception
+--import Control.Exception
 
 ----------------------------------------------------------------------
 -- main conversion function
@@ -48,7 +46,7 @@ import Control.Exception
 generatePMCFG :: Options -> SourceGrammar -> Maybe FilePath -> SourceModule -> IOE SourceModule
 generatePMCFG opts sgr opath cmo@(cm,cmi) = do
   (seqs,js) <- mapAccumWithKeyM (addPMCFG opts gr cenv opath am cm) Map.empty (jments cmi)
-  when (verbAtLeast opts Verbose) $ liftIO $ hPutStrLn stderr ""
+  when (verbAtLeast opts Verbose) $ ePutStrLn ""
   return (cm,cmi{mseqs = Just (mkSetArray seqs), jments = js})
   where
     cenv = resourceValues gr
@@ -73,8 +71,7 @@ addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncFun mty@(Just (cat,cont
       pargs = [protoFCat gr (snd $ catSkeleton ty) lincat | ((_,_,ty),(_,_,lincat)) <- zip ctxt cont]
 
       pmcfgEnv0   = emptyPMCFGEnv
-
-  b             <- convert opts gr cenv (floc opath loc id) term val pargs
+  b             <- convert opts gr cenv (floc opath loc id) term (cont,val) pargs
   let (seqs1,b1) = addSequencesB seqs b
       pmcfgEnv1  = foldBM addRule
                           pmcfgEnv0
@@ -88,9 +85,9 @@ addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncFun mty@(Just (cat,cont
                        !funs_cnt        = e-s+1
                    in (prods_cnt,funs_cnt)
 
-  when (verbAtLeast opts Verbose) $ liftIO $ hPutStr stderr ("\n+ "++showIdent id ++ " " ++ show (product (map catFactor pargs)))
+  when (verbAtLeast opts Verbose) $ ePutStr ("\n+ "++showIdent id ++ " " ++ show (product (map catFactor pargs)))
   seqs1 `seq` stats `seq` return ()
-  when (verbAtLeast opts Verbose) $ liftIO $ hPutStr stderr (" "++show stats)
+  when (verbAtLeast opts Verbose) $ ePutStr (" "++show stats)
   return (seqs1,GF.Grammar.CncFun mty mlin mprn (Just pmcfg))
   where
     (ctxt,res,_) = err bug typeForm (lookupFunType gr am id)
@@ -101,32 +98,52 @@ addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncFun mty@(Just (cat,cont
           newArgs  = map getFIds newArgs'
       in addFunction env0 newCat fun newArgs
 
-addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncCat mty@(Just (L _ lincat)) mdef@(Just (L loc term)) mprn Nothing) = do
-  let pres = protoFCat gr (am,id) lincat
-      parg = protoFCat gr (identW,cVar) typeStr
+addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncCat mty@(Just (L _ lincat)) 
+                                                             mdef@(Just (L loc1 def))
+                                                             mref@(Just (L loc2 ref))
+                                                             mprn
+                                                             Nothing) = do
+  let pcat = protoFCat gr (am,id) lincat
+      pvar = protoFCat gr (identW,cVar) typeStr
 
       pmcfgEnv0  = emptyPMCFGEnv
 
-  b             <- convert opts gr cenv (floc opath loc id) term lincat [parg]
+  let lincont    = [(Explicit, varStr, typeStr)]
+  b             <- convert opts gr cenv (floc opath loc1 id) def (lincont,lincat) [pvar]
   let (seqs1,b1) = addSequencesB seqs b
-      pmcfgEnv1  = foldBM addRule
+      pmcfgEnv1  = foldBM addLindef
                           pmcfgEnv0
                           (goB b1 CNil [])
-                          (pres,[parg])
-      pmcfg     = getPMCFG pmcfgEnv1
-  when (verbAtLeast opts Verbose) $ liftIO $ hPutStr stderr ("\n+ "++showIdent id++" "++show (catFactor pres))
-  seqs1 `seq` pmcfg `seq` return (seqs1,GF.Grammar.CncCat mty mdef mprn (Just pmcfg))
+                          (pcat,[pvar])
+
+  let lincont    = [(Explicit, varStr, lincat)]
+  b             <- convert opts gr cenv (floc opath loc2 id) ref (lincont,typeStr) [pcat]
+  let (seqs2,b2) = addSequencesB seqs1 b
+      pmcfgEnv2  = foldBM addLinref
+                          pmcfgEnv1
+                          (goB b2 CNil [])
+                          (pvar,[pcat])
+
+  let pmcfg     = getPMCFG pmcfgEnv2
+
+  when (verbAtLeast opts Verbose) $ ePutStr ("\n+ "++showIdent id++" "++show (catFactor pcat))
+  seqs2 `seq` pmcfg `seq` return (seqs2,GF.Grammar.CncCat mty mdef mref mprn (Just pmcfg))
   where
-    addRule lins (newCat', newArgs') env0 =
+    addLindef lins (newCat', newArgs') env0 =
       let [newCat] = getFIds newCat'
           !fun     = mkArray lins
       in addFunction env0 newCat fun [[fidVar]]
+
+    addLinref lins (newCat', [newArg']) env0 =
+      let newArg   = getFIds newArg'
+          !fun     = mkArray lins
+      in addFunction env0 fidVar fun [newArg]
 
 addPMCFG opts gr cenv opath am cm seqs id info = return (seqs, info)
 
 floc opath loc id = maybe (L loc id) (\path->L (External path loc) id) opath
 
-convert opts gr cenv loc term val pargs =
+convert opts gr cenv loc term ty@(_,val) pargs =
     case term' of
       Error s -> fail $ render $ ppL loc (text $ "Predef.error: "++s)
       _ -> return $ runCnvMonad gr (conv term') (pargs,[])
@@ -134,8 +151,15 @@ convert opts gr cenv loc term val pargs =
     conv t = convertTerm opts CNil val =<< unfactor t
 
     term' = if flag optNewComp opts
-            then normalForm cenv loc (recordExpand val term) -- new evaluator
+            then normalForm cenv loc (expand ty term) -- new evaluator
             else term -- old evaluator is invoked from GF.Compile.Optimize
+
+expand ty@(context,val) = recordExpand val . etaExpand ty
+
+etaExpand (context,val) = mkAbs pars . flip mkApp args
+  where pars = [(Explicit,v) | v <- vars]
+        args = map Vr vars
+        vars = map (\(bt,x,t) -> x) context
 
 recordExpand :: Type -> Term -> Term
 recordExpand typ trm =
@@ -161,9 +185,9 @@ unfactor t = CM (\gr c -> c (unfac gr t))
                                     in V ty [u' | _ <- allparams ty]
         T (TTyped ty) _ -> -- convertTerm doesn't handle these tables
                            ppbug $
-                           sep [text "unfactor"<+>ppTerm Unqualified 10 t,
+                           sep [text "unfactor"<+>ppU 10 t,
                                 text (show t){-,
-                                fsep (map (ppTerm Unqualified 10) (allparams ty))-}]
+                                fsep (map (ppU 10) (allparams ty))-}]
         _ -> composSafeOp (unfac gr) t
       where
         allparams ty = err bug id (allParamValues gr ty)
@@ -341,8 +365,8 @@ computeCatRange gr lincat = compute (0,1) lincat
                                      (index,m) = st
                                  in ((index,m*length vs),CPar (m,zip vs [0..]))
 
-ppPath (CProj lbl path) = ppLabel lbl              <+> ppPath path
-ppPath (CSel  trm path) = ppTerm Unqualified 5 trm <+> ppPath path
+ppPath (CProj lbl path) = ppLabel lbl <+> ppPath path
+ppPath (CSel  trm path) = ppU 5 trm   <+> ppPath path
 ppPath CNil             = empty
 
 reversePath path = rev CNil path
@@ -370,30 +394,26 @@ convertTerm opts sel ctype (FV vars)    = do term <- variants vars
 convertTerm opts sel ctype (C t1 t2)    = do v1 <- convertTerm opts sel ctype t1
                                              v2 <- convertTerm opts sel ctype t2
                                              return (CStr (concat [s | CStr s <- [v1,v2]]))
-convertTerm opts sel ctype (K t)        = return (CStr [SymKS [t]])
+convertTerm opts sel ctype (K t)        = return (CStr [SymKS t])
 convertTerm opts sel ctype Empty        = return (CStr [])
-convertTerm opts sel ctype (Alts s alts)
-                                        = return (CStr [SymKP (strings s) [Alt (strings u) (strings v) | (u,v) <- alts]])
-           where
-             strings (K s)     = [s]
-             strings (C u v)   = strings u ++ strings v
-             strings (Strs ss) = concatMap strings ss
-             strings (EPatt p) = getPatts p
-             strings Empty = [] -- ??
-             strings t = bug $ "strings "++show t
-
-             getPatts p =
-               case p of
-                 PAlt a b  -> getPatts a ++ getPatts b
-                 PString s -> [s]
-                 PSeq a b  -> [s ++ t | s <- getPatts a, t <- getPatts b]
-                 _ -> ppbug $ hang (text "not valid pattern in pre expression:")
-                                   4
-                                   (ppPatt Unqualified 0 p)
+convertTerm opts sel ctype (Alts s alts)= do CStr s <- convertTerm opts CNil ctype s
+                                             alts <- forM alts $ \(u,Strs ps) -> do 
+                                                            CStr u <- convertTerm opts CNil ctype u
+                                                            ps     <- mapM (convertTerm opts CNil ctype) ps
+                                                            return (u,map unSym ps)
+                                             return (CStr [SymKP s alts])
+  where
+    unSym (CStr [])        = ""
+    unSym (CStr [SymKS t]) = t
+    unSym _                = ppbug $ hang (text "invalid prefix in pre expression:") 4 (ppU 0 (Alts s alts))
 
 convertTerm opts sel ctype (Q (m,f))
   | m == cPredef &&
     f == cNonExist                      = return (CStr [SymNE])
+  | m == cPredef &&
+    f == cBIND                          = return (CStr [SymBIND])
+  | m == cPredef &&
+    f == cSOFT_BIND                     = return (CStr [SymSOFT_BIND])
 
 convertTerm opts sel@(CProj l _) ctype (ExtR t1 t2@(R rs2))
                     | l `elem` map fst rs2 = convertTerm opts sel ctype t2
@@ -405,7 +425,7 @@ convertTerm opts sel@(CProj l _) ctype (ExtR t1@(R rs1) t2)
 
 convertTerm opts CNil ctype t           = do v <- evalTerm CNil t
                                              return (CPar v)
-convertTerm _    sel  _     t           = ppbug (text "convertTerm" <+> sep [parens (text (show sel)),ppTerm Unqualified 10 t])
+convertTerm _    sel  _     t           = ppbug (text "convertTerm" <+> sep [parens (text (show sel)),ppU 10 t])
 
 convertArg :: Options -> Term -> Int -> Path -> CnvMonad (Value [Symbol])
 convertArg opts (RecType rs)  nr path =
@@ -432,7 +452,8 @@ convertArg opts ty nr path              = do
   return (CPar value)
 
 convertRec opts CNil (RecType rs) record =
-  mkRecord (map (\(lbl,ctype) -> (lbl,convertTerm opts CNil ctype (projectRec lbl record))) rs)
+    mkRecord [(lbl,convertTerm opts CNil ctype (proj lbl))|(lbl,ctype)<-rs]
+  where proj lbl = if isLockLabel lbl then R [] else projectRec lbl record
 convertRec opts (CProj lbl path) ctype record =
   convertTerm opts path ctype (projectRec lbl record)
 convertRec opts _ ctype _ = bug ("convertRec: "++show ctype)
@@ -444,8 +465,8 @@ convertTbl opts (CSel v sub_sel) ctype pt ts = do
   vs <- getAllParamValues pt
   case lookup v (zip vs ts) of
     Just t  -> convertTerm opts sub_sel ctype t
-    Nothing -> ppbug (text "convertTbl:" <+> (text "missing value" <+> ppTerm Unqualified 0 v $$
-                                                      text "among" <+> vcat (map (ppTerm Unqualified 0) vs)))
+    Nothing -> ppbug (text "convertTbl:" <+> (text "missing value" <+> ppU 0 v $$
+                                              text "among" <+> vcat (map (ppU 0) vs)))
 convertTbl opts _ ctype _ _ = bug ("convertTbl: "++show ctype)
 
 
@@ -485,7 +506,7 @@ addSequencesV seqs (CRec vs)  = let !(seqs1,vs1) = mapAccumL' (\seqs (lbl,b) -> 
 addSequencesV seqs (CTbl pt vs)=let !(seqs1,vs1) = mapAccumL' (\seqs (trm,b) -> let !(seqs',b') = addSequencesB seqs b
                                                                                 in (seqs',(trm,b'))) seqs vs
                                 in (seqs1,CTbl pt vs1)
-addSequencesV seqs (CStr lin) = let !(seqs1,seqid) = addSequence seqs (optimizeLin lin)
+addSequencesV seqs (CStr lin) = let !(seqs1,seqid) = addSequence seqs lin
                                 in (seqs1,CStr seqid)
 addSequencesV seqs (CPar i)   = (seqs,CPar i)
 
@@ -494,16 +515,6 @@ mapAccumL' f s []     = (s,[])
 mapAccumL' f s (x:xs) = (s'',y:ys)
                         where !(s', y ) = f s x
                               !(s'',ys) = mapAccumL' f s' xs
-
-optimizeLin [] = []
-optimizeLin lin@(SymKS _ : _) = 
-  let (ts,lin') = getRest lin
-  in SymKS ts : optimizeLin lin'
-  where
-    getRest (SymKS ts : lin) = let (ts1,lin') = getRest lin
-                               in (ts++ts1,lin')
-    getRest             lin  = ([],lin)
-optimizeLin (sym : lin) = sym : optimizeLin lin
 
 addSequence :: SeqSet -> [Symbol] -> (SeqSet,SeqId)
 addSequence seqs lst =
@@ -524,30 +535,29 @@ evalTerm CNil (App x y)    = do x <- evalTerm CNil x
                                 y <- evalTerm CNil y
                                 return (App x y)
 evalTerm path (Vr x)       = choices (getVarIndex x) path
-evalTerm path (R rs)       = case path of
-                               (CProj lbl path) -> evalTerm path (projectRec lbl rs)
-                               CNil             -> do rs <- mapM (\(lbl,(_,t)) -> do t <- evalTerm path t
-                                                                                     return (assign lbl t)) rs
-                                                      return (R rs)
+evalTerm path (R rs)       =
+    case path of
+      CProj lbl path -> evalTerm path (projectRec lbl rs)
+      CNil           -> R `fmap` mapM (\(lbl,(_,t)) -> assign lbl `fmap` evalTerm path t) rs
 evalTerm path (P term lbl) = evalTerm (CProj lbl path) term
-evalTerm path (V pt ts)    = case path of
-                               (CSel trm path) -> do vs <- getAllParamValues pt
-                                                     case lookup trm (zip vs ts) of
-                                                       Just t  -> evalTerm path t
-                                                       Nothing -> ppbug $ text "evalTerm: missing value:"<+>ppTerm Unqualified 0 trm $$ text "among:"<+>fsep (map (ppTerm Unqualified 10) vs)
-                               CNil             -> do ts <- mapM (evalTerm path) ts
-                                                      return (V pt ts)
+evalTerm path (V pt ts)    =
+   case path of
+     CNil          -> V pt `fmap` mapM (evalTerm path) ts
+     CSel trm path ->
+         do vs <- getAllParamValues pt
+            case lookup trm (zip vs ts) of
+              Just t  -> evalTerm path t
+              Nothing -> ppbug $ text "evalTerm: missing value:"<+>ppU 0 trm
+                                 $$ text "among:" <+>fsep (map (ppU 10) vs)
 evalTerm path (S term sel) = do v <- evalTerm CNil sel
                                 evalTerm (CSel v path) term
 evalTerm path (FV terms)   = variants terms >>= evalTerm path
 evalTerm path (EInt n)     = return (EInt n)
-evalTerm path t            = ppbug (text "evalTerm" <+> parens (ppTerm Unqualified 0 t))
+evalTerm path t            = ppbug (text "evalTerm" <+> parens (ppU 0 t))
 --evalTerm path t            = ppbug (text "evalTerm" <+> sep [parens (text (show path)),parens (text (show t))])
 
-getVarIndex (IA _ i) = i
-getVarIndex (IAV _ _ i) = i
-getVarIndex (IC s) | isDigit (BS.last s) = (read . BS.unpack . snd . BS.spanEnd isDigit) s
-getVarIndex x = bug ("getVarIndex "++show x)
+getVarIndex x = maybe err id $ getArgIndex x
+  where err = bug ("getVarIndex "++show x)
 
 ----------------------------------------------------------------------
 -- GrammarEnv
@@ -572,7 +582,7 @@ getPMCFG :: PMCFGEnv -> PMCFG
 getPMCFG (PMCFGEnv prodSet funSet) =
   PMCFG (optimize prodSet) (mkSetArray funSet)
   where
-    optimize ps = Map.foldWithKey ff [] (Map.fromListWith (++) [((fid,funid),[args]) | (Production fid funid args) <- Set.toList ps])
+    optimize ps = Map.foldrWithKey ff [] (Map.fromListWith (++) [((fid,funid),[args]) | (Production fid funid args) <- Set.toList ps])
       where
         ff :: (FId,FunId) -> [[[FId]]] -> [Production] -> [Production]
         ff (fid,funid) xs prods
@@ -622,3 +632,5 @@ mkSetArray map = array (0,Map.size map-1) [(v,k) | (k,v) <- Map.toList map]
 
 bug msg = ppbug (text msg)
 ppbug = error . render . hang (text "Internal error in GeneratePMCFG:") 4
+
+ppU = ppTerm Unqualified

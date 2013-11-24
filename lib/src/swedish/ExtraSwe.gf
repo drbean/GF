@@ -1,4 +1,5 @@
 --# -path=.:../scandinavian:../abstract:../common:prelude
+--# -coding=latin1
 concrete ExtraSwe of ExtraSweAbs = ExtraScandSwe - [FocAdv] ,
                                    ParadigmsSwe - [nominative] **
  open CommonScand, ResSwe, ParamX, VerbSwe, Prelude, DiffSwe, StructuralSwe, MorphoSwe,
@@ -28,15 +29,20 @@ lin
       } ;
 
  lin
-  RelVS s rvs = {s = \\o => s.s ! o ++ "," ++ rvs.s ! agrP3 Neutr Sg ! RPrep True} ; 
+  --TODO: fix this; just wrote something that it compiles and doesn't give [PassVPSlash] when parsing text
+  PassVPSlash vps = 
+       insertObj (\\a => vps.c2.s ++ vps.n3 ! a) (passiveVP vps) ;
+
+
+  RelVS s rvs = {s = \\o => s.s ! o ++ comma ++ rvs.s ! agrP3 Neutr Sg ! RPrep True} ; 
   RelSlashVS t p vs np = let vpform = VPFinite t.t t.a ;
                           cl     = PredVP np (predV vs) ; 
                           vilket = IdRP.s ! Neutr ! Sg ! (RPrep True) in
     {s = \\ag,rc => t.s ++ p.s ++ vilket ++ cl.s ! t.t ! t.a ! p.p ! Sub } ;
 
  
-  AdvFocVP adv vp = {s = \\vpf => {fin = adv.s ++ (vp.s ! vpf).fin ;
-                                 inf = (vp.s ! vpf).inf};
+  AdvFocVP adv vp = {s = \\v,vpf => {fin = adv.s ++ (vp.s ! v ! vpf).fin ;
+                                     inf = (vp.s ! v ! vpf).inf};
                    a1 = vp.a1 ; n2 = vp.n2 ; a2 = vp.a2 ; ext = vp.ext ;
                    en2 = vp.en2 ; ea2 = vp.ea2; eext = vp.eext } ;
   PredetAdvF adv = {s = \\_,_ => adv.s ; p = [] ; a = PNoAg} ;
@@ -72,14 +78,14 @@ lin
         let
           subj = np.s ! CommonScand.nominative ;
           agr  = np.a ;
-          vps  = vp.s ! VPFinite t a ;  
+          vps  = vp.s ! Act ! VPFinite t a ;  
           vf = case <<t,a> : STense * Anteriority> of {
             <SPres,Simul> => vps.fin
             ;<SPast,Simul> => vps.fin;  --# notpresent 
             <_    ,Simul> => vps.inf;  --# notpresent
             <SPres,Anter> => vps.inf;  --# notpresent
             <SPast,Anter> => vps.inf;  --# notpresent
-            <_    ,Anter> => (vp.s ! VPFinite SPast Anter).inf   --# notpresent
+            <_    ,Anter> => (vp.s ! Act ! VPFinite SPast Anter).inf   --# notpresent
             };
           verb = mkClause subj agr (predV do_V) ;                        
           comp = vp.n2 ! agr ++ vp.a2 ++ vp.ext     
@@ -93,7 +99,7 @@ lin
   FocAP ap np    = 
   {s = \\t,a,p => 
    let vp = UseComp ap ; 
-       vps = vp.s ! VPFinite t a;
+       vps = vp.s ! Act ! VPFinite t a;
        npAgr = np.a in
     vp.n2 ! npAgr ++ vps.fin ++ np.s ! NPNom 
     ++ negation ! p++ vps.inf };
@@ -101,9 +107,9 @@ lin
 
   FocVV vv vp np = 
   {s = \\t,a,p =>
-    let vps = vp.s ! VPInfinit Simul ;
+    let vps = vp.s ! Act ! VPInfinit Simul ;
         vvp = UseV vv ;
-        vvs = vvp.s ! VPFinite t a ; 
+        vvs = vvp.s ! Act ! VPFinite t a ; 
         always = vp.a1 ! Pos ++ vvp.a1 ! Pos ;
         already = vp.a2 ++ vvp.a2 in
    vps.inf ++ vp.n2 ! np.a ++ vvs.fin ++ np.s ! NPNom 
@@ -143,13 +149,13 @@ lin
 
 
   SupCl np vp pol = let sub = np.s ! nominative ;                     --# notpresent
-                        verb = (vp.s ! VPFinite SPres Anter).inf ;    --# notpresent
+                        verb = (vp.s ! Act ! VPFinite SPres Anter).inf ;    --# notpresent
                         neg  = vp.a1 ! pol.p ++ pol.s ;               --# notpresent
                         compl = vp.n2 ! np.a ++ vp.a2 ++ vp.ext in    --# notpresent
     {s = \\_ => sub ++ neg ++ verb ++ compl };                        --# notpresent
     
 
-  PassV2 v2 = predV (depV v2);
+  PassV2 v2 = predV (depV (lin V v2));
 
   PassV2Be v = insertObj 
         (\\a => v.s ! VI (VPtPret (agrAdjNP a DIndef) Nom)) 

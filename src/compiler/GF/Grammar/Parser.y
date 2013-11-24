@@ -16,7 +16,6 @@ import GF.Grammar.Predef
 import GF.Grammar.Grammar
 import GF.Grammar.Macros
 import GF.Grammar.Lexer
-import qualified Data.ByteString.Char8 as BS
 import GF.Compile.Update (buildAnyTree)
 import Codec.Binary.UTF8.String(decodeString)
 import Data.Char(toLower)
@@ -86,6 +85,7 @@ import Data.Char(toLower)
  'lin'        { T_lin       }
  'lincat'     { T_lincat    }
  'lindef'     { T_lindef    }
+ 'linref'     { T_linref    }
  'of'         { T_of        }
  'open'       { T_open      }
  'oper'       { T_oper      }
@@ -103,7 +103,6 @@ import Data.Char(toLower)
 Integer       { (T_Integer $$) }
 Double        { (T_Double  $$) }
 String        { (T_String  $$) }
-LString       { (T_LString $$) }
 Ident         { (T_Ident   $$) }
 
 
@@ -222,10 +221,11 @@ TopDef
   | 'data'            ListDataDef     { Left  $2 }
   | 'param'           ListParamDef    { Left  $2 }
   | 'oper'            ListOperDef     { Left  $2 }
-  | 'lincat'          ListTermDef     { Left  [(f, CncCat (Just e) Nothing    Nothing Nothing) | (f,e) <- $2] }
-  | 'lindef'          ListTermDef     { Left  [(f, CncCat Nothing    (Just e) Nothing Nothing) | (f,e) <- $2] }
+  | 'lincat'          ListTermDef     { Left  [(f, CncCat (Just e) Nothing  Nothing  Nothing Nothing) | (f,e) <- $2] }
+  | 'lindef'          ListTermDef     { Left  [(f, CncCat Nothing  (Just e) Nothing  Nothing Nothing) | (f,e) <- $2] }
+  | 'linref'          ListTermDef     { Left  [(f, CncCat Nothing  Nothing  (Just e) Nothing Nothing) | (f,e) <- $2] }
   | 'lin'             ListLinDef      { Left  $2 }
-  | 'printname' 'cat' ListTermDef     { Left  [(f, CncCat Nothing    Nothing (Just e) Nothing) | (f,e) <- $3] }
+  | 'printname' 'cat' ListTermDef     { Left  [(f, CncCat Nothing Nothing Nothing (Just e) Nothing) | (f,e) <- $3] }
   | 'printname' 'fun' ListTermDef     { Left  [(f, CncFun Nothing Nothing (Just e) Nothing) | (f,e) <- $3] }
   | 'flags'           ListFlagDef     { Right $2 }
 
@@ -456,7 +456,6 @@ Exp6
   | '{' ListLocDef '}'    {% mkR $2 }
   | '<' ListTupleComp '>' { R (tuple2record $2) }
   | '<' Exp ':' Exp '>'   { Typed $2 $4      }
-  | LString               { K $1 }
   | '(' Exp ')'           { $2 }
 
 ListExp :: { [Term] }
@@ -508,11 +507,11 @@ Patt3
 
 PattAss :: { [(Label,Patt)] }
 PattAss
-  : ListIdent '=' Patt { [(LIdent (ident2bs i),$3) | i <- $1] } 
+  : ListIdent '=' Patt { [(LIdent (ident2raw i),$3) | i <- $1] } 
 
 Label :: { Label }
 Label
-  : Ident       { LIdent (ident2bs $1)   } 
+  : Ident       { LIdent (ident2raw $1)   } 
   | '$' Integer { LVar (fromIntegral $2) }
 
 Sort :: { Ident }
@@ -622,12 +621,9 @@ optDecode opts =
     else id
 
 mkListId,mkConsId,mkBaseId  :: Ident -> Ident
-mkListId = prefixId (BS.pack "List")
-mkConsId = prefixId (BS.pack "Cons")
-mkBaseId = prefixId (BS.pack "Base")
-
-prefixId :: BS.ByteString -> Ident -> Ident
-prefixId pref id = identC (BS.append pref (ident2bs id))
+mkListId = prefixIdent "List"
+mkConsId = prefixIdent "Cons"
+mkBaseId = prefixIdent "Base"
 
 listCatDef :: L (Ident, Context, Int) -> [(Ident,Info)]
 listCatDef (L loc (id,cont,size)) = [catd,nilfund,consfund]
@@ -692,7 +688,7 @@ checkInfoType mt jment@(id,info) =
   case info of
     AbsCat pcont         -> ifAbstract mt (locPerh pcont)
     AbsFun pty _ pde _   -> ifAbstract mt (locPerh pty ++ maybe [] locAll pde)
-    CncCat pty pd ppn _  -> ifConcrete mt (locPerh pty ++ locPerh pd ++ locPerh ppn)
+    CncCat pty pd pr ppn _->ifConcrete mt (locPerh pty ++ locPerh pd ++ locPerh pr ++ locPerh ppn)
     CncFun _   pd ppn _  -> ifConcrete mt (locPerh pd ++ locPerh ppn)
     ResParam pparam _    -> ifResource mt (locPerh pparam)
     ResValue ty          -> ifResource mt (locL ty)
