@@ -15,7 +15,7 @@ import GF.Grammar.Parser (runP, pExp)
 import GF.Grammar.ShowTerm
 import GF.Grammar.Lookup (allOpers,allOpersTo)
 import GF.Compile.Rename(renameSourceTerm)
-import GF.Compile.Compute.Concrete (computeConcrete,checkPredefError)
+--import GF.Compile.Compute.Concrete (computeConcrete,checkPredefError)
 import qualified GF.Compile.Compute.ConcreteNew as CN(normalForm,resourceValues)
 import GF.Compile.TypeCheck.Concrete (inferLType,ppType)
 import GF.Infra.Dependencies(depGraph)
@@ -24,9 +24,9 @@ import GF.Infra.UseIO(ioErrorText)
 import GF.Infra.SIO
 import GF.Infra.Option
 import qualified System.Console.Haskeline as Haskeline
-import GF.Text.Coding(decodeUnicode,encodeUnicode)
+--import GF.Text.Coding(decodeUnicode,encodeUnicode)
 
-import GF.Compile.Coding(codeTerm)
+--import GF.Compile.Coding(codeTerm)
 
 import PGF
 import PGF.Data
@@ -35,9 +35,10 @@ import PGF.Macros
 import Data.Char
 import Data.List(nub,isPrefixOf,isInfixOf,partition)
 import qualified Data.Map as Map
-import qualified Data.ByteString.Char8 as BS
+--import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.UTF8 as UTF8(fromString)
 import qualified Text.ParserCombinators.ReadP as RP
-import System.IO(utf8)
+--import System.IO(utf8)
 --import System.CPUTime(getCPUTime)
 import System.Directory({-getCurrentDirectory,-}getAppUserDataDirectory)
 import Control.Exception(SomeException,fromException,evaluate,try)
@@ -177,24 +178,25 @@ execute1 opts gfenv0 s0 =
         pOpts style q ("-qual"   :ws) = pOpts style            Qualified   ws
         pOpts style q             ws  = (style,q,unwords ws)
 
-        (style,q,s) = pOpts TermPrintDefault Qualified ws'
+        (style,q,s) = pOpts TermPrintDefault Qualified ws
+        {-
         (new,ws') = case ws of
                       "-new":ws' -> (True,ws')
                       "-old":ws' -> (False,ws')
                       _ -> (flag optNewComp opts,ws)
-
-      case runP pExp (encodeUnicode utf8 s) of
+        -}
+      case runP pExp (UTF8.fromString s) of
         Left (_,msg) -> putStrLn msg
         Right t      -> putStrLn . err id (showTerm sgr style q)
-                                 . checkComputeTerm' new sgr
-                                 $ codeTerm (decodeUnicode utf8 . BS.pack) t
+                                 . checkComputeTerm sgr
+                                 $ {-codeTerm (decodeUnicode utf8 . BS.pack)-} t
       continue gfenv
 
     show_deps ws = do
           let (os,xs) = partition (isPrefixOf "-") ws
           ops <- case xs of
              _:_ -> do
-               let ts = [t | Right t <- map (runP pExp . encodeUnicode utf8) xs]
+               let ts = [t | Right t <- map (runP pExp . UTF8.fromString) xs]
                err error (return . nub . concat) $ mapM (constantDepsTerm sgr) ts
              _   -> error "expected one or more qualified constants as argument"
           let prTerm = showTerm sgr TermPrintDefault Qualified
@@ -217,7 +219,7 @@ execute1 opts gfenv0 s0 =
           let isRaw = elem "-raw" os 
           ops <- case ts of
              _:_ -> do
-               let Right t = runP pExp (encodeUnicode utf8 (unwords ts))
+               let Right t = runP pExp (UTF8.fromString (unwords ts))
                ty <- err error return $ checkComputeTerm sgr t
                return $ allOpersTo sgr ty
              _   -> return $ allOpers sgr 
@@ -323,15 +325,14 @@ execute1 opts gfenv0 s0 =
 
 printException e = maybe (print e) (putStrLn . ioErrorText) (fromException e)
 
-checkComputeTerm = checkComputeTerm' False
-checkComputeTerm' new sgr t = do
+checkComputeTerm sgr t = do
                  mo <- maybe (raise "no source grammar in scope") return $ greatestResource sgr
                  ((t,_),_) <- runCheck $ do t <- renameSourceTerm sgr mo t
                                             inferLType sgr [] t
-                 t1 <- if new
-                       then return (CN.normalForm (CN.resourceValues sgr) (L NoLoc identW) t)
-                       else computeConcrete sgr t
-                 checkPredefError sgr t1
+                 t1 <- {-if new
+                       then-} return (CN.normalForm (CN.resourceValues sgr) (L NoLoc identW) t)
+                       {-else computeConcrete sgr t-}
+                 checkPredefError t1
 
 fetchCommand :: GFEnv -> IO String
 fetchCommand gfenv = do

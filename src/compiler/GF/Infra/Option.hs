@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP #-}
+-- LANGUAGE CPP
 module GF.Infra.Option
     (
      -- * Option types
@@ -20,7 +20,7 @@ module GF.Infra.Option
      helpMessage,
      -- * Checking specific options
      flag, cfgTransform, haskellOption, readOutputFormat,
-     isLexicalCat, isLiteralCat, renameEncoding,
+     isLexicalCat, isLiteralCat, renameEncoding, getEncoding, defaultEncoding,
      -- * Setting specific options
      setOptimization, setCFGTransform,
      -- * Convenience methods for checking options    
@@ -157,7 +157,7 @@ data Flags = Flags {
       optRetainResource  :: Bool,
       optName            :: Maybe String,
       optPreprocessors   :: [String],
-      optEncoding        :: String,
+      optEncoding        :: Maybe String,
       optPMCFG           :: Bool,
       optOptimizations   :: Set Optimization,
       optOptimizePGF     :: Bool,
@@ -173,8 +173,8 @@ data Flags = Flags {
       optTagsOnly        :: Bool,
       optHeuristicFactor :: Maybe Double,
       optMetaProb        :: Maybe Double,
-      optMetaToknProb    :: Maybe Double,
-      optNewComp         :: Bool
+      optMetaToknProb    :: Maybe Double{-,
+      optNewComp         :: Bool-}
     }
   deriving (Show)
 
@@ -213,7 +213,7 @@ fixRelativeLibPaths curr_dir lib_dir (Options o) = Options (fixPathFlags . o)
 -- | Pretty-print the options that are preserved in .gfo files.
 optionsGFO :: Options -> [(String,Literal)]
 optionsGFO opts = optionsPGF opts
-      ++ [("coding", LStr (flag optEncoding opts))]
+      ++ [("coding", LStr (getEncoding opts))]
 
 -- | Pretty-print the options that are preserved in .pgf files.
 optionsPGF :: Options -> [(String,Literal)]
@@ -241,6 +241,10 @@ concatOptions = foldr addOptions noOptions
 modifyFlags :: (Flags -> Flags) -> Options
 modifyFlags = Options
 
+getEncoding :: Options -> String
+getEncoding = renameEncoding . maybe defaultEncoding id . flag optEncoding
+defaultEncoding = "UTF-8"
+
 -- Default options
 
 defaultFlags :: Flags
@@ -264,7 +268,7 @@ defaultFlags = Flags {
 
       optName            = Nothing,
       optPreprocessors   = [],
-      optEncoding        = "latin1",
+      optEncoding        = Nothing,
       optPMCFG           = True,
       optOptimizations   = Set.fromList [OptStem,OptCSE,OptExpand,OptParametrize],
       optOptimizePGF     = False,
@@ -281,13 +285,14 @@ defaultFlags = Flags {
       optTagsOnly        = False,
       optHeuristicFactor = Nothing,
       optMetaProb        = Nothing,
-      optMetaToknProb    = Nothing,
+      optMetaToknProb    = Nothing{-,
       optNewComp         =
 #ifdef NEW_COMP
                            True
 #else
                            False
 #endif
+-}
     }
 
 -- | Option descriptions
@@ -370,8 +375,8 @@ optDescr =
      Option [] ["heuristic_search_factor"] (ReqArg (readDouble (\d o -> o { optHeuristicFactor = Just d })) "FACTOR") "Set the heuristic search factor for statistical parsing",
      Option [] ["meta_prob"] (ReqArg (readDouble (\d o -> o { optMetaProb = Just d })) "PROB") "Set the probability of introducting a meta variable in the parser",
      Option [] ["meta_token_prob"] (ReqArg (readDouble (\d o -> o { optMetaToknProb = Just d })) "PROB") "Set the probability for skipping a token in the parser",
-     Option [] ["new-comp"] (NoArg (set $ \o -> o{optNewComp = True})) "Use the new experimental compiler.",
-     Option [] ["old-comp"] (NoArg (set $ \o -> o{optNewComp = False})) "Use old trusty compiler.",
+--     Option [] ["new-comp"] (NoArg (set $ \o -> o{optNewComp = True})) "Use the new experimental compiler.",
+--     Option [] ["old-comp"] (NoArg (set $ \o -> o{optNewComp = False})) "Use old trusty compiler.",
      dumpOption "source" Source,
      dumpOption "rebuild" Rebuild,
      dumpOption "extend" Extend,
@@ -419,7 +424,7 @@ optDescr =
        addLibDir   x = set $ \o -> o { optLibraryPath = x:optLibraryPath o }
        setLibPath  x = set $ \o -> o { optLibraryPath = splitInModuleSearchPath x }
        preproc     x = set $ \o -> o { optPreprocessors = optPreprocessors o ++ [x] }
-       coding      x = set $ \o -> o { optEncoding = x }
+       coding      x = set $ \o -> o { optEncoding = Just x }
        startcat    x = set $ \o -> o { optStartCat = Just x }
        language    x = set $ \o -> o { optSpeechLanguage = Just x }
        lexer       x = set $ \o -> o { optLexer = Just x }

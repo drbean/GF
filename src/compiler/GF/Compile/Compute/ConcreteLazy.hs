@@ -12,10 +12,10 @@
 -- Computation of source terms. Used in compilation and in @cc@ command.
 -----------------------------------------------------------------------------
 
-module GF.Compile.Compute.ConcreteLazy (computeConcrete, computeTerm,checkPredefError) where
-
-import GF.Data.Operations
+module GF.Compile.Compute.ConcreteLazy ({-computeConcrete, computeTerm,checkPredefError-}) where
+{-
 import GF.Grammar.Grammar
+import GF.Data.Operations
 import GF.Infra.Ident
 --import GF.Infra.Option
 import GF.Data.Str
@@ -519,12 +519,6 @@ getArgType t = case t of
   V ty _ -> return ty
   T (TComp ty) _ -> return ty
   _ -> fail (render (text "cannot get argument type of table" $$ nest 2 (ppTerm Unqualified 0 t)))
-
-checkPredefError :: SourceGrammar -> Term -> Err Term
-checkPredefError sgr t =
-    case t of
-      Error s -> fail ("Error: "++s)
-      _ -> return t
   
 {-
 -- Old
@@ -533,4 +527,5 @@ checkPredefError sgr t = case t of
   _ -> composOp (checkPredefError sgr) t
   
 predef_error s = App (Q (cPredef,cError)) (K s)
+-}
 -}

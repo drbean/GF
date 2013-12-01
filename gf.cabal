@@ -1,5 +1,5 @@
 name: gf
-version: 3.5-darcs
+version: 3.5.11-darcs
 
 cabal-version: >= 1.8
 build-type: Custom
@@ -49,9 +49,9 @@ flag server
   Description: Include --server mode
   Default:     True
 
-flag new-comp
-  Description: Make -new-comp the default
-  Default:     True
+--flag new-comp
+--  Description: Make -new-comp the default
+--  Default:     True
 
 flag custom-binary
   Description: Use a customised version of the binary package
@@ -137,11 +137,11 @@ Executable gf
     other-modules: GFServer
     hs-source-dirs: src/server src/server/transfer src/example-based
 
-  if flag(new-comp)
-    cpp-options: -DNEW_COMP
+--if flag(new-comp)
+--  cpp-options: -DNEW_COMP
 
-  build-tools: happy
-           --, alex>=2 && <3 -- tricky to install in Ubuntu 12.04
+  build-tools: happy, alex>=3
+
   if os(windows)
     build-depends: Win32
   else
@@ -206,7 +206,7 @@ Executable gf
     GF.Compile.TypeCheck.ConcreteNew
     GF.Compile.TypeCheck.TC
     GF.Compile.Compute.Abstract
-    GF.Compile.Compute.Concrete
+--  GF.Compile.Compute.Concrete
     GF.Compile.Compute.ConcreteNew1
     GF.Compile.Compute.ConcreteNew
     GF.Compile.Compute.AppPredefined

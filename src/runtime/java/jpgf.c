@@ -212,6 +212,25 @@ Java_org_grammaticalframework_pgf_PGF_getStartCat(JNIEnv* env, jobject self)
 	return gu2j_string(env, pgf_start_cat(get_ref(env, self)));
 }
 
+JNIEXPORT jobject JNICALL
+Java_org_grammaticalframework_pgf_PGF_getFunctionType(JNIEnv* env, jobject self, jstring jid)
+{
+	PgfPGF* pgf = get_ref(env, self);
+	GuPool* tmp_pool = gu_new_pool();
+	PgfCId id = j2gu_string(env, jid, tmp_pool);
+	PgfType* tp = pgf_function_type(pgf, id);
+	gu_pool_free(tmp_pool);
+
+	if (tp == NULL)
+		return NULL;
+
+	jclass type_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/Type");
+	jmethodID constrId = (*env)->GetMethodID(env, type_class, "<init>", "(Lorg/grammaticalframework/pgf/PGF;J)V");
+	jobject jtype = (*env)->NewObject(env, type_class, constrId, self, p2l(tp));
+
+	return jtype;
+}
+
 typedef struct {
 	GuMapItor fn;
 	JNIEnv *env;
@@ -467,8 +486,20 @@ Java_org_grammaticalframework_pgf_Concr_lookupMorpho(JNIEnv* env, jobject self, 
 	JMorphoCallback callback = { { jpgf_collect_morpho }, analyses, env, addId, an_class, an_constrId };
 	pgf_lookup_morpho(get_ref(env, self), j2gu_string(env, sentence, tmp_pool),
 	                  &callback.fn, NULL);
+	gu_pool_free(tmp_pool);
 
 	return analyses;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_grammaticalframework_pgf_Concr_hasLinearization(JNIEnv* env, jobject self, jstring jid)
+{
+	PgfConcr* concr = get_ref(env, self);
+	GuPool* tmp_pool = gu_new_pool();
+	PgfCId id = j2gu_string(env, jid, tmp_pool);
+	bool res = pgf_has_linearization(concr, id);
+	gu_pool_free(tmp_pool);
+	return res;
 }
 
 JNIEXPORT void JNICALL 
@@ -521,6 +552,13 @@ Java_org_grammaticalframework_pgf_Expr_readExpr(JNIEnv* env, jclass clazz, jstri
 
 	jmethodID constrId = (*env)->GetMethodID(env, clazz, "<init>", "(Lorg/grammaticalframework/pgf/Pool;Lorg/grammaticalframework/pgf/PGF;J)V");
 	return (*env)->NewObject(env, clazz, constrId, jpool, NULL, p2l(gu_variant_to_ptr(e)));
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_grammaticalframework_pgf_Type_getCategory(JNIEnv* env, jobject self)
+{
+	PgfType* tp = get_ref(env, self);
+	return gu2j_string(env, tp->cid);
 }
 
 JNIEXPORT jobject JNICALL

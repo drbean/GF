@@ -8673,12 +8673,12 @@ lin campus_N = variants {};
 lin campylotropous_A = variants {};
 lin camshaft_N = variants {};
 lin camwood_N = variants {};
-lin can_N = mkN "soptunna"; -- comment=11
-lin can_V2 = dirV2 (partV (mkV "orkar")"med"); -- comment=4
+lin can_N = mkN "dunk";
+lin can_V2 = dirV2 (mkV "konserverar");
 lin can_VV = S.can_VV;
 lin canada_PN = variants {};
 lin canadian_A = mkA "kanadensisk";
-lin canadian_N = mkN "kanadensiska"; -- comment=2
+lin canadian_N = mkN "kanadensiska";
 lin canal_N = mkN "kanal" "kanaler";
 lin canalicular_A = variants {};
 lin canaliculate_A = variants {};
@@ -18564,7 +18564,6 @@ lin elegy_N = mkN "elegi" "elegier"; -- status=guess
 lin element_N = mkN "element" neutrum; -- comment=8
 lin elemental_A = mkA "primitiv"; -- comment=4
 lin elementary_A = mkA "enkel"; -- comment=3
-lin elements_N = mkN "elementa" "elementan" "elementa" "elementana"; -- comment=3
 lin elemi_N = variants {};
 lin elephant_N = mkN "elefant" "elefanter";
 lin elephantiasis_N = variants {};
@@ -18975,7 +18974,7 @@ lin energid_N = variants {};
 lin energizer_N = variants {};
 lin energizing_A = variants {};
 lin energizing_N = variants {};
-lin energy_N = mkN "kraft" "krafter"; -- comment=4
+lin energy_N = mkN "energi" "energier";
 lin enervate_V2 = mkV2 (mkV "försvaga"); -- status=guess, src=wikt
 lin enervation_N = variants {};
 lin enfant_terrible_N = variants {};
@@ -19257,7 +19256,6 @@ lin epicardia_N = variants {};
 lin epicardium_N = variants {};
 lin epicarp_N = variants {};
 lin epicarpal_A = variants {};
-lin epicenter_N = mkN "epicentrum" neutrum;
 lin epicentre_N = mkN "epicentrum" neutrum;
 lin epicondyle_N = variants {};
 lin epicondylitis_N = variants {};
@@ -19671,7 +19669,6 @@ lin eucalyptus_N = (mkN "eukalyptus") | mkN "gummiträd"; -- status=guess status
 lin eucharist_N = variants {};
 lin euchre_N = variants {};
 lin euclidean_A = variants {};
-lin euclidian_A = variants {};
 lin eudemon_N = variants {};
 lin eudemonic_A = variants {};
 lin eudemonism_N = variants {};
@@ -20027,7 +20024,6 @@ lin exonuclease_N = variants {};
 lin exophthalmos_N = mkN "exoftalmus"; -- status=guess
 lin exorbitance_N = variants {};
 lin exorbitant_A = mkA "omåttlig"; -- comment=4
-lin exorcise_V2 = variants {};
 lin exorcism_N = mkN "exorcism" "exorcismer"; -- status=guess
 lin exorcist_N = variants {};
 lin exorcize_V2 = variants {};
@@ -22749,8 +22745,8 @@ lin frustrating_A = variants {};
 lin frustration_N = mkN "frustration" "frustrationer";
 lin frustum_N = variants {};
 lin fry_N = mkN "yngel" neutrum; -- comment=3
-lin fry_V = mkV "steker"; -- comment=7
-lin fry_V2 = dirV2 (partV (mkV "dö" "dog" "dött")"ut");
+lin fry_V = mkV "fritera";
+lin fry_V2 = dirV2 (mkV "fritera");
 lin fry_pan_N = variants {};
 lin fryer_N = mkN "stekpanna";
 lin frying_N = mkN "stekning";
@@ -26770,10 +26766,10 @@ lin holyhead_PN = variants {};
 lin holystone_N = variants {};
 lin holystone_V2 = variants {};
 lin homage_N = mkN "vördnad" "vördnader";
-lin home_A = mkA "inhemsk"; -- comment=3
-lin home_Adv = mkAdv "hem"; -- comment=3
-lin home_N = mkN "anstalt" "anstalter"; -- comment=11
-lin home_baked_A = variants {};
+lin home_A = mkA "inhemsk";
+lin home_Adv = mkAdv "hem";
+lin home_N = mkN "hem" "hemmet" "hem" "hemmen";
+lin home_baked_A = mkA "hembakat";
 lin home_brewed_A = variants {};
 lin home_cured_A = variants {};
 lin home_farm_N = variants {};
@@ -26847,19 +26843,19 @@ lin homogenization_N = variants {};
 lin homogenize_V2 = variants {};
 lin homogeny_N = variants {};
 lin homograft_N = variants {};
-lin homograph_N = mkN "homograf" "homografer"; -- status=guess
+lin homograph_N = mkN "homograf" "homografer";
 lin homoiothermic_A = variants {};
 lin homologic_A = variants {};
 lin homologous_A = variants {};
 lin homology_N = variants {};
 lin homomorphism_N = mkN "homomorfi" | mkN "homomorfism"; -- status=guess status=guess
-lin homonym_N = mkN "homonym" "homonymer"; -- status=guess
+lin homonym_N = mkN "homonym" "homonymer";
 lin homonymic_A = variants {};
-lin homonymy_N = mkN "homonymi" "homonymier"; -- status=guess
+lin homonymy_N = mkN "homonymi" "homonymier";
 lin homophobe_N = variants {};
-lin homophobia_N = mkN "homofobi"; -- status=guess
+lin homophobia_N = mkN "homofobi";
 lin homophobic_A = variants {};
-lin homophone_N = mkN "homofon" "homofoner"; -- status=guess
+lin homophone_N = mkN "homofon" "homofoner";
 lin homophonic_A = variants {};
 lin homophonous_A = variants {};
 lin homophony_N = variants {};
@@ -27706,7 +27702,7 @@ lin ice_N = L.ice_N;
 lin ice_V = mkV "isar"; -- comment=2
 lin ice_V2 = mkV2 (mkV "glaserar"); -- status=guess, src=wikt
 lin ice_axe_N = variants {};
-lin ice_cream_N = variants {};
+lin ice_cream_N = mkN "glass";
 lin ice_lolly_N = variants {};
 lin ice_show_N = variants {};
 lin ice_skate_N = variants {};
@@ -31290,7 +31286,7 @@ lin lam_V = variants {};
 lin lam_V2 = variants {};
 lin lama_N = mkN "lama"; -- comment=3
 lin lamasery_N = variants {};
-lin lamb_N = mkN "lammkött" neutrum; -- comment=4
+lin lamb_N = mkN "lamm" neutrum;
 lin lamb_V = variants {};
 lin lambaste_V2 = mkV2 (mkV (mkV "klå") "upp"); -- status=guess, src=wikt
 lin lambda_N = variants {};
@@ -48297,7 +48293,7 @@ lin rook_N = mkN "torn"; -- comment=3
 lin rook_V2 = variants {};
 lin rookery_N = variants {};
 lin rookie_N = mkN "nybörjare" utrum;
-lin room_N = mkN "utrymme"; -- comment=6
+lin room_N = mkN "utrymme";
 lin room_V = variants {};
 lin room_in_V2 = variants {};
 lin room_mate_N = variants {};
@@ -49328,6 +49324,7 @@ lin satisfactory_A = variants {};
 lin satisfier_N = variants {};
 lin satisfy_V = mkV "uppfyller"; -- comment=6
 lin satisfy_V2 = mkV2 (mkV "tillfredsställa"); -- status=guess, src=wikt
+lin satisfied_A = mkA "nöjd" "nöjt";
 lin satori_N = variants {};
 lin satrap_N = variants {};
 lin satsuma_N = variants {};
@@ -51794,7 +51791,7 @@ lin sinewy_A = mkA "stark"; -- comment=3
 lin sinful_A = mkA "syndig";
 lin sinfulness_N = variants {};
 lin sing_V = L.sing_V;
-lin sing_V2 = mkV2 (mkV "sjunga" "sjöng" "sjungit"); -- status=guess, src=wikt
+lin sing_V2 = mkV2 (mkV "sjunga" "sjöng" "sjungit");
 lin sing_along_V = mkV "tjallar"; -- comment=11
 lin sing_out_V = mkV "tjallar"; -- comment=11
 lin sing_up_V = mkV "tjallar"; -- comment=11

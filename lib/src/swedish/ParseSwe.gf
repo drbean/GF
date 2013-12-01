@@ -123,5 +123,60 @@ lin
 
 lin
   UncNeg = {s = [] ; p = Neg} ;
-    
+
+lincat
+    Feat = Str;
+lin FeatN2, FeatN = \n ->
+      case n.g of {
+        Utr   => "(utr)" ;
+        Neutr => "(neutr)"
+      } ;
+    FeatV = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ;
+    FeatV2 = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++ v.c2.s ++
+      "<object>";
+    FeatV3 = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      v.c2.s ++ "<arg1>" ++
+      v.c3.s ++ "<arg2>";
+    FeatV2V = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      v.c2.s ++ "<object>" ++
+      v.c3.s ++ "<verb>";
+    FeatV2S = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      v.c2.s ++ "<object>" ++
+      "that" ++ "<sentence>";
+    FeatV2Q = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      v.c2.s ++ "<object>" ++
+      "that" ++ "<question>";
+    FeatV2A = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      v.c2.s ++ "<object>" ++
+      "<adjective>";
+    FeatVV = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      "<verb>" ;
+    FeatVS = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      "that" ++ "<sentence>";
+    FeatVQ = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      "<question>";
+    FeatVA = \v ->
+      "<subject>" ++
+      v.s ! VI (VInfin Act) ++ v.part ++
+      "<adjective>";
 }

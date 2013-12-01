@@ -1,14 +1,11 @@
 package org.grammaticalframework.ui.android;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +20,6 @@ import android.widget.TextView;
 
 import org.grammaticalframework.pgf.*;
 import org.grammaticalframework.ui.android.LanguageSelector.OnLanguageSelectedListener;
-import org.xmlpull.v1.XmlPullParserException;
 
 public class LexicalEntryActivity extends ListActivity {
 
@@ -93,25 +89,8 @@ public class LexicalEntryActivity extends ListActivity {
 	}
 
 	private void expand(View view, String lemma) {
-		String tag = null;
-		if (lemma.endsWith("_N") || lemma.endsWith("_N2"))
-			tag = "noun";
-		else if (lemma.endsWith("_V")  || lemma.endsWith("_V2")  || 
-				 lemma.endsWith("_V3") || lemma.endsWith("_V2V") ||
-				 lemma.endsWith("_VV") || lemma.endsWith("_VS"))
-			tag = "verb";
-		else if (lemma.endsWith("_A") || lemma.endsWith("_A2")) 
-			tag = "adjective";
-		else if (lemma.endsWith("_Prep")) 
-			tag = "prep";
-		else if (lemma.endsWith("_Adv")) 
-			tag = "adverb";
-
-		if (tag == null)
-			return;
-		
-		int res = mTranslator.getTargetLanguage().getInflectionResource();
-		if (res == 0)
+		String html = mTranslator.getInflectionTable(lemma);
+		if (html == null)
 			return;
 
 		ImageView arrow = (ImageView) view.findViewById(R.id.arrow);
@@ -127,69 +106,7 @@ public class LexicalEntryActivity extends ListActivity {
 			((RelativeLayout) view).addView(inflectionView, params);
 		}
 
-		Expr expr = Expr.readExpr(lemma);
-		Map<String,String> lins = mTranslator.tabularLinearize(expr);
-		XmlResourceParser parser = getResources().getXml(res);
-		StringBuilder builder = new StringBuilder();
-		builder.append("<html><head><meta charset=\"UTF-8\"/></head><body>");
-		
-		try {
-			boolean emit = false;
-			boolean form = false;
-			int event = parser.next();
-			while (event != XmlResourceParser.END_DOCUMENT) {
-				switch (event) {
-				case XmlResourceParser.START_TAG:
-					if (tag.equals(parser.getName())) {
-						emit = true;
-					} if ("form".equals(parser.getName())) {
-						form = true;
-					} else if (emit) {
-						builder.append("<"+parser.getName());
-						int n_attrs = parser.getAttributeCount();
-						for (int i = 0; i < n_attrs; i++) {
-							builder.append(' ');
-							builder.append(parser.getAttributeName(i));
-							builder.append("=\"");
-							builder.append(parser.getAttributeValue(i));
-							builder.append("\"");
-						}
-						builder.append(">");
-					}
-					break;
-				case XmlResourceParser.END_TAG:
-					if (tag.equals(parser.getName())) {
-						emit = false;
-					} else if ("form".equals(parser.getName())) {
-						form = false;
-					} else if (emit) {
-						builder.append("</"+parser.getName()+">");
-					}
-					break;
-				case XmlResourceParser.TEXT:
-					if (emit) {
-						if (form) {
-							String s = lins.get(parser.getText());
-							if (s != null)
-								builder.append(s);
-						} else {
-							builder.append(parser.getText());
-						}
-					}
-					break;
-				}
-				event = parser.next();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (XmlPullParserException e) {
-			e.printStackTrace();
-		} finally {
-			parser.close();
-		}
-		
-		builder.append("</body>");
-		inflectionView.loadData(builder.toString(), "text/html", null);
+		inflectionView.loadData(html, "text/html; charset=UTF-8", null);
 
 		expandedView = view;
 	}
@@ -211,8 +128,7 @@ public class LexicalEntryActivity extends ListActivity {
 	        TextView descView =
 	        		(TextView) convertView.findViewById(R.id.lexical_desc);
 
-	    	Expr e = Expr.readExpr(lemma);
-	    	String phrase = mTranslator.generateTranslationEntry(e);
+	    	String phrase = mTranslator.generateLexiconEntry(lemma);
 	        descView.setText(phrase);
 
 	        convertView.setOnClickListener(new OnClickListener() {
