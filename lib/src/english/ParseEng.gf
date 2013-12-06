@@ -10,10 +10,10 @@ concrete ParseEng of ParseEngAbs =
   VerbEng - [SlashV2V, PassV2, UseCopula, ComplVV],
   AdverbEng,
   PhraseEng,
-  SentenceEng,
+  SentenceEng - [UseCl], -- replaced by UseCl | ContractedUseCl
   QuestionEng,
   RelativeEng,
-  IdiomEng [NP, VP, Tense, Cl, ProgrVP, ExistNP],
+  IdiomEng [NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP],
   ExtraEng [NP, Quant, VPSlash, VP, Tense, GenNP, PassVPSlash,
             Temp, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
             VPI, VPIForm, VPIInf, VPIPresPart, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV,
@@ -21,10 +21,14 @@ concrete ParseEng of ParseEngAbs =
             ClSlash, RCl, EmptyRelSlash, VS, V2S, ComplBareVS, SlashBareV2S],
 
   DictEng ** 
-open MorphoEng, ResEng, ParadigmsEng, Prelude in {
+open MorphoEng, ResEng, ParadigmsEng, (S = SentenceEng), (E = ExtraEng), Prelude in {
 
 flags
   literal=Symb ;
+
+-- exceptional linearizations
+lin
+  UseCl t p cl = S.UseCl t p cl | E.ContractedUseCl t p cl ;
 
 lin
   myself_NP = regNP "myself" singular ;
@@ -90,8 +94,8 @@ lin
           compl = vp.s2 ! np.a
         in
         case o of {
-          ODir => compl ++ frontComma ++ np.s ! npNom ++ verb.aux ++ vp.ad ++ verb.fin ++ verb.adv ++ verb.inf ;
-          OQuest => verb.aux ++ compl ++ frontComma ++ np.s ! npNom ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf 
+          ODir _ => compl ++ frontComma ++ np.s ! npNom ++ verb.aux ++ vp.ad ! np.a ++ verb.fin ++ verb.adv ++ verb.inf ;
+          OQuest => verb.aux ++ compl ++ frontComma ++ np.s ! npNom ++ verb.adv ++ vp.ad ! np.a ++ verb.fin ++ verb.inf 
           }
     } ;
     
@@ -102,8 +106,8 @@ lin
           compl = vp.s2 ! np.a
         in
         case o of {
-          ODir => compl ++ frontComma ++ verb.aux ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom ;
-          OQuest => verb.aux ++ compl ++ verb.adv ++ vp.ad ++ verb.fin ++ verb.inf ++ np.s ! npNom
+          ODir _ => compl ++ frontComma ++ verb.aux ++ verb.adv ++ vp.ad ! np.a ++ verb.fin ++ verb.inf ++ np.s ! npNom ;
+          OQuest => verb.aux ++ compl ++ verb.adv ++ vp.ad ! np.a ++ verb.fin ++ verb.inf ++ np.s ! npNom
           }
     } ;
 
@@ -127,12 +131,12 @@ lin
     {c2 = ""; gapInMiddle = False} ;
 
   PastPartRS ant pol vps = {
-    s = \\agr => vps.ad ++ vps.ptp ++ vps.s2 ! agr ;
+    s = \\agr => vps.ad ! agr ++ vps.ptp ++ vps.s2 ! agr ;
     c = npNom
     } ;
 
   PresPartRS ant pol vp = {
-    s = \\agr => vp.ad ++ vp.prp ++ vp.p ++ vp.s2 ! agr;
+    s = \\agr => vp.ad ! agr ++ vp.prp ++ vp.p ++ vp.s2 ! agr;
     c = npNom
   } ;
 
@@ -147,12 +151,16 @@ lin
 
 lin
   PPos = {s = [] ; p = CPos} ;
-  PNeg = {s = [] ; p = CNeg True} ; -- contracted: don't
-  UncNeg = {s = [] ; p = CNeg False} ;
+  PNeg = {s = [] ; p = CNeg True} | {s = [] ; p = CNeg False} ;
 
 lincat
     Feat = Str;
-lin FeatN, FeatN2 = \_ -> "";
+lin FeatN, FeatN2 = \n -> 
+      case n.g of {
+        Neutr => "";
+        Masc  => "(masc)";
+        Fem   => "(fem)"
+      };
     FeatV = \v ->
       "<subject>" ++
       v.s ! VInf ++ v.p ;

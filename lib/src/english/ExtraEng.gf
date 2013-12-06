@@ -15,11 +15,11 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
 
     StrandRelSlash rp slash = {
       s = \\t,a,p,ag => 
-        rp.s ! RC (fromAgr ag).g NPAcc ++ slash.s ! t ! a ! p ! ODir ++ slash.c2 ;
+        rp.s ! RC (fromAgr ag).g NPAcc ++ slash.s ! t ! a ! p ! oDir ++ slash.c2 ;
       c = NPAcc
       } ;
     EmptyRelSlash slash = {
-      s = \\t,a,p,_ => slash.s ! t ! a ! p ! ODir ++ slash.c2 ;
+      s = \\t,a,p,_ => slash.s ! t ! a ! p ! oDir ++ slash.c2 ;
       c = NPAcc
       } ;
 
@@ -38,9 +38,9 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
 
     MkVPI vp = {
       s = table {
-            VVAux      => \\a => vp.ad ++ vp.inf ++ vp.p ++ vp.s2 ! a;
-            VVInf      => \\a => "to" ++ vp.ad ++ vp.inf ++ vp.p ++ vp.s2 ! a;
-            VVPresPart => \\a => vp.ad ++ vp.prp ++ vp.p ++ vp.s2 ! a
+            VVAux      => \\a => vp.ad ! a ++ vp.inf ++ vp.p ++ vp.s2 ! a;
+            VVInf      => \\a => "to" ++ vp.ad ! a ++ vp.inf ++ vp.p ++ vp.s2 ! a;
+            VVPresPart => \\a => vp.ad ! a ++ vp.prp ++ vp.p ++ vp.s2 ! a
           }
       } ;
     ConjVPI = conjunctDistrTable2 VVType Agr ;
@@ -77,9 +77,9 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
     MkVPS t p vp = {
       s = \\a => 
             let 
-              verb = vp.s ! t.t ! t.a ! p.p ! ODir ! a ;
+              verb = vp.s ! t.t ! t.a ! p.p ! oDir ! a ;
               verbf = verb.aux ++ verb.adv ++ verb.fin ++ verb.inf ;
-            in t.s ++ p.s ++ vp.ad ++ verbf ++ vp.p ++ vp.s2 ! a ++ vp.ext
+            in t.s ++ p.s ++ vp.ad ! a ++ verbf ++ vp.p ++ vp.s2 ! a ++ vp.ext
       } ;
 
     ConjVPS = conjunctDistrTable Agr ;
@@ -89,7 +89,7 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
     IAdvAdv adv = {s = "how" ++ adv.s} ;
 
     PartVP vp = {
-      s = \\a => vp.ad ++ vp.prp ++ vp.s2 ! a ;
+      s = \\a => vp.ad ! a ++ vp.prp ++ vp.s2 ! a ;
       isPre = False ---- depends on whether there are complements
       } ;
 
@@ -141,9 +141,10 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
 
 
    NominalizeVPSlashNP vpslash np = 
-     let vp : ResEng.VP = insertObjPre (\\_ => vpslash.c2 ++ np.s ! NPAcc) vpslash 
+     let vp : ResEng.VP = insertObjPre (\\_ => vpslash.c2 ++ np.s ! NPAcc) vpslash ;
+         a = AgP3Sg Neutr
      in 
-     lin NP {s=\\_=>vp.ad ++ vp.prp ++ vp.s2! (AgP3Sg Neutr); a=AgP3Sg Neutr } ;  
+     lin NP {s = \\_ => vp.ad ! a ++ vp.prp ++ vp.s2 ! a ; a = a} ;  
 
 lin
   UncNeg = {s = [] ; p = CNeg False} ; 
@@ -158,8 +159,8 @@ lin
     prp = be.prp ;
     ptp = be.ptp ;
     inf = be.inf ;
-    ad = [] ;
-    s2 = \\a => vps.ad ++ ppt ++ vps.p ++ vps.s2 ! a ++ vps.c2 ; ---- order
+    ad = \\_ => [] ;
+    s2 = \\a => vps.ad ! a ++ ppt ++ vps.p ++ vps.s2 ! a ++ vps.c2 ; ---- order
     ext = vps.ext
     } ;
 
@@ -179,7 +180,9 @@ lin
    ComplBareVS  v s = insertExtra s.s (predV v) ;
    SlashBareV2S v s = insertExtrac s.s (predVc v) ;
 
-
+   ContractedUseCl  t p cl = {
+      s = t.s ++ p.s ++ cl.s ! t.t ! t.a ! p.p ! ODir True
+      } ;
 
 
 
@@ -187,7 +190,7 @@ lin
 --- obsolete: use UncNeg : Pol
 
     UncNegCl t p cl = {
-      s = t.s ++ p.s ++ cl.s ! t.t ! t.a ! unc p.p ! ODir
+      s = t.s ++ p.s ++ cl.s ! t.t ! t.a ! unc p.p ! oDir
     } ;
     UncNegQCl t p cl = {
       s = \\q => t.s ++ p.s ++ cl.s ! t.t ! t.a ! unc p.p ! q
