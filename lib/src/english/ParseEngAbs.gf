@@ -13,7 +13,8 @@ abstract ParseEngAbs =
   Question,
   Relative,
   Idiom [NP, VP, Cl, Tense, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP],
-  ExtraEngAbs [NP, Quant, VPSlash, VP, GenNP, PassVPSlash,
+  Construction,
+  ExtraEngAbs [NP, Quant, VPSlash, VP, GenNP, PassVPSlash, PassAgentVPSlash,
                Temp, Tense, Pol, Conj, VPS, ListVPS, S, Num, CN, RP, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS, GenRP,
                VPI, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV, ComplSlashPartLast,
                ClSlash, RCl, EmptyRelSlash, VS, V2S, ComplBareVS, SlashBareV2S],
@@ -85,5 +86,28 @@ fun FeatN  : N  -> Feat;
     FeatVS : VS -> Feat;
     FeatVQ : VQ -> Feat;
     FeatVA : VA -> Feat;
+
+
+-- for displaying inflection tables
+
+cat 
+  NDisplay ; ADisplay ; VDisplay ;
+fun 
+  DisplayN   : N -> NDisplay ;
+  DisplayN2  : N2 -> NDisplay ;
+  DisplayN3  : N3 -> NDisplay ;
+  DisplayA   : A -> ADisplay ;
+  DisplayA2  : A2 -> ADisplay ;
+  DisplayV   : V -> VDisplay ;
+  DisplayV2  : V2 -> VDisplay ;
+  DisplayV3  : V3 -> VDisplay ;
+  DisplayVA  : VA -> VDisplay ;
+  DisplayVQ  : VQ -> VDisplay ;
+  DisplayVS  : VS -> VDisplay ;
+  DisplayVV  : VV -> VDisplay ;
+  DisplayV2A : V2A -> VDisplay ;
+  DisplayV2Q : V2Q -> VDisplay ;
+  DisplayV2S : V2S -> VDisplay ;
+  DisplayV2V : V2V -> VDisplay ;
 
 }

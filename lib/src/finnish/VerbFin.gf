@@ -21,7 +21,7 @@ concrete VerbFin of Verb = CatFin ** open Prelude, ResFin, StemFin in {
       insertObj 
         (\\_,b,a => infVP v.sc b a vp v.vi) 
         (predSV {s = v.s ; 
-                sc = case vp.sc of {
+                sc = case vp.s.sc of {
                   NPCase Nom => v.sc ;   -- minun täytyy pestä auto
                   c => c                 -- minulla täytyy olla auto
                   } ;
@@ -53,21 +53,31 @@ concrete VerbFin of Verb = CatFin ** open Prelude, ResFin, StemFin in {
     ComplSlash vp np = insertObjPre np.isNeg (\fin,b,_ -> appCompl fin b vp.c2 np) vp ;
 
     UseComp comp = 
-      insertObj (\\_,_ => comp.s) (predV (verbOlla ** {sc = NPCase Nom ; h = Back ; p = []})) ;
+      insertObj (\\_,_ => comp.s) (predV vpVerbOlla) ;
 
-    UseCopula = predV (verbOlla ** {sc = NPCase Nom ; h = Back ; p = []}) ;
+    UseCopula = predV vpVerbOlla ;
 
-    SlashVV v vp = 
+    SlashVV v vp = {
+      s  = v ; 
+      s2 = \\_,b,a => infVP v.sc b a vp v.vi ;
+      adv = \\_ => v.p ;
+      vptyp = vp.vptyp ;
+      ext = [] ;
+      c2 = vp.c2
+      } ;
+
+{- 
       insertObj 
         (\\_,b,a => infVP v.sc b a vp v.vi) 
         (predSV {s = v.s ; 
-                sc = case vp.sc of {
+                sc = case vp.s.sc of {
                   NPCase Nom => v.sc ;   -- minun täytyy pestä auto
                   c => c                 -- minulla täytyy olla auto
                   } ;
                 h = v.h ; p = v.p
                }
          ) ** {c2 = vp.c2} ; ---- correct ??
+-}
 
     SlashV2VNP = StemFin.slashV2VNP ; ---- compilation to pgf takes too long 6/8/2013 hence a simplified version in stemmed/
 
@@ -81,20 +91,16 @@ concrete VerbFin of Verb = CatFin ** open Prelude, ResFin, StemFin in {
 
     ReflVP v = insertObjPre False (\fin,b,agr -> appCompl fin b v.c2 (reflPron agr)) v ;
 
-    PassV2 v = let vp = predSV v in {
+    PassV2 v = passVP (predSV v) v.c2.c ;
+
+{- ----
       s = \\vif,ant,pol,agr => case vif of {
         VIFin t  => vp.s ! VIPass t ! ant ! pol ! agr ;
         _ => vp.s ! vif ! ant ! pol ! agr 
         } ;
-      s2 = \\_,_,_ => [] ;
-      adv = \\_ => [] ;
-      ext = [] ;
-      h = vp.h ;
-      isNeg = False ;
       sc = v.c2.c ; -- minut valitaan ; minua rakastetaan ; minulle kuiskataan 
       } ;           ---- talon valitaan: should be marked like inf.
-
-----b    UseVS, UseVQ = \v -> v ** {c2 = {s = [] ; c = NPAcc ; isPre = True}} ;
+-}
 
     CompAP ap = {
       s = \\agr => 

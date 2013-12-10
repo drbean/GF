@@ -1,4 +1,4 @@
---# -path=.:..:../../abstract:../../common:../../english:../kotus
+--# -path=.:..:../../abstract:../../common:../../api:../../english:../kotus
 
 concrete ParseFin of ParseEngAbs = 
   TenseX, ---- - [Pol, PNeg, PPos],
@@ -14,13 +14,14 @@ concrete ParseFin of ParseEngAbs =
   SentenceFin,
   QuestionFin,
   RelativeFin,
-  IdiomFin [NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP]
-  , ExtraFin [NP, Quant, VPSlash, VP, Tense, GenNP, PassVPSlash, Voc, RP, GenRP, PassVPSlash, PassAgentVPSlash,
+  IdiomFin [NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP],
+  ConstructionFin,
+  ExtraFin [NP, Quant, VPSlash, VP, Tense, GenNP, PassVPSlash, Voc, RP, GenRP, PassVPSlash, PassAgentVPSlash,
       Temp, Tense, Pol, Conj, VPS, ListVPS, S, MkVPS, BaseVPS, ConsVPS, ConjVPS, PredVPS,
       VPI, VPIForm, VPIInf, VPIPresPart, ListVPI, VV, MkVPI, BaseVPI, ConsVPI, ConjVPI, ComplVPIVV]
  , DictEngFin 
 ** 
-open MorphoFin, ResFin, ParadigmsFin, SyntaxFin, StemFin, Prelude in {
+open MorphoFin, ResFin, ParadigmsFin, SyntaxFin, StemFin, (E = ExtraFin), Prelude in {
 
 flags literal=Symb ; coding = utf8 ;
 
@@ -29,7 +30,7 @@ lin
       insertObj 
         (\\_,b,a => infVPGen pol.p v.sc b a vp v.vi) 
         (predSV {s = v.s ; 
-                sc = case vp.sc of {
+                sc = case vp.s.sc of {
                   NPCase Nom => v.sc ;   -- minun täytyy pestä auto
                   c => c                 -- minulla täytyy olla auto
                   } ;
@@ -67,7 +68,7 @@ lin
   PredVPosv np vp = mkCl np vp ; ----
 
   -- Ant -> Pol -> VPSlash -> RS ; --- here replaced by a relative clause 
-  PastPartRS ant pol vps = mkRS ant pol (mkRCl which_RP (passVPSlash (lin VPSlash vps))) ;
+  PastPartRS ant pol vps = mkRS ant pol (mkRCl which_RP (E.PassVPSlash (lin VPSlash vps))) ;
 
   ApposNP np1 np2 = {
       s = \\c => np1.s ! c ++ "," ++ np2.s ! c ;
@@ -95,7 +96,7 @@ lin
       insertObj (\\_,b,a => infVPGen p.p v.sc b a vp v.vi) (predSV v) ** {c2 = v.c2} ;
 
   CompS s = {s = \\_ => "että" ++ s.s} ;  -- S -> Comp            ---- what are these expected to do ? 29/3/2013
-  CompVP ant pol vp = {s = \\a => infVPGen pol.p vp.sc Pos a vp Inf1} ; -- VP -> Comp
+  CompVP ant pol vp = {s = \\a => infVPGen pol.p vp.s.sc Pos a vp Inf1} ; -- VP -> Comp
 
 
   that_RP = which_RP ;
@@ -127,5 +128,23 @@ lin
 --      insertObj (\\_,b,a => infVPGen pol.p v.sc b a vps v.vi) (predSV v) ** {c2 = v.c2} ; --- or vps.c2 ??
 
 --in Verb,   SlashV2VNP : V2V -> NP -> VPSlash -> VPSlash
+
+lincat 
+  NDisplay = {s : NForm => Str} ;
+  ADisplay = {s : Degree => NForm => Str} ; 
+  VDisplay = {s : VForm => Str} ; 
+
+lin
+  DisplayN n = snoun2nounSep n ;
+  DisplayA a = {
+    s = table {
+       Posit  => (snoun2nounSep {s = \\f => a.s ! Posit  ! sAN f ; h = a.h}).s ; 
+       Compar => (snoun2nounSep {s = \\f => a.s ! Compar ! sAN f ; h = a.h}).s ; 
+       Superl => (snoun2nounSep {s = \\f => a.s ! Superl ! sAN f ; h = a.h}).s 
+      }
+    } ;
+ 
+  DisplayV v = sverb2verbSep v ;
+
 }
 

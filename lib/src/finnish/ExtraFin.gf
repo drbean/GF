@@ -58,7 +58,9 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
       sc = ss.sc ; h = ss.h
       } ;
 
-    MkVPS t p vp = { --  Temp -> Pol -> VP -> VPS ;
+    MkVPS t p vp0 = let vp = vp2old_vp vp0 in
+
+    { --  Temp -> Pol -> VP -> VPS ;
       s = \\a => let vps = vp.s ! VIFin t.t ! t.a ! p.p ! a
                  in
                  t.s ++ p.s ++
@@ -76,7 +78,7 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
 
     AdvExistNP adv np = 
       mkClause (\_ -> adv.s) np.a (insertObj 
-        (\\_,b,_ => np.s ! NPCase Nom) (predV (verbOlla ** {sc = NPCase Nom ; h = Back ; p = []}))) ;
+        (\\_,b,_ => np.s ! NPCase Nom) (predV vpVerbOlla)) ;
 
     RelExistNP prep rp np = {
       s = \\t,ant,bo,ag => 
@@ -87,7 +89,7 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
           np.a 
           (insertObj 
             (\\_,b,_ => np.s ! NPCase Nom) 
-            (predV (verbOlla ** {sc = NPCase Nom ; h = Back ; p = []}))) ;
+            (predV vpVerbOlla)) ;
       in 
       cl.s ! t ! ant ! bo ! SDecl ;
       c = NPCase Nom
@@ -99,7 +101,7 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
 
     ICompExistNP adv np = 
       let cl = mkClause (\_ -> adv.s ! np.a) np.a (insertObj 
-        (\\_,b,_ => np.s ! NPCase Nom) (predV (verbOlla ** {sc = NPCase Nom ; h = Back ; p = []}))) ;
+        (\\_,b,_ => np.s ! NPCase Nom) (predV vpVerbOlla)) ;
       in  {
         s = \\t,a,p => cl.s ! t ! a ! p ! SDecl
       } ;
@@ -207,17 +209,17 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
       in
       {s = t.s ++ p.s ++ cl.compl ++ pa ++ cl.fin ++ cl.inf ++ cl.subj ++ cl.adv ++ cl.ext} ; 
 
-    PredClPlus np vp = mkClausePlus (subjForm np vp.sc) np.a vp ;
-    PredClPlusFocSubj np vp = insertKinClausePlus 0 (mkClausePlus (subjForm np vp.sc) np.a vp) ;
-    PredClPlusFocVerb np vp = insertKinClausePlus 1 (mkClausePlus (subjForm np vp.sc) np.a vp) ;
+    PredClPlus np vp = mkClausePlus (subjForm np vp.s.sc) np.a vp ;
+    PredClPlusFocSubj np vp = insertKinClausePlus 0 (mkClausePlus (subjForm np vp.s.sc) np.a vp) ;
+    PredClPlusFocVerb np vp = insertKinClausePlus 1 (mkClausePlus (subjForm np vp.s.sc) np.a vp) ;
     PredClPlusObj  np vps obj = 
-      insertObjClausePlus 0 False (\\b => appCompl True b vps.c2 obj) (mkClausePlus (subjForm np vps.sc) np.a vps) ;
+      insertObjClausePlus 0 False (\\b => appCompl True b vps.c2 obj) (mkClausePlus (subjForm np vps.s.sc) np.a vps) ;
     PredClPlusFocObj  np vps obj = 
-      insertObjClausePlus 0 True (\\b => appCompl True b vps.c2 obj) (mkClausePlus (subjForm np vps.sc) np.a vps) ;
+      insertObjClausePlus 0 True (\\b => appCompl True b vps.c2 obj) (mkClausePlus (subjForm np vps.s.sc) np.a vps) ;
     PredClPlusAdv  np vp  adv = 
-      insertObjClausePlus 1 False (\\_ => adv.s) (mkClausePlus (subjForm np vp.sc) np.a vp) ;
+      insertObjClausePlus 1 False (\\_ => adv.s) (mkClausePlus (subjForm np vp.s.sc) np.a vp) ;
     PredClPlusFocAdv  np vp  adv = 
-      insertObjClausePlus 1 True (\\_ => adv.s) (mkClausePlus (subjForm np vp.sc) np.a vp) ;
+      insertObjClausePlus 1 True (\\_ => adv.s) (mkClausePlus (subjForm np vp.s.sc) np.a vp) ;
 
     ClPlusWithObj c = c ;
     ClPlusWithAdv c = c ;
@@ -231,31 +233,26 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
   kohan_Part = mkPart "kohan" "köhän" ;
   pahan_Part = mkPart "pahan" "pähän" ;
 
-  PassVPSlash vp = {
+  PassVPSlash vp = passVP vp vp.c2.c ;
+
+{- -----
       s = \\vif,ant,pol,agr => case vif of {
         VIFin t  => vp.s ! VIPass t ! ant ! pol ! agr ;
         _ => vp.s ! vif ! ant ! pol ! agr 
         } ;
-      s2 = vp.s2 ;
-      adv = vp.adv ;
-      ext = vp.ext ;
-      h = vp.h ;
-      isNeg = vp.isNeg ;
-      sc = case vp.c2.c of {NPCase Nom => NPAcc ; c => c}
-      } ; 
+-}
 
 ---- uses inversion of active: Guernican maalasi Picasso. TODO: use the agent participle
 ---- TODO maybe squeeze s2 between the fin and inf (but this is subtle)
 ----   sinua olen rakastanut minä -> sinua olen minä rakastanus
+-- advantage though: works for all V2 verbs, need not be transitive
 
   PassAgentVPSlash vp np = {
-      s = \\vif,ant,pol,agr => vp.s ! vif ! ant ! pol ! np.a ;  -- only agr changes
+      s = {s = vp.s.s ; h = vp.s.h ; p = vp.s.p ; sc = vp.c2.c} ; 
       s2 = \\b,p,a => np.s ! NPCase Nom ++ vp.s2 ! b ! p ! a ;
       adv = vp.adv ;
       ext = vp.ext ;
-      h = vp.h ;
-      isNeg = vp.isNeg ;
-      sc = vp.c2.c  -- advantage: works for all V2 verbs, need not be transitive
+      vptyp = vp.vptyp ;
       } ; 
 
 

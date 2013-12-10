@@ -1,5 +1,5 @@
 concrete IdiomFin of Idiom = CatFin ** 
-  open MorphoFin, ParadigmsFin, Prelude in {
+  open MorphoFin, StemFin, ParadigmsFin, Prelude in {
 
   flags optimize=all_subs ; coding=utf8;
 
@@ -37,39 +37,24 @@ concrete IdiomFin of Idiom = CatFin **
 
     ImpersCl vp = mkClause noSubj (agrP3 Sg) vp ;
 
-    GenericCl vp = mkClause noSubj (agrP3 Sg) {
-      s = \\vif,ant,pol,agr => case vif of {
-        VIFin t  => vp.s ! VIPass t ! ant ! pol ! agr ;
-        _ => vp.s ! vif ! ant ! pol ! agr 
-        } ;
-      s2 = vp.s2 ;
-      adv = vp.adv ;
-      ext = vp.ext ;
-      sc = vp.sc ; 
-      h = vp.h ;
-      isNeg = vp.isNeg
-      } ;
+    GenericCl vp = mkClause noSubj (agrP3 Sg) (passVP vp (NPCase Nom)) ;
 
     ProgrVP vp = 
       let 
-        inf = (vp.s ! VIInf Inf3Iness ! Simul ! Pos ! agrP3 Sg).fin ;
+        inf = (sverb2verbSep vp.s).s ! Inf Inf3Iness ;
         on  = predV olla
       in {
         s = on.s ;
         s2 = \\b,p,a => inf ++ vp.s2 ! b ! p ! a ;
         adv = vp.adv ;
         ext = vp.ext ;
-        sc = vp.sc ; 
-        h = vp.h ; isNeg = vp.isNeg
+        vptyp = vp.vptyp ;
         } ;
 
--- This gives "otetaan oluet" instead of "ottakaamme oluet".
--- The imperative is not available in a $VP$.
-
   ImpPl1 vp = 
-    let vps = vp.s ! VIPass Pres ! Simul ! Pos ! Ag Pl P1
+    let vps = (sverb2verbSep vp.s).s ! ImperP1Pl
     in
-    {s = vps.fin ++ vps.inf ++ 
+    {s = vps ++
          vp.s2 ! True ! Pos ! Ag Pl P1 ++ vp.ext
     } ;
 
@@ -83,7 +68,7 @@ concrete IdiomFin of Idiom = CatFin **
       } ;
 
   oper
-    olla = verbOlla ** {sc = NPCase Nom ; h = Back ; p = []} ;
+    olla = vpVerbOlla ;
 
     noSubj : Polarity -> Str = \_ -> [] ;
 }
