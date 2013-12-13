@@ -180,7 +180,7 @@ param
 oper
   SVerb : Type = {s : SVForm => Str ; h : Harmony} ;
 
-  ollaSVerbForms : SVForm => Str = table SVForm ["olla";"ole";"on";"o";"olk";"olla";"oli";"oli";"olisi";"oll";"oltu";"ollu";"liene";"ole"] ;
+  ollaSVerbForms : SVForm => Str = table SVForm ["oll";"ole";"on";"o";"olk";"olla";"oli";"oli";"olisi";"oll";"olt";"ollu";"liene";"ole"] ;
 
   -- used in Cat
   SVerb1 = {s : SVForm => Str ; sc : NPForm ; h : Harmony ; p : Str} ;
@@ -510,7 +510,7 @@ oper
     (VP ** {c2 : Compl}) -> (VP ** {c2 : Compl}) = 
     \v, np, vp -> {
       s  = v ;
-      s2 = \\fin,b,a =>  np.s ! v.c2.c ++ vp.c2.s ++ v.s ! SVInf ;
+      s2 = \\fin,b,a =>  np.s ! v.c2.c ++ vp.c2.s ! False ++ v.s ! SVInf ;
                          ---- infVP v.sc b a vp v.vi ;
                          -- ignoring Acc variation and pre/postposition and proper inf form
       ext = [] ;
@@ -665,9 +665,9 @@ oper
     vptyp = vp.vptyp --- missään
     } ;
 
-  passVP : VP -> NPForm -> VP = \vp,sc -> {
-    s = {s = vp.s.s ; h = vp.s.h ; p = vp.s.p ; sc = sc} ; -- minusta pidetään ---- TODO minun päälleni katsotaan
-    s2 = vp.s2 ;
+  passVP : VP -> Compl -> VP = \vp,pr -> {
+    s = {s = vp.s.s ; h = vp.s.h ; p = vp.s.p ; sc = pr.c} ; -- minusta pidetään 
+    s2 = \\b,p,a => pr.s ! False ++ vp.s2 ! b ! p ! a ;  ---- prep after verb ---- TODO minun päälleni katsotaan
     ext = vp.ext ;
     adv = vp.adv ;
     vptyp = {isNeg = vp.vptyp.isNeg ; isPass = True} ; 

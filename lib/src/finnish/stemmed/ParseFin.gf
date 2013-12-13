@@ -8,7 +8,8 @@ concrete ParseFin of ParseEngAbs =
   NumeralFin,
   SymbolFin [PN, Symb, String, CN, Card, NP, MkSymb, SymbPN, CNNumNP],
   ConjunctionFin,
-  VerbFin - [SlashV2V, PassV2, UseCopula, ComplVV],
+  VerbFin - [SlashV2V, PassV2, UseCopula, ComplVV,
+             VPSlashPrep],  -- with empty prepositions, a cyclic rule that leads to overgeneration
   AdverbFin,
   PhraseFin,
   SentenceFin,
@@ -93,7 +94,8 @@ lin
       } ;
 
   SlashV2V v ant p vp = 
-      insertObj (\\_,b,a => infVPGen p.p v.sc b a vp v.vi) (predSV v) ** {c2 = v.c2} ;
+      insertObj (\\_,b,a => infVP v.sc b a vp v.vi) (predSV v) ** {c2 = v.c2} ; ----
+      ---- insertObj (\\_,b,a => infVPGen p.p v.sc b a vp v.vi) (predSV v) ** {c2 = v.c2} ;
 
   CompS s = {s = \\_ => "että" ++ s.s} ;  -- S -> Comp            ---- what are these expected to do ? 29/3/2013
   CompVP ant pol vp = {s = \\a => infVPGen pol.p vp.s.sc Pos a vp Inf1} ; -- VP -> Comp
@@ -122,7 +124,8 @@ lin
       insertObj (\\_,b,a => vpi.s ! v.vi) (predSV v) ** {c2 = v.c2} ;
 
    VPSlashVS v vp = -- : VS -> VP -> VPSlash ; -- hän sanoo (minun) menevän (!) ---- menneen ?
-      insertObj (\\_,b,a => infVP v.sc b a vp InfPresPart) (predSV v) ** {c2 = {c = NPCase Gen ; s = [] ; isPre = True}} ;
+      insertObj (\\_,b,a => infVP v.sc b a vp InfPresPart) (predSV v) ** 
+                   {c2 = {c = NPCase Gen ; s = \\_ => [] ; h = Back ; isPre = True}} ;
      
 --   SlashSlashV2V v ant pol vps = -- : V2V -> Ant -> Pol -> VPSlash -> VPSlash ; --- not implemented in Eng so far
 --      insertObj (\\_,b,a => infVPGen pol.p v.sc b a vps v.vi) (predSV v) ** {c2 = v.c2} ; --- or vps.c2 ??

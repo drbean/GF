@@ -82,6 +82,7 @@ concrete VerbFin of Verb = CatFin ** open Prelude, ResFin, StemFin in {
     SlashV2VNP = StemFin.slashV2VNP ; ---- compilation to pgf takes too long 6/8/2013 hence a simplified version in stemmed/
 
     AdvVP vp adv = insertAdv (\\_ => adv.s) vp ;
+    ExtAdvVP vp adv = insertAdv (\\_ => embedInCommas adv.s) vp ;
 
     AdVVP adv vp = insertAdv (\\_ => adv.s) vp ;
 
@@ -91,7 +92,7 @@ concrete VerbFin of Verb = CatFin ** open Prelude, ResFin, StemFin in {
 
     ReflVP v = insertObjPre False (\fin,b,agr -> appCompl fin b v.c2 (reflPron agr)) v ;
 
-    PassV2 v = passVP (predSV v) v.c2.c ;
+    PassV2 v = passVP (predSV v) v.c2 ;
 
 {- ----
       s = \\vif,ant,pol,agr => case vif of {

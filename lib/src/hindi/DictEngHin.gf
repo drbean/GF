@@ -16618,7 +16618,6 @@ lin miller_N = mkN "चक्की पर काम करने वाला" 
 lin millet_N = mkN "बाजरा" ;       -- old       -- old
 lin milligram_N = mkN "मिलीग्राम" ;       -- old       -- old
 lin milliliter_N = mkN "मिलीलीटर" ;       -- old
-lin millimeter_N = mkN "मिलीमीटर" ;       -- old
 lin millimetre_N = mkN "मिलिमीटर" ;       -- old       -- old
 lin milliner_N = mkN "नारी टोपी विक्रेता" ;       -- old       -- old
 lin millinery_N = mkN "नारी टोपी" ;       -- old       -- old
@@ -32303,7 +32302,6 @@ lin washroom_N = mkN "सार्वजनिक शौचघर" ;       -- ol
 lin washstand_N = mkN "वाश स्टैण्ड" ;       -- old       -- old
 lin washtub_N = mkN "कपड़े धोने का टब" ;       -- old       -- old
 lin washup_N = mkN "बर्तन आदि धोना" ;       -- old
-lin washwoman_N = mkN "धोबिन" ;       -- old
 lin washy_A = mkA "पनियल" ;       -- old       -- old
 lin waspish_A = mkA "चिड़चिड़ा" ;       -- old       -- old
 lin wassailer_N = mkN "सलामती का जाम उठाने वाला" ;       -- old
@@ -33754,7 +33752,8 @@ lin fairness_N= mkN "निष्पक्षता";
 lin mississippi_PN= mkPN "mississippi";
 lin as_Prep= mkPrep "के जैसा" "के जैसा";
 lin outpatient_N= mkN "बहिरंग रोगी";
-lin may_VV= mkV "लेना" ** { isAux = True} ;
+lin may_1_VV= mkV "लेना" ** { isAux = True} ; ---- check these AR
+lin may_2_VV= mkV "लेना" ** { isAux = True} ;
 lin further_AdV= ss "इसके अतिरिक्त";
 lin throughout_Prep= mkPrep "पूरे" "में";
 lin such_Predet= ss "ऐसी";

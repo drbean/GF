@@ -1,5 +1,6 @@
 package org.grammaticalframework.pgf;
 
+import java.io.*;
 import java.util.*;
 
 public class Concr {
@@ -26,6 +27,12 @@ public class Concr {
 	public native List<MorphoAnalysis> lookupMorpho(String sentence);
 
 	public native boolean hasLinearization(String id);
+
+	public native void load(String path) throws FileNotFoundException;
+
+	public native void load(InputStream stream);
+
+	public native void unload();
 
 	//////////////////////////////////////////////////////////////////
 	// private stuff

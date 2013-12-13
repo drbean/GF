@@ -7,9 +7,13 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
   lin
     GenNP np = {
       s1,sp = \\_,_ => np.s ! NPCase Gen ;
-      s2 = \\_ => [] ;
+      s2 = case np.isPron of { -- "isän auto", "hänen autonsa"  
+             True => table {Front => BIND ++ possSuffixFront np.a ; 
+                            Back  => BIND ++ possSuffix np.a } ;
+             False => \\_ => []
+             } ;
       isNum  = False ;
-      isPoss = False ;
+      isPoss = np.isPron ; --- also gives "sen autonsa"
       isDef  = True ; --- "Jussin kolme autoa ovat" ; thus "...on" is missing
       isNeg = False 
      } ;
@@ -233,7 +237,7 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
   kohan_Part = mkPart "kohan" "köhän" ;
   pahan_Part = mkPart "pahan" "pähän" ;
 
-  PassVPSlash vp = passVP vp vp.c2.c ;
+  PassVPSlash vp = passVP vp vp.c2 ;
 
 {- -----
       s = \\vif,ant,pol,agr => case vif of {
