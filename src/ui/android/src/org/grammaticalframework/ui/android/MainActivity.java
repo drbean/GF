@@ -1,4 +1,3 @@
-
 package org.grammaticalframework.ui.android;
 
 import java.io.Serializable;
@@ -11,12 +10,18 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.grammaticalframework.ui.android.ASR.State;
 import org.grammaticalframework.ui.android.LanguageSelector.OnLanguageSelectedListener;
@@ -128,6 +133,35 @@ public class MainActivity extends Activity {
 		mTargetLanguageView.setSelectedLanguage(mTranslator.getTargetLanguage());
 	}
 
+	private View mProgressBar = null;
+
+	private void showProgressBar() {
+		TextView localTextView = (TextView) getWindow().findViewById(
+                android.R.id.title);
+        if (localTextView != null) {
+            ViewParent localViewParent = localTextView.getParent();
+            if (localViewParent != null && (localViewParent instanceof FrameLayout)) {
+            	mProgressBar = ((LayoutInflater) getSystemService("layout_inflater"))
+                        .inflate(R.layout.progress_bar, null);
+                FrameLayout.LayoutParams params = 
+                		new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
+                				                     FrameLayout.LayoutParams.WRAP_CONTENT,
+                				                     Gravity.RIGHT);
+                ((FrameLayout) localViewParent).addView(mProgressBar, params);
+            }
+        }
+	}
+	
+	private void hideProgressBar() {
+		if (mProgressBar != null) {
+			ViewParent localViewParent = mProgressBar.getParent();
+			
+			if (localViewParent != null && (localViewParent instanceof FrameLayout)) {
+				((FrameLayout) localViewParent).removeView(mProgressBar);
+			}
+		}
+	}
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
@@ -209,11 +243,10 @@ public class MainActivity extends Activity {
     }
 
     void onSwitchLanguages() {
-        Language newSource = mTranslator.getTargetLanguage();
-        Language newTarget = mTranslator.getSourceLanguage();
-        mSourceLanguageView.setSelectedLanguage(newSource);
-        mTargetLanguageView.setSelectedLanguage(newTarget);
-        
+    	mTranslator.switchLanguages();
+        mSourceLanguageView.setSelectedLanguage(mTranslator.getSourceLanguage());
+        mTargetLanguageView.setSelectedLanguage(mTranslator.getTargetLanguage());
+
         if (TranslatorInputMethodService.getInstance() != null) {
         	TranslatorInputMethodService.getInstance().handleSwitchLanguages();
         }
@@ -244,6 +277,11 @@ public class MainActivity extends Activity {
 
         mConversationView.updateLastUtterance(input, list);
         new AsyncTask<Void,Void,String>() {
+        	@Override
+        	protected void onPreExecute() {
+        		showProgressBar();
+        	}
+
             @Override
             protected String doInBackground(Void... params) {
                 return mTranslator.translate(input);
@@ -252,6 +290,7 @@ public class MainActivity extends Activity {
             @Override
             protected void onPostExecute(String result) {
                 outputText(result);
+                hideProgressBar();
             }
         }.execute();
     }
