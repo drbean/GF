@@ -1,33 +1,43 @@
 concrete PredicationSwe of Predication = open Prelude in {
 
+-- Swedish predication: simpler and purer than English.
+-- two principles:
+-- - keep records discontinuous as long as possible (last step from Cl to S)
+-- - select from tables as soon as possible (first step from V to VP)
+-- a question: would it make sense to make this into a functor?
+
 param
   Agr      = Sg | Pl ;
   Case     = Nom | Acc ;
   STense   = Pres | Past | Perf | Fut ;
   Anteriority = Simul | Anter ;
   Polarity = Pos | Neg ;
-  VForm    = Inf | VPres | VPret | VSup ;
+  VTense   = VInf | VPres | VPret | VSup ;
+  VForm    = TV Voice VTense | PastPart Agr | PresPart ;
+  Voice    = Act | Pass ;
+   
 
   FocusType = NoFoc | FocSubj | FocObj ;  -- sover hon/om hon sover, vem älskar hon/vem hon älskar, vem sover/vem som sover 
 
 oper
   defaultAgr = Sg ;
+  ComplCase  = Str ; -- preposition
 
 lincat
   Arg = {s : Str} ;
 
   V = {
     v  : VForm => Str ;             
-    c1 : Str ; 
-    c2 : Str ;
+    c1 : ComplCase ; 
+    c2 : ComplCase ;
     isSubjectControl : Bool ;
     } ; 
 
   VP = {
     v : Str * Str * Str ;  -- ska,ha,sovit 
     inf : Str * Str ;      -- ha,sovit
-    c1 : Str ; 
-    c2 : Str ; 
+    c1 : ComplCase ; 
+    c2 : ComplCase ; 
     adj   : Agr => Str ; 
     obj1  : (Agr => Str) * Agr ; 
     obj2  : (Agr => Str) * Bool ; -- subject control = True 
@@ -44,7 +54,7 @@ oper Clause = {
     adV : Str ;
     ext : Str ; 
     subj : Str ; 
-    c3 : Str
+    c3  : ComplCase  -- for a slashed adjunct, not belonging to the verb valency
     } ; 
 
 lincat
@@ -58,13 +68,13 @@ lincat
   VPC = {
     v   : Agr => Str ;
     inf : Agr => Str ; 
-    c1  : Str ; 
-    c2  : Str
+    c1  : ComplCase ; 
+    c2  : ComplCase
     } ;
 
   ClC = {
     s  : Str ;
-    c3 : Str ; ---- which prep
+    c3 : ComplCase ;
     } ;
 
   Temp  = {s : Str ; t : STense ; a : Anteriority} ;
@@ -100,8 +110,8 @@ lin
   PNeg  = {s = [] ; p = Neg} ;
 
   UseV t p _ v = {
-    v   = tenseV t.s t.t t.a v ;
-    inf = tenseInfV t.s t.a v ;
+    v   = tenseV t.s t.t t.a Act v ;
+    inf = tenseInfV t.s t.a Act v ;
     c1  = v.c1 ;
     c2  = v.c2 ;
     adj = \\a => [] ;
@@ -112,9 +122,35 @@ lin
     ext = [] ;
     } ;
 
+  PassUseV t p _ v = {
+    v   = tenseV t.s t.t t.a Pass v ;
+    inf = tenseInfV t.s t.a Pass v ;
+    c1  = v.c1 ;
+    c2  = v.c2 ;
+    adj = \\a => [] ;
+    obj1 = <\\a => [], defaultAgr> ; ---- not used, just default value
+    obj2 = <\\a => [], True> ; -- becomes subject control even if object control otherwise "*she was promised by us to love ourselves"
+    adV = p.s ++ neg p.p ;
+    adv = [] ;
+    ext = [] ;
+    } ;
+
+  AgentPassUseV t p _ v np = {
+    v   = tenseV t.s t.t t.a Pass v ;
+    inf = tenseInfV t.s t.a Pass v ;
+    c1  = v.c1 ;
+    c2  = v.c2 ;
+    adj = \\a => [] ;
+    obj1 = <\\a => [], defaultAgr> ; 
+    obj2 = <\\a => [], True> ;
+    adV = p.s ++ neg p.p ;
+    adv = appComplCase agentCase np ; ---- add a specific field for agent?
+    ext = [] ;
+    } ;
+
   UseAP t p _ ap = {
-    v   = tenseV t.s t.t t.a be_V ;
-    inf = tenseInfV t.s t.a be_V ;
+    v   = tenseV t.s t.t t.a Act be_V ;
+    inf = tenseInfV t.s t.a Act be_V ;
     c1  = ap.c1 ;
     c2  = ap.c2 ;
     adj = \\a => ap.s ! a ;
@@ -419,11 +455,30 @@ lin
 
   UttS s = s ;
 
+  PresPartAP x v = {
+    s = \\a => v.v ! PresPart ;
+    c1 = v.c1 ; 
+    c2 = v.c2 ;
+    obj1 = \\_ => [] ;
+    } ;
+  PastPartAP x v = {
+    s = \\a => v.v ! PastPart a ;
+    c1 = v.c1 ; 
+    c2 = v.c2 ;
+    obj1 = \\_ => [] ;
+    } ;
+  AgentPastPartAP x v np = {
+    s = \\a => v.v ! PastPart a ;
+    c1 = v.c1 ; 
+    c2 = v.c2 ;
+    obj1 = \\_ => appComplCase agentCase np ;
+    } ;
+
   StartVPC c x v w = {  ---- some loss of quality seems inevitable
     v = \\a => 
-          v.v.p1 ++ v.adV ++ v.v.p2 ++ v.adj ! a ++ v.c1 ++ v.obj1.p1 ! a ++ v.c2 ++ v.obj2.p1 ! a ++ v.adv ++ v.ext 
+          v.v.p1 ++ v.adV ++ v.v.p2 ++ v.v.p3 ++ v.adj ! a ++ v.c1 ++ v.obj1.p1 ! a ++ v.c2 ++ v.obj2.p1 ! a ++ v.adv ++ v.ext 
             ++ c.s ++
-          w.v.p1 ++ w.adV ++ w.v.p2 ++ w.adj ! a ++ w.c1 ++ w.obj1.p1 ! a ++ w.c2 ++ w.obj2.p1 ! a ++ w.adv ++ w.ext ;
+          w.v.p1 ++ w.adV ++ w.v.p2 ++ w.v.p3 ++ w.adj ! a ++ w.c1 ++ w.obj1.p1 ! a ++ w.c2 ++ w.obj2.p1 ! a ++ w.adv ++ w.ext ;
     inf = \\a => 
             infVP a (lin VP v) ++ c.s ++ infVP a (lin VP w) ;
     c1 = [] ; --- w.c1 ; --- the full story is to unify v and w...
@@ -460,25 +515,25 @@ lin
     c3   = cl.c3 ;
     } ;
 
-  sleep_V = mkV "sova" "sover" "sov" "sovit" ;
-  walk_V = mkV "gå" "går" "gick" "gått" ;
-  love_V2 = mkV "älska" "älskar" "älskade" "älskat" ;
-  look_V2 = mkV "titta" "tittar" "tittade" "tittat" "på" [] ;
-  believe_VS = mkV "tro" "tror" "trodde" "trott" ;
-  tell_V2S = mkV "berätta" "berättar" "berättade" "berättat" "för" [] ;
-  prefer_V3 = mkV "föredra" "föredrar" "föredrog" "föredragit" [] "framför" ;
-  want_VV = mkV "vilja" "vill" "ville" "velat" ;
-  force_V2V = {v = table {Inf => "tvinga" ; VPres => "tvingar" ; VPret => "tvingade" ; VSup => "tvingat"} ; 
-               c1 = [] ; c2 = "att" ; isSubjectControl = False} ; 
-  promise_V2V = mkV "lova" "lovar" "lovade" "lovat" [] "att" ;
-  wonder_VQ = mkV "undra" "undrar" "undrade" "undrat" ;
-  become_VA = mkV "bli" "blir" "blev" "blivit" ;
-  become_VN = mkV "bli" "blir" "blev" "blivit" ;
-  make_V2A = {v = table {Inf => "göra" ; VPres => "gör" ; VPret => "gjorde" ; VSup => "gjort"} ; 
-               c1 = [] ; c2 = [] ; isSubjectControl = False} ; 
-  promote_V2N = {v = table {Inf => "befordra" ; VPres => "befordrar" ; VPret => "befordrade" ; VSup => "befordrat"} ; 
-               c1 = [] ; c2 = "till" ; isSubjectControl = False} ; ---- ? de befordrade dem till chefer för sig/dem 
-  ask_V2Q = mkV "fråga" "frågar" "frågade" "frågat" ;
+  sleep_V = mkV "sova" "sover" "sov" "sovit" "soven" "sovna" ;
+  walk_V = mkV "gå" "går" "gick" "gått" "gången" "gångna" ;
+  love_V2 = mkV "älska" "älskar" "älskade" "älskat" "älskad" "älskade" ;
+  look_V2 = mkV "titta" "tittar" "tittade" "tittat" "tittad" "tittade" "på" [] ;
+  believe_VS = mkV "tro" "tror" "trodde" "trott" "trodd" "trodda" ;
+  tell_V2S = mkV "berätta" "berättar" "berättade" "berättat" "berättad" "berättade" "för" [] ;
+  prefer_V3 = mkV "föredra" "föredrar" "föredrog" "föredragit" "föredragen" "föredragna" [] "framför" ;
+  want_VV = mkV "vilja" "vill" "ville" "velat" "velad" "velade" ;
+  force_V2V = let tvinga : V = mkV "tvinga" "tvingar" "tvingade" "tvingat" "tvingad" "tvingade" in 
+              {v = tvinga.v ; c1 = [] ; c2 = "att" ; isSubjectControl = False} ; 
+  promise_V2V = mkV "lova" "lovar" "lovade" "lovat" "lovad" "lovade" [] "att" ;
+  wonder_VQ = mkV "undra" "undrar" "undrade" "undrat" "undrad" "undrade" ;
+  become_VA = mkV "bli" "blir" "blev" "blivit" "bliven" "blivna" ;
+  become_VN = mkV "bli" "blir" "blev" "blivit" "bliven" "blivna" ;
+  make_V2A = let gora : V = mkV "göra" "gör" "gjorde" "gjort" "gjord" "gjorda" in 
+             {v = table {TV Pass VPres => "görs" ; f => gora.v ! f} ; c1 = [] ; c2 = [] ; isSubjectControl = False} ; 
+  promote_V2N = let befordra : V = mkV "befordra" "befordrar" "befordrade" "befordrat" "befordrad" "befordrade"
+                in {v = befordra.v ; c1 = [] ; c2 = "till" ; isSubjectControl = False} ; ---- ? de befordrade dem till chefer för sig/dem 
+  ask_V2Q = mkV "fråga" "frågar" "frågade" "frågat" "frågad" "frågade" ;
 
   old_A = {s = table {Sg => "gammal" ; Pl => "gamla"} ; c1 = [] ; c2 = [] ; obj1 = \\_ => []} ;
   married_A2 = {s = table {Sg => "gift" ; Pl => "gifta"} ; c1 = "med" ; c2 = [] ; obj1 = \\_ => []} ;
@@ -505,17 +560,29 @@ lin
 
 oper
   mkV = overload {
-    mkV : (x,y,z,u : Str) -> V = \x,y,z,u -> 
-      lin V {v = table {Inf => x ; VPres => y ; VPret => z ; VSup => u} ; c1 = [] ; c2 = [] ; isSubjectControl = True} ; 
-    mkV : (x,y,z,u : Str) -> Str -> Str -> V = \x,y,z,u,p,q -> 
-      lin V {v = table {Inf => x ; VPres => y ; VPret => z ; VSup => u} ; c1 = p ; c2 = q  ; isSubjectControl = True} ; 
+    mkV : (x,y,z,u,v,w : Str) -> V = \x,y,z,u,v,w -> 
+      lin V {
+        v = table {
+              TV Act VInf => x ; TV Act VPres => y ; TV Act VPret => z ; TV Act VSup => u ;
+              TV Pass VInf => x + "s" ; TV Pass VPres => init y + "s" ; TV Pass VPret => z + "s" ; TV Pass VSup => u + "s" ;
+              PastPart Sg => v ; PastPart Pl => w ; PresPart => x + "nde"
+              } ; 
+        c1 = [] ; c2 = [] ; isSubjectControl = True} ; 
+    mkV : (x,y,z,u,v,w : Str) -> Str -> Str -> V = \x,y,z,u,p,q,v,w -> 
+      lin V {
+        v = table {
+              TV Act VInf => x ; TV Act VPres => y ; TV Act VPret => z ; TV Act VSup => u ;
+              TV Pass VInf => x + "s" ; TV Pass VPres => init y + "s" ; TV Pass VPret => z + "s" ; TV Pass VSup => u + "s" ;
+              PastPart Sg => v ; PastPart Pl => w ; PresPart => x + "nde"
+              } ; 
+        c1 = p ; c2 = q  ; isSubjectControl = True} ; 
     } ;
 
-  be_V : V = mkV "vara" "är" "var" "varit" ;
+  be_V : V = mkV "vara" "är" "var" "varit" "varen" "varna" ;
 
-  have_V : V = mkV "ha" "har" "hade" "haft" ;
+  have_V : V = mkV "ha" "har" "hade" "haft" "havd" "havda" ;
 
-  shall_V : V = mkV "skola" "ska" "skulle" "skolat" ;
+  shall_V : V = mkV "skola" "ska" "skulle" "skolat" "skolad" "skolade" ;
 
   neg : Polarity -> Str = \p -> case p of {Pos => [] ; Neg => "inte"} ;
 
@@ -528,21 +595,21 @@ oper
       vp.adV ++ (vp.inf.p1 | []) ++ vp.inf.p2 ++     ---- *hon tvingar oss att sovit 
       vp.adj ! a ++ vp.c1 ++ vp.obj1.p1 ! a ++ vp.c2 ++ vp.obj2.p1 ! a2 ++ vp.adv ++ vp.ext ;
 
-  tenseV : Str -> STense -> Anteriority -> V -> Str * Str * Str = \sta,t,a,v -> case <t,a> of {  --- sta dummy s field of Temp
-    <Pres,Simul> => <sta ++ v.v ! VPres,  [],               []> ;
-    <Past,Simul> => <sta ++ v.v ! VPret,  [],               []> ;
-    <Fut, Simul> => <shall_V.v ! VPres,   [],               sta ++ v.v ! Inf> ;
-    <Cond,Simul> => <shall_V.v ! VPret,   [],               sta ++ v.v ! Inf> ;
-    <Pres,Anter> => <[],                  have_V.v ! VPres, sta ++ v.v ! VSup> ;
-    <Past,Anter> => <[],                  have_V.v ! VPret, sta ++ v.v ! VSup> ;
-    <Fut, Anter> => <shall_V.v ! VPres,   have_V.v ! Inf,   sta ++ v.v ! VSup> ;
-    <Cond,Anter> => <shall_V.v ! VPret,   have_V.v ! Inf,   sta ++ v.v ! VSup> 
+  tenseV : Str -> STense -> Anteriority -> Voice -> V -> Str * Str * Str = \sta,t,a,o,v -> case <t,a> of {  --- sta dummy s field of Temp
+    <Pres,Simul> => <sta ++ v.v ! TV o   VPres,   [],                      []> ;
+    <Past,Simul> => <sta ++ v.v ! TV o   VPret,   [],                      []> ;
+    <Fut, Simul> => <shall_V.v  ! TV Act VPres,   [],                      sta ++ v.v ! TV o VInf> ;
+    <Cond,Simul> => <shall_V.v  ! TV Act VPret,   [],                      sta ++ v.v ! TV o VInf> ;
+    <Pres,Anter> => <[],                          have_V.v ! TV Act VPres, sta ++ v.v ! TV o VSup> ;
+    <Past,Anter> => <[],                          have_V.v ! TV Act VPret, sta ++ v.v ! TV o VSup> ;
+    <Fut, Anter> => <shall_V.v  ! TV Act VPres,   have_V.v ! TV Act VInf,  sta ++ v.v ! TV o VSup> ;
+    <Cond,Anter> => <shall_V.v  ! TV Act VPret,   have_V.v ! TV Act VInf,  sta ++ v.v ! TV o VSup> 
     } ;
 
-  tenseInfV : Str -> Anteriority -> V -> Str * Str = \sta,a,v -> 
+  tenseInfV : Str -> Anteriority -> Voice -> V -> Str * Str = \sta,a,o,v -> 
     case a of {
-      Simul => <[],             sta ++ v.v ! Inf> ;  -- hon vill sova
-      Anter => <have_V.v ! Inf, sta ++ v.v !  VSup>  -- hon vill (ha) sovit
+      Simul => <[],                     sta ++ v.v ! TV o VInf> ;  -- hon vill sova
+      Anter => <have_V.v ! TV Act VInf, sta ++ v.v ! TV o VSup>  -- hon vill (ha) sovit
       } ;
 
 
@@ -565,5 +632,9 @@ oper
 
   -- this part is usually the same in all reconfigurations
   restCl : Clause -> Str = \cl -> cl.v.p3 ++ cl.adj ++ cl.obj1 ++ cl.obj2 ++ cl.adv ++ cl.ext ;
+
+  agentCase : ComplCase = "av" ;
+
+  appComplCase : ComplCase -> NP -> Str = \p,np -> p ++ np.s ! Acc ;
 
 }
