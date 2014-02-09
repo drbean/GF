@@ -33,7 +33,7 @@ lincat
     c3 : ComplCase ;
     } ;
 
-  PrAdv   = {s : Str ; isAdV : Bool ; c1 : Str} ;
+  PrAdv   = {s : Str ; isAdV : Bool ; c1 : ComplCase} ;
   PrS     = {s : Str} ;
 
   PrAP = {
@@ -61,8 +61,8 @@ linref
     vp.adj ! agr ++ vp.obj1.p1 ! agr ++ vp.obj2.p1 ! agr ++ vp.adv ++ vp.ext ;
  
   PrCl  = \cl  -> declCl cl ;
-----  PrQCl = \qcl -> questCl (lin PrQCl qcl) ;
-  PrAdv = \adv -> adv.c1 ++ adv.s ;
+  PrQCl = \qcl -> questCl qcl ;
+  PrAdv = \adv -> strComplCase adv.c1 ++ adv.s ;
   PrAP  = \ap  -> ap.s ! defaultAgr ++ ap.obj1 ! defaultAgr ;  
   PrCN  = \cn  -> cn.s ! Sg ++ cn.obj1 ! defaultAgr ; 
   
@@ -88,14 +88,14 @@ lin
   aNone, aS, aV, aA, aQ, aN = {s = []} ;
   aNP a = a ;
 
-  UseV a t p _ v = {
-    v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p Act agr v ;
-    inf = tenseInfV a.s a.a p.p Act v ;
+  UseV x a t p v = {
+    v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p active agr v ;
+    inf = \\vt => tenseInfV a.s a.a p.p active v vt ;
     c1  = v.c1 ;
     c2  = v.c2 ;
     part = v.p ;
     adj = noObj ;
-    obj1 = <case v.vtype of {VTRefl => \\a => reflPron a ; _ => \\_ => []}, defaultAgr> ; ---- not used, just default value
+    obj1 = <case isRefl v of {True => \\a => reflPron a ; _ => \\_ => []}, defaultAgr> ; ---- not used, just default value
     obj2 = <noObj, v.isSubjectControl> ;
     vvtype = v.vvtype ;
     adV = negAdV p ; --- just p.s in Eng
@@ -104,9 +104,9 @@ lin
     qforms = \\agr => qformsV (a.s ++ t.s ++ p.s) t.t a.a p.p agr v ;
     } ;
 
-  PassUseV a t p _ v = {
-    v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p Pass agr v ;
-    inf = tenseInfV a.s a.a p.p Pass v ;
+  PassUseV x a t p v = {
+    v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
+    inf = \\vt => tenseInfV a.s a.a p.p passive v vt ;
     c1  = v.c1 ;
     c2  = v.c2 ;
     part = v.p ;
@@ -117,12 +117,12 @@ lin
     adV = negAdV p ;
     adv = [] ;
     ext = [] ;
-    qforms = \\agr => qformsBe (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
+    qforms = \\agr => qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
     } ;
 
-  AgentPassUseV a t p _ v np = {
-    v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p Pass agr v ;
-    inf = tenseInfV a.s a.a p.p Pass v ;
+  AgentPassUseV x a t p v np = {
+    v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
+    inf = \\vt => tenseInfV a.s a.a p.p passive v vt ;
     c1  = v.c1 ;
     c2  = v.c2 ;
     part = v.p ;
@@ -133,32 +133,37 @@ lin
     adV = negAdV p ;
     adv = appComplCase agentCase np ;
     ext = [] ;
-    qforms = \\agr => qformsBe (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
+    qforms = \\agr => qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
     } ;
 
-  UseAP a t p _ ap = {
-    v   = \\agr => be_Aux (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
-    inf = tenseInfV a.s a.a p.p Act be_V ;
+  UseAP x a t p ap = useCopula a t p ** {
     c1  = ap.c1 ;
     c2  = ap.c2 ;
-    part = [] ;
     adj = \\a => ap.s ! agr2aagr a ;
     obj1 = <ap.obj1, defaultAgr> ;
-    obj2 = <noObj, True> ; --- there are no A3's
-    vvtype = be_V.vvtype ;
-    adV = negAdV p ;
-    adv = [] ;
-    ext = [] ;
-    qforms = \\agr => qformsBe (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
     } ;
 
-  SlashV2 x vp np = vp ** {
+  UseCN x a t p cn = useCopula a t p ** {
+    c1  = cn.c1 ;
+    c2  = cn.c2 ;
+    adj = \\a => cn.s ! agr2nagr a ;
+    obj1 = <cn.obj1, defaultAgr> ;
+    } ;
+
+  UseAdv x a t p adv = useCopula a t p ** {
+    c1  = adv.c1 ;
+    adj = \\a => adv.s ;
+    } ;
+
+  UseNP a t p np = useCopula a t p ** {
+    adj = \\a => np.s ! subjCase ;
+    } ;
+
+  ComplV2 x vp np = vp ** {
     obj1 = <\\a => np.s ! objCase, np.a>  -- np.a for object control 
     } ;
 
-  SlashV3 x vp np = addObj2VP vp (\\a => np.s ! objCase) ; -- control is preserved 
-
-  ComplVS x vp cl = addExtVP vp (that_Compl ++ declSubordCl (lin Cl cl)) ; ---- sentence form
+  ComplVS x vp cl = addExtVP vp (that_Compl ++ declSubordCl cl) ; ---- sentence form
 
   ComplVQ x vp qcl = addExtVP vp (questSubordCl qcl) ; ---- question form
 
@@ -168,9 +173,11 @@ lin
 
   ComplVN x vp cn = addObj2VP vp (\\a => cn.s ! agr2nagr a ++ cn.obj1 ! a) ; ---- cnForm
 
-  SlashV2S x vp cl = addExtVP vp (that_Compl ++ declSubordCl (lin Cl cl)) ; ---- sentence form
+  SlashV3 x vp np = addObj2VP vp (\\a => np.s ! objCase) ; -- control is preserved 
 
-  SlashV2Q x vp cl = addExtVP vp (questSubordCl (lin QCl cl)) ; ---- question form
+  SlashV2S x vp cl = addExtVP vp (that_Compl ++ declSubordCl cl) ; ---- sentence form
+
+  SlashV2Q x vp cl = addExtVP vp (questSubordCl cl) ; ---- question form
 
   SlashV2V x vp vpo = addObj2VP vp (\\a => infVP vp.vvtype a (lin VP vpo)) ;
 
@@ -190,8 +197,8 @@ lin
     v    = vp.v ! agr2vagr np.a ;
     subj = np.s ! subjCase ;
     adj  = vp.adj ! np.a ;
-    obj1 = vp.part ++ vp.c1 ++ vp.obj1.p1 ! np.a ;  ---- apply complCase ---- place of part depends on obj
-    obj2 = vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => np.a ; False => vp.obj1.p2}) ;   ---- apply complCase
+    obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! np.a ;  ---- apply complCase ---- place of part depends on obj
+    obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => np.a ; False => vp.obj1.p2}) ;   ---- apply complCase
     c3   = noComplCase ;      -- for one more prep to build ClSlash 
     qforms = vp.qforms ! agr2vagr np.a ;
     } ;
@@ -214,8 +221,8 @@ lin
     focType = FocSubj ;
     subj = [] ;
     adj  = vp.adj ! ipa ;
-    obj1 = vp.part ++ vp.c1 ++ vp.obj1.p1 ! ipa ; ---- appComplCase
-    obj2 = vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => ipa ; False => vp.obj1.p2}) ; ---- appComplCase
+    obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! ipa ; ---- appComplCase
+    obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => ipa ; False => vp.obj1.p2}) ; ---- appComplCase
     c3   = noComplCase ;      -- for one more prep to build ClSlash ---- ever needed for QCl?
     adv  = vp.adv ;
     adV  = vp.adV ;
@@ -230,7 +237,7 @@ lin
       ips  = ip.s ! objCase ;                     -- in Cl/NP, c3 is the only prep ---- appComplCase for ip
       focobj = case cl.focType of {
         NoFoc => <ips, [], FocObj,prep> ;         -- put ip object to focus  if there is no focus yet
-        t     => <[], prep ++ ips, t,noComplCase> -- put ip object in situ   if there already is a focus
+        t     => <[], strComplCase prep ++ ips, t,noComplCase> -- put ip object in situ   if there already is a focus
         } ;
     in 
     cl ** {     -- preposition stranding
@@ -253,7 +260,7 @@ lin
   UseCl  cl = {s = declCl cl} ;
   UseQCl cl = {s = questCl cl} ;
 
-----  UseAdvCl adv cl = {s = adv.s ++ declInvCl cl} ;
+  UseAdvCl adv cl = {s = adv.s ++ declInvCl cl} ;
 
   UttS s = s ;
 
@@ -289,7 +296,7 @@ lin
     obj1 = \\_ => appComplCase agentCase np ; ---- addObj
     } ;
 
-  StartVPC c x v w = {  ---- some loss of quality seems inevitable
+  StartVPC x c v w = {  ---- some loss of quality seems inevitable
     v = \\a => 
           let 
             vv = v.v ! a ; 
@@ -303,8 +310,25 @@ lin
           w.c1 ++ w.obj1.p1 ! vpa ++ w.c2 ++ w.obj2.p1 ! vpa ++ w.adv ++ w.ext ;
     inf = \\a => 
             infVP v.vvtype a v ++ c.s2 ++ infVP w.vvtype a w ;
-    c1 = [] ; ---- w.c1 ? --- the full story is to unify v and w...
-    c2 = [] ; ---- w.c2 ? 
+    c1 = noComplCase ; ---- w.c1 ? --- the full story is to unify v and w...
+    c2 = noComplCase ; ---- w.c2 ? 
+    } ;
+
+  ContVPC x v w = {  ---- some loss of quality seems inevitable
+    v = \\a => 
+          let 
+            vv = v.v ! a ; 
+            wv = w.v ! a ;
+            vpa = vagr2agr a ;
+          in 
+          vv.p1 ++ v.adV ++ vv.p2 ++ vv.p3 ++ v.adj ! vpa ++ 
+          v.c1 ++ v.obj1.p1 ! vpa ++ v.c2 ++ v.obj2.p1 ! vpa ++ v.adv ++ v.ext   ---- appComplCase
+            ++ "," ++  
+          wv ;
+    inf = \\a => 
+            infVP v.vvtype a v ++ "," ++ w.inf ! a ;
+    c1 = noComplCase ; ---- w.c1 ? --- the full story is to unify v and w...
+    c2 = noComplCase ; ---- w.c2 ? 
     } ;
 
   UseVPC x vpc = { ---- big loss of quality (overgeneration) seems inevitable
@@ -322,8 +346,13 @@ lin
     qforms = \\a => <"do", vpc.inf ! defaultAgr> ; ---- do/does/did
     } ;
 
-  StartClC c x a b = {
-    s  = declCl (lin Cl a) ++ c.s2 ++ declCl (lin Cl b) ;
+  StartClC x c a b = {
+    s  = declCl a ++ c.s2 ++ declCl b ;
+    c3 = b.c3 ; ---- 
+    } ;
+
+  ContClC x a b = {
+    s  = declCl a ++ "," ++ b.s ;
     c3 = b.c3 ; ---- 
     } ;
 
@@ -341,6 +370,6 @@ lin
     qforms = <[],[]> ; ---- qforms
     } ;
 
-  ComplAdv x p np = {s = p.c1 ++ np.s ! objCase ; isAdV = p.isAdV ; c1 = []} ;
+  ComplAdv x p np = {s = appComplCase p.c1 np ; isAdV = p.isAdV ; c1 = noComplCase} ;
 
 }
