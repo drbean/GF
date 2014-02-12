@@ -118,7 +118,7 @@ Translator.prototype.update_language_menus=function() {
 	mark_menus(yes,yes)
 	break;
     case "GFRobust":
-	if(window.gfrobust) gfrobust.get_support(mark_menus)
+	if(window.gftranslate) gftranslate.get_support(mark_menus)
 	else mark_menus(no,no)
 	break;
     case "Apertium":
@@ -203,13 +203,19 @@ Translator.prototype.update_translation=function(i) {
 	    upd3(["[Apertium does not support "+show_translation(o)+"]"])
     }
     function update_gfrobust_translation() {
-	function upd3s(txt) { update_segment("GFRobust",[txt]) }
-	function upd2(ts,punct) {
-	    switch(ts.length) {
-	    case 0: upd3s("[no translation]");break;
-	    default:
-		if(punct) ts=ts+" "+punct
-		unlextext(ts,upd3s);
+	function upd3(txts) { update_segment("GFRobust",txts) }
+	function upd3s(txt) { upd3([txt]) }
+	function upd2(trans,punct) {
+	    if(trans.length==0) upd3s("[no translation]")
+	    else if(trans[0].error)
+		upd3s("[GF robust translation: "+trans[0].error+"]")
+	    else {
+		var ts=[]
+		for(var i=0;i<trans.length;i++) {
+		    ts[i]=trans[i].linearizations[0].text
+		    if(punct) ts[i]=ts[i]+" "+punct
+		}
+		mapc(unlextext,ts,upd3)
 	    }
 	}
 	function upd0(source,punct) {
@@ -217,9 +223,9 @@ Translator.prototype.update_translation=function(i) {
 		//console.log(translate_output)
 		upd2(translate_output,punct)
 	    }
-	    gfrobust.translate(source,o.to,upd1)
+	    gftranslate.translate(source,o.from,o.to,0,2,upd1)
 	}
-	if(!window.gfrobust)
+	if(!window.gftranslate)
 		upd3s("[GF robust parser is not available]")
 	else {
 	    function check_support(ssupport,tsupport) {
@@ -243,7 +249,7 @@ Translator.prototype.update_translation=function(i) {
 		    upd3s("["+msg+"]")
 		}
 	    }
-	    gfrobust.get_support(check_support)
+	    gftranslate.get_support(check_support)
 	}
     }
 
@@ -937,7 +943,7 @@ Translator.prototype.draw_segment_given_target=function(s,target,i) {
 	}
 	var autoB=radiobutton("method","Default","Default",change)
 	var manualB=radiobutton("method","Manual","Manual",change)
-	var gfrobustB=radiobutton("method","GFRobust","GF Robust Parser",change)
+	var gfrobustB=radiobutton("method","GFRobust","GF Wide Coverage Translation",change)
 	var dl=wrap_class("dl","popupmenu",
 			  [dt(autoB),
 			   dt([manualB,text(" "),draw_translation(o)]),
@@ -969,17 +975,19 @@ Translator.prototype.draw_segment_given_target=function(s,target,i) {
     var source=wrap_class("td","source",txt)
     if(!t.document.globalsight)
 	txt.onclick=function() { t.edit_source(source,i); }
-    if(window.gfrobust && segment_method(t.document,s)=="GFRobust") {
+    /*
+    if(window.gftranslate && segment_method(t.document,s)=="GFRobust") {
 	function add_button(src) {
 	    var btn=img("../minibar/tree-btn.png")
 	    btn.className="right"
-	    btn.other=gfrobust.parsetree_url(src)
+	    btn.other=gftranslate.parsetree_url(src)
 	    btn.title="Click to toggle parse tree view."
 	    btn.onclick=function() { toggle_img(btn) }
 	    source.appendChild(btn)
 	}
 	lexgfrobust(s.source,add_button)
     }
+    */
     var options=wrap_class("td","options",draw_options())
 
     return node("tr",{"class":"segment",id:i},[actions,source,options,target])
@@ -1190,9 +1198,6 @@ function save_in_cloud(filename,document,cont) {
     }
     with_dir(save)
 }
-
-function unlextext(txt,cont) { gfshell('ps -bind -unlextext "'+txt+'"',cont) }
-function lextext(txt,cont) { gfshell('ps -lextext "'+txt+'"',cont) }
 
 // Like lextext, but separate punctuation from the end
 function lexgfrobust(txt,cont) {
