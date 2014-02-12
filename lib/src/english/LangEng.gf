@@ -5,6 +5,7 @@ concrete LangEng of Lang =
   LexiconEng
   ,ConstructionEng
   ,DocumentationEng
+  ,MarkupEng - [stringMark]
   ** {
 
 flags startcat = Phr ; unlexer = text ; lexer = text ;
