@@ -9,12 +9,13 @@ oper
   Agr    = ResEng.Agr ;
   Case   = ResEng.Case ;
   NPCase = ResEng.NPCase ;
-  VForm  = ResEng.VForm ;
-  VVType = ResEng.VVType ;
+  VForm  = ResEng.VForm ;  ---- VVForm to get contracted aux verbs
+  VVType = ResEng.VVType ; 
   SVoice = Voice ;
   
   VAgr = EVAgr ;
   VType = EVType ; 
+
 param  --- have to do this clumsy way because param P and oper P : PType don't unify
   EVAgr  = VASgP1 | VASgP3 | VAPl ;
   EVType = VTAct | VTRefl | VTAux ;
@@ -40,8 +41,13 @@ oper
 
   noObj : Agr => Str = \\_ => [] ;
 
+  RPCase = ResEng.RCase ; 
+  subjRPCase : Agr -> RPCase = \a -> RC (fromAgr a).g npNom ;
+
   NAgr = Number ;
   IPAgr = Number ;
+  RPAgr = ResEng.RAgr ;
+  ICAgr = Unit ;
 
   defaultAgr : Agr = AgP3Sg Neutr ;
 
@@ -61,6 +67,8 @@ oper
     AgP3Pl => Pl
     } ;
 
+  agr2icagr : Agr -> ICAgr = \a -> UUnit ;
+
 -- restoring full Agr
   ipagr2agr : IPAgr -> Agr = \n -> case n of {
     Sg => AgP3Sg Neutr ; ---- gender
@@ -70,6 +78,11 @@ oper
   ipagr2vagr : IPAgr -> VAgr = \n -> case n of {
     Sg => VASgP3 ;
     Pl => VAPl
+    } ;
+
+  rpagr2agr : RPAgr -> Agr -> Agr = \ra,a -> case ra of {
+    RAg ag => ag ;
+    RNoAg => a
     } ;
 
 --- this is only needed in VPC formation
@@ -99,6 +112,13 @@ oper
     in
       vp.adV ++ vp.inf ! vt ++ vp.part ++
       vp.adj ! a ++ vp.c1 ++ vp.obj1.p1 ! a ++ vp.c2 ++ vp.obj2.p1 ! a2 ++ vp.adv ++ vp.ext ;
+
+  impVP : Number -> PrVerbPhrase -> Str = \n,vp ->
+    let
+      a = AgP2 n
+    in 
+      vp.adV ++ vp.imp ! n ++ vp.part ++
+      vp.adj ! a ++ vp.c1 ++ vp.obj1.p1 ! a ++ vp.c2 ++ vp.obj2.p1 ! a ++ vp.adv ++ vp.ext ;
 
   qformsV : Str -> STense -> Anteriority -> Polarity -> VAgr -> PrVerb -> Str * Str = 
     \sta,t,a,p,agr,v -> 
@@ -146,7 +166,10 @@ oper
     case <t,a> of {  
     <Pres|Past, Simul> =>
       case v.vtype of {
-        VTAux          => <sta ++ v.s ! vt,      [],                              []> ;
+        VTAux  => case t of {
+          Pres         => <sta ++ v.s ! VPres,   [],                              []> ;  -- can I/she/we
+          _            => <sta ++ v.s ! vt,      [],                              []>    -- could ...
+          } ;
         _              => case p of {
           Pos          => <[],                   sta ++ v.s ! vt,                 []> ;                 -- this is the deviating case
           Neg          => <do_Aux       vt Pos,  not_Str p,                       sta ++ v.s ! VInf>
@@ -217,6 +240,13 @@ oper
           Anter => not ++         "having"          ++ sa ++ v.s ! VPPart       -- (she starts) (not) having slept
           }
      } ;
+
+  imperativeV : Str -> Polarity -> ImpType -> PrVerb -> Str = \s,p,it,v -> 
+    s ++ case p of {
+      Pos => v.s ! VInf ;
+      Neg => ("do not" | "don't") ++ v.s ! VInf
+      } ;
+
 
 ----- dangerous variants for PMCFG generation - keep apart as long as possible
   be_Aux : Str -> STense -> Anteriority -> Polarity -> VAgr -> Str * Str * Str = \sta,t,a,p,agr -> 

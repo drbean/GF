@@ -7440,7 +7440,7 @@ lin breast_fed_A = variants {} ;
 lin breast_high_Adv = variants {} ;
 lin breast_plate_N = variants {} ;
 lin breastfeed_V = mkV "ammar" ;
-lin breastfeed_V2 = mkV2 (mkV "ammar"); -- status=guess, src=wikt
+lin breastfeed_V2 = mkV2 (mkV "ammar");
 lin breastless_A = variants {} ;
 lin breaston_PN = variants {} ;
 lin breastplate_N = variants {} ;
@@ -8502,7 +8502,7 @@ lin calcium_N = mkN "kalcium" neutrum;
 lin calculable_A = variants {} ;
 lin calculate_V = mkV "räknar" ; -- comment=3
 lin calculate_V2 = dirV2 (partV (mkV "räknar")"ut"); -- comment=5
-lin calculate_VS = mkVS (mkV "räkna") | mkVS (mkV (mkV "do") "calculations in general) ") | mkVS (mkV "beräkna") | mkVS (mkV (mkV "räkna") "ut"); -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin calculate_VS = mkVS (mkV "räkna") | mkVS (mkV "beräkna") | mkVS (mkV (mkV "räkna") "ut"); -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin calculatingly_Adv = variants {} ;
 lin calculation_N = mkN "beräkning" ; -- SaldoWN
 lin calculator_N = mkN "räknemaskin" "räknemaskiner" ; -- comment=6
@@ -20886,7 +20886,7 @@ lin feeblemindedness_N = variants {} ;
 lin feebleness_N = mkN "otydlighet" "otydligheter" ; -- comment=3
 lin feed_N = mkN "djurfoder" neutrum; -- comment=3
 lin feed_V = mkV "fodrar" ; -- comment=5
-lin feed_V2 = mkV2 (mkV (mkV "livnära") "sig") | mkV2 (mkV (mkV "leva") "på"); -- status=guess, src=wikt status=guess, src=wikt
+lin feed_V2 = mkV2 (mkV "matar");
 lin feed_off_V2 = variants {} ;
 lin feed_on_V2 = variants {} ;
 lin feed_up_V2 = variants {} ;
@@ -51436,7 +51436,7 @@ lin shot_tower_N = variants {} ;
 lin shotgun_N = mkN "hagelgevär" neutrum;
 lin shotton_PN = variants {} ;
 lin shotts_PN = variants {} ;
-lin should_VV = auxVV (mkV "böra" "borde" "bort"); --
+lin should_VV = auxVV (mkV "skola" ("ska" | "skall") "skola" "skulle" "skolat" "skolande" | mkV "böra" "borde" "bort");
 lin shoulder_N = mkN "vägkant" "vägkanter" ; -- SaldoWN
 lin shoulder_V2 = dirV2 (partV (mkV "knuffar")"ut");
 lin shoulder_blade_N = variants {} ;
@@ -53882,7 +53882,7 @@ lin spoon_V = variants {} ;
 lin spoon_V2 = variants {} ;
 lin spoonbill_N = mkN "skedstork" ; -- status=guess
 lin spoonerism_N = variants {} ;
-lin spoonfeed_V2 = mkV2 (mkV "skedmata") | mkV2 (mkV "matar"); -- status=guess, src=wikt status=guess, src=wikt
+lin spoonfeed_V2 = mkV2 (mkV "skedmata");
 lin spoonfeeding_N = variants {} ;
 lin spoonful_N = mkN "sked" ;
 lin spoor_N = variants {} ;
@@ -54520,7 +54520,7 @@ lin steak_N = mkN "stek" | mkN "biff"  ; -- SaldoWN = mkN "stek" neutrum ; -- co
 lin steakhouse_N = mkN "stekhus" neutrum; -- comment=2
 lin steal_N = mkN "slinka" ; -- comment=2
 lin steal_V = mkV "stjäla" "stjäl" "stjäl" "stal" "stulit" "stulen" ; -- comment=6
-lin steal_V2 = mkV2 (mkV "stjäla") | mkV2 (mkV (mkV "[informal]") "sno") | mkV2 (mkV (mkV "[informal]") "knycka"); -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin steal_V2 = mkV2 (mkV "stjäla"); -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin steal_away_V = mkV "stjäla" "stjäl" "stjäl" "stal" "stulit" "stulen" ; -- comment=6
 lin steal_out_V = mkV "stjäla" "stjäl" "stjäl" "stal" "stulit" "stulen" ; -- comment=6
 lin steal_over_V2 = variants {} ;

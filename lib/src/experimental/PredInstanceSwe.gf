@@ -36,8 +36,13 @@ oper
 
   noObj : Agr => Str = \\_ => [] ;
 
+  RPCase = CommonScand.RCase ; 
+  subjRPCase : Agr -> RPCase = \a -> RNom ;
+
   NAgr = Number ; --- only Indef Nom forms are needed here
   IPAgr = Number ; ----{g : Gender ; n : Number} ; --- two separate fields in RGL
+  RPAgr = RAgr ;
+  ICAgr = AFormPos ;
 
   defaultAgr : Agr = {g = Utr ; n = Sg ; p = P3} ;
 
@@ -45,6 +50,8 @@ oper
   agr2vagr : Agr -> VAgr = \a -> UUnit ;
 
   agr2aagr : Agr -> AAgr = \a -> a ;
+
+  agr2icagr : Agr -> ICAgr = agr2aformpos ;
 
 --- could use this?
   agr2aformpos : Agr -> AFormPos = \a ->
@@ -59,6 +66,11 @@ oper
   ipagr2agr : IPAgr -> Agr = \a -> {g = Utr ; n = a ; p = P3} ; ----
 
   ipagr2vagr : IPAgr -> VAgr = \n -> UUnit ;
+
+  rpagr2agr : RPAgr -> Agr -> Agr = \ra,a -> case ra of {
+    RAg g n p => {g = g ; n = n ; p = p} ;
+    RNoAg => a
+    } ;
 
 --- this is only needed in VPC formation
   vagr2agr : VAgr -> Agr = \a -> defaultAgr ;
@@ -85,6 +97,14 @@ oper
       vp.adV ++ vp.inf ! UUnit ++ 
       vp.adj ! a ++ vp.c1 ++ vp.obj1.p1 ! a ++ vp.c2 ++ vp.obj2.p1 ! a2 ++ vp.adv ++ vp.ext ;
 
+  impVP : Number -> PrVerbPhrase -> Str = \n,vp ->
+    let
+      a = {g = Utr ; n = n ; p = P2}
+    in 
+      vp.imp ! n ++ vp.part ++  ---- AdV contains inte
+      vp.adj ! a ++ vp.c1 ++ vp.obj1.p1 ! a ++ vp.c2 ++ vp.obj2.p1 ! a ++ vp.adv ++ vp.ext ;
+
+
   qformsV : Str -> STense -> Anteriority -> Polarity -> VAgr -> PrVerb -> Str * Str = 
     \sta,t,a,p,agr,v -> <[],[]> ; ----- not needed in Swedish
  
@@ -109,7 +129,7 @@ oper
   -- this part is usually the same in all reconfigurations
   restCl : PrClause -> Str = \cl -> cl.v.p3 ++ cl.adj ++ cl.obj1 ++ cl.obj2 ++ cl.adv ++ cl.ext ++ cl.c3 ;
 
-  negAdV :  {s : Str ; p : Polarity} -> Str = \p -> p.s ++ case p.p of {Pos => [] ; Neg => "inte"} ;
+  negAdV :  {s : Str ; p : Polarity} -> Str = \p -> p.s ++ case p.p of {Pos => [] ; Neg => inte_Str} ;
 
   tenseV : Str -> STense -> Anteriority -> Polarity -> SVoice -> VAgr -> PrVerb -> Str * Str * Str = --- Polarity, VAgr not needed in Swe
        \sta,t,a,_,o,_,v -> 
@@ -131,6 +151,12 @@ oper
       Anter => hava_V.s ! VI (VInfin CommonScand.Act) ++ sa ++ v.s ! VI (VSupin o)    -- hon vill (ha) sovit ---- discont?
       } ;
 
+  imperativeV : Str -> Polarity -> ImpType -> PrVerb -> Str = \s,p,it,v -> 
+    s ++ case p of {
+      Pos => v.s ! VF (VImper CommonScand.Act) ;   ---- deponents
+      Neg => v.s ! VF (VImper CommonScand.Act) ++ inte_Str
+      } ;
+
   tenseCopula : Str -> STense -> Anteriority -> Polarity -> VAgr -> Str * Str * Str =
     \s,t,a,p,_ -> tenseV s t a p CommonScand.Act UUnit (liftV be_V) ;
   tenseInfCopula : Str -> Anteriority -> Polarity -> VVType -> Str =
@@ -138,7 +164,7 @@ oper
 
   hava_V : Verb = P.mkV "ha" "har" "ha" "hade" "haft" "havd" ; -- havd not used
   be_V : Verb = P.mkV "vara" "är" "var" "var" "varit" "varen" ; -- varen not used
-  skola_V : Verb = P.mkV "skola" "ska" "ska" "skulle" "skolat" "skolad" ; ---- not used but ska and skulle
+  skola_V : Verb = P.mkV "skola" ("ska" | "skall") "ska" "skulle" "skolat" "skolad" ; ---- not used but ska and skulle
 
   noObj : Agr => Str = \\_ => [] ;
 
@@ -150,7 +176,9 @@ oper
     ext = ext ;
     } ;
 
-  not_Str : Polarity -> Str = \p -> case p of {Pos => [] ; Neg => "inte"} ;
+  not_Str : Polarity -> Str = \p -> case p of {Pos => [] ; Neg => inte_Str} ;
+
+  inte_Str = "inte" | "icke" | "ej" ;
 
   liftV : Verb -> PrVerb = \v ->
     {s = v.s ; p = v.part ; c1,c2 = [] ; isSubjectControl = False ; vtype = v.vtype ; vvtype = vvInfinitive} ; ---- vvtype

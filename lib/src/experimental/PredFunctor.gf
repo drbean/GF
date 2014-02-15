@@ -1,4 +1,4 @@
-incomplete concrete PredFunctor of Pred = Cat [Ant,NP,Utt,IP,IAdv,Conj] ** 
+incomplete concrete PredFunctor of Pred = Cat [Ant,NP,Utt,IP,IAdv,IComp,Conj,RP,RS] ** 
   open 
     PredInterface,
     ParamX,
@@ -221,12 +221,47 @@ lin
       } ;
 -}
 
+  QuestIComp a t p icomp np = 
+    let vagr = (agr2vagr np.a) in
+    initPrClause ** {
+    v    = tenseCopula (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ;
+    subj = np.s ! subjCase ;
+    adV = negAdV p ;
+    foc = icomp.s ! agr2icagr np.a ; 
+    focType = FocObj ;
+    qforms = qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ; 
+    } ;
+
+  RelVP rp vp = 
+    let 
+      cl : Agr -> PrClause = \a -> 
+        let rpa = rpagr2agr rp.a a in
+        
+        vp ** {
+        v    = applyVerb vp (agr2vagr rpa) ;
+        subj = rp.s ! subjRPCase a ;
+        adj  = vp.adj ! rpa ;
+        obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! rpa ;  ---- apply complCase ---- place of part depends on obj
+        obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => rpa ; False => vp.obj1.p2}) ;   ---- apply complCase
+        c3   = noComplCase ;      -- for one more prep to build ClSlash 
+        qforms = qformsVP vp (agr2vagr rpa) ; 
+        }
+    in {s = \\a => declCl (cl a) ; c = subjCase} ;
+
+  RelSlash rp cl = {
+    s = \\a => rp.s ! subjRPCase (rpagr2agr rp.a a) ++ declCl cl ; ---- rp case 
+    c = objCase
+    } ;
+
+  PrImpSg vp = {s = impVP Sg vp} ;
+  PrImpPl vp = {s = impVP Pl vp} ;
+
   UseCl  cl = {s = declCl cl} ;
   UseQCl cl = {s = questCl cl} ;
 
   UseAdvCl adv cl = {s = adv.s ++ declInvCl cl} ;
 
-  UttS s = s ;
+  UttPrS s = s ;
 
 
   AdvCl x a cl = case a.isAdV of {
