@@ -25,7 +25,8 @@ lincat
 
   VPC = {
     v   : VAgr => Str ;
-    inf : Agr => Str ; 
+    inf : Agr => VVType => Str ; 
+    imp : ImpType => Str ;
     c1  : ComplCase ; 
     c2  : ComplCase ;
     s1  : Str ; -- storing both in both-and
@@ -122,6 +123,10 @@ lin
     adj = \\a => np.s ! subjCase ;
     } ;
 
+  UseS  a t p cl = addExtVP (useCopula a t p) (that_Compl ++ declSubordCl cl) ; ---- sentence form
+  UseQ  a t p cl = addExtVP (useCopula a t p) (questSubordCl cl) ; 
+  UseVP a t p vp = addExtVP (useCopula a t p) (vp.s ! vvInfinitive ! defaultAgr) ;
+
   ComplV2 x vp np = vp ** {
     obj1 = <\\a => np.s ! objCase, np.a>  -- np.a for object control 
     } ;
@@ -164,7 +169,7 @@ lin
     adj  = vp.adj ! np.a ;
     obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! np.a ;  ---- apply complCase ---- place of part depends on obj
     obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => np.a ; False => vp.obj1.p2}) ;   ---- apply complCase
-    c3   = noComplCase ;      -- for one more prep to build ClSlash 
+    c3   = vp.c1 ; -- in case there is any free slot left ---- could be c2 
     qforms = qformsVP vp (agr2vagr np.a) ; 
     } ;
 
@@ -307,8 +312,10 @@ lin
             ++ c.s2 ++  
           wv.p1 ++ w.adV ++ wv.p2 ++ wv.p3 ++ w.adj ! vpa ++                ---- appComplCase
           w.c1 ++ w.obj1.p1 ! vpa ++ w.c2 ++ w.obj2.p1 ! vpa ++ w.adv ++ w.ext ;
-    inf = \\a => 
-            infVP v.vvtype a v ++ c.s2 ++ infVP w.vvtype a w ;
+    inf = \\a,vt => 
+            infVP vt a v ++ c.s2 ++ infVP vt a w ;
+    imp = \\i => 
+            impVP i v ++ c.s2 ++ impVP i w ;
     c1 = noComplCase ; ---- w.c1 ? --- the full story is to unify v and w...
     c2 = noComplCase ; ---- w.c2 ? 
     s1 = c.s1 ;
@@ -325,8 +332,10 @@ lin
           v.c1 ++ v.obj1.p1 ! vpa ++ v.c2 ++ v.obj2.p1 ! vpa ++ v.adv ++ v.ext   ---- appComplCase
             ++ "," ++  
           wv ;
-    inf = \\a => 
-            infVP v.vvtype a v ++ "," ++ w.inf ! a ;
+    inf = \\a,vt => 
+            infVP vt a v ++ "," ++ w.inf ! a ! vt ;
+    imp = \\i => 
+            impVP i v ++ "," ++ w.imp ! i ;
     c1 = noComplCase ; ---- w.c1 ? --- the full story is to unify v and w...
     c2 = noComplCase ; ---- w.c2 ? 
     s1 = w.s1 ;
@@ -334,10 +343,11 @@ lin
 
   UseVPC x vpc = initPrVerbPhrase ** { ---- big loss of quality (overgeneration) seems inevitable
     v   = \\a => <[], [], vpc.s1 ++ vpc.v ! a> ;
-    inf = \\_ => vpc.inf ! defaultAgr ; ---- agreement
+    inf = \\vt => vpc.inf ! defaultAgr ! vt ; ---- agr 
+    imp = vpc.imp ;
     c1  = vpc.c1 ;
     c2  = vpc.c2 ;
-    qforms = \\a => <"do", vpc.inf ! defaultAgr> ; ---- do/does/did
+    qforms = \\a => <"do", vpc.inf ! defaultAgr ! vvInfinitive> ; ---- do/does/did
     } ;
 
   StartClC x c a b = {
