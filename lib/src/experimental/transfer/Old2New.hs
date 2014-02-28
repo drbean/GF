@@ -1,19 +1,57 @@
-module Old2New where
+{-# OPTIONS_GHC -fglasgow-exts #-}
+
+module Old2New (transfer) where
+import PGF hiding (Tree)
+import qualified PGF
+import PGF.Data
 
 import Both
 
 
-onUtt :: Tree a -> Tree a ----GUtt_ -> Tree GUtt_
-onUtt t = case t of
-  GUttS s -> GUttPrS (onS s)
-  GUttQS qs -> GUttPrS (GUseQCl_none (onQS2QCl qs))
+transfer :: PGF.Tree -> PGF.Tree
+transfer = gf . onPhr . fg
+
+{-
+transfer t = case unAppForm t of
+  (EMeta m, es) -> foldl EApp (EMeta m) (map transfer es)
+  _ -> gf $ on $ fg t
+-}
+
+onPhr :: Tree GPhr_ -> Tree GPhr_
+onPhr = on
+
+on :: forall a . Tree a -> Tree a
+on t = case t of
+
+----  GEMeta m ts -> GEMeta m (map on ts)
+
+ 
+-- Utt
   GUttImpPl pol (GImpVP vp) -> GPrImpPl (onVP GTPres GASimul pol vp)
   GUttImpPol pol (GImpVP vp) -> GPrImpSg (onVP GTPres GASimul pol vp) ----
   GUttImpSg pol (GImpVP vp) -> GPrImpSg (onVP GTPres GASimul pol vp)
-  GUttNP np -> GUttNP (onNP np)
-  GUttCN cn -> GUttCN (onCN cn)
+  GUttQS qs -> GUttPrS (GUseQCl_none (onQS2QCl qs))
+  GUttS s -> GUttPrS (onS s)
+  GUttVP s -> error "GUttPrVPI (GInfVP_none (onVP GTPres ant pol vp))"
 
-  _ -> t ---- composOp onUtt t
+-- RS
+  GUseRCl (GTTAnt t a) p (GRelVP rp vp) -> GRelVP_none rp (onVP t a p vp)
+  GUseRCl (GTTAnt t a) p (GRelSlash rp cls) -> GRelSlash_none rp (onClSlash t a p cls)
+  GUseRCl (GTTAnt t a) p (GRelCl cl) -> GRelCl_none (onCl t a p cl)
+  GPastPartRS _ _ _ -> error "PastPartRS : Ant -> Pol -> VPSlash -> RS"
+  GPresPartRS _ _ _ -> error "PresPartRS : Ant -> Pol -> VPSlash -> RS"
+
+-- NP
+
+-- Adv
+  GComparAdvAdjS cadv a s -> error "GComparAdvAdjS cadv a (onS s)"
+  GSubjS subj s -> error "AdvSubjS subj s"
+
+-- AP
+---- SentAP : AP -> SC -> AP
+
+  _ -> composOp on t
+
 
 onS :: Tree GS_ -> Tree GPrS_
 onS s = case s of
@@ -22,12 +60,26 @@ onS s = case s of
   GExtAdvS adv s -> error "ExtAdvS"
   GRelS s rs -> error "RelS"
   GSSubjS s subj s2 -> error "SSubjS"
-  GConjS conj lists -> error "ConjS"
-  GPredVPS np vps -> error "PredVPS"
+  GConjS conj (GListS lists) -> GUseCl_none (GUseClC_none (mkClC conj [onS2Cl s | s <- lists]))
+  GPredVPS np vps -> GUseCl_none (GPredVP_none (on np) (onVPS2VP vps))
+
+mkClC conj cls = foldr GContClC_none (GStartClC_none conj cl1 cl2) cls2
+  where 
+    (cls2,[cl1,cl2]) = splitAt (length cls - 2) cls
+
+onVPS2VP :: Tree GVPS_ -> Tree GPrVP_none_
+onVPS2VP vps = case vps of
+  GMkVPS (GTTAnt t a) p vp -> onVP t a p vp
+  GConjVPS conj (GListVPS vs) -> GUseVPC_none (mkVPC conj [onVPS2VP v | v <- vs])
+
+mkVPC conj cls = foldr GContVPC_none (GStartVPC_none conj cl1 cl2) cls2
+  where 
+    (cls2,[cl1,cl2]) = splitAt (length cls - 2) cls
+
 
 onCl :: GTense -> GAnt -> GPol -> Tree GCl_ -> Tree GPrCl_none_
 onCl t a p cl = case cl of
-  GPredVP np vp -> let (advs,vp0) = getAdvs vp in appAdvCl advs (GPredVP_none np (onVP t a p vp0)) ---
+  GPredVP np vp -> let (advs,vp0) = getAdvs vp in appAdvCl advs (GPredVP_none (on np) (onVP t a p vp0)) ---
   ---- ExistNP : NP -> Cl ;
   ---- PredSCVP : SC -> VP -> Cl ;
   ---- PredVPosv : NP -> VP -> Cl ;
@@ -38,6 +90,9 @@ getAdvs :: GVP -> ([GPrAdv_none],GVP)
 getAdvs vp = case vp of
   GAdvVP vp1 adv -> let (advs,vp2) = getAdvs vp1 in (advs ++ [GLiftAdv adv],vp2)
   GAdVVP adv vp1 -> let (advs,vp2) = getAdvs vp1 in (advs ++ [GLiftAdV adv],vp2)
+  GExtAdvVP vp1 adv -> let (advs,vp2) = getAdvs vp1 in (advs ++ [GLiftAdv adv],vp2) ---- as a variant
+
+  _ -> ([],vp)
 
 appAdvCl :: [GPrAdv_none] -> GPrCl_none -> GPrCl_none
 appAdvCl advs cl = foldr GAdvCl_none cl advs
@@ -60,22 +115,26 @@ onVP t a p vp = case vp of
   GComplVV vv ant pol vp -> GComplVV_none (GUseV_v a t p (GLiftVV vv)) (GInfVP_none (onVP GTPres ant pol vp)) -- !!
   GComplSlash vps np -> GComplV2_none (onVPSlash t a p vps) np
   GUseComp comp -> case comp of
-    GCompAP  ap  -> GUseAP_none a t p (GLiftAP ap)
-    GCompAdv adv -> GUseAdv_none a t p (GLiftAdv adv)
-    GCompCN  cn  -> GUseCN_none a t p (GLiftCN cn)
-    GCompNP  np  -> GUseNP_none a t p np
+    GCompAP  ap  -> GUseAP_none a t p (GLiftAP (on ap))
+    GCompAdv adv -> GUseAdv_none a t p (GLiftAdv (on adv))
+    GCompCN  cn  -> GUseCN_none a t p (GLiftCN (on cn))
+    GCompNP  np  -> GUseNP_none a t p (on np)
     GCompS   s   -> GUseS_none a t p (onS2Cl s)
     GCompQS  qs  -> GUseQ_none a t p (onQS2QCl qs)
     GCompVP  ant pol vp  -> GUseVP_none a t p (GInfVP_none (onVP GTPres ant pol vp)) -- !!
----- ComplSlashPartLast : VPSlash -> NP -> VP ;
----- ComplVPIVV : VV -> VPI -> VP ;
----- ExtAdvVP : VP -> Adv -> VP ;
----- PassAgentVPSlash : VPSlash -> NP -> VP ;
----- PassVPSlash : VPSlash -> VP ;
+  GComplSlashPartLast vps np -> GComplV2_none (onVPSlash t a p vps) np ---- as a variant
+  GComplVPIVV vv vpi -> GComplVV_none (GUseV_v a t p (GLiftVV vv)) (GInfVP_none (onVPI2VP vpi))
+  GPassVPSlash vps -> onVPSlashPass t a p vps
+  GPassAgentVPSlash vps np -> onVPSlashPassAgent t a p vps np
 ---- ProgrVP : VP -> VP ;
 ---- ReflVP : VPSlash -> VP ;
 ---- SelfAdVVP : VP -> VP ;
 ---- SelfAdvVP : VP -> VP ;
+
+onVPI2VP :: Tree GVPI_ -> Tree GPrVP_none_
+onVPI2VP vpi = case vpi of
+  GMkVPI vp -> onVP GTPres GASimul GPPos vp
+  GConjVPI conj (GListVPI vs) -> GUseVPC_none (mkVPC conj [onVPI2VP v | v <- vs])
 
 onVPSlash :: GTense -> GAnt -> GPol -> Tree GVPSlash_ -> Tree GPrVP_np_
 onVPSlash t a p vps = case vps of
@@ -87,10 +146,29 @@ onVPSlash t a p vps = case vps of
 
   GSlashVV vv vps -> GComplVV_np (GUseV_v a t p (GLiftVV vv)) (GInfVP_np (onVPSlash GTPres GASimul GPPos vps)) -- !!
 
+onVPSlashPass :: GTense -> GAnt -> GPol -> Tree GVPSlash_ -> Tree GPrVP_none_
+onVPSlashPass t a p vps = case vps of
+  GSlashV2a v2 -> GPassUseV_none a t p (GLiftV2 v2)
+  GSlashV2S v2s s -> GComplVS_none (GPassUseV_s a t p (GLiftV2S v2s)) (onS2Cl s)
+  GSlashV2Q v2q q -> GComplVQ_none (GPassUseV_q a t p (GLiftV2Q v2q)) (onQS2QCl q)
+----  GSlashV2A v2a ap -> (GPassUseV_np_a a t p (GLiftV2A v2a)) (GLiftAP ap)
+----  GSlashV2V v2v ant pol vp -> (GPassUseV_np_v a t p (GLiftV2V v2v)) (GInfVP_none (onVP GTPres ant pol vp)) -- !!
+
+--  GSlashVV vv vps -> GComplVV_np (GUseV_v a t p (GLiftVV vv)) (GInfVP_np (onVPSlash GTPres GASimul GPPos vps)) -- !!
+
+onVPSlashPassAgent :: GTense -> GAnt -> GPol -> Tree GVPSlash_ -> GNP -> Tree GPrVP_none_
+onVPSlashPassAgent t a p vps np = case vps of
+  GSlashV2a v2 -> GAgentPassUseV_none a t p (GLiftV2 v2) np
+  GSlashV2S v2s s -> GComplVS_none (GAgentPassUseV_s a t p (GLiftV2S v2s) np) (onS2Cl s)
+
 onClSlash :: GTense -> GAnt -> GPol -> Tree GClSlash_ -> Tree GPrCl_np_
 onClSlash t a p cls = case cls of
   GSlashVP np vps -> GPredVP_np np (onVPSlash t a p vps)
+  GSlashPrep cl prep -> GAdvCl_np (GLiftPrep prep) (onCl t a p cl)
+---- GSlashVS np vs sslash -> 
+---- GAdvSlash cls adv -> GAdvCl_none (GLiftAdv adv) (onClSlash t a p cls)
 
+---- UseSlash : Temp -> Pol -> ClSlash -> SSlash ;
 
 onS2Cl :: Tree GS_ -> Tree GPrCl_none_
 onS2Cl s = case s of
@@ -100,124 +178,3 @@ onQS2QCl :: Tree GQS_ -> Tree GPrQCl_none_
 onQS2QCl s = case s of
   GUseQCl (GTTAnt t a) p qcl -> onQCl t a p qcl 
 
-onRS :: Tree GRS_ -> Tree GRS_
-onRS rs = case rs of
-  GUseRCl (GTTAnt t a) p (GRelVP rp vp) -> GRelVP_none rp (onVP t a p vp)
-  GUseRCl (GTTAnt t a) p (GRelSlash rp cls) -> GRelSlash_none rp (onClSlash t a p cls)
-
-
-
-
-onNP :: Tree GNP_ -> Tree GNP_
-onNP np = case np of
-  GRelNP np rs -> GRelNP (onNP np) (onRS rs)
-  _ -> np ----composOp onNP np
-
-onCN :: Tree GCN_ -> Tree GCN_
-onCN cn = case cn of
-  GRelCN cn rs -> GRelCN (onCN cn) (onRS rs)
-  _ -> cn ----composOp onCN cn
-
-
-old2new :: Tree a -> Tree a
-old2new t = case t of
-  GAdVVP gAdV gVP -> t
-  GAdVVPSlash gAdV gVPSlash -> t
-  GAdvS gAdv gS -> t
-  GAdvSlash gClSlash gAdv -> t
-  GAdvVP gVP gAdv -> t
-  GAdvVPSlash gVPSlash gAdv -> t
---  GBaseVPI gVPI gVPI_ -> t
---  GBaseVPS gVPS gVPS_ -> t
-  GCompAP gAP -> t
-  GCompAdv gAdv -> t
-  GCompCN gCN -> t
-  GCompNP gNP -> t
-  GCompQS gQS -> t
-  GCompS gS -> t
-  GCompVP gAnt gPol gVP -> t
-  GComplBareVS gVS gS -> t
-  GComplSlash gVPSlash gNP -> t
-  GComplSlashPartLast gVPSlash gNP -> t
-  GComplVA gVA gAP -> t
-  GComplVPIVV gVV gVPI -> t
-  GComplVQ gVQ gQS -> t
-  GComplVS gVS gS -> t
-  GComplVV gVV gAnt gPol gVP -> t
-  GCompoundCN gNum gN gCN -> t
-  GConjVPI gConj gListVPI -> t
-  GConjVPS gConj gListVPS -> t
---  GConsVPI gVPI gListVPI -> t
---  GConsVPS gVPS gListVPS -> t
-  GDashCN gN gN_ -> t
-  GEmbedQS gQS -> t
-  GEmbedS gS -> t
-  GEmbedVP gVP -> t
-  GEmptyRelSlash gClSlash -> t
-  GExtAdvS gAdv gS -> t
-  GExtAdvVP gVP gAdv -> t
-  GGenNP gNP -> t
-  GGenRP gNum gCN -> t
-  GGerundAP gV -> t
-  GGerundN gV -> t
-  GImpVP gVP -> t
-  GMkVPI gVP -> t
-  GMkVPS gTemp gPol gVP -> t
-  GOrdCompar gA -> t
-  GPassAgentVPSlash gVPSlash gNP -> t
-  GPassVPSlash gVPSlash -> t
-  GPastPartAP gV2 -> t
-  GPastPartRS gAnt gPol gVPSlash -> t
-  GPositAdVAdj gA -> t
-  GPredSCVP gSC gVP -> t
-  GPredVP gNP gVP -> t
-  GPredVPS gNP gVPS -> t
-  GPredVPosv gNP gVP -> t
-  GPredVPovs gNP gVP -> t
-  GPresPartRS gAnt gPol gVP -> t
-  GQuestCl gCl -> t
-  GQuestIAdv gIAdv gCl -> t
-  GQuestIComp gIComp gNP -> t
-  GQuestSlash gIP gClSlash -> t
-  GQuestVP gIP gVP -> t
-  GReflVP gVPSlash -> t
-  GRelCl gCl -> t
-  GRelS gS gRS -> t
-  GRelSlash gRP gClSlash -> t
-  GRelVP gRP gVP -> t
-  GSSubjS gS gSubj gS_ -> t
-  GSlash2V3 gV3 gNP -> t
-  GSlash3V3 gV3 gNP -> t
-  GSlashBareV2S gV2S gS -> t
-  GSlashPrep gCl gPrep -> t
-  GSlashSlashV2V gV2V gAnt gPol gVPSlash -> t
-  GSlashV2A gV2A gAP -> t
-  GSlashV2Q gV2Q gQS -> t
-  GSlashV2S gV2S gS -> t
-  GSlashV2V gV2V gAnt gPol gVP -> t
-  GSlashV2VNP gV2V gNP gVPSlash -> t
-  GSlashV2a gV2 -> t
-  GSlashVP gNP gVPSlash -> t
-  GSlashVPIV2V gV2V gPol gVPI -> t
-  GSlashVS gNP gVS gSSlash -> t
-  GSlashVV gVV gVPSlash -> t
-  GTTAnt gTense gAnt -> t
-  GUseCl gTemp gPol gCl -> t
-  GUseComp gComp -> t
-  GUseQCl gTemp gPol gQCl -> t
-  GUseQuantPN gQuant gPN -> t
-  GUseRCl gTemp gPol gRCl -> t
-  GUseSlash gTemp gPol gClSlash -> t
-  GUseV gV -> t
-  GVPSlashPrep gVP gPrep -> t
-  GVPSlashVS gVS gVP -> t
-  Gherself_NP -> t
-  Ghimself_NP -> t
-  Gitself_NP -> t
-  Gmyself_NP -> t
-  Gourselves_NP -> t
-  Gthat_RP -> t
-  Gthemselves_NP -> t
-  Gwho_RP -> t
-  GyourselfPl_NP -> t
-  GyourselfSg_NP -> t

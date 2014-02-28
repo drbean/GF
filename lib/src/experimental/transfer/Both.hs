@@ -292,6 +292,9 @@ type GFloat = Tree GFloat_
 data GFloat_
 
 data Tree :: * -> * where
+
+  GEMeta :: Int -> [Tree a] -> Tree GPhr_
+
   GAdAP :: GAdA -> GAP -> Tree GAP_
   GAdjOrd :: GOrd -> Tree GAP_
   GAdvAP :: GAP -> GAdv -> Tree GAP_
@@ -2718,6 +2721,9 @@ instance Gf GVV where
 
 instance Compos Tree where
   compos r a f t = case t of
+
+    GEMeta m x1 -> r (GEMeta m) `a` foldr (a . a (r (:)) . f) (r []) x1
+
     GAdAP x1 x2 -> r GAdAP `a` f x1 `a` f x2
     GAdjOrd x1 -> r GAdjOrd `a` f x1
     GAdvAP x1 x2 -> r GAdvAP `a` f x1 `a` f x2
