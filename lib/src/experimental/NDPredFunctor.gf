@@ -1,5 +1,5 @@
 incomplete concrete NDPredFunctor of NDPred = 
-  Cat [Ant,NP,Utt,IP,IAdv,Conj,RS,RP] ** 
+  Cat [Ant,NP,Utt,IP,IAdv,Conj,RS,RP,Subj] ** 
   open 
     PredInterface,
     Pred,
@@ -215,5 +215,12 @@ lin
 
   ComplAdv_none 
     = Pred.ComplAdv Pred.aNone ;
+
+  SubjUttPreS
+    = Pred.SubjUttPreS ;
+  SubjUttPreQ
+    = Pred.SubjUttPreQ ;
+  SubjUttPost
+    = Pred.SubjUttPost ;
 
 }

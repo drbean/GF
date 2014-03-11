@@ -1,5 +1,5 @@
 concrete PredSwe of Pred = 
-  CatSwe [Ant,NP,Utt,IP,IAdv,IComp,Conj,RP,RS,Imp] ** 
+  CatSwe [Ant,NP,Utt,IP,IAdv,IComp,Conj,RP,RS,Imp,Subj] ** 
     PredFunctor - [RelVP,RelSlash]  ---- incompatible arity: to be fixed in RGL
     with 
       (PredInterface = PredInstanceSwe) 
@@ -19,7 +19,6 @@ lin
         obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! rpa ;  ---- apply complCase ---- place of part depends on obj
         obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => rpa ; False => vp.obj1.p2}) ;   ---- apply complCase
         c3   = noComplCase ;      -- for one more prep to build ClSlash 
-        qforms = qformsVP vp (agr2vagr rpa) ; 
         }
     in {s = \\a,c => declCl (cl a c) ; c = subjCase} ;
 

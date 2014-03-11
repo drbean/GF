@@ -470,13 +470,13 @@ Java_org_grammaticalframework_pgf_Concr_tabularLinearize(JNIEnv* env, jobject se
 
 	size_t n_lins;
 	GuString* labels;
-	pgf_lzr_linearize_table(concr, ctree, &n_lins, &labels);
+	pgf_lzr_get_table(concr, ctree, &n_lins, &labels);
 
 	for (size_t lin_idx = 0; lin_idx < n_lins; lin_idx++) {
 		GuStringBuf* sbuf = gu_string_buf(tmp_pool);
 		GuOut* out = gu_string_buf_out(sbuf);
 
-		pgf_lzr_linearize_simple(concr, ctree, lin_idx, out, err);
+		pgf_lzr_linearize_simple(concr, ctree, lin_idx, out, err, tmp_pool);
 
 		jstring jstr = NULL;
 		if (gu_ok(err)) {
@@ -551,6 +551,84 @@ Java_org_grammaticalframework_pgf_Concr_lookupMorpho(JNIEnv* env, jobject self, 
 	JMorphoCallback callback = { { jpgf_collect_morpho }, analyses, env, addId, an_class, an_constrId };
 	pgf_lookup_morpho(get_ref(env, self), j2gu_string(env, sentence, tmp_pool),
 	                  &callback.fn, err);
+	if (!gu_ok(err)) {
+		if (gu_exn_caught(err) == gu_type(PgfExn)) {
+			GuString msg = (GuString) gu_exn_caught_data(err);
+			throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", msg);
+		} else {
+			throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", "The lookup failed");
+		}
+		analyses = NULL;
+	}
+
+	gu_pool_free(tmp_pool);
+
+	return analyses;
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_grammaticalframework_pgf_Lexicon_lookupWordPrefix
+   (JNIEnv* env, jclass clazz, jobject jconcr, jstring prefix)
+{
+	GuPool* pool = gu_new_pool();	
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), pool);
+
+	GuEnum* en = pgf_lookup_word_prefix(get_ref(env, jconcr), j2gu_string(env, prefix, pool),
+	                                    pool, err);
+	if (!gu_ok(err)) {
+		if (gu_exn_caught(err) == gu_type(PgfExn)) {
+			GuString msg = (GuString) gu_exn_caught_data(err);
+			throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", msg);
+		} else {
+			throw_string_exception(env, "org/grammaticalframework/pgf/PGFError", "The lookup failed");
+		}
+		return NULL;
+	}
+
+	jclass iter_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/FullFormIterator");
+	jmethodID iter_constrId = (*env)->GetMethodID(env, iter_class, "<init>", "(Lorg/grammaticalframework/pgf/Concr;JJ)V");
+	jobject iter = (*env)->NewObject(env, iter_class, iter_constrId, jconcr, p2l(pool), p2l(en));
+
+	return iter;
+}
+
+JNIEXPORT jobject JNICALL 
+Java_org_grammaticalframework_pgf_FullFormIterator_fetchFullFormEntry
+  (JNIEnv* env, jobject clazz, jlong enumRef, jobject jpool, jobject jconcr)
+{
+	GuEnum* res = (GuEnum*) l2p(enumRef);
+
+	PgfFullFormEntry* entry = gu_next(res, PgfFullFormEntry*, get_ref(env, jpool));
+	if (entry == NULL)
+		return NULL;
+
+	GuString form = pgf_fullform_get_string(entry);
+
+	jclass entry_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/FullFormEntry");
+	jmethodID entry_constrId = (*env)->GetMethodID(env, entry_class, "<init>", "(Ljava/lang/String;JLorg/grammaticalframework/pgf/Concr;)V");
+	jobject jentry = (*env)->NewObject(env, entry_class, entry_constrId, gu2j_string(env,form), p2l(entry), jconcr);
+
+	return jentry;
+}
+
+JNIEXPORT jobject JNICALL
+Java_org_grammaticalframework_pgf_FullFormEntry_getAnalyses
+  (JNIEnv* env, jobject self)
+{
+	jclass list_class = (*env)->FindClass(env, "java/util/ArrayList");
+	jmethodID list_constrId = (*env)->GetMethodID(env, list_class, "<init>", "()V");
+	jobject analyses = (*env)->NewObject(env, list_class, list_constrId);
+	
+	jmethodID addId = (*env)->GetMethodID(env, list_class, "add", "(Ljava/lang/Object;)Z");
+
+	jclass an_class = (*env)->FindClass(env, "org/grammaticalframework/pgf/MorphoAnalysis");
+	jmethodID an_constrId = (*env)->GetMethodID(env, an_class, "<init>", "(Ljava/lang/String;Ljava/lang/String;D)V");
+
+	GuPool* tmp_pool = gu_local_pool();
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+
+	JMorphoCallback callback = { { jpgf_collect_morpho }, analyses, env, addId, an_class, an_constrId };
+	pgf_fullform_get_analyses(get_ref(env, self), &callback.fn, err);	
 	if (!gu_ok(err)) {
 		if (gu_exn_caught(err) == gu_type(PgfExn)) {
 			GuString msg = (GuString) gu_exn_caught_data(err);

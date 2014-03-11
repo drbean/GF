@@ -1,4 +1,4 @@
-abstract Pred = Cat [Ant,NP,Utt,IP,IAdv,Conj,RS,RP] ** {
+abstract Pred = Cat [Ant,NP,Utt,IP,IAdv,Conj,RS,RP,Subj] ** {
 
 cat
   Arg ;
@@ -113,5 +113,13 @@ fun
   UseClC   : (a : Arg) -> ClC a  -> PrCl a ;
 
   ComplAdv : (a : Arg) -> PrAdv (aNP a) -> NP -> PrAdv a ; -- typically: formation of preposition phrase
+
+-- subjunction ; we want to preserve the order in translation
+-- Pre is more specialized to make inverted S order
+---- Imp to do
+
+  SubjUttPreS  : Subj -> PrCl aNone -> PrCl aNone -> Utt ;
+  SubjUttPreQ  : Subj -> PrCl aNone -> PrQCl aNone -> Utt ;
+  SubjUttPost  : Subj -> PrCl aNone -> Utt -> Utt ;
 
 }

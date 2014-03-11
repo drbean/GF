@@ -54,7 +54,8 @@ module Data.Binary.Builder (
 
   ) where
 
-import Foreign
+import Foreign(Word,Word8,Ptr,Storable,ForeignPtr,withForeignPtr,poke,plusPtr,sizeOf)
+import System.IO.Unsafe(unsafePerformIO)
 import Data.Monoid
 --import Data.Word
 import qualified Data.ByteString      as S

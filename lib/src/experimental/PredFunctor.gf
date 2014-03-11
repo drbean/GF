@@ -1,4 +1,4 @@
-incomplete concrete PredFunctor of Pred = Cat [Ant,NP,Utt,IP,IAdv,IComp,Conj,RP,RS] ** 
+incomplete concrete PredFunctor of Pred = Cat [Ant,NP,Utt,IP,IAdv,IComp,Conj,RP,RS,Subj,Imp] ** 
   open 
     PredInterface,
     ParamX,
@@ -25,7 +25,7 @@ lincat
 
   VPC = {
     v   : VAgr => Str ;
-    inf : Agr => VVType => Str ; 
+    inf : Agr => PredInterface.VVType => Str ; 
     imp : ImpType => Str ;
     c1  : ComplCase ; 
     c2  : ComplCase ;
@@ -89,7 +89,6 @@ lin
     v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
     inf = \\vt => tenseInfV a.s a.a p.p passive v vt ;
     obj2 = <noObj, True> ; -- becomes subject control even if object control otherwise "*she was promised by us to love ourselves"
-    qforms = \\agr => qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
     } ;
 
   AgentPassUseV x a t p v np = initPrVerbPhraseV a t p v ** {
@@ -97,7 +96,6 @@ lin
     inf = \\vt => tenseInfV a.s a.a p.p passive v vt ;
     obj2 = <noObj, True> ; -- becomes subject control even if object control otherwise "*she was promised by us to love ourselves"
     adv = appComplCase agentCase np ;
-    qforms = \\agr => qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
     } ;
 
   UseAP x a t p ap = useCopula a t p ** {
@@ -120,7 +118,7 @@ lin
     } ;
 
   UseNP a t p np = useCopula a t p ** {
-    adj = \\a => np.s ! subjCase ;
+    adj = \\a => appSubjCase np ;
     } ;
 
   UseS  a t p cl = addExtVP (useCopula a t p) (that_Compl ++ declSubordCl cl) ; ---- sentence form
@@ -128,7 +126,7 @@ lin
   UseVP a t p vp = addExtVP (useCopula a t p) (vp.s ! vvInfinitive ! defaultAgr) ;
 
   ComplV2 x vp np = vp ** {
-    obj1 = <\\a => np.s ! objCase, np.a>  -- np.a for object control 
+    obj1 = <\\a => appObjCase np, np.a>  -- np.a for object control 
     } ;
 
   ComplVS x vp cl = addExtVP vp (that_Compl ++ declSubordCl cl) ; ---- sentence form
@@ -141,7 +139,7 @@ lin
 
   ComplVN x vp cn = addObj2VP vp (\\a => cn.s ! agr2nagr a ++ cn.obj1 ! a) ; ---- cnForm
 
-  SlashV3 x vp np = addObj2VP vp (\\a => np.s ! objCase) ; -- control is preserved 
+  SlashV3 x vp np = addObj2VP vp (\\a => appObjCase np) ; -- control is preserved 
 
   SlashV2S x vp cl = addExtVP vp (that_Compl ++ declSubordCl cl) ; ---- sentence form
 
@@ -165,16 +163,15 @@ lin
 
   PredVP x np vp = vp ** {
     v    = applyVerb vp (agr2vagr np.a) ;
-    subj = np.s ! subjCase ;
+    subj = appSubjCase np ;
     adj  = vp.adj ! np.a ;
     obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! np.a ;  ---- apply complCase ---- place of part depends on obj
     obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => np.a ; False => vp.obj1.p2}) ;   ---- apply complCase
     c3   = vp.c1 ; -- in case there is any free slot left ---- could be c2 
-    qforms = qformsVP vp (agr2vagr np.a) ; 
     } ;
 
   SlashClNP x cl np = cl ** {  -- Cl ::= Cl/NP NP 
-    adv  = cl.adv ++ appComplCase cl.c3 np ; ---- again, adv just added
+    obj2  = cl.obj2 ++ appComplCase cl.c3 np ; ---- again, adv just added
     c3   = noComplCase ;  -- complCase has been consumed
     } ;
 
@@ -187,7 +184,7 @@ lin
        ipa = ipagr2agr ip.n 
    in {
     v    = applyVerb vp (ipagr2vagr ip.n) ;
-    foc  = ip.s ! subjCase ;                      -- who (loves her)
+    foc  = ip.s ! subjCase ;
     focType = FocSubj ;
     subj = [] ;
     adj  = vp.adj ! ipa ;
@@ -197,7 +194,6 @@ lin
     adv  = vp.adv ;
     adV  = vp.adV ;
     ext  = vp.ext ; 
-    qforms = qformsVP vp (ipagr2vagr ip.n) ;
     } ;
 
   QuestSlash x ip cl = 
@@ -230,11 +226,10 @@ lin
     let vagr = (agr2vagr np.a) in
     initPrClause ** {
     v    = tenseCopula (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ;
-    subj = np.s ! subjCase ;
+    subj = appSubjCase np ;
     adV = negAdV p ;
     foc = icomp.s ! agr2icagr np.a ; 
     focType = FocObj ;
-    qforms = qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ; 
     } ;
 
   RelVP rp vp = 
@@ -249,7 +244,6 @@ lin
         obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! rpa ;  ---- apply complCase ---- place of part depends on obj
         obj2 = strComplCase vp.c2 ++ vp.obj2.p1 ! (case vp.obj2.p2 of {True => rpa ; False => vp.obj1.p2}) ;   ---- apply complCase
         c3   = noComplCase ;      -- for one more prep to build ClSlash 
-        qforms = qformsVP vp (agr2vagr rpa) ; 
         }
     in {s = \\a => declCl (cl a) ; c = subjCase} ;
 
@@ -267,6 +261,8 @@ lin
   UseAdvCl adv cl = {s = adv.s ++ declInvCl cl} ;
 
   UttPrS s = s ;
+
+
 
 
   AdvCl x a cl = case a.isAdV of {
@@ -347,7 +343,7 @@ lin
     imp = vpc.imp ;
     c1  = vpc.c1 ;
     c2  = vpc.c2 ;
-    qforms = \\a => <"do", vpc.inf ! defaultAgr ! vvInfinitive> ; ---- do/does/did
+
     } ;
 
   StartClC x c a b = {
@@ -368,5 +364,9 @@ lin
     } ;
 
   ComplAdv x p np = {s = appComplCase p.c1 np ; isAdV = p.isAdV ; c1 = noComplCase} ;
+
+  SubjUttPreS subj cl s = ss (subj.s ++ declSubordCl cl ++ ("," | []) ++ declInvCl s) ; 
+  SubjUttPreQ subj cl q = ss (subj.s ++ declSubordCl cl ++ ("," | []) ++ questCl q) ;
+  SubjUttPost subj cl utt = ss (utt.s ++ ("," | []) ++ subj.s ++ declSubordCl cl) ;
 
 }
