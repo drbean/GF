@@ -9,6 +9,10 @@ concrete PredEng of Pred =
       QuestVP,
       RelVP,
 
+      UseCN,  -- insert article
+
+      UseCl,  -- for contracted forms
+
       QuestIComp  ---- IComp has no parameters in Eng
       ]  
   with 
@@ -21,6 +25,7 @@ concrete PredEng of Pred =
 lin
   PassUseV x a t p v = initPrVerbPhraseV a t p v ** {
     v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
+    vc  = \\agr => tenseVContracted (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
     inf = \\vt => tenseInfV a.s a.a p.p passive v vt ;
     obj2 = <noObj, True> ; -- becomes subject control even if object control otherwise "*she was promised by us to love ourselves"
     qforms = \\agr => qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
@@ -28,15 +33,23 @@ lin
 
   AgentPassUseV x a t p v np = initPrVerbPhraseV a t p v ** {
     v   = \\agr => tenseV (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
+    v   = \\agr => tenseVContracted (a.s ++ t.s ++ p.s) t.t a.a p.p passive agr v ;
     inf = \\vt => tenseInfV a.s a.a p.p passive v vt ;
     obj2 = <noObj, True> ; -- becomes subject control even if object control otherwise "*she was promised by us to love ourselves"
     adv = appComplCase agentCase np ;
     qforms = \\agr => qformsCopula (a.s ++ t.s ++ p.s) t.t a.a p.p agr ;
     } ;
 
+  UseCN x a t p cn = useCopula a t p ** {
+    c1  = cn.c1 ;
+    c2  = cn.c2 ;
+    adj = \\a => case agr2nagr a of {Sg => R.artIndef ++ cn.s ! Sg ; Pl => cn.s ! Pl} ;
+    obj1 = <cn.obj1, defaultAgr> ;
+    } ;
 
   PredVP x np vp = vp ** {
     v    = applyVerb vp (agr2vagr np.a) ;
+    vc   = vp.vc ! (agr2vagr np.a) ;
     subj = appSubjCase np ;
     adj  = vp.adj ! np.a ;
     obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! np.a ;  ---- apply complCase ---- place of part depends on obj
@@ -50,6 +63,7 @@ lin
        ipa = ipagr2agr ip.n 
    in {
     v    = applyVerb vp (ipagr2vagr ip.n) ;
+    vc   = vp.vc ! (ipagr2vagr ip.n) ;
     foc  = ip.s ! subjCase ;
     focType = FocSubj ;
     subj = [] ;
@@ -63,6 +77,9 @@ lin
     qforms = qformsVP vp (ipagr2vagr ip.n) ;
     } ;
 
+  UseCl  cl =  {s = declCl cl}
+             | {s = declClContracted cl} ;
+
   RelVP rp vp = 
     let 
       cl : Agr -> PrClause = \a -> 
@@ -70,6 +87,7 @@ lin
         
         vp ** {
         v    = applyVerb vp (agr2vagr rpa) ;
+        vc   = vp.vc ! (agr2vagr rpa) ;
         subj = rp.s ! subjRPCase a ;
         adj  = vp.adj ! rpa ;
         obj1 = vp.part ++ strComplCase vp.c1 ++ vp.obj1.p1 ! rpa ;  ---- apply complCase ---- place of part depends on obj
@@ -92,7 +110,8 @@ lin
   QuestIComp a t p icomp np = 
     let vagr = (agr2vagr np.a) in
     initPrClause ** {
-    v    = tenseCopula (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ;
+    v    = tenseCopula  (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ;
+    vc   = tenseCopulaC (a.s ++ t.s ++ p.s) t.t a.a p.p vagr ;
     subj = np.s ! subjCase ;
     foc = icomp.s ;
     focType = FocObj ;

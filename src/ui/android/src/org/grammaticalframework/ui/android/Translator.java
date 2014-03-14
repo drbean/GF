@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.XmlResourceParser;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.inputmethod.CompletionInfo;
 
 import org.grammaticalframework.pgf.Concr;
 import org.grammaticalframework.pgf.Expr;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +59,13 @@ public class Translator {
 
     // TODO: build dynamically?
     private Language[] mLanguages = {
-	new Language("en-US", "English", "AppEng", R.xml.qwerty),
 	new Language("cmn-Hans-CN", "Chinese", "AppChi", R.xml.qwerty),   
-        new Language("sv-SE", "Swedish", "AppSwe", R.xml.qwerty), 
+	new Language("en-US", "English", "AppEng", R.xml.qwerty),
         new Language("fi-FI", "Finnish", "AppFin", R.xml.qwerty),
+        new Language("fr-FR", "French", "AppFre", R.xml.qwerty),
+        new Language("it-IT", "Italian", "AppIta", R.xml.qwerty),
+        new Language("es-ES", "Spanish", "AppSpa", R.xml.qwerty), 
+        new Language("sv-SE", "Swedish", "AppSwe", R.xml.qwerty), 
     };
     // */
 
@@ -318,43 +323,40 @@ public class Translator {
 	}
 
     public List<MorphoAnalysis> lookupMorpho(String sentence) {
-        Log.e(TAG, "lookupMorpho " + getSourceConcr());
     	return getSourceConcr().lookupMorpho(sentence);
     }
 
-    private static class WordProb implements Comparable<WordProb> {
-    	String word;
-    	double prob;
-
-		@Override
-		public int compareTo(WordProb another) {
-			return Double.compare(prob, another.prob);
-		}
-    }
-
-    public List<String> lookupWordPrefix(String prefix) {
-    	PriorityQueue<WordProb> queue = new PriorityQueue<WordProb>(); 
+    public CompletionInfo[] lookupWordPrefix(String prefix) {
+    	PriorityQueue<FullFormEntry> queue = 
+    		new PriorityQueue<FullFormEntry>(500, new Comparator<FullFormEntry>() {
+				@Override
+				public int compare(FullFormEntry lhs, FullFormEntry rhs) {
+					return Double.compare(lhs.getProb(), rhs.getProb());
+				}
+			});
     	for (FullFormEntry entry : getSourceConcr().lookupWordPrefix(prefix)) {
-    		WordProb wp = new WordProb();
-    		wp.word = entry.getForm();
-    		wp.prob = 0;
-    		
-    		for (MorphoAnalysis an : entry.getAnalyses()) {
-    			wp.prob += an.getProb();
-    		}
-
-    		queue.add(wp);
+    		queue.add(entry);
     		if (queue.size() >= 1000)
     			break;
     	}
 
-    	List<String> list = new ArrayList<String>();
-    	while (list.size() < 5 && queue.size() > 0) {
-    		list.add(queue.poll().word);
+    	CompletionInfo[] completions = new CompletionInfo[Math.min(queue.size(), 5)+1];
+    	completions[0] = new CompletionInfo(0, 0, prefix);
+    	for (int i = 1; i < completions.length; i++) {
+    		completions[i] = new CompletionInfo(i,i,queue.poll().getForm());
     	}
-    	Collections.sort(list);
 
-    	return list;
+    	if (completions.length > 1) {
+	    	Arrays.sort(completions, 1, completions.length-1, new Comparator<CompletionInfo>() {
+				@Override
+				public int compare(CompletionInfo arg0, CompletionInfo arg1) {
+					// TODO Auto-generated method stub
+					return ((String) arg0.getText()).compareTo((String) arg1.getText());
+				}
+	    	});
+    	}
+
+    	return completions;
     }
 
 	private PGF getGrammar() {
