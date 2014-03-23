@@ -99,11 +99,11 @@ Library
     PGF.Optimize
     PGF.Printer
     PGF.Utilities
+    PGF.Linearize
   other-modules:
     PGF.CId
     PGF.Expr
     PGF.Generate
-    PGF.Linearize
     PGF.Morphology
     PGF.Paraphrase
     PGF.Parse
