@@ -2,7 +2,7 @@
 
 concrete ConstructionGer of Construction = CatGer ** 
   open SyntaxGer, SymbolicGer, ParadigmsGer, 
-       (L = LexiconGer), (E = ExtraGer), (G = GrammarGer), (I = IrregGer), (R = ResGer), Prelude in {
+       (L = LexiconGer), (E = ExtraGer), (G = GrammarGer), (I = IrregGer), (R = ResGer), (N = NounGer), Prelude in {
 
 
 lin
@@ -27,7 +27,21 @@ lin
 
   n_units_AP card cn a = mkAP (lin AdA (mkUtt (mkNP <lin Card card : Card> (lin CN cn)))) (lin A a) ;
  
+  bottle_of_CN np = N.ApposCN (mkCN (mkN "Flasche")) np ;
+  cup_of_CN np    = N.ApposCN (mkCN (mkN "Tasse"))   np ;
+  glass_of_CN np  = N.ApposCN (mkCN (mkN "Glas"))    np ;
 
+-- spatial deixis and motion verbs
+  where_go_QCl np = mkQCl (lin IAdv (ss "wohin")) (mkCl np (mkVP L.go_V)) ;
+  where_come_from_QCl np =  mkQCl (lin IAdv (ss "woher")) (mkCl np (mkVP L.come_V)) ;
+  
+  go_here_VP = mkVP (mkVP L.go_V) (mkAdv "her") ;
+  come_here_VP = mkVP (mkVP L.come_V) (mkAdv "her") ;
+  come_from_here_VP = mkVP (mkVP L.come_V) (mkAdv "von hier") ;
+
+  go_there_VP = mkVP (mkVP L.go_V) (mkAdv "hin") ;
+  come_there_VP = mkVP (mkVP L.come_V) (mkAdv "hin") ;
+  come_from_there_VP = mkVP (mkVP L.come_V) (mkAdv "von dort") ;
 
 lincat
   Weekday = N ;

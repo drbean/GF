@@ -7614,6 +7614,7 @@ lin firewood_N = mkN "leña" ; -- status=guess
 lin firework_N = mkN "fuego artificial" ; -- status=guess
 lin firmament_N = mkN "firmamento" ; -- status=guess
 lin firmware_N = mkN "firmware" ; -- status=guess
+lin first_Adv = mkAdv "primero" ;
 lin firstborn_N = mkN "primogénito" | mkN "primogénita" ; -- status=guess status=guess
 lin fish_N = L.fish_N  ; -- comment=CHECKED
 lin fish_V = mkV "pescar" ; -- status=guess, src=wikt
@@ -10979,7 +10980,8 @@ lin launder_V2 = mkV2 (mkV "lavar") ; -- status=guess, src=wikt
 lin launderette_N = mkN "lavandería" ; -- status=guess
 lin laundry_N = mkN "colada" ; -- status=guess
 lin laureate_A = mkA "laureado" | mkA "galardonado" ; -- status=guess status=guess
-lin laureate_N = mkN "laureado" | mkN "galardonado" ; -- status=guess status=guess
+lin laureateMasc_N = mkN "laureado" | mkN "galardonado" ; -- status=guess status=guess
+lin laureateFem_N = mkN "laureado" | mkN "galardonado" ; -- status=guess status=guess
 lin laurel_N = mkN "corona de laurel" ; -- status=guess
 lin lav_N = mkN "retrete" ; -- status=guess
 lin lava_N = mkN "lava" ; -- status=guess
