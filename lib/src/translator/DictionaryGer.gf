@@ -1,6 +1,7 @@
 --# -path=.:../german:../abstract:../common
 
-concrete DictionaryGer of Dictionary = CatGer ** open ParadigmsGer, IrregGer, (R = ResGer), (M = MorphoGer), Prelude in {
+concrete DictionaryGer of Dictionary = CatGer ** open ParadigmsGer, (S = StructuralGer), 
+  IrregGer, (R = ResGer), (M = MorphoGer), Prelude in {
 
 flags
   coding=utf8 ;
@@ -5112,12 +5113,8 @@ lin campus_N = variants {};
 lin camshaft_N = reg2N  "Nockenwelle" "Nockenwellen" feminine;
 lin can_N = variants {};
 lin can_V2 = dirV2 (irregV "dürfen" "dürft" "durfte" "dürfte" "gedurft" );
-lin can_VV = R.auxVV 
-      (R.mkV 
-        "können" "kann" "kannst" "kann" "könnt" "könn" 
-        "konnte" "konntest" "konnten" "konntet"
-        "könnte" "gekonnt" [] 
-        R.VHaben) ;
+lin can_1_VV = S.can_VV ;
+lin can_2_VV = S.can8know_VV ;
 lin canada_PN = variants {};
 lin canadian_A = variants {};
 lin canadian_N = reg2N  "Kanadier" "Kanadier" masculine;
@@ -15539,7 +15536,7 @@ lin go_slow_N = variants {};
 lin go_to_meeting_A = variants {};
 lin goad_N = variants {};
 lin goad_V2 = variants {};
-lin goal_N = reg2N  "Tor" "Tore" neuter;
+lin goal_N = mkN "Ziel" "Ziele" neuter | reg2N  "Tor" "Tore" neuter ; --- split
 lin goal_kick_N = variants {};
 lin goalie_N = variants {};
 lin goalkeeper_N = reg2N  "Torhüterin" "Torhüterinnen" feminine;
