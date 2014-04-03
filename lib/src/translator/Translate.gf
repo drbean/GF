@@ -19,16 +19,19 @@ abstract Translate =
 
   Symbol [PN, Symb, String, CN, Card, NP, MkSymb, SymbPN, CNNumNP],          ---- why only these?
 
+  Chunk,
+
   Construction,
-  Extensions,
+  Extensions - [VPI,VPS],
   Dictionary,
   Documentation
 
               ** {
 flags
   startcat=Phr;
-  heuristic_search_factor=0.60;
-  meta_prob=1.0e-5;
-  meta_token_prob=1.1965149246222233e-9;
+---- robustness by Chunk now
+----  heuristic_search_factor=0.60;
+----  meta_prob=1.0e-5;
+----  meta_token_prob=1.1965149246222233e-9;
 
 }

@@ -1,4 +1,4 @@
---# -path=.:../abstract:../english
+--# -path=.:src/chunk
 
 concrete TranslateEng of Translate = 
   TenseX - [Pol, PNeg, PPos],
@@ -12,13 +12,13 @@ concrete TranslateEng of Translate =
     ],
   ConjunctionEng,
   VerbEng - [
-    SlashV2V, PassV2, UseCopula, ComplVV,  -- generalized in Extensions
-    ComplVS, SlashV2S, ComplSlash          -- have variants in Eng
+    UseCopula,               -- just removed
+    SlashV2V, PassV2, ComplVV,  -- generalized in Extensions
+    ComplVS, SlashV2S, ComplSlash -- Eng exceptions
     ],
   AdverbEng,
   PhraseEng,
   SentenceEng - [
-----    PredVP,   -- to be replaced by PredVPS, QuestVPS, QuestIAdvVPS in Extensions
     UseCl     -- replaced by UseCl | ContractedUseCl
     ],        
   QuestionEng,
@@ -27,7 +27,11 @@ concrete TranslateEng of Translate =
   ConstructionEng,
   DocumentationEng,
 
-  ExtensionsEng,
+  ChunkEng,
+
+  ExtensionsEng - [
+     VPI,VPS
+     ],
   DictionaryEng ** 
 open MorphoEng, ResEng, ParadigmsEng, (G = GrammarEng), (E = ExtraEng), Prelude in {
 
