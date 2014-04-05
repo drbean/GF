@@ -208,7 +208,7 @@ Translator.prototype.update_translation=function(i) {
 	function upd2(trans,punct) {
 	    if(trans.length==0) upd3s("[no translation]")
 	    else if(trans[0].error)
-		upd3s("[GF robust translation: "+trans[0].error+"]")
+		upd3s("[GF robust translation problem: "+trans[0].error+"]")
 	    else {
 		var ts=[]
 		for(var i=0;i<trans.length;i++) {
@@ -223,7 +223,7 @@ Translator.prototype.update_translation=function(i) {
 		//console.log(translate_output)
 		upd2(translate_output,punct)
 	    }
-	    gftranslate.translate(source,o.from,o.to,0,2,upd1)
+	    gftranslate.translate(source,o.from,o.to,0,5,upd1)
 	}
 	if(!window.gftranslate)
 		upd3s("[GF robust parser is not available]")

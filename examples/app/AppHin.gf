@@ -1,7 +1,7 @@
 --# -path=.:src/chunk:src/translator:../examples/phrasebook/gfos
 
 concrete AppHin of App = 
-  TenseX - [AdN,Adv,SC,PPos,PNeg],
+  TenseX - [AdN,Adv,SC],
   NounHin - [PPartNP],
   AdjectiveHin,
   NumeralHin,
@@ -16,7 +16,7 @@ concrete AppHin of App =
   AdverbHin,
   PhraseHin,
   SentenceHin [
-    PredVP,SlashVP,ImpVP,
+    PredVP,SlashVP,ImpVP,AdvS,
     UseCl,UseQCl,UseSlash,SSubjS,UseRCl
     ],        
   QuestionHin - [

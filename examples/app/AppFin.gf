@@ -1,4 +1,3 @@
---# -path=.:src/chunk:src/translator:../examples/phrasebook/gfos
 --# -path=.:src/chunk:src/finnish/stemmed:src/finnish:src/api:src/translator:../examples/phrasebook/gfos
 
 concrete AppFin of App = 
@@ -20,7 +19,7 @@ concrete AppFin of App =
   AdverbFin,
   PhraseFin,
   SentenceFin [
-    PredVP,SlashVP,ImpVP,
+    PredVP,SlashVP,ImpVP,AdvS,
     UseCl,UseQCl,UseSlash,SSubjS,UseRCl
     ],        
   QuestionFin - [
