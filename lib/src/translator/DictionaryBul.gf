@@ -1,5 +1,3 @@
---# -path=.:../bulgarian:../abstract:../common
-
 concrete DictionaryBul of Dictionary = CatBul ** open MorphoBul, ResBul, (S = StructuralBul), ParadigmsBul, Prelude in {
 
 flags
@@ -15615,8 +15613,8 @@ lin differentiate_V = variants {dualV (mkV187 "видоизменям") (mkV174 
 lin differentiate_V2 = variants {};
 lin differentiation_N = mkN047 "диференциация" ; ----
 lin differentiator_N = variants {};
-lin difficult_A = mkA080 "тежък" ;
-lin difficulty_N = mkN049 "трудност" ;
+lin difficult_A = mkA079 "труден";
+lin difficulty_N = mkN072 "затруднение";
 lin diffidence_N = mkN049 "стеснителност" ; ----
 lin diffident_A = variants {mkA076 "плах"; mkA076 "свит"}; ----
 lin difflugia_N = variants {};
@@ -55792,6 +55790,8 @@ lin timbered_A = variants {};
 lin timberman_N = variants {};
 lin timbre_N = mkN009 "тембър"; ----
 lin timbrel_N = variants {};
+lin time_1_N = dualN (mkN069 "време") (mkA078 "времеви");
+lin time_2_N = mkN007 "път";
 lin time_N = dualN (mkN069 "време") (mkA078 "времеви");
 lin time_V2 = variants {};
 lin time_ball_N = variants {};
