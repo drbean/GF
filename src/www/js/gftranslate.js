@@ -3,7 +3,7 @@
 
 var gftranslate = {}
 
-gftranslate.jsonurl="/robust/Translate10.pgf"
+gftranslate.jsonurl="/robust/Translate11.pgf"
 gftranslate.grammar="Translate" // the name of the grammar
 
 gftranslate.call=function(querystring,cont) {
@@ -15,12 +15,14 @@ gftranslate.call=function(querystring,cont) {
 
 // Translate a sentence
 gftranslate.translate=function(source,from,to,start,limit,cont) {
-    var encsrc=encodeURIComponent(source)
     var g=gftranslate.grammar
+    var lexer="&lexer=text"
+    if(from=="Chi") lexer="",source=source.split("").join(" ")
+    var encsrc=encodeURIComponent(source)
     function extract(result) { cont(result[0].translations) }
     if(encsrc.length<500)
 	gftranslate.call("?command=c-translate&input="+encsrc
-		      +"&from="+g+from+"&to="+g+to
+		      +lexer+"&unlexer=text&from="+g+from+"&to="+g+to
 		      +"&start="+start+"&limit="+limit,extract)
     else cont([{error:"sentence too long"}])
 }
@@ -49,4 +51,25 @@ gftranslate.get_support=function(cont) {
     }
     if(gftranslate.targets) cont(support,support)
     else gftranslate.get_languages(init2)
+}
+
+// trans_text_quality : String -> {quality:String, text:String}
+function trans_text_quality(text) {
+    var quality="default_quality"
+    switch(text[0]) {
+    case '+': text=text.substr(1).trimLeft(); quality="high_quality"; break;
+    case '*': text=text.substr(1).trimLeft(); quality="low_quality"; break;
+    }
+    return {quality:quality,text:text}
+}
+
+function trans_quality(r) {
+    var text=r.linearizations[0].text
+    if(r.prob==0) return {quality:"high_quality",text:text}
+    else {
+	var t=trans_text_quality(text)
+	if(t.quality=="default_quality" && r.tree[0]=="?")
+	    t.quality="low_quality"
+	return t
+    }
 }

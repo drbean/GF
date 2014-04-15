@@ -11,22 +11,19 @@ concrete TranslateSpa of Translate =
   ConjunctionSpa,
   VerbSpa -  [
     UseCopula,  
-    SlashV2V, PassV2, ComplVV  -- generalized in Extensions
+    PassV2  -- generalized in Extensions
     ],
   AdverbSpa,
   PhraseSpa,
   SentenceSpa,
   QuestionSpa,
   RelativeSpa,
-  IdiomSpa [
-    NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP, 
-    neutr, sjalv
-    ],
+  IdiomSpa,
 --  ConstructionSpa,
   DocumentationSpa,
 
   ChunkSpa,
-  ExtensionsSpa [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash],
+  ExtensionsSpa [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP],
 
   DictionarySpa ** 
 open MorphoSpa, ResSpa, ParadigmsSpa, SyntaxSpa, CommonScand, (E = ExtraSpa), Prelude in {

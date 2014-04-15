@@ -15,22 +15,19 @@ concrete TranslateFin of Translate =
   ConjunctionFin,
   VerbFin -  [
     UseCopula,  
-    SlashV2V, PassV2, ComplVV  -- generalized in Extensions
+    PassV2  -- generalized in Extensions
     ],
   AdverbFin,
   PhraseFin,
   SentenceFin,
   QuestionFin,
   RelativeFin,
-  IdiomFin [
-    NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP, 
-    neutr, sjalv
-    ],
+  IdiomFin,
   ConstructionFin,
   DocumentationFin,
 
   ChunkFin,
-  ExtensionsFin [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash],
+  ExtensionsFin [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP],
 
   DictionaryFin ** 
 
@@ -41,7 +38,7 @@ flags literal=Symb ; coding = utf8 ;
 -- the overrides -----
 lin
 
- UsePron p = G.UsePron (E.ProDrop p) | G.UsePron p ;
- PossPron p = E.ProDropPoss p | G.PossPron p ;
+ UsePron p = G.UsePron p | G.UsePron (E.ProDrop p) ;
+ PossPron p = G.PossPron p | E.ProDropPoss p ;
 }
 

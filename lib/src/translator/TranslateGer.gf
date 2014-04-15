@@ -11,22 +11,19 @@ concrete TranslateGer of Translate =
   ConjunctionGer,
   VerbGer -  [
     UseCopula,  
-    SlashV2V, PassV2, ComplVV  -- generalized in Extensions
+    PassV2
     ],
   AdverbGer,
   PhraseGer,
   SentenceGer,
   QuestionGer,
   RelativeGer,
-  IdiomGer [
-    NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP, 
-    neutr, sjalv
-    ],
+  IdiomGer,
   ConstructionGer,
   DocumentationGer,
 
   ChunkGer,
-  ExtensionsGer [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash],
+  ExtensionsGer [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP],
 
   DictionaryGer ** 
 open MorphoGer, ResGer, ParadigmsGer, SyntaxGer, CommonScand, (E = ExtraGer), Prelude in {

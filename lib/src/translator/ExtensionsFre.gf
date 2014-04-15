@@ -26,8 +26,8 @@ lin
 ----  GenIP = E.GenIP ;
 ----  GenRP = E.GenRP ;
 
-----  PassVPSlash = E.PassVPSlash ;
-----  PassAgentVPSlash = E.PassAgentVPSlash ;
+  PassVPSlash = E.PassVPSlash ;
+  PassAgentVPSlash = E.PassAgentVPSlash ;
 
 
 lin
@@ -52,6 +52,12 @@ lin
     s = \\n => cn.s ! n ++ elisDe ++ noun.s ! Sg ;
     g = cn.g
   } ;
+
+    CompoundAP noun adj = {
+      s = \\af => adj.s ! Posit ! af ++ elisDe ++ noun.s ! Sg  ;
+      isPre = False
+      } ;
+
 
 {-  
   GerundN v = {

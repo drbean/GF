@@ -11,6 +11,7 @@ import org.grammaticalframework.pgf.Expr;
 import org.grammaticalframework.pgf.ExprProb;
 import org.grammaticalframework.pgf.FullFormEntry;
 import org.grammaticalframework.pgf.MorphoAnalysis;
+import org.grammaticalframework.pgf.NercLiteralCallback;
 import org.grammaticalframework.pgf.PGF;
 import org.grammaticalframework.pgf.ParseError;
 
@@ -58,6 +59,7 @@ public class Translator {
     	new Language("en-US", "English", "AppEng", R.xml.qwerty),
     	new Language("bg-BG", "Bulgarian", "AppBul", R.xml.cyrillic),
     	new Language("cmn-Hans-CN", "Chinese", "AppChi", R.xml.qwerty),
+        new Language("nl-NL", "Dutch", "AppDut", R.xml.qwerty),
         new Language("fi-FI", "Finnish", "AppFin", R.xml.qwerty),
         new Language("fr-FR", "French",  "AppFre", R.xml.qwerty),
         new Language("de-DE", "German",  "AppGer", R.xml.qwerty),
@@ -494,6 +496,7 @@ public class Translator {
 		        long t1 = System.currentTimeMillis();
 		        mConcr = mGrammarLoader.getGrammar().getLanguages().get(mLanguage.getConcrete());
 		        mConcr.load(in);
+		        mConcr.addLiteral("Symb", new NercLiteralCallback());
 		        long t2 = System.currentTimeMillis();
 		        Log.d(TAG, name + " loaded ("+(t2-t1)+" ms)");
 		    } catch (FileNotFoundException e) {

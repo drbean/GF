@@ -12,7 +12,7 @@ concrete TranslateChi of Translate =
 
   VerbChi - [
     UseCopula,  -- just removed
-    SlashV2V, PassV2, ComplVV, -- generalized
+    PassV2, -- generalized
     CompAP, AdvVP  -- Chi exceptions
     ],
   AdverbChi,
@@ -22,15 +22,12 @@ concrete TranslateChi of Translate =
     QuestCl  -- Chi exception
     ],
   RelativeChi,
-  IdiomChi [
-    NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP, 
-    neutr, sjalv
-    ],
+  IdiomChi,
   ConstructionChi,
   DocumentationChi,
 
   ChunkChi,
-  ExtensionsChi [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash],
+  ExtensionsChi [CompoundCN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP],
 
   DictionaryChi ** 
  

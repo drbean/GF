@@ -1274,11 +1274,14 @@ pgf_concrete_load(PgfConcr* concr, GuIn* in, GuExn* err)
 	concr->pool = pool;
 
 	pgf_read_flags(rdr);
-	gu_return_on_exn(rdr->err, );
+	if (gu_exn_is_raised(rdr->err)) 
+		goto end;
 
 	pgf_read_concrete_content(rdr, concr);
-	gu_return_on_exn(rdr->err, );
-	
+	if (gu_exn_is_raised(rdr->err)) 
+		goto end;
+
+end:
 	gu_pool_free(tmp_pool);
 }
 
@@ -1333,6 +1336,8 @@ pgf_read_pgf(PgfReader* rdr) {
 		gu_variant_is_null(gu_map_get(pgf->gflags, "split", PgfLiteral));
 	pgf->concretes = pgf_read_concretes(rdr, &pgf->abstract, with_content);
 	gu_return_on_exn(rdr->err, NULL);
+	
+	pgf->pool = rdr->opool;
 
 	return pgf;
 }

@@ -200,10 +200,11 @@ oper
 
     mkV : (cantar : Str) -> V ; -- regular in models I, IIa, IIb
 
--- Verbs with vowel alternatition in the stem - easiest to give with
--- two forms, e.g. "mostrar"/"muestro". TODO
+-- Verbs with predictable alternation: 
+-- a) inchoative verbs, servir serveixo
+-- b) re verbs with c/g in root, vendre venc ; subj. vengui
 
---JS: Needed?    mkV : (mostrar,muestro : Str) -> V ;
+    mkV : (servir,serveixo : Str) -> V ; --inchoative verbs and "re" verbs whose 1st person ends in c 
 
 -- Most irregular verbs are found in $IrregCat$. If this is not enough,
 -- the module $BeschCat$ gives all the patterns of the "Bescherelle"
@@ -340,15 +341,78 @@ oper
   mkAdV x = ss x ** {lock_AdV = <>} ;
   mkAdA x = ss x ** {lock_AdA = <>} ;
 
-  regV x = -- cantar, perdre, tÈmer, dormir, (servir)
-    let 
-      verb = case (Predef.dp 2 x) of {
-        "re" =>  perdre_83 x ;
-        "er" =>  témer_107 x ;
-		"ir" =>  dormir_44 x ; -- JS TODO: Consider "servir" 
-		_	 => cantar_15 x 
-		}
-    in verbBesch verb ** {vtyp = VHabere ; lock_V = <>} ;
+  regV x = -- cantar, perdre, témer, dormir
+    case (Predef.dp 3 x) of {
+        --regular changes in stem
+        "iar"    => canviar_16 x ; --esglaiar with non-smart paradigm
+        "jar"    => envejar_48 x ;
+	"çar"    => començar_22 x ;
+	"gir"    => fugir_58 x ;
+	"ure"    => beure_11 x ;
+	"xer"    => créixer_33 x ; --conèixer,aparèixer with regAltV
+
+        _ + "re" => perdre_83 x ;
+        _ + "er" => verbEr x ; --handles accents in infinitives and c/ç, g/j
+	_ + "ir" => dormir_44 x ; --inchoative verbs with regAltV 
+	_ + "ur" => dur_45 x ;
+	_        => cantar_15 x } ;
+
+  regAltV x y =
+     let ure  = Predef.dp 3 x ;
+	 venc = Predef.dp 4 y ;
+     in  case <ure,venc> of {
+           <_+"ir",_+"ixo"> => servir_101 x ; --inchoative verbs
+
+	   <"ure",_+"c"> => regV x ; --caure,viure etc. with non-smart paradigms
+
+	   --small set of irregular verbs that have unique P1 Sg
+	   <_+"ir","tinc">  => tenir_108 x ; --tenir, obtenir, ...
+	   <_+"ir","vinc">  => venir_117 x ; --venir, prevenir, ...
+           <_+"er",_+"ig">  => fer_56 x ;
+	   <_+"re",_+"ig">  => veure_118 x ;
+	   <_+"ar",_+"ig">  => anar_4 x ;
+
+	   <"xer" ,_+ "c">  => conèixer_27 x ; --créixer, merèixer with regV
+           <_+"er",_+ "c">  => valer_114 x ;
+	   <_+"re",_+ "c">  => doldre_42 x ; --participles of type dolgut
+	                                     --for absolt, pres, ... use mk3V
+	   <_ ,_>           => regV x } ;
+
+  mk3V x y z =
+     let ure  = Predef.dp 3 x ;
+	 venc = Predef.dp 4 y ;
+	 gut  = Predef.dp 3 z 
+     in  case <ure,venc,gut> of {
+	   <_+"re",_,"gut"> => regAltV x y ; --default participle of type dolgut
+	                                     
+	   --if these are overfitting, just comment out.
+           --still doesn't catch creure, seure; mk4V with creiem as 4th arg?
+	   <"ure",_, "uit"> => coure_32 x ;    --coure coem cuit
+	   <"ure",_,_+"it"> => escriure_50 x ; --escriure escrivim escrit
+	   <"ure",_,_+"et"> => treure_113 x ;  --treure traiem tret
+           <"ure",_,_+"st"> => veure_118 x ;   --veure veiem vist
+           <"ure",_, "cut"> => viure_119 x ;   --viure vivim viscut
+
+	   <"dre",_,_+"st"> => compondre_26 x ; --compondre compost
+
+	   <"rir", _+"ixo",_+"rt"> => cobrir_20 x ;  --cob|rir cob|ert
+	   <_+"ir",_+"ixo",_+"rt"> => complir_25 x ; --compl|ir compl|ert
+
+	   <_+"ir",_+"ixo",_+"ït"> => lluir_64 x ; --lluir lluïm lluït
+
+	   <"dre",_,"nut"> => vendre_116 x ;
+
+	   <_+"re",_+"c",_+"t"> => absoldre_1 x ; --c in sgP1 and subj, not in part
+
+	   <_+"re",_,_+"es"> => prendre_87 x ;
+	   <_+"re",_,_+"ès"> => atendre_8 x ;
+	   <_+"re",_,_+"as"> => raure_91 x ;
+	   <_+"re",_,_+"às"> => romandre_97 x ;
+	   <_+"re",_,_+"os"> => cloure_19 x ;
+	   <_+"re",_,_+"ós"> => confondre_28 x ;
+	   <_+"re",_,_+"òs"> => recloure_93 x ;
+
+	   <_,_,_>        => regAltV x y } ;
 
   reflV v = {s = v.s ; vtyp = VRefl ; lock_V = <>} ;
 
@@ -365,7 +429,7 @@ oper
     vtyp = VHabere
     } ;
 
---  regAltV x y = verbV (regAlternV x y) ;
+
 
   mk2V2 v p = {s = v.s ; vtyp = v.vtyp ; c2 = p ; lock_V2 = <>} ;
   dirV2 v = mk2V2 v accusative ;
@@ -439,16 +503,18 @@ oper
   prefixA = prefA ;
 
   mkV = overload {
-    mkV : (cantar : Str) -> V = regV ;
---JS    mkV : (mostrar,muestro : Str) -> V = regAltV ;
+    mkV : (cantar : Str) -> V            = \x -> verbV (regV x) ;
+    mkV : (servir,serveixo : Str) -> V   = \x,y -> verbV (regAltV x y) ;
+    mkV : (vendre,venc,venut : Str) -> V = \x,y,z -> verbV (mk3V x y z) ;
     mkV : Verbum -> V = verbV
     } ;
-  regV : Str -> V ;
---JS  regAltV : (mostrar,muestro : Str) -> V ;
+  regV : Str -> Verbum ;
+  regAltV : (servir,serveixo : Str) -> Verbum ;
+  mk3V : (vendre,venc,venut : Str) -> Verbum ;
   verbV : Verbum -> V ;
 
   mkV2 = overload {
-    mkV2 : Str -> V2 = \s -> dirV2 (regV s) ;
+    mkV2 : Str -> V2 = \s -> dirV2 (mkV s) ;
     mkV2 : V -> V2 = dirV2 ;  
     mkV2 : V -> Prep -> V2 = mk2V2
     } ;

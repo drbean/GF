@@ -68,6 +68,11 @@ lin
     g = cn.g
   } ;
 
+    CompoundAP noun adj = {
+      s = \\af => glue (noun.s ! Sg ! Nom) (adj.s ! Posit ! af) ;
+      isPre = True
+      } ;
+
   GerundN v = { -- parsing
     s = \\n,c => v.s ! VInf False ; --- formalisieren, not formalisierung
     g = Neutr
@@ -90,7 +95,7 @@ lin
 
   UseQuantPN q pn = {s = \\c => q.s ! False ! Sg ++ pn.s ! npcase2case c ; a = agrgP3 Sg pn.g} ;  -- this London
 
-  SlashV2V v p vp = insertObjc (\\a => p.s ++ case p.p of {CPos => ""; _ => "not"} ++  -- force not to sleep
+  SlashV2V v p vp = insertObjc (\\a => p.s ++ case p.p of {CPos => ""; _ => "nicht"} ++  -- force not to sleep
                                        v.c3 ++ 
                                        infVP v.typ vp a)
                                (predVc v) ;
@@ -107,7 +112,7 @@ lin
           }
     } ;
 -}
-  CompS s = {s = \\_ => "that" ++ s.s ! Main} ;  -- S -> Comp
+  CompS s = {s = \\_ => "dass" ++ s.s ! Main} ;  -- S -> Comp
   CompVP ant p vp = {s = \\_ => useInfVP True vp} ; -- VP -> Comp
 
 lin

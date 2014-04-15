@@ -99,7 +99,7 @@ Library
     PGF.Optimize
     PGF.Printer
     PGF.Utilities
-    PGF.Linearize
+    PGF.Lexing
   other-modules:
     PGF.CId
     PGF.Expr
