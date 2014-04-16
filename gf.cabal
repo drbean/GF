@@ -104,6 +104,7 @@ Library
     PGF.CId
     PGF.Expr
     PGF.Generate
+    PGF.Linearize
     PGF.Morphology
     PGF.Paraphrase
     PGF.Parse
