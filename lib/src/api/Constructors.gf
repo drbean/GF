@@ -546,6 +546,14 @@ incomplete resource Constructors = open Grammar in {  --%
 
       } ; --% 
 
+-- Three-place verbs can also be used in the passive, with theme.
+
+    passiveVP3 = overload { --%
+      passiveVP3 : V3 -> NP -> VP   -- be called John
+      = PassV3 ; --%
+
+      } ; --% 
+
 -- A verb phrase can be turned into the progressive form.
 
       progressiveVP : VP -> VP   -- be sleeping 
