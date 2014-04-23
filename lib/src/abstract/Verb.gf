@@ -50,7 +50,6 @@ abstract Verb = Cat ** {
 -- take a direct object.
 
     PassV2   : V2 -> VP ;               -- be loved
-    PassV3   : V3 -> NP -> VP ;               -- be called John
 
 -- Adverbs can be added to verb phrases. Many languages make
 -- a distinction between adverbs that are attached in the end
