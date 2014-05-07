@@ -34,6 +34,20 @@ mergeDict lang = do
   writeFile (gfFile "tmp/Dictionary" lang) $ 
     unlines $ fromTop header ++ [unwords ("lin":f:"=":[ws]) | (f,ws) <- Data.Map.assocs newmap] ++ ["}"]  -- print revised file to tmp/
 
+changeFunNames nameFile lang = do
+  ns <- readFile nameFile
+  let names = Data.Map.fromList [(old,new) | old:new:_ <- map words (lines ns)]      -- format: "old new" on separate lines
+  let look w = Data.Map.lookup w names
+  dict <- readFile (gfFile "Dictionary" lang) >>= return . lines                     -- read old lexicon
+  let 
+    change line = case words line of
+      "lin":f:ws -> case look f of
+        Just g -> unwords $ "lin":g:ws
+        _ -> line
+      _ -> line
+  writeFile (gfFile "tmp/Dictionary" lang) $ unlines $ map change dict
+
+
 -- get the part of Dict before the first lin rule
 getHeader = takeWhile ((/= "lin") . take 3)
 
@@ -58,7 +72,7 @@ lookupFun f dictmap = case look f of
     _ -> "variants{} ; -- "
  where
   look = flip Data.Map.lookup dictmap
-  notEmpty r = head (words r) `notElem` ["variants","variants{}"]
+  notEmpty r = take 1 (words r) `notElem` [["variants"],["variants{}"]]
 
 subCats f = case splitFun f of
   (fun,cat) -> case cat of
@@ -78,4 +92,20 @@ subCats f = case splitFun f of
    _ -> []
 
 splitFun f = case span (/='_') (reverse f) of (tac,nuf) -> (reverse nuf, reverse tac)
+
+
+------ word statistics
+
+isUnchecked line = isInfixOf "--" line           -- checked = no comments
+isUnknown line = isInfixOf "{}" line       -- known = not variants {}
+
+statLang lang = do
+  dict <- readFile (gfFile "Dictionary" lang) >>= return . lines
+  let lins = filter ((==["lin"]) . take 1 . words) dict
+  let nall     = length $ filter (not . isUnknown) lins
+  let nchecked = length $ filter (not . (\x -> isUnknown x || isUnchecked x)) lins
+  putStrLn $ lang ++ "\t" ++ show nall ++ "\t" ++ show nchecked
+
+statAll = mapM_ statLang langs
+
 

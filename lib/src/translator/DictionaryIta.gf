@@ -15317,6 +15317,8 @@ lin shortcut_N = mkN "scorciatoia" ; -- status=guess
 lin shorthand_N = mkN "stenografia" ; -- status=guess
 lin shortly_Adv = variants{} ; --
 lin shot_N = mkN "tiro" ; -- status=guess
+lin shall_VV = S.must_VV ;
+lin should_VV = S.must_VV ; ----
 lin shoulder_N = mkN "spalla" ; -- status=guess
 lin shout_N = mkN "grido" ; -- status=guess
 lin shout_V = mkV "offrire" ; -- status=guess, src=wikt
@@ -16991,14 +16993,13 @@ lin telephone_V2 = mkV2 (mkV "telefonare") ; -- status=guess, src=wikt
 lin teleportation_N = mkN "teletrasporto" ; -- status=guess
 lin telescope_N = mkN "telescopio" | mkN "cannocchiale" masculine ; -- status=guess status=guess
 lin television_N = L.television_N ;
-lin tell_1_V3 = mkV3 (mkV "raccontare") ;
-lin tell_2_V3 = mkV3 I.distinguere_V P.accusative P.genitive ;
+lin tell_V3 = mkV3 (mkV "raccontare") ;
+lin tell_from_V3 = mkV3 I.distinguere_V P.accusative P.genitive ;
 lin tell_V = mkV "raccontare" ;
 lin tell_V2 = mkV2 "raccontare" ;
 lin tell_V2Q = variants{}; -- mkV2 "raccontare" ;
 lin tell_V2S = variants{}; -- mkV2 "raccontare" ;
 lin tell_V2V = variants{}; -- mkV2 "raccontare" ;
-lin tell_V3 = variants{}; -- mkV2 "raccontare" ;
 lin tell_VS = variants{}; -- mkV2 "raccontare" ;
 lin tell_VV = variants{}; -- mkV "raccontare" ;
 lin telltale_N = mkN "mostravento" ; -- status=guess
@@ -17254,7 +17255,6 @@ lin tightrope_N = mkN "funambolo" ; -- status=guess
 lin tights_N = mkN "calzamaglia" ; -- status=guess
 lin tile_N = mkN "[floor and wall tile] piastrella" | mkN "[roof tile] tegola" | mkN "coppo" ; -- status=guess status=guess status=guess
 lin tile_V2 = mkV2 (mkV "piastrellare") ; -- status=guess, src=wikt
-lin till_Prep = variants{} ; --
 lin till_Subj = variants{} ; --
 lin till_V2 = mkV2 (mkV "arare") ; -- status=guess, src=wikt
 lin tillage_N = mkN "coltivazione" feminine ; -- status=guess
@@ -17969,7 +17969,7 @@ lin unsure_A = mkA "incerto" ; -- status=guess
 lin unsympathetic_A = mkA "antipatico" ; -- status=guess
 lin untie_V = mkV "sciogliersi" ; -- status=guess, src=wikt
 lin untie_V2 = mkV2 (mkV "sciogliersi") ; -- status=guess, src=wikt
-lin until_Prep = variants{} ; --
+lin until_Prep = mkPrep "fine" ;
 lin until_Subj = subSubj "fino a che" ;
 lin untraceable_A = mkA "non tracciabile" | mkA "irrintracciabile" | mkA "irreperibile" ; -- status=guess status=guess status=guess
 lin untruth_N = mkN "bugia" ; -- status=guess

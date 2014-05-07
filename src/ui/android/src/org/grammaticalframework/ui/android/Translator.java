@@ -265,16 +265,6 @@ public class Translator {
     	return out;
     }
 
-    private static String sepApo(String in) {
-    	String out = "";
-    	for (int i = 0; i < in.length(); i++) {
-    		out += in.charAt(i);
-    		if (in.charAt(i) == '\'')
-    			out += ' ';
-    	}
-    	return out;
-    }
-
     private String translateWord(String input) {
 
     	String output = "[" + input + "]" ;  // if all else fails, return the word itself in brackets
@@ -321,16 +311,6 @@ public class Translator {
         	// for Chinese we need to put space after every character
         	input = explode(input);
         }
-
-	/* not needed any more
-        if (getSourceLanguage().getLangCode().equals("fr-FR")) {
-        	// for French and Italian we need to separate apostrophe by space...
-        	input = sepApo(input);
-        }
-        if (getSourceLanguage().getLangCode().equals("it-IT")) {
-        	input = sepApo(input);
-        }
-	*/
 
         String output = null;
         List<ExprProb> exprs = new ArrayList<ExprProb>();
@@ -428,7 +408,6 @@ public class Translator {
 	    	Arrays.sort(completions, 1, completions.length-1, new Comparator<CompletionInfo>() {
 				@Override
 				public int compare(CompletionInfo arg0, CompletionInfo arg1) {
-					// TODO Auto-generated method stub
 					return ((String) arg0.getText()).compareTo((String) arg1.getText());
 				}
 	    	});

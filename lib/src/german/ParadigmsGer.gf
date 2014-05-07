@@ -79,6 +79,8 @@ mkN : overload {
 
   mkN : (Bild,Bilder : Str) -> Gender -> N ; -- sg and pl nom, and gender
 
+  mkN : (Frau : Str) -> Gender -> N ;  -- masc: e, neutr: er, fem: en
+
 -- Worst case: give all four singular forms, two plural forms (others + dative),
 -- and the gender.
 
@@ -262,8 +264,11 @@ mkV2 : overload {
 
   accdatV3 : V -> V3 ;                  -- geben + acc + dat
   dirV3    : V -> Prep -> V3 ;          -- senden + acc + nach
-  mkV3     : V -> Prep -> Prep -> V3 ;  -- sprechen + mit + über
 
+  mkV3 : overload {
+    mkV3     : V ->                 V3 ;  -- geben + acc + dat
+    mkV3     : V -> Prep -> Prep -> V3 ;  -- sprechen + mit + über
+    } ;
 
 --3 Other complement patterns
 --
@@ -272,13 +277,32 @@ mkV2 : overload {
 
   mkV0  : V -> V0 ; --%
   mkVS  : V -> VS ;
-  mkV2S : V -> Prep -> V2S ;
-  mkVV  : V -> VV ;
-  mkV2V : V -> Prep -> V2V ;
+
+  mkV2V : overload {
+    mkV2V : V -> V2V ;
+    mkV2V : V -> Prep -> V2V ;
+    } ;
+  mkV2A : overload {
+    mkV2A : V -> V2A ; 
+    mkV2A : V -> Prep -> V2A ;
+    } ;
+  mkV2S : overload {
+    mkV2S : V -> V2S ;
+    mkV2S : V -> Prep -> V2S ;
+    } ;
+  mkV2Q : overload {
+    mkV2Q : V -> V2Q ;
+    mkV2Q : V -> Prep -> V2Q ;
+    } ;
+
+
+  mkVV  : V -> VV ;  -- with zu
+  auxVV : V -> VV ;  -- without zu
+
   mkVA  : V -> VA ;
-  mkV2A : V -> Prep -> V2A ;
+
   mkVQ  : V -> VQ ;
-  mkV2Q : V -> Prep -> V2Q ;
+
 
   mkAS  : A -> AS ; --%
   mkA2S : A -> Prep -> A2S ; --%
@@ -330,6 +354,29 @@ mkV2 : overload {
     _ + ("ion" | "ung") => mk6N hund hund hund hund (hund + "en") (hund + "en") Fem ;
     _ + ("er" | "en" | "el") => mk6N hund hund hund (genitS (True | False) hund) hund (pluralN hund) Masc ; 
     _  => mk6N hund hund hund (genitS (True | False) hund) (hund + "e") (pluralN hund) Masc
+    } ;
+
+  reg1N : (x1 : Str) -> Gender -> N = \hund,g -> 
+    case <hund,g> of {
+      <_ + ("el"|"er"|"en"), Masc | Neutr> => 
+        let hunde = hund ; hunden = pluralN hunde in
+        mk6N hund hund hund (genitS (True | False) hund) hunde hunden g ;
+      <_ + "e", Masc> => 
+        let hunde = hund + "n" in
+        mk6N hund hunde hunde hunde hunde hunde g ;
+      <_, Masc> =>  
+        let hunde = hund + "e" ; hunden = pluralN hunde in
+        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
+                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
+      <_, Neutr> =>  
+        let hunde = hund + "er" ; hunden = pluralN hunde in
+        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
+                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
+      <_,  Fem> => 
+        let hunde : Str = case hund of {_ + "e" => hund + "n" ; _ => hund + "en"} ; 
+            hunden = hunde
+        in mk6N hund hund hund hund hunde hunden g ;
+      _ => {s = (regN hund).s ; g = g ; lock_N = <>}
     } ;
 
   reg2N : (x1,x2 : Str) -> Gender -> N = \hund,hunde,g -> 
@@ -484,13 +531,20 @@ mkV2 : overload {
   dirV2 v = prepV2 v accPrep ;
   datV2 v = prepV2 v datPrep ;
 
-  mkV3 v c d = v ** {c2 = c ; c3 = d ; lock_V3 = <>} ;
+  mkV3 = overload {
+    mkV3 : V -> V3 
+      = \v -> lin V3 (v ** {c2 = mkPrep [] accusative ; c3 = mkPrep [] dative}) ; 
+    mkV3 : V -> Prep -> Prep -> V3
+      = \v,c,d -> v ** {c2 = c ; c3 = d ; lock_V3 = <>} ;
+    } ;
+
   dirV3 v p = mkV3 v (mkPrep [] accusative) p ;
   accdatV3 v = dirV3 v (mkPrep [] dative) ; 
 
   mkVS v = v ** {lock_VS = <>} ;
   mkVQ v = v ** {lock_VQ = <>} ;
   mkVV v = v ** {isAux = False ; lock_VV = <>} ;
+  auxVV v = v ** {isAux = True ; lock_VV = <>} ;
 
   V0 : Type = V ;
 --  V2S, V2V, V2Q : Type = V2 ;
@@ -498,11 +552,33 @@ mkV2 : overload {
   A2V : Type = A2 ;
 
   mkV0  v = v ** {lock_V = <>} ;
-  mkV2S v p = prepV2 v p ** {lock_V2S = <>} ;
-  mkV2V v p = prepV2 v p ** {isAux = False ; lock_V2V = <>} ;
+
+  mkV2V = overload {
+    mkV2V : V -> V2V 
+      = \v -> dirV2 v ** {isAux = False ; lock_V2V = <>} ;
+    mkV2V : V -> Prep -> V2V 
+      = \v,p -> prepV2 v p ** {isAux = False ; lock_V2V = <>} ;
+    } ;
+  mkV2A = overload {
+    mkV2A : V -> V2A 
+      = \v -> dirV2 v ** {isAux = False ; lock_V2A = <>} ;
+    mkV2A : V -> Prep -> V2A 
+      = \v,p -> prepV2 v p ** {isAux = False ; lock_V2A = <>} ;
+    } ;
+  mkV2S = overload {
+    mkV2S : V -> V2S 
+      = \v -> dirV2 v ** {isAux = False ; lock_V2S = <>} ;
+    mkV2S : V -> Prep -> V2S 
+      = \v,p -> prepV2 v p ** {isAux = False ; lock_V2S = <>} ;
+    } ;
+  mkV2Q = overload {
+    mkV2Q : V -> V2Q 
+      = \v -> dirV2 v ** {isAux = False ; lock_V2Q = <>} ;
+    mkV2Q : V -> Prep -> V2Q 
+      = \v,p -> prepV2 v p ** {isAux = False ; lock_V2Q = <>} ;
+    } ;
+
   mkVA  v = v ** {lock_VA = <>} ;
-  mkV2A v p = prepV2 v p ** {lock_V2A = <>} ;
-  mkV2Q v p = prepV2 v p ** {lock_V2Q = <>} ;
 
   mkAS  v = v ** {lock_A = <>} ;
   mkA2S v p = mkA2 v p ** {lock_A = <>} ;
@@ -517,10 +593,13 @@ mkV2 : overload {
 
   mkN = overload {
     mkN : Str -> N = regN ;
+    mkN : (x1 : Str) -> Gender -> N = reg1N ;
     mkN : (x1,x2 : Str) -> Gender -> N = reg2N ;
     mkN : (x1,_,_,_,_,x6 : Str) -> Gender -> N = mk6N ;
     mkN : Str -> N -> N  -- Auto + Fahrer -> Autofahrer
     = \s,x -> lin N {s = \\n,c => s + Predef.toLower (x.s ! n ! c) ; g = x.g} ;
+    mkN : Str -> Gender -> Gender -> N 
+    = \s,g,h -> reg1N s g | reg1N s h ;
     };
 
 

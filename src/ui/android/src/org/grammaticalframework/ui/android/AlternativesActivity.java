@@ -132,7 +132,7 @@ public class AlternativesActivity extends ListActivity {
 		expandedView = view;
 	}
 
-	private void expandExpr(View view, Expr expr) {
+	private void expandExpr(View view, ExprProb ep) {
 		ImageView arrow = (ImageView) view.findViewById(R.id.arrow);
 		arrow.setImageResource(R.drawable.close_arrow);
 		
@@ -146,7 +146,8 @@ public class AlternativesActivity extends ListActivity {
 			((RelativeLayout) view).addView(inflectionView, params);
 		}
 
-		inflectionView.loadData(expr.toString(), "text/plain; charset=UTF-8", null);
+		String content = String.format("[%.4f] %s", ep.getProb(), ep.getExpr());
+		inflectionView.loadData(content, "text/plain; charset=UTF-8", null);
 
 		expandedView = view;
 	}
@@ -189,11 +190,36 @@ public class AlternativesActivity extends ListActivity {
 				});
 			} else {
 				if (item instanceof ExprProb) {
-					final Expr expr = ((ExprProb) item).getExpr();
+					final ExprProb ep = (ExprProb) item;
 		
-			    	String phrase = mTranslator.linearize(expr);
-			    	if (phrase.startsWith("% ") || phrase.startsWith("* ") || phrase.startsWith("+ "))
+			    	String phrase = mTranslator.linearize(ep.getExpr());
+
+			    	// parse by words, marked by %, darkest red color
+			    	if (phrase.charAt(0) == '%') {
+			    		descView.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_worst_utterance_bg));
 			    		phrase = phrase.substring(2);
+			    	}
+
+			    	// parse by chunks, marked by *, red color
+			    	else if (phrase.charAt(0) == '*') {
+			    		descView.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_chunk_utterance_bg));
+			    		phrase = phrase.substring(2);
+			    	}
+
+			    	// parse error or unknown translations (in []) present, darkest red color
+			    	else if (phrase.contains("parse error:") || phrase.contains("[")) {
+			    		descView.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_worst_utterance_bg));
+			    	}
+
+			    	// parse by domain grammar, marked by +, green color
+			    	else if (phrase.charAt(0) == '+') {
+			    		descView.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_best_utterance_bg));
+			    		phrase = phrase.substring(2);
+			    	}
+			    	
+			    	else {
+			    		descView.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_utterance_bg));
+			    	}
 
 			        descView.setText(phrase);
 
@@ -203,10 +229,10 @@ public class AlternativesActivity extends ListActivity {
 							if (expandedView == view)
 								collapse();
 							else if (expandedView == null)
-								expandExpr(view, expr);
+								expandExpr(view, ep);
 							else {
 								collapse();
-								expandExpr(view, expr);
+								expandExpr(view, ep);
 							}
 						}
 					});

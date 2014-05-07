@@ -183,32 +183,35 @@ cpgfMain command (t,(pgf,pc)) =
                                          | (to,text)<-rs]]]]]
 
     wordforword' inp@((from,concr),input) (tos,unlex) =
-        [(to,unlex . unwords . map (trans_word' c) $ words input)
-         |(to,c)<-tos]
+        [(to,unlex . unwords $ map (lin_word' c) pws)
+         |let pws=map parse_word' (words input),(to,c)<-tos]
       where
-        trans_word' c w = if all (\c->isSpace c||isPunctuation c) w
-                          then w
-                          else trans_word c w
+        lin_word' c = either id (lin1 c)
 
-        trans_word c w = 
-            maybe ("["++w++"]") id $ msum [trans1 w,trans1 ow,morph w,morph ow]
+        lin1 c = dropq . C.linearize c
           where
-            ow = if w==lw then capitInit w else lw
-            lw = uncapitInit w
-
-            trans1 = fmap lin1 . parse1
-
-            parse1 = either (const Nothing) (fmap fst . listToMaybe) .
-                     C.parse concr cat
-
-            lin1 = dropq . C.linearize c
             dropq (q:' ':s) | q `elem` "+*" = s
             dropq s = s
 
+        parse_word' w = if all (\c->isSpace c||isPunctuation c) w
+                        then Left w
+                        else parse_word w
+
+
+        parse_word w =
+            maybe (Left ("["++w++"]")) Right $
+            msum [{-parse1 w,parse1 ow,-}morph w,morph ow]
+               -- omit parsing for now, to avoid space leaks
+          where
+            ow = if w==lw then capitInit w else lw
+            lw = uncapitInit w
+{-
+            parse1 = either (const Nothing) (fmap fst . listToMaybe) .
+                     C.parse concr cat
+-}
             morph w = listToMaybe
-                        [l | (f,a,p)<-C.lookupMorpho concr w,
-                             t<-maybeToList (C.readExpr f),
-                             let l=lin1 t]
+                        [t | (f,a,p)<-C.lookupMorpho concr w,
+                             t<-maybeToList (C.readExpr f)]
 
     ---
 
@@ -304,7 +307,7 @@ pgfMain command (t,pgf) =
       "linearize"      -> o =<< doLinearize pgf # tree % to
       "linearizeAll"   -> o =<< doLinearizes pgf # tree % to
       "linearizeTable" -> o =<< doLinearizeTabular pgf # tree % to
-      "random"         -> cat >>= \c -> depth >>= \dp -> limit >>= \l -> to >>= \to -> liftIO (doRandom pgf c dp l to) >>= o
+      "random"         -> o =<< join (doRandom pgf # cat % depth % limit % to)
       "generate"       -> o =<< doGenerate pgf # cat % depth % limit % to
       "translate"      -> o =<< doTranslate pgf # input % cat % to % limit %trie
       "translategroup" -> o =<< doTranslateGroup pgf # input % cat % to % limit
@@ -312,10 +315,7 @@ pgfMain command (t,pgf) =
       "grammar"        -> o =<< doGrammar pgf # requestAcceptLanguage
       "abstrtree"      -> outputGraphviz =<< abstrTree pgf # graphvizOptions % tree
       "alignment"      -> outputGraphviz =<< alignment pgf # tree % to
-      "parsetree"      -> do t <- tree
-                             Just l <- from
-                             opts <- graphvizOptions
-                             outputGraphviz (parseTree pgf l opts t)
+      "parsetree"      -> outputGraphviz =<< parseTree pgf # from1 % graphvizOptions % tree
       "abstrjson"      -> o . jsonExpr =<< tree
       "browse"         -> join $ doBrowse pgf # optId % cssClass % href % format "html" % getIncludePrintNames
       "external"       -> do cmd <- getInput "external"
@@ -595,8 +595,9 @@ doLinearizeTabular pgf tree (tos,unlex) = showJSON
                          | (ps,ts)<-texts]]
        | (to,texts) <- linearizeTabular pgf tos tree]
 
-doRandom :: PGF -> Maybe PGF.Type -> Maybe Int -> Maybe Int -> To -> IO JSValue
+doRandom :: PGF -> Maybe PGF.Type -> Maybe Int -> Maybe Int -> To -> CGI JSValue
 doRandom pgf mcat mdepth mlimit to =
+  liftIO $
   do g <- newStdGen
      let trees = PGF.generateRandomDepth g pgf cat (Just depth)
      return $ showJSON
