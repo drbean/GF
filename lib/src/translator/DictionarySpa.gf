@@ -7137,9 +7137,8 @@ lin encyclical_N = mkN "encíclica" ; -- status=guess
 lin encyclopedia_N = mkN "enciclopedia" ; -- status=guess
 lin encyclopedic_A = mkA "enciclopédico" ; -- status=guess
 lin encyclopedist_N = mkN "enciclopedista" masculine ; -- status=guess
-lin end_1_N = end_N ;
+lin end_1_N = mkN "fin" | mkN "final" ;
 lin end_2_N = mkN "extremo" ;
-lin end_N = mkN "fin" | mkN "final" ;
 lin end_V = mkV "acabarse" ;
 lin end_V2 = mkV2 (mkV "acabar") ;
 --subcat lin end_VA = mkVA (mkV "acabarse") ;
@@ -8157,7 +8156,6 @@ lin firm_N = mkN "firma" | mkN "empresa" ; --- split
 lin firmament_N = mkN "firmamento" ; -- status=guess
 lin firmly_Adv = variants{} ;
 lin firmware_N = mkN "firmware" masculine ; -- status=guess
-lin first_A = variants{} ;
 lin first_Adv = mkAdv "primero" ; -- status=guess
 lin firstborn_N = mkN "primogénito" | mkN "primogénita" ; -- status=guess status=guess
 lin firstly_Adv = variants{} ;
@@ -8734,10 +8732,9 @@ lin fuss_N = mkN "fandango" | mkN "jaleo" | mkN "escándalo" ; -- status=guess
 lin fussy_A = mkA "puntilloso" ; -- status=guess
 lin futile_A = mkA "inútil" | mkA "fútil" ; -- status=guess status=guess
 lin futility_N = mkN "futilidad" feminine ; -- status=guess
-lin future_1_N = future_N ; --- info missing in senses-in-Dictionary
-lin future_3_N = future_N ; --- info missing in senses-in-Dictionary
+lin future_1_N = mkN "futuro" | mkN "porvenir"; --- info missing in senses-in-Dictionary
+lin future_3_N = mkN "futuro" | mkN "porvenir"; --- info missing in senses-in-Dictionary
 lin future_A = mkA "futuro" ; -- status=guess
-lin future_N = mkN "futuro" | mkN "porvenir" ;
 lin futurism_N = mkN "futurismo" ; -- status=guess
 lin futuristic_A = mkA "futurista" ; -- status=guess
 lin futurology_N = mkN "futurología" ; -- status=guess
