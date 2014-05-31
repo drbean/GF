@@ -90,8 +90,17 @@ mkN : overload {
 
   mkN : Str -> N -> N ;   -- Auto + Fahrer -> Autofahrer
 
+  mkN : N -> N -> N ;     -- Freiheit + Kampf -> Freiheitskampf
+
   };
 
+-- The default compound form can be changed:
+
+    changeCompoundN : Str -> N -> N ;   -- kyrko + kyrka_N
+
+-- Add dative -e ; typically used as variant, either first or second.
+
+    dative_eN : N -> N ; 
 
 -- Relational nouns need a preposition. The most common is "von" with
 -- the dative, and there is a special case for regular nouns.
@@ -169,8 +178,12 @@ mkN : overload {
 
 -- A preposition is formed from a string and a case.
 
-  mkPrep : Str -> Case -> Prep ; -- e.g. "durch" + accusative
-  
+  mkPrep : overload {
+    mkPrep : Str -> Case -> Prep ; -- e.g. "durch" + accusative
+    mkPrep : Case -> Str -> Prep ; -- postposition
+    mkPrep : Str -> Case -> Str -> Prep ; -- both sides
+    } ;
+
 -- Often just a case with the empty string is enough.
 
   accPrep : Prep ; -- no string, just accusative case
@@ -211,7 +224,7 @@ mkV : overload {
 
 -- To add a movable prefix e.g. "auf(fassen)".
 
-  mkV : Str -> V -> V -- movable prefix, e.g. auf+fassen
+  mkV : Str -> V -> V -- movable prefix, e.g. auf+fassen, or fix prefix if one of be,er,ge,ver,zer
 };
 
 
@@ -233,6 +246,10 @@ mkV : overload {
 -- Reflexive verbs can take reflexive pronouns of different cases.
 
   reflV  : V -> Case -> V ; -- reflexive, with case
+
+-- Compound verbs: verbs with a fixed particle; syntactically similar to prefix but written separately.
+
+  compoundV : Str -> V -> V ; -- verb with a separate "particle", e.g. "Trinkgeld geben"
 
 
 --3 Two-place verbs
@@ -347,12 +364,13 @@ mkV2 : overload {
   singular = Sg ;
   plural = Pl ;
 
-  mk6N a b c d e f g = MorphoGer.mkN a b c d e f g ** {lock_N = <>} ;
+  mk6N a b c d e f g = MorphoGer.mkN a b c d e f (mkCompoundForm a) g ** {lock_N = <>} ;
 
   regN : Str -> N = \hund -> case hund of {
     _ + "e" => mk6N hund hund hund hund (hund + "n") (hund + "n") Fem ;
     _ + ("ion" | "ung") => mk6N hund hund hund hund (hund + "en") (hund + "en") Fem ;
     _ + ("er" | "en" | "el") => mk6N hund hund hund (genitS (True | False) hund) hund (pluralN hund) Masc ; 
+    _ + "nis" => mk6N hund hund hund hund (hund + "se") (hund + "sen") Neutr ;
     _  => mk6N hund hund hund (genitS (True | False) hund) (hund + "e") (pluralN hund) Masc
     } ;
 
@@ -366,17 +384,20 @@ mkV2 : overload {
         mk6N hund hunde hunde hunde hunde hunde g ;
       <_, Masc> =>  
         let hunde = hund + "e" ; hunden = pluralN hunde in
-        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
-                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
+        mk6N hund hund hund (genitS True  hund) hunde hunden g ;
+        ---variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
+        ---          mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
       <_, Neutr> =>  
         let hunde = hund + "er" ; hunden = pluralN hunde in
-        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
-                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
+        variants {mk6N hund hund hund (genitS True  hund) hunde hunden g ;
+                  mk6N hund hund hund (genitS False hund) hunde hunden g} ;
+---        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
+---                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
       <_,  Fem> => 
         let hunde : Str = case hund of {_ + "e" => hund + "n" ; _ => hund + "en"} ; 
             hunden = hunde
         in mk6N hund hund hund hund hunde hunden g ;
-      _ => {s = (regN hund).s ; g = g ; lock_N = <>}
+      _ => regN hund ** {g = g}
     } ;
 
   reg2N : (x1,x2 : Str) -> Gender -> N = \hund,hunde,g -> 
@@ -384,8 +405,10 @@ mkV2 : overload {
     in
     case <hund,hunde,g> of {                                        -- Duden p. 223
       <_,_ + ("e" | "er"), Masc | Neutr> =>                         -- I,IV 
-        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
-                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
+        variants {mk6N hund hund hund (genitS True  hund) hunde hunden g ;
+                  mk6N hund hund hund (genitS False hund) hunde hunden g} ;
+---        variants {mk6N hund hund (dativE True  hund) (genitS True  hund) hunde hunden g ;
+---                  mk6N hund hund (dativE False hund) (genitS False hund) hunde hunden g} ;
       <_ + ("el"|"er"|"en"),_ + ("el"|"er"|"en"), Masc | Neutr> =>  -- II
         mk6N hund hund hund (genitS (True | False) hund) hunde hunden g ;
       <_,_ + "s", Masc | Neutr> =>                                  -- V 
@@ -396,9 +419,20 @@ mkV2 : overload {
         mk6N hund hund hund hund hunde hunden g ;
       <_,_ + ("n" | "s"), Fem> =>                                   -- IX,X 
         mk6N hund hund hund hund hunde hunde g ;
-      _ => {s = (regN hund).s ; g = g ; lock_N = <>}
+      <_,_ + ("n" | "s"), Neutr> =>                                 --- not mentioned; Konto-Kontos
+        mk6N hund hund hund hund hunde hunde g ;
+      _ => regN hund ** {g = g}
     } ;
    
+  changeCompoundN : Str -> N -> N = \co,n -> n ** {
+      co = co ;
+      uncap = n.uncap ** {co = toLowerFirst co} ;
+      } ;
+
+  dative_eN : N -> N = \n -> n ** {
+      s = table {Sg => table {Dat => n.s ! Sg ! Dat + "e" ; c => n.s ! Sg ! c} ; Pl => n.s ! Pl} ;
+      } ; ---- change uncap as well?
+
   mkN2 = overload {
     mkN2 : Str -> N2 = \s -> vonN2 (regN s) ;
     mkN2 : N ->   N2 = vonN2 ;
@@ -453,10 +487,14 @@ mkV2 : overload {
 
   mkAdv s = {s = s ; lock_Adv = <>} ;
 
-  mkPrep s c = {s = s ; c = c ; isPrep = True ; lock_Prep = <>} ;
-  accPrep = {s = [] ; c = accusative ; isPrep = False ; lock_Prep = <>} ;
-  datPrep = {s = [] ; c = dative ; isPrep = False ; lock_Prep = <>} ;
-  genPrep = {s = [] ; c = genitive ; isPrep = False ; lock_Prep = <>} ;
+  mkPrep = overload {
+    mkPrep : Str -> PCase -> Prep = \s,c -> {s = s ; s2 = [] ; c = c ; isPrep = True ; lock_Prep = <>} ;
+    mkPrep : PCase -> Str -> Prep = \c,s -> {s = [] ; s2 = s ; c = c ; isPrep = True ; lock_Prep = <>} ;
+    mkPrep : Str -> PCase -> Str -> Prep = \s,c,t -> {s = s ; s2 = t ; c = c ; isPrep = True ; lock_Prep = <>}
+    } ;
+  accPrep = {s,s2 = [] ; c = accusative ; isPrep = False ; lock_Prep = <>} ;
+  datPrep = {s,s2 = [] ; c = dative ; isPrep = False ; lock_Prep = <>} ;
+  genPrep = {s,s2 = [] ; c = genitive ; isPrep = False ; lock_Prep = <>} ;
   --von_Prep = mkPrep "von" dative ;
   von_Prep = mkPrep [] vonDat_Case ;
   zu_Prep = mkPrep [] zuDat_Case ;
@@ -499,19 +537,18 @@ mkV2 : overload {
 
   prefixV p v = MorphoGer.prefixV p v ** {lock_V = v.lock_V} ;
 
-  habenV v = 
-    {s = v.s ; prefix = v.prefix ; lock_V = v.lock_V ; aux = VHaben ; vtype = v.vtype} ;
-  seinV v = 
-    {s = v.s ; prefix = v.prefix ; lock_V = v.lock_V ; aux = VSein ; vtype = v.vtype} ;
-  reflV v c = 
-    {s = v.s ; prefix = v.prefix ; lock_V = v.lock_V ; aux = VHaben ; vtype = VRefl (prepC c).c} ;
+  compoundV p v = v ** {particle = p} ;
+
+  habenV v = v ** {aux = VHaben} ;
+  seinV v = v ** {aux = VSein} ;
+  reflV v c = v ** {aux = VHaben ; vtype = VRefl (prepC c).c} ;
 
   no_geV v = let vs = v.s in {
     s = table {
       p@(VPastPart _) => Predef.drop 2 (vs ! p) ;
       p => vs ! p
       } ;
-    prefix = v.prefix ; lock_V = v.lock_V ; aux = v.aux ; vtype = v.vtype
+    prefix = v.prefix ; particle = v.particle ; lock_V = v.lock_V ; aux = v.aux ; vtype = v.vtype
     } ;
 
   fixprefixV s v = let vs = v.s in {
@@ -520,12 +557,12 @@ mkV2 : overload {
       p@(VPastPart _) => s + Predef.drop 2 (vs ! p) ;
       p => s + vs ! p
       } ;
-    prefix = v.prefix ; lock_V = v.lock_V ; aux = v.aux ; vtype = v.vtype
+    prefix = v.prefix ; particle = v.particle ; lock_V = v.lock_V ; aux = v.aux ; vtype = v.vtype
     } ;
 
-  haben_V = MorphoGer.haben_V ** {lock_V = <>} ;
-  sein_V = MorphoGer.sein_V ** {lock_V = <>} ;
-  werden_V = MorphoGer.werden_V ** {lock_V = <>} ;
+  haben_V = MorphoGer.haben_V ** {particle = [] ; lock_V = <>} ;
+  sein_V = MorphoGer.sein_V ** {particle = [] ; lock_V = <>} ;
+  werden_V = MorphoGer.werden_V ** {particle = [] ; lock_V = <>} ;
 
   prepV2 v c   = v ** {c2 = c ; lock_V2 = <>} ;
   dirV2 v = prepV2 v accPrep ;
@@ -533,7 +570,7 @@ mkV2 : overload {
 
   mkV3 = overload {
     mkV3 : V -> V3 
-      = \v -> lin V3 (v ** {c2 = mkPrep [] accusative ; c3 = mkPrep [] dative}) ; 
+      = \v -> lin V3 (v ** {c2 = accPrep ; c3 = datPrep}) ;
     mkV3 : V -> Prep -> Prep -> V3
       = \v,c,d -> v ** {c2 = c ; c3 = d ; lock_V3 = <>} ;
     } ;
@@ -597,11 +634,27 @@ mkV2 : overload {
     mkN : (x1,x2 : Str) -> Gender -> N = reg2N ;
     mkN : (x1,_,_,_,_,x6 : Str) -> Gender -> N = mk6N ;
     mkN : Str -> N -> N  -- Auto + Fahrer -> Autofahrer
-    = \s,x -> lin N {s = \\n,c => s + Predef.toLower (x.s ! n ! c) ; g = x.g} ;
+      = \s,x -> mkCompoundN s x ;
+    mkN : N -> N -> N  
+      = \n,x -> mkCompoundN n.co x ;
     mkN : Str -> Gender -> Gender -> N 
-    = \s,g,h -> reg1N s g | reg1N s h ;
+      = \s,g,h -> reg1N s g | reg1N s h ;
+
+    mkN : (x1,_,_,_,_,x6 : Str) -> N  
+      = \a,b,c,d,e,f -> mk6N a b c d e f ((regN a).g) ; ---- temporary: to deal with genderless uses AR 29/5/2014
+
     };
 
+    mkCompoundN : Str -> N -> N  -- Auto + Fahrer -> Autofahrer
+      = \s,x -> lin N {
+          s  = \\n,c => s + x.uncap.s ! n ! c ; 
+          co = s + x.uncap.co ;
+          uncap = {
+            s  = \\n,c => toLowerFirst s + x.uncap.s ! n ! c ; 
+            co = toLowerFirst s + x.uncap.co ;
+            } ;
+          g = x.g
+          } ;
 
 
   regA : Str -> A ;
@@ -625,7 +678,10 @@ mkV2 : overload {
     mkV : Str -> V = regV ;
     mkV : (x1,_,_,_,x5 : Str) -> V = irregV ;
     mkV : (x1,_,_,_,_,x6 : Str) -> V = mk6V ;
-    mkV : Str -> V -> V = prefixV
+    mkV : Str -> V -> V = \p,v -> case p of {
+     "be" | "er" | "ge" | "ver" | "zer" => fixprefixV p v ;
+      _ => MorphoGer.prefixV p v ** {lock_V = v.lock_V}
+      } ;
     };
 
 
@@ -639,7 +695,7 @@ mkV2 : overload {
     mkV2 : Str -> V2 = \s -> dirV2 (regV s) ;
     mkV2 : V -> V2 = dirV2 ;
     mkV2 : V -> Prep -> V2 = prepV2;
-    mkV2 : V -> Case -> V2 = \v,c -> prepV2 v (lin Prep {s = [] ; c = c ; isPrep = False}) ;
+    mkV2 : V -> Case -> V2 = \v,c -> prepV2 v (lin Prep {s,s2 = [] ; c = c ; isPrep = False}) ;
     } ;
 
 }
