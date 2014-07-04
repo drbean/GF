@@ -7,94 +7,97 @@
 <link rel=top href="../" title="GF">
 <style>
 div.center { text-align: center; }
-table.center { margin-left: auto; margin-right: auto; }
-textarea { margin: 0; }
+table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+td { padding: 0 5px; vertical-align: top; }
+td.output { background: #fcfcfc; border: 1px solid grey; }
+td.input, td.output { font-family: sans-serif; font-size: 90%; }
+div#output { white-space: pre-line; }
+div.input { margin-right: 5px; }
+textarea { font: inherit; }
 body:target h1, body:target div.modtime { display: none; }
-#extra { color: #666; }
+small { color: #666; }
+#pick>* { padding: 0 0.5ex; }
+#speak { display: none; }
+.colors .default_quality { background-color: #ffb; }
+.colors .high_quality { background-color: #bfb; }
+.colors .low_quality { background-color: #fa7; }
+.colors .bad_quality { background-color: #f89; }
+.placeholder { color: #999; }
+.error { color: #c00; }
 </style>
 </head>
 
 <body id=embed>
-<div class=center>
-<h1><a href="http://www.grammaticalframework.org/"><img class=nofloat src="P/gf-cloud.png" alt="GF"></a> Wide Coverage Translation</h1>
+<div>
+<h1><a href="http://www.grammaticalframework.org/"><img class=nofloat src="P/gf-cloud.png" alt="GF"></a> Wide Coverage Translation Demo</h1>
 </div>
 
-<table class="center">
+<form onsubmit="return wc.translate()" style="width: 100%">
+<table>
 <tr><td>
-<form onsubmit="return wctranslate()">
-  <textarea name=input rows=3 style="width: 100%"></textarea>
-  <br>
-  <big>⤷</big>
   <select name=from>
     <option value=Bul>Bulgarian</option>
     <option value=Chi>Chinese</option>
+    <option value=Dut>Dutch</option>
     <option value=Eng selected>English</option>
     <option value=Fin>Finnish</option>
     <option value=Fre>French</option>
     <option value=Ger>German</option>
     <option value=Hin>Hindi</option>
+    <option value=Ita>Italian</option>
+    <option value=Spa>Spanish</option>
     <option value=Swe>Swedish</option>
-  </select> →
-  <button name=translate type=submit><strong><big>Translate</big></strong></button> →
-  <select name=to onchange="wctranslate()">
+  </select>
+  <input type=button value="Clear" onclick="wc.clear()">
+  <td style="text-align: right">
+    <input type=button name=swap onclick="wc.swap()" value="⇆">
+  <td>
+  <select name=to onchange="wc.translate()">
     <option value=Bul>Bulgarian</option>
     <option value=Chi>Chinese</option>
+    <option value=Dut>Dutch</option>
     <option value=Eng>English</option>
     <option value=Fin>Finnish</option>
     <option value=Fre>French</option>
     <option value=Ger>German</option>
     <option value=Hin>Hindi</option>
+    <option value=Ita>Italian</option>
+    <option value=Spa>Spanish</option>
     <option value=Swe selected>Swedish</option>
   </select>
-  <big style="position: relative; top: 1ex">⤵</big>
-    <button onclick="wcswap()">↑↓</button>
-  <br>
-      <textarea name=output rows=3 style="width: 100%" readonly></textarea>
-  <br>
-</form>
-  
+  <input name=colors type=checkbox checked onchange="wc.colors()"> Colors
+  <td><button name=translate type=submit><strong>Translate</strong></button>
+  <tr><td class=input colspan=2>
+    <div class=input>
+  <textarea name=input rows=5 style="width: 100%" onkeyup="wc.delayed_translate()"></textarea>
+      </div>
+  <td class=output colspan=2>
+
+  <div id=output></div>
+  <tr><td colspan=2>
+    <small id=grammarinfo>Enter text to translate above.</small>
+    <td colspan=2>
+  <!--<small id=speak><input name=speak type=checkbox> Enable speech synthesis</small>-->
+
 </table>
-<div class=center><small id=extra></small></div>
-<p>
+</form>
+
+<div class=center>
+  <input type=button onclick="wc.try_google()" value="Try Google Translate">
+  <div id=pick></div>
+  <small id=extra></small>
+  </div>
+<hr>
 <div class=modtime><small>
-<!-- hhmts start -->Last modified: Tue Feb 11 17:37:40 CET 2014 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Fri Jun 20 20:21:52 CEST 2014 <!-- hhmts end -->
 </small></div>
+<a href="http://www.grammaticalframework.org/demos/translation.html">About</a>
 <script src="js/support.js"></script>
 <script src="js/gftranslate.js"></script>
 <script src="js/localstorage.js"></script>
-<script src="gfse/localstorage.js"></script>
-<script src="gfse/cloud2.js"></script>
-<script>
-function wctranslate() {
-  var f=document.forms[0]
-  var e=element("extra")
-  f.translate.disabled=true
-  f.output.value=""
-  clear(e)
-
-  function showit(result) {
-    f.output.value=result
-    f.translate.disabled=false
-  }
-  function step3(trans) {
-    if(e) e.innerHTML=trans[0].prob+"<br>"+trans[0].tree
-    unlextext(trans[0].linearizations[0].text,showit)
-  }
-  function step2(text) {
-    gftranslate.translate(text,f.from.value,f.to.value,0,1,step3)
-  }
-  lextext(f.input.value,step2)
-  return false;
-}
-
-function wcswap() {
-  var f=document.forms[0]
-  f.input.value=f.output.value;
-  var from=f.from.value
-  f.from.value=f.to.value
-  f.to.value=from
-  wctranslate()
-}
+<script src="js/langcode.js"></script>
+<script src="js/pgf_online.js"></script>
+<script src="js/wc.js"></script>
 </script>
 </body>
 </html>

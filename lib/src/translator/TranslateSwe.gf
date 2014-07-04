@@ -1,4 +1,5 @@
---# -path=.:../swedish/:../scandinavian:../abstract
+--# -path=.:../chunk:alltenses
+
 concrete TranslateSwe of Translate = 
   TenseSwe,
   NounSwe - [PPartNP],
@@ -8,20 +9,23 @@ concrete TranslateSwe of Translate =
     PN, Symb, String, CN, Card, NP, MkSymb, SymbPN, CNNumNP
     ],
   ConjunctionSwe,
-  VerbSwe - [SlashV2V, PassV2, UseCopula, ComplVV],
+  VerbSwe -  [
+    UseCopula,  -- not needed  
+    PassV2      -- generalized in Extensions
+    ],
   AdverbSwe,
   PhraseSwe,
   SentenceSwe,
   QuestionSwe,
   RelativeSwe,
-  IdiomSwe [
-    NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP, 
-    neutr, sjalv
-    ],
+  IdiomSwe,
   ConstructionSwe,
   DocumentationSwe,
 
-  ExtensionsSwe,
+  ChunkSwe,
+  ExtensionsSwe [CompoundN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP,
+                 DirectComplVS, DirectComplVQ, FocusObjS],
+
   DictionarySwe ** 
 open MorphoSwe, ResSwe, ParadigmsSwe, SyntaxSwe, CommonScand, (E = ExtraSwe), Prelude in {
 

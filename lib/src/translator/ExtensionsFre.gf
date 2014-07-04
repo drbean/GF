@@ -1,22 +1,22 @@
 concrete ExtensionsFre of Extensions = 
     CatFre ** 
   open 
-    PhonoFre, MorphoFre, ResFre, CommonRomance, ParadigmsFre, SyntaxFre, Prelude, (G = GrammarFre) in {
+    PhonoFre, MorphoFre, ResFre, CommonRomance, ParadigmsFre, SyntaxFre, Prelude, (G = GrammarFre), (E = ExtraFre) in {
 
-----lincat
-----  VPI = E.VPI ;
+lincat
+  VPI = E.VPI ;
 ----  ListVPI = E.ListVPI ;
-----  VPS = E.VPS ;
+  VPS = E.VPS ;
 ----  ListVPS = E.ListVPS ;
   
-----lin
-----  MkVPI = E.MkVPI ;
+lin
+  MkVPI = E.MkVPI ;
 ----  ConjVPI = E.ConjVPI ;
 ----  ComplVPIVV = E.ComplVPIVV ;
 
-----  MkVPS = E.MkVPS ;
+  MkVPS = E.MkVPS ;
 ----  ConjVPS = E.ConjVPS ;
-----  PredVPS = E.PredVPS ;
+  PredVPS = E.PredVPS ;
 
 ----  BaseVPI = E.BaseVPI ;
 ----  ConsVPI = E.ConsVPI ;
@@ -26,8 +26,8 @@ concrete ExtensionsFre of Extensions =
 ----  GenIP = E.GenIP ;
 ----  GenRP = E.GenRP ;
 
-----  PassVPSlash = E.PassVPSlash ;
-----  PassAgentVPSlash = E.PassAgentVPSlash ;
+  PassVPSlash = E.PassVPSlash ;
+  PassAgentVPSlash = E.PassAgentVPSlash ;
 
 
 lin
@@ -48,10 +48,16 @@ lin
 
 
 lin
-  CompoundCN noun cn = {
+  CompoundN noun cn = {
     s = \\n => cn.s ! n ++ elisDe ++ noun.s ! Sg ;
     g = cn.g
   } ;
+
+    CompoundAP noun adj = {
+      s = \\af => adj.s ! Posit ! af ++ elisDe ++ noun.s ! Sg  ;
+      isPre = False
+      } ;
+
 
 {-  
   GerundN v = {

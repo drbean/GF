@@ -20,7 +20,7 @@
         android:textSize="25sp"/>
     
     <WebView
-        android:id="@+id/lexical_inflection"
+        android:id="@+id/desc_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/lexical_desc"/>

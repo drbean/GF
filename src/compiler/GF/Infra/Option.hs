@@ -1,4 +1,3 @@
--- LANGUAGE CPP
 module GF.Infra.Option
     (
      -- * Option types
@@ -43,7 +42,7 @@ import GF.Data.Operations(Err,ErrorMonad(..),liftErr)
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-import PGF.Data(Literal(..))
+import PGF.Internal(Literal(..))
 
 usageHeader :: String
 usageHeader = unlines 
@@ -285,14 +284,7 @@ defaultFlags = Flags {
       optTagsOnly        = False,
       optHeuristicFactor = Nothing,
       optMetaProb        = Nothing,
-      optMetaToknProb    = Nothing{-,
-      optNewComp         =
-#ifdef NEW_COMP
-                           True
-#else
-                           False
-#endif
--}
+      optMetaToknProb    = Nothing
     }
 
 -- | Option descriptions

@@ -1,5 +1,5 @@
 name: gf
-version: 3.5.12-darcs
+version: 3.6-darcs
 
 cabal-version: >= 1.10
 build-type: Custom
@@ -10,6 +10,7 @@ synopsis: Grammatical Framework
 description: GF, Grammatical Framework, is a programming language for multilingual grammar applications
 homepage: http://www.grammaticalframework.org/
 bug-reports: http://code.google.com/p/grammatical-framework/issues/list
+maintainer: Thomas Hallgren
 tested-with: GHC==7.4.2, GHC==7.6.3
 
 data-dir: src
@@ -63,7 +64,7 @@ flag c-runtime
 
 Library
   default-language:    Haskell2010
-  build-depends: base >= 4.2 && <5,
+  build-depends: base >= 4.3 && <5,
                  array,
                  fst,
                  containers,
@@ -76,7 +77,7 @@ Library
 
   if flag(custom-binary)
     hs-source-dirs: src/binary
-    exposed-modules:
+    other-modules:
       -- not really part of GF but I have changed the original binary library
       -- and we have to keep the copy for now.
       Data.Binary
@@ -88,18 +89,22 @@ Library
     build-depends: binary
 
   ghc-options: -fwarn-unused-imports
+  if impl(ghc>=7.8)
+    ghc-options: -j +RTS -A20M -RTS
   ghc-prof-options: -auto-all
   extensions: 
 
   exposed-modules: 
     PGF
+    PGF.Internal
+    PGF.Lexing
+    PGF.Utilities
+  other-modules:
     PGF.Data
     PGF.Macros
     PGF.Binary
     PGF.Optimize
     PGF.Printer
-    PGF.Utilities
-  other-modules:
     PGF.CId
     PGF.Expr
     PGF.Generate
@@ -129,7 +134,7 @@ Library
 Executable gf
   default-language:    Haskell2010
   build-depends: gf,
-                 base >= 4.2 && <5,
+                 base >= 4.3 && <5,
                  array,
                  containers,
                  bytestring,
@@ -156,10 +161,17 @@ Executable gf
 
   if flag(c-runtime)
     cpp-options: -DC_RUNTIME
---if flag(new-comp)
---  cpp-options: -DNEW_COMP
 
-  build-tools: happy, alex>=3
+  if impl(ghc>=7.0)
+    ghc-options: -rtsopts
+    if impl(ghc<7.8)
+      ghc-options: -with-rtsopts=-K64M
+
+  if impl(ghc>=7.8)
+    build-tools: happy>=1.19, alex>=3.1
+    ghc-options: -j +RTS -A20M -RTS
+  else
+    build-tools: happy, alex>=3
 
   if os(windows)
     build-depends: Win32
@@ -168,8 +180,6 @@ Executable gf
 
   ghc-prof-options: -auto-all
 
-  if impl(ghc>=7.0)
-    ghc-options: -rtsopts
   hs-source-dirs: src/compiler
 
   if !flag(custom-binary)
@@ -253,7 +263,7 @@ executable pgf-shell
     buildable: False
   main-is:             pgf-shell.hs
   hs-source-dirs:      src/runtime/haskell-bind/examples
-  build-depends:       gf, base, containers
+  build-depends:       gf, base, containers, mtl, lifted-base
   default-language:    Haskell2010
   if impl(ghc>=7.0)
     ghc-options: -rtsopts
@@ -269,5 +279,5 @@ test-suite gf-tests
   type:           exitcode-stdio-1.0
   main-is:        run.hs
   hs-source-dirs: testsuite
-  build-depends:  base>=4.2 && <5, Cabal>=1.8, directory, filepath, process
+  build-depends:  base>=4.3 && <5, Cabal>=1.8, directory, filepath, process
   default-language:    Haskell2010

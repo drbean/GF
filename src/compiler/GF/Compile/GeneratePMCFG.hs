@@ -14,7 +14,7 @@ module GF.Compile.GeneratePMCFG
     ) where
 
 --import PGF.CId
-import PGF.Data(CncCat(..),Symbol(..),fidVar)
+import PGF.Internal as PGF(CncCat(..),Symbol(..),fidVar)
 
 import GF.Infra.Option
 import GF.Grammar hiding (Env, mkRecord, mkTable)
@@ -39,6 +39,7 @@ import Data.Array.Unboxed
 import Control.Monad
 import Control.Monad.Identity
 --import Control.Exception
+--import Debug.Trace(trace)
 
 ----------------------------------------------------------------------
 -- main conversion function
@@ -67,6 +68,7 @@ mapAccumWithKeyM f a m = do let xs = Map.toAscList m
 
 addPMCFG :: Options -> SourceGrammar -> GlobalEnv -> Maybe FilePath -> Ident -> Ident -> SeqSet -> Ident -> Info -> IOE (SeqSet, Info)
 addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncFun mty@(Just (cat,cont,val)) mlin@(Just (L loc term)) mprn Nothing) = do
+--when (verbAtLeast opts Verbose) $ ePutStr ("\n+ "++showIdent id++" ...")
   let pres  = protoFCat gr res val
       pargs = [protoFCat gr (snd $ catSkeleton ty) lincat | ((_,_,ty),(_,_,lincat)) <- zip ctxt cont]
 
@@ -85,7 +87,8 @@ addPMCFG opts gr cenv opath am cm seqs id (GF.Grammar.CncFun mty@(Just (cat,cont
                        !funs_cnt        = e-s+1
                    in (prods_cnt,funs_cnt)
 
-  when (verbAtLeast opts Verbose) $ ePutStr ("\n+ "++showIdent id ++ " " ++ show (product (map catFactor pargs)))
+  when (verbAtLeast opts Verbose) $
+    ePutStr ("\n+ "++showIdent id++" "++show (product (map catFactor pargs)))
   seqs1 `seq` stats `seq` return ()
   when (verbAtLeast opts Verbose) $ ePutStr (" "++show stats)
   return (seqs1,GF.Grammar.CncFun mty mlin mprn (Just pmcfg))
@@ -146,17 +149,22 @@ floc opath loc id = maybe (L loc id) (\path->L (External path loc) id) opath
 convert opts gr cenv loc term ty@(_,val) pargs =
     case term' of
       Error s -> fail $ render $ ppL loc (text $ "Predef.error: "++s)
-      _ -> return $ runCnvMonad gr (conv term') (pargs,[])
+      _ -> do {-when (verbAtLeast opts Verbose) $
+                ePutStrLn $
+                  "\n"++take 10000 (renderStyle style{mode=OneLineMode}
+                    (text "term:"<+>ppU 0 term $$
+                     text "eta expanded:"<+>ppU 0 eterm $$
+                     text "normalized:"<+>ppU 0 term'))--}
+              return $ runCnvMonad gr (conv term') (pargs,[])
   where
     conv t = convertTerm opts CNil val =<< unfactor t
 
+    eterm = expand ty term
     term' = {-if flag optNewComp opts
-            then-} normalForm cenv loc (expand ty term) -- new evaluator
+            then-} normalForm cenv loc eterm -- new evaluator
             --else term -- old evaluator is invoked from GF.Compile.Optimize
 
-expand ty@(context,val) = recordExpand val . etaExpand ty
-
-etaExpand (context,val) = mkAbs pars . flip mkApp args
+expand (context,val) = mkAbs pars . recordExpand val . flip mkApp args
   where pars = [(Explicit,v) | v <- vars]
         args = map Vr vars
         vars = map (\(bt,x,t) -> x) context
@@ -177,12 +185,16 @@ recordExpand typ trm =
 unfactor :: Term -> CnvMonad Term
 unfactor t = CM (\gr c -> c (unfac gr t))
   where
-    unfac gr t = 
+    unfac gr t =
       case t of
         T (TTyped ty) [(PV x,u)] -> let u' = unfac gr u
-                                    in V ty [restore x v u' | v <- allparams ty]
+                                        vs = allparams ty
+                                    in --trace ("expand single variable table into "++show (length vs)++" branches.\n"++render (ppU 0 t)) $
+                                       V ty [restore x v u' | v <- vs]
         T (TTyped ty) [(PW  ,u)] -> let u' = unfac gr u
-                                    in V ty [u' | _ <- allparams ty]
+                                        vs = allparams ty
+                                    in --trace ("expand wildcard table into "++show (length vs)++ "branches.\n"++render (ppU 0 t)) $
+                                       V ty [u' | _ <- vs]
         T (TTyped ty) _ -> -- convertTerm doesn't handle these tables
                            ppbug $
                            sep [text "unfactor"<+>ppU 10 t,
@@ -196,13 +208,12 @@ unfactor t = CM (\gr c -> c (unfac gr t))
                           Vr y | y == x -> u
                           _             -> composSafeOp (restore x u) t
 
-pgfCncCat :: SourceGrammar -> Type -> Int -> PGF.Data.CncCat
+pgfCncCat :: SourceGrammar -> Type -> Int -> CncCat
 pgfCncCat gr lincat index =
   let ((_,size),schema) = computeCatRange gr lincat
-  in PGF.Data.CncCat index
-                     (index+size-1)
-                     (mkArray (map (renderStyle style{mode=OneLineMode} . ppPath) 
-                                   (getStrPaths schema)))
+  in PGF.CncCat index (index+size-1)
+                      (mkArray (map (renderStyle style{mode=OneLineMode} . ppPath) 
+                                    (getStrPaths schema)))
   where
     getStrPaths :: Schema Identity s c -> [Path]
     getStrPaths = collect CNil []
@@ -397,8 +408,9 @@ convertTerm opts sel ctype (C t1 t2)    = do v1 <- convertTerm opts sel ctype t1
 convertTerm opts sel ctype (K t)        = return (CStr [SymKS t])
 convertTerm opts sel ctype Empty        = return (CStr [])
 convertTerm opts sel ctype (Alts s alts)= do CStr s <- convertTerm opts CNil ctype s
-                                             alts <- forM alts $ \(u,Strs ps) -> do 
+                                             alts <- forM alts $ \(u,alt) -> do
                                                             CStr u <- convertTerm opts CNil ctype u
+                                                            Strs ps <- unPatt alt
                                                             ps     <- mapM (convertTerm opts CNil ctype) ps
                                                             return (u,map unSym ps)
                                              return (CStr [SymKP s alts])
@@ -406,6 +418,18 @@ convertTerm opts sel ctype (Alts s alts)= do CStr s <- convertTerm opts CNil cty
     unSym (CStr [])        = ""
     unSym (CStr [SymKS t]) = t
     unSym _                = ppbug $ hang (text "invalid prefix in pre expression:") 4 (ppU 0 (Alts s alts))
+
+    unPatt (EPatt p) = fmap Strs (getPatts p)
+    unPatt u         = return u
+
+    getPatts p = case p of
+      PAlt a b  -> liftM2 (++) (getPatts a) (getPatts b)
+      PString s -> return [K s]
+      PSeq a b  -> do
+        as <- getPatts a
+        bs <- getPatts b
+        return [K (s ++ t) | K s <- as, K t <- bs]
+      _ -> fail (render (text "not valid pattern in pre expression" <+> ppPatt Unqualified 0 p))
 
 convertTerm opts sel ctype (Q (m,f))
   | m == cPredef &&

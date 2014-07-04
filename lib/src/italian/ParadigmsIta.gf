@@ -138,7 +138,8 @@ oper
 
   mkPN : overload {
     mkPN : Str -> PN ; -- femininne for "-a", otherwise masculine
-    mkPN : Str -> Gender -> PN -- set gender manually
+    mkPN : Str -> Gender -> PN ; -- set gender manually
+    mkPN : N -> PN ;  -- get gender from noun
   } ;
 
 
@@ -250,7 +251,12 @@ oper
 -- Three-place (ditransitive) verbs need two prepositions, of which
 -- the first one or both can be absent.
 
-  mkV3     : V -> Prep -> Prep -> V3 ; -- parlare, a, di
+  mkV3 : overload {
+    mkV3 : V -> V3 ;                -- donner (+ accusative + dative)    
+    mkV3 : V -> Prep -> V3 ;        -- placer (+ accusative) + dans
+    mkV3 : V -> Prep -> Prep -> V3  -- parler + dative + genitive
+    } ;
+
   dirV3    : V -> Prep -> V3 ;         -- dare,_,a
   dirdirV3 : V -> V3 ;                 -- dare,_,_
 
@@ -262,15 +268,26 @@ oper
 
   mkV0  : V -> V0 ; --%
   mkVS  : V -> VS ;
-  mkV2S : V -> Prep -> V2S ;
   mkVV  : V -> VV ;  -- plain infinitive: "voglio parlare"
   deVV  : V -> VV ;  -- "cerco di parlare"
   aVV   : V -> VV ;  -- "arrivo a parlare"
-  mkV2V : V -> Prep -> Prep -> V2V ;
   mkVA  : V -> VA ;
-  mkV2A : V -> Prep -> Prep -> V2A ;
   mkVQ  : V -> VQ ;
   mkV2Q : V -> Prep -> V2Q ;
+  mkV2S  : overload {
+    mkV2S : V -> V2S ;
+    mkV2S : V -> Prep -> V2S ;
+    } ;
+  mkV2V  : overload {
+    mkV2V : V -> V2V ;
+    mkV2V : V -> Prep -> Prep -> V2V ;
+    } ;
+  mkV2A : overload {
+    mkV2A : V -> V2A ;
+    mkV2A : V -> Prep -> Prep -> V2A ;
+    } ;
+
+
 
   mkAS  : A -> AS ; --%
   mkA2S : A -> Prep -> A2S ; --%
@@ -366,7 +383,7 @@ oper
       i   = last ci ;
       verb = case are of {
         "ire" =>  finire_100 x ;
-        "ere" =>  assistere_24 x ;
+        "ere" =>  temere_20 x ;
         _ => case i of {
           "c" => cercare_7 x ;
           "g" => legare_8 x ;
@@ -395,10 +412,6 @@ oper
   dirV2 v = mk2V2 v accusative ;
   v2V v = v ** {lock_V = <>} ;
 
-  mkV3 v p q = {s = v.s ; vtyp = v.vtyp ; 
-    c2 = p ; c3 = q ; lock_V3 = <>} ;
-  dirV3 v p = mkV3 v accusative p ;
-  dirdirV3 v = dirV3 v dative ;
 
   V0 : Type = V ;
   AS, AV : Type = A ;
@@ -406,15 +419,41 @@ oper
 
   mkV0  v = v ** {lock_V0 = <>} ;
   mkVS  v = v ** {m = \\_ => Indic ; lock_VS = <>} ;  ---- more moods
-  mkV2S v p = mk2V2 v p ** {mn,mp = Indic ; lock_V2S = <>} ;
   mkVV  v = v ** {c2 = complAcc ; lock_VV = <>} ;
   deVV  v = v ** {c2 = complGen ; lock_VV = <>} ;
   aVV  v = v ** {c2 = complDat ; lock_VV = <>} ;
-  mkV2V v p t = mkV3 v p t ** {lock_V2V = <>} ;
   mkVA  v = v ** {lock_VA = <>} ;
-  mkV2A v p q = mkV3 v p q ** {lock_V2A = <>} ;
   mkVQ  v = v ** {lock_VQ = <>} ;
   mkV2Q v p = mk2V2 v p ** {lock_V2Q = <>} ;
+
+  mmkV3    : V -> Prep -> Prep -> V3 ;  -- parler, à, de
+  mmkV3 v p q = v ** {c2 = p ; c3 = q ; lock_V3 = <>} ;
+  dirV3 v p = mmkV3 v accusative p ;
+  dirdirV3 v = dirV3 v dative ;
+
+  mmkV2 : V -> Prep -> V2 ;
+  mmkV2 v p = v ** {c2 = p ; lock_V2 = <>} ;
+
+  mkV3 = overload {
+    mkV3 : V -> V3 = dirdirV3 ;               -- donner,_,_
+    mkV3 : V -> Prep -> V3 = dirV3 ;          -- placer,_,sur
+    mkV3 : V -> Prep -> Prep -> V3 = mmkV3    -- parler, à, de
+    } ;
+
+  mkV2S = overload {
+    mkV2S : V -> V2S = \v -> mmkV2 v dative ** {mn,mp = Indic ; lock_V2S = <>} ;
+    mkV2S : V -> Prep -> V2S = \v,p -> mmkV2 v p ** {mn,mp = Indic ; lock_V2S = <>} ;
+    } ;
+  mkV2V = overload {
+    mkV2V : V -> V2V                 = \v -> mmkV3 v accusative dative ** {lock_V2V = <>} ;
+    mkV2V : V -> Prep -> Prep -> V2V = \v,p,q -> mmkV3 v p q ** {lock_V2V = <>} ;
+    } ;
+
+  mkV2A = overload {
+    mkV2A : V -> V2A                 = \v -> mmkV3 v accusative dative ** {lock_V2A = <>} ;
+    mkV2A : V -> Prep -> Prep -> V2A = \v,p,q -> mmkV3 v p q ** {lock_V2A = <>} ;
+    } ;
+
 
   mkAS  v = v ** {lock_AS = <>} ; ---- more moods
   mkA2S v p = mkA2 v p ** {lock_A2S = <>} ;
@@ -452,7 +491,8 @@ oper
 
   mkPN = overload {
     mkPN : Str -> PN = regPN ;
-    mkPN : Str -> Gender -> PN = mk2PN
+    mkPN : Str -> Gender -> PN = mk2PN ;
+    mkPN : N -> PN = \n -> lin PN {s = n.s ! Sg ; g = n.g} ;
   } ;
 
   mkA = overload {
@@ -468,10 +508,15 @@ oper
   regADeg : Str -> A ;
 
   mkV = overload {
-    mkV : Str -> V = regV ;
+    mkV : Str -> V = \s -> case s of {
+      _ + "rsi" => reflV (regV (Predef.tk 2 s + "e")) ;
+      _ => regV s
+      } ;
     mkV : Verbo -> V = verboV ;
     mkV : 
      (udire,odo,ode,udiamo,udiro,udii,udisti,udi,udirono,odi,udito : Str) -> V = mk11V ; 
+
+    mkV : V -> Str -> V = \v,_ -> v ;  ---- to recognize particles in dict, not yet in lincat V
     } ;
 
   regV : Str -> V ;

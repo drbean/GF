@@ -1263,6 +1263,76 @@ Concr_linearize(ConcrObject* self, PyObject *args)
 	return pystr;
 }
 
+static PyObject*
+Concr_tabularLinearize(ConcrObject* self, PyObject *args)
+{
+	ExprObject* pyexpr;
+	if (!PyArg_ParseTuple(args, "O!", &pgf_ExprType, &pyexpr))
+        return NULL;
+
+	PyObject* table = PyDict_New();
+	if (table == NULL)
+		return NULL;
+
+	GuPool* tmp_pool = gu_local_pool();
+	GuExn* err = gu_new_exn(NULL, gu_kind(type), tmp_pool);
+
+	GuEnum* cts = 
+		pgf_lzr_concretize(self->concr,
+		                   pyexpr->expr,
+		                   err,
+		                   tmp_pool);
+	if (!gu_ok(err)) {
+		if (gu_exn_caught(err) == gu_type(PgfLinNonExist))
+			Py_RETURN_NONE;
+		else if (gu_exn_caught(err) == gu_type(PgfExn)) {
+			GuString msg = (GuString) gu_exn_caught_data(err);
+			PyErr_SetString(PGFError, msg);
+			return NULL;
+		} else {
+			PyErr_SetString(PGFError, "The abstract tree cannot be linearized");
+			return NULL;
+		}
+	}
+
+	PgfCncTree ctree = gu_next(cts, PgfCncTree, tmp_pool);
+	if (gu_variant_is_null(ctree)) {
+		gu_pool_free(tmp_pool);
+		return NULL;
+	}
+
+	size_t n_lins;
+	GuString* labels;
+	pgf_lzr_get_table(self->concr, ctree, &n_lins, &labels);
+
+	for (size_t lin_idx = 0; lin_idx < n_lins; lin_idx++) {
+		GuStringBuf* sbuf = gu_string_buf(tmp_pool);
+		GuOut* out = gu_string_buf_out(sbuf);
+
+		pgf_lzr_linearize_simple(self->concr, ctree, lin_idx, out, err, tmp_pool);
+
+		PyObject* pystr = NULL;
+		if (gu_ok(err)) {
+			GuString str = gu_string_buf_freeze(sbuf, tmp_pool);
+			pystr = PyString_FromString(str);
+		} else {
+			gu_exn_clear(err);
+			pystr = Py_None;
+			Py_INCREF(pystr);
+		}
+
+		if (PyDict_SetItemString(table, labels[lin_idx], pystr) < 0)
+			return NULL;
+
+		Py_XDECREF(pystr);
+	}
+	
+	gu_pool_free(tmp_pool);
+
+	return table;
+}
+
+
 typedef struct {
 	PyObject_HEAD
 	PyObject* cat;
@@ -1402,39 +1472,6 @@ pgf_bracket_lzn_symbol_token(PgfLinFuncs** funcs, PgfToken tok)
 }
 
 static void
-pgf_bracket_lzn_expr_literal(PgfLinFuncs** funcs, PgfLiteral lit)
-{
-	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
-
-	GuVariantInfo i = gu_variant_open(lit);
-    switch (i.tag) {
-    case PGF_LITERAL_STR: {
-        PgfLiteralStr* lstr = i.data;
-        PyObject* str = PyString_FromString(lstr->val);
-		PyList_Append(state->list, str);
-		Py_DECREF(str);
-		break;
-	}
-    case PGF_LITERAL_INT: {
-        PgfLiteralInt* lint = i.data;
-        PyObject* str = PyString_FromFormat("%d", lint->val);
-        PyList_Append(state->list, str);
-        Py_DECREF(str);
-		break;
-	}
-    case PGF_LITERAL_FLT: {
-        PgfLiteralFlt* lflt = i.data;
-        PyObject* str = PyString_FromFormat("%f", lflt->val);
-        PyList_Append(state->list, str);
-        Py_DECREF(str);
-		break;
-	}
-	default:
-		gu_impossible();
-	}
-}
-
-static void
 pgf_bracket_lzn_begin_phrase(PgfLinFuncs** funcs, PgfCId cat, int fid, int lindex, PgfCId fun)
 {
 	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
@@ -1471,7 +1508,6 @@ pgf_bracket_lzn_end_phrase(PgfLinFuncs** funcs, PgfCId cat, int fid, int lindex,
 
 static PgfLinFuncs pgf_bracket_lin_funcs = {
 	.symbol_token  = pgf_bracket_lzn_symbol_token,
-	.expr_literal  = pgf_bracket_lzn_expr_literal,
 	.begin_phrase  = pgf_bracket_lzn_begin_phrase,
 	.end_phrase    = pgf_bracket_lzn_end_phrase,
 	.symbol_ne     = NULL,
@@ -1515,11 +1551,24 @@ Concr_bracketedLinearize(ConcrObject* self, PyObject *args)
 	state.funcs = &pgf_bracket_lin_funcs;
 	state.stack = gu_new_buf(PyObject*, tmp_pool);
 	state.list  = list;
-	pgf_lzr_linearize(self->concr, ctree, 0, &state.funcs);
+	pgf_lzr_linearize(self->concr, ctree, 0, &state.funcs, tmp_pool);
 
 	gu_pool_free(tmp_pool);
 
 	return list;
+}
+
+static PyObject*
+Concr_hasLinearization(ConcrObject* self, PyObject *args)
+{
+	PgfCId id;
+	if (!PyArg_ParseTuple(args, "s", &id))
+        return NULL;
+
+	if (pgf_has_linearization(self->concr, id))
+		Py_RETURN_TRUE;
+	else
+		Py_RETURN_FALSE;
 }
 
 static PyObject*
@@ -1774,8 +1823,14 @@ static PyMethodDef Concr_methods[] = {
     {"linearize", (PyCFunction)Concr_linearize, METH_VARARGS,
      "Takes an abstract tree and linearizes it to a string"
     },
+    {"tabularLinearize", (PyCFunction)Concr_tabularLinearize, METH_VARARGS,
+     "Takes an abstract tree and linearizes it to a table containing all fields"
+	},
     {"bracketedLinearize", (PyCFunction)Concr_bracketedLinearize, METH_VARARGS,
      "Takes an abstract tree and linearizes it to a bracketed string"
+    },
+    {"hasLinearization", (PyCFunction)Concr_hasLinearization, METH_VARARGS,
+     "hasLinearization(f) returns true if the function f has linearization in the concrete syntax"
     },
     {"graphvizParseTree", (PyCFunction)Concr_graphvizParseTree, METH_VARARGS,
      "Renders an abstract syntax tree as a parse tree in Graphviz format"

@@ -1,17 +1,17 @@
 --# -coding=latin1
 concrete ExtraDut of ExtraDutAbs = CatDut ** 
-  open ResDut, MorphoDut, Coordination, Prelude, IrregDut in 
+  open ResDut, MorphoDut, Coordination, Prelude, IrregDut, (P = ParadigmsDut) in 
 {
---{
---
---  lincat
---    VPI   = {s : Bool => Str} ;
---    [VPI] = {s1,s2 : Bool => Str} ;
---  lin
---    BaseVPI = twoTable Bool ;
---    ConsVPI = consrTable Bool comma ;
---
---    MkVPI vp = {s = \\b => useInfVP b vp} ;
+
+
+  lincat
+    VPI   = {s : Bool => Str} ;
+    [VPI] = {s1,s2 : Bool => Str} ;
+  lin
+    BaseVPI = twoTable Bool ;
+    ConsVPI = consrTable Bool comma ;
+
+    MkVPI vp = {s = \\b => useInfVP b vp} ;
 --    ConjVPI = conjunctDistrTable Bool ;
 --
 --    ComplVPIVV v vpi = 
@@ -114,9 +114,15 @@ lin
 
     ConjVPS = conjunctDistrTable2 Order Agr ;
 
+    PassVPSlash vps = 
+      insertInf (vps.s.s ! VPerf) (predV ResDut.worden_V) ;
+    PassAgentVPSlash vps np = 
+      insertAdv (appPrep "door" np.s) (insertInf (vps.s.s ! VPerf) (predV ResDut.worden_V)) ;
+
 lin
- NominalizeVPSlashNP vpslash np = 
-           let vp : ResDut.VP = insertObjNP np.isPron (\\_ => appPrep vpslash.c2 np.s) vpslash ;
+ NominalizeVPSlashNP vpslash np =
+           --False for negation place; doesn't matter because vp.a1 ! Pos is chosen
+           let  vp : ResDut.VP = insertObjNP np.isPron False (\\_ => appPrep vpslash.c2.p1 np.s) vpslash ;
                 agrDef : Agr = agrP3 Sg ; 
                 compl : Str = vp.n0 ! agrDef ++ vp.a1 ! Pos ++ vp.n2 ! agrDef ++ vp.s.prefix ; 
                 inf : Str = vp.inf.p1 ;
@@ -127,5 +133,11 @@ lin
 
 lin
   zullen_VV = lin VV (zullen_V ** {isAux = True}) ;
+
+  StressedPron pron = {
+      s = table {NPNom => pron.stressed.nom ; NPAcc => pron.stressed.acc} ;
+      a = pron.a ;
+      isPron = True
+      } ; 
 
 }

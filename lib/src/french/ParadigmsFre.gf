@@ -61,7 +61,10 @@ oper
   genitive   : Prep ; -- genitive, constructed with "de"
   dative     : Prep ; -- dative, usually constructed with "à"
 
-  mkPrep : Str -> Prep ; -- preposition (other than "de" and "à")
+  mkPrep : overload {
+    mkPrep : Str -> Prep  ;         -- simple preposition (other than "de" and "à")
+    mkPrep : Str -> Prep -> Prep ;  -- complex preposition e.g. "à côté de"
+    } ;
 
 
 --2 Nouns
@@ -131,7 +134,8 @@ oper
 
   mkPN  : overload {
     mkPN : Str -> PN ; -- feminine if ends with "e", otherwise masculine
-    mkPN : Str -> Gender -> PN -- gender deviant from the simple rule
+    mkPN : Str -> Gender -> PN ; -- gender deviant from the simple rule
+    mkPN : N -> PN ; -- gender inherited from noun
     } ;
 
 
@@ -232,6 +236,10 @@ oper
 -- reused as one-place verbs.
 
     mkV : V2 -> V ; -- make 2-place to 1-place (e.g. from IrregFre)
+
+-- Particle verbs ("avoir" + "besoin")
+
+    mkV : V -> Str -> V  ;
   } ;
 
 -- The function $mkV$ gives the default compound auxiliary "avoir".
@@ -277,6 +285,7 @@ oper
 
   mkV0  : V -> V0 ;  --%
   mkVS  : V -> VS ;
+  subjVS  : V -> VS ;
   mkVV  : V -> VV ;  -- plain infinitive: "je veux parler"
   deVV  : V -> VV ;  -- "j'essaie de parler"
   aVV   : V -> VV ;  -- "j'arrive à parler"
@@ -328,12 +337,15 @@ oper
   accusative = complAcc ** {lock_Prep = <>} ;
   genitive = complGen ** {lock_Prep = <>} ;
   dative = complDat ** {lock_Prep = <>} ;
-  mkPrep p = {s = p ; c = CPrep PNul ; isDir = False ; lock_Prep = <>} ;
+  mkPrep = overload {
+    mkPrep : Str -> Prep  = \p -> {s = p ; c = CPrep PNul ; isDir = False ; lock_Prep = <>} ;
+    mkPrep : Str -> Prep -> Prep = \s,c-> {s = s ; c = c.c ; isDir = False ; lock_Prep = <>}
+    } ;
 
   --- obsolete
   Preposition : Type ;
   mkPreposition : Str -> Preposition ;
-  mkPreposition = mkPrep ;
+  mkPreposition s = mkPrep s ;
 
   regGenN : Str -> Gender -> N ;
   regN : Str -> N ;
@@ -371,7 +383,8 @@ oper
 
   mkPN = overload {
     mkPN : Str -> PN = regPN ;
-    mkPN : Str -> Gender -> PN = \x,g -> {s = x ; g = g} ** {lock_PN = <>} ;
+    mkPN : Str -> Gender -> PN = \x,g -> lin PN {s = x ; g = g} ;
+    mkPN : N -> PN = \x -> lin PN {s = x.s ! Sg ; g = x.g} ;
     } ;
 
   mk4A a b c d = compADeg {s = \\_ => (mkAdj a c b d).s ; isPre = False ; lock_A = <>} ;
@@ -414,7 +427,8 @@ oper
   A2S, A2V : Type = A2 ;
 
   mkV0  v = v ** {lock_V0 = <>} ;
-  mkVS  v = v ** {m = \\_ => Indic ; lock_VS = <>} ;  ---- more moods
+  mkVS  v = v ** {m = \\_ => Indic ; lock_VS = <>} ; 
+  subjVS  v = v ** {m = \\_ => Conjunct ; lock_VS = <>} ;
 
   mkV2S = overload {
     mkV2S : V -> V2S = \v -> mmkV2 v dative ** {mn,mp = Indic ; lock_V2S = <>} ;
@@ -484,6 +498,8 @@ oper
       {s = v ; vtyp = VTyp VHabere (getVerbT v) ; lock_V = <>} ;
    mkV : V -> V
     = \v -> v ;
+    mkV : V -> Str -> V 
+    = \v,_ -> v ;  ---- to recognize particles in dict, not yet in lincat V
   } ;
 
   regV : Str -> V ;

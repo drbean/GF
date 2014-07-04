@@ -1,9 +1,12 @@
---# -path=.:../abstract:../english
+--# -path=.:../chunk
 
 concrete TranslateEng of Translate = 
   TenseX - [Pol, PNeg, PPos],
   CatEng,
-  NounEng - [PPartNP],
+  NounEng - [
+    PPartNP
+    ,DetNP  -- Eng exception
+    ],
   AdjectiveEng,
   NumeralEng,
   SymbolEng [
@@ -12,22 +15,27 @@ concrete TranslateEng of Translate =
     ],
   ConjunctionEng,
   VerbEng - [
-    SlashV2V, PassV2, UseCopula, ComplVV,  -- generalized in Extensions
-    ComplVS, SlashV2S, ComplSlash          -- have variants in Eng
+    UseCopula,                    -- just removed: not needed
+    PassV2,                       -- generalized in Extensions
+    ComplVS, SlashV2S, ComplSlash -- Eng exceptions
     ],
   AdverbEng,
   PhraseEng,
   SentenceEng - [
-----    PredVP,   -- to be replaced by PredVPS, QuestVPS, QuestIAdvVPS in Extensions
     UseCl     -- replaced by UseCl | ContractedUseCl
     ],        
   QuestionEng,
-  RelativeEng,
-  IdiomEng [NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP],
+  RelativeEng - [IdRP],
+  IdiomEng,
   ConstructionEng,
   DocumentationEng,
 
-  ExtensionsEng,
+  ChunkEng,
+  ExtensionsEng [CompoundN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP,
+  DirectComplVS, DirectComplVQ, FocusObjS
+
+----    , PastPartAP, PastPartAgentAP, PresPartAP
+    ],
   DictionaryEng ** 
 open MorphoEng, ResEng, ParadigmsEng, (G = GrammarEng), (E = ExtraEng), Prelude in {
 
@@ -48,5 +56,15 @@ lin
   PPos = {s = [] ; p = CPos} ;
   PNeg = {s = [] ; p = CNeg True} | {s = [] ; p = CNeg False} ;
 
+  IdRP = ExtensionsEng.that_RP | G.IdRP | ExtensionsEng.who_RP |
+     { s = table {
+        RC _ (NCase Gen) | RC _ NPNomPoss => "whose" ; 
+        RC _ NPAcc    => [] ;
+        _     => "which"
+        } ;
+      a = RNoAg
+      } ;
+
+  DetNP d = G.DetNP d | G.DetCN d (UseN (mkN "one")) ; -- I like this / I like this one ; it / the one
 
 }

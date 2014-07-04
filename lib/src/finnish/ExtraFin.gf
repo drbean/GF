@@ -159,8 +159,9 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
     IAdvAdv adv = {s = "kuinka" ++ adv.s} ;
 
     ProDrop p = {
-      s = table {NPCase (Nom) => [] ; c => p.s ! c} ; 
-          ---- drop Gen only works in adjectival position: "autoni", but not in "ø täytyy mennä"
+      s = table {NPCase (Nom) => [] ; c => p.s ! c} ;
+      poss = [] ; 
+          -- drop Gen only works in adjectival position: "autoni", but not in "ø täytyy mennä"
       a = p.a ;
       hasPoss = p.hasPoss ;
       } ;
@@ -253,6 +254,7 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
 ---- TODO maybe squeeze s2 between the fin and inf (but this is subtle)
 ----   sinua olen rakastanut minä -> sinua olen minä rakastanus
 -- advantage though: works for all V2 verbs, need not be transitive
+---- TODO: agr should be to the agent
 
   PassAgentVPSlash vp np = {
       s = {s = vp.s.s ; h = vp.s.h ; p = vp.s.p ; sc = npform2subjcase vp.c2.c} ; 

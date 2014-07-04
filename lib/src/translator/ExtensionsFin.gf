@@ -47,9 +47,13 @@ lin
                }
          ) ;
 
-  CompoundCN noun cn = {
+  CompoundN noun cn = {
     s = \\nf => noun.s ! 10 ++ BIND ++ cn.s ! nf ;
     h = cn.h
+    } ;
+
+  CompoundAP  noun adj = {
+    s = \\_ => (snoun2nounSep {s = \\f => noun.s ! 10 ++ BIND ++ adj.s ! Posit ! sAN f ; h = adj.h}).s
     } ;
 
 ----  PastPartAP vp = {s = \\_,nf => (sverb2verbSep v).s ! PastPartPass (AN nf)} ;
@@ -119,5 +123,15 @@ lin
 --      insertObj (\\_,b,a => infVPGen pol.p v.sc b a vps v.vi) (predSV v) ** {c2 = v.c2} ; --- or vps.c2 ??
 
 --in Verb,   SlashV2VNP : V2V -> NP -> VPSlash -> VPSlash
+
+  DirectComplVS t np vs utt = 
+    mkS (lin Adv (optCommaSS utt)) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  DirectComplVQ t np vs q = 
+    mkS (lin Adv (optCommaSS (mkUtt q))) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  FocusObjS np sslash = 
+    mkS (lin Adv (optCommaSS (ss (appCompl True Pos sslash.c2 np)))) <lin S sslash : S> ; ---- Pos could be Neg: häntä minä en tunne
+
 
 }

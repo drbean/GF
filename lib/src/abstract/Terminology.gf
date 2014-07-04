@@ -77,11 +77,13 @@ fun
   participle_Parameter : Parameter ;
   aux_verb_Parameter : Parameter ;
   agent_Parameter : Parameter ;
+  gerund_Parameter : Parameter ;
 
   positive_Parameter : Parameter ;  -- as degree of verbs
   comparative_Parameter : Parameter ;
   superlative_Parameter : Parameter ;
   predicative_Parameter : Parameter ;
+  attributive_Parameter : Parameter ;
   negative_Parameter : Parameter ;
   positivePol_Parameter : Parameter ; -- as opposed to negative, e.g. for verbs
 

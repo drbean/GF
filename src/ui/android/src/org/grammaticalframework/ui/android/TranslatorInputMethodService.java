@@ -3,16 +3,12 @@ package org.grammaticalframework.ui.android;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.text.method.MetaKeyKeyListener;
-import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class TranslatorInputMethodService extends InputMethodService 
@@ -22,16 +18,18 @@ public class TranslatorInputMethodService extends InputMethodService
     private CompletionsView mCandidateView;
     private CompletionInfo[] mCompletions;
     
-    private StringBuilder mComposing = new StringBuilder();
+    private StringBuilder mComposingText = new StringBuilder();
+    private StringBuilder mComposingWord = new StringBuilder();
     private boolean mPredictionOn;
     private boolean mCompletionOn;
     private boolean mCapsLock;
     private long mLastShiftTime;
     private long mMetaState;
     
-    private TranslatorKeyboard mSymbolsKeyboard;
-    private TranslatorKeyboard mSymbolsShiftedKeyboard;
-    private TranslatorKeyboard mLanguageKeyboard;
+    private TranslatorKeyboard mSymbolsPage1Keyboard;
+    private TranslatorKeyboard mSymbolsPage2Keyboard;
+    private TranslatorKeyboard mLanguagePage1Keyboard;
+    private TranslatorKeyboard mLanguagePage2Keyboard;
 
     private TranslatorKeyboard mCurKeyboard;
 
@@ -43,11 +41,12 @@ public class TranslatorInputMethodService extends InputMethodService
     public void onCreate() {
         super.onCreate();
         
-        mTranslator = ((GFTranslator) getApplicationContext()).getTranslator();
+        mTranslator = ((HLCompiler) getApplicationContext()).getTranslator();
         
-        mSymbolsKeyboard = null;
-        mSymbolsShiftedKeyboard = null;
-       	mLanguageKeyboard = null;
+        mSymbolsPage1Keyboard = null;
+        mSymbolsPage2Keyboard = null;
+        mLanguagePage1Keyboard = null;
+        mLanguagePage2Keyboard = null;
     }
 
     @Override
@@ -80,7 +79,8 @@ public class TranslatorInputMethodService extends InputMethodService
 
         // Reset our state.  We want to do this even if restarting, because
         // the underlying state of the text editor could have changed in any way.
-        mComposing.setLength(0);
+        mComposingText.setLength(0);
+        mComposingWord.setLength(0);
         updateCandidates();
 
         if (!restarting) {
@@ -92,17 +92,20 @@ public class TranslatorInputMethodService extends InputMethodService
         mCompletionOn = false;
         mCompletions = null;
     
-    	int res =
-           	mTranslator.getSourceLanguage().getKeyboardResource();
+    	int res1 =
+           	mTranslator.getSourceLanguage().getKeyboardPage1Resource();
+    	int res2 =
+            mTranslator.getSourceLanguage().getKeyboardPage2Resource();
     	mModeId = R.string.normalKeyboardMode;
        	if (attribute.extras != null &&
             !attribute.extras.getBoolean("show_language_toggle", true)) {
        		mModeId = R.string.internalKeyboardMode;
        	}
        	mAttribute = attribute;
-       	mLanguageKeyboard = new TranslatorKeyboard(this, res, mModeId);
-       	mSymbolsKeyboard = new TranslatorKeyboard(this, R.xml.symbols, mModeId);
-        mSymbolsShiftedKeyboard = new TranslatorKeyboard(this, R.xml.symbols_shift, mModeId);
+       	mLanguagePage1Keyboard = new TranslatorKeyboard(this, res1, mModeId);
+       	mLanguagePage2Keyboard = new TranslatorKeyboard(this, res2, mModeId);
+       	mSymbolsPage1Keyboard = new TranslatorKeyboard(this, R.xml.symbols_page1, mModeId);
+        mSymbolsPage2Keyboard = new TranslatorKeyboard(this, R.xml.symbols_page2, mModeId);
 
         // We are now going to initialize our state based on the type of
         // text being edited.
@@ -111,13 +114,13 @@ public class TranslatorInputMethodService extends InputMethodService
             case InputType.TYPE_CLASS_DATETIME:
                 // Numbers and dates default to the symbols keyboard, with
                 // no extra features.
-                mCurKeyboard = mSymbolsKeyboard;
+                mCurKeyboard = mSymbolsPage1Keyboard;
                 break;
                 
             case InputType.TYPE_CLASS_PHONE:
                 // Phones will also default to the symbols keyboard, though
                 // often you will want to have a dedicated phone keyboard.
-                mCurKeyboard = mSymbolsKeyboard;
+                mCurKeyboard = mSymbolsPage1Keyboard;
                 break;
                 
             case InputType.TYPE_CLASS_TEXT:
@@ -125,22 +128,23 @@ public class TranslatorInputMethodService extends InputMethodService
                 // normal alphabetic keyboard, and assume that we should
                 // be doing predictive text (showing candidates as the
                 // user types).
-                mCurKeyboard = mLanguageKeyboard;
+                mCurKeyboard = mLanguagePage1Keyboard;
                 mPredictionOn = true;
                 
                 // We now look for a few special variations of text that will
                 // modify our behavior.
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
-                        variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                	variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD ||
+                    variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
                     // Do not display predictions / what the user is typing
                     // when they are entering a password.
                     mPredictionOn = false;
                 }
                 
-                if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-                        || variation == InputType.TYPE_TEXT_VARIATION_URI
-                        || variation == InputType.TYPE_TEXT_VARIATION_FILTER) {
+                if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS ||
+                	variation == InputType.TYPE_TEXT_VARIATION_URI ||
+                	variation == InputType.TYPE_TEXT_VARIATION_FILTER) {
                     // Our predictions are not useful for e-mail addresses
                     // or URIs.
                     mPredictionOn = false;
@@ -165,12 +169,13 @@ public class TranslatorInputMethodService extends InputMethodService
             default:
                 // For all unknown input types, default to the alphabetic
                 // keyboard with no special features.
-                mCurKeyboard = mLanguageKeyboard;
+                mCurKeyboard = mLanguagePage1Keyboard;
                 updateShiftKeyState(attribute);
         }
         
-        mActionId = attribute.imeOptions & EditorInfo.IME_MASK_ACTION;
-        mCurKeyboard.setImeOptions(getResources(), attribute.imeOptions);
+        mActionId = attribute.imeOptions & (EditorInfo.IME_MASK_ACTION | EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+        mLanguagePage1Keyboard.setImeOptions(getResources(), attribute.imeOptions);
+        mLanguagePage2Keyboard.setImeOptions(getResources(), attribute.imeOptions);
 
         mInstance = this;
     }
@@ -180,7 +185,8 @@ public class TranslatorInputMethodService extends InputMethodService
         super.onFinishInput();
         
         // Clear current composing text and candidates.
-        mComposing.setLength(0);
+        mComposingText.setLength(0);
+        mComposingWord.setLength(0);
         updateCandidates();
         
         // We only hide the candidates window when finishing input on
@@ -189,7 +195,7 @@ public class TranslatorInputMethodService extends InputMethodService
         // its window.
         setCandidatesViewShown(false);
         
-        mCurKeyboard = mLanguageKeyboard;
+        mCurKeyboard = mLanguagePage1Keyboard;
         if (mInputView != null) {
             mInputView.closing();
         }
@@ -215,9 +221,10 @@ public class TranslatorInputMethodService extends InputMethodService
         
         // If the current selection in the text view changes, we should
         // clear whatever candidate text we have.
-        if (mComposing.length() > 0 && (newSelStart != candidatesEnd
-                || newSelEnd != candidatesEnd)) {
-            mComposing.setLength(0);
+        if (mComposingText.length() + mComposingWord.length() > 0 && 
+        	(newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
+            mComposingText.setLength(0);
+            mComposingWord.setLength(0);
             updateCandidates();
             InputConnection ic = getCurrentInputConnection();
             if (ic != null) {
@@ -235,12 +242,7 @@ public class TranslatorInputMethodService extends InputMethodService
                 return;
             }
             
-            List<String> stringList = new ArrayList<String>();
-            for (int i = 0; i < completions.length; i++) {
-                CompletionInfo ci = completions[i];
-                if (ci != null) stringList.add(ci.getText().toString());
-            }
-            setSuggestions(stringList, true, true);
+            setSuggestions(completions, true, true);
         }
     }
     
@@ -263,13 +265,13 @@ public class TranslatorInputMethodService extends InputMethodService
             c = c & KeyCharacterMap.COMBINING_ACCENT_MASK;
         }
         
-        if (mComposing.length() > 0) {
-            char accent = mComposing.charAt(mComposing.length() -1 );
-            int composed = KeyEvent.getDeadChar(accent, c);
+        if (mComposingWord.length() > 0) {
+            char accent   = mComposingWord.charAt(mComposingWord.length()-1);
+            int  composed = KeyEvent.getDeadChar(accent, c);
 
             if (composed != 0) {
                 c = composed;
-                mComposing.setLength(mComposing.length()-1);
+                mComposingWord.setLength(mComposingWord.length()-1);
             }
         }
         
@@ -297,7 +299,7 @@ public class TranslatorInputMethodService extends InputMethodService
                 // Special handling of the delete key: if we currently are
                 // composing text for the user, we want to modify that instead
                 // of let the application to the delete itself.
-                if (mComposing.length() > 0) {
+                if (mComposingText.length() + mComposingWord.length() > 0) {
                     onKey(TranslatorKeyboard.KEYCODE_DELETE, null);
                     return true;
                 }
@@ -320,9 +322,11 @@ public class TranslatorInputMethodService extends InputMethodService
      * Helper function to commit any text being composed in to the editor.
      */
     private void commitTyped(InputConnection inputConnection) {
-        if (mComposing.length() > 0) {
-            inputConnection.commitText(mComposing, mComposing.length());
-            mComposing.setLength(0);
+        if (mComposingText.length() + mComposingWord.length() > 0) {
+        	String s = getComposingString();
+            inputConnection.commitText(s, s.length());
+            mComposingText.setLength(0);
+            mComposingWord.setLength(0);
             updateCandidates();
         }
     }
@@ -332,8 +336,9 @@ public class TranslatorInputMethodService extends InputMethodService
      * editor state.
      */
     private void updateShiftKeyState(EditorInfo attr) {
-        if (attr != null 
-                && mInputView != null && mLanguageKeyboard == mInputView.getKeyboard()) {
+        if (attr != null && mInputView != null && 
+            (mLanguagePage1Keyboard == mInputView.getKeyboard() ||
+             mLanguagePage2Keyboard == mInputView.getKeyboard())) {
             int caps = 0;
             EditorInfo ei = getCurrentInputEditorInfo();
             if (ei != null && ei.inputType != InputType.TYPE_NULL) {
@@ -370,7 +375,9 @@ public class TranslatorInputMethodService extends InputMethodService
             mTranslator.setSourceLanguage(newSource);
             handleChangeSourceLanguage(newSource);
         } else if (primaryCode == TranslatorKeyboard.KEYCODE_TARGET_LANGUAGE) {
-        	String translation = mTranslator.translate(mComposing.toString());
+        	String translation = mTranslator.translate(getComposingString()).first;
+	    	if (translation.startsWith("% ") || translation.startsWith("* ") || translation.startsWith("+ "))
+	    		translation = translation.substring(2);
         	getCurrentInputConnection().commitText(translation, 1);
             return;
         }  else if (primaryCode < TranslatorKeyboard.KEYCODE_TARGET_LANGUAGE &&
@@ -379,22 +386,44 @@ public class TranslatorInputMethodService extends InputMethodService
          		mTranslator.getAvailableLanguages().get(TranslatorKeyboard.KEYCODE_TARGET_LANGUAGE-primaryCode-1);
              mTranslator.setTargetLanguage(newTarget);
              handleChangeTargetLanguage(newTarget);
-         } else if (primaryCode == TranslatorKeyboard.KEYCODE_MODE_CHANGE
-                && mInputView != null) {
+         } else if (primaryCode == TranslatorKeyboard.KEYCODE_MODE_CHANGE &&
+                    mInputView != null) {
         	TranslatorKeyboard current = (TranslatorKeyboard) mInputView.getKeyboard();
-            if (current == mSymbolsKeyboard || current == mSymbolsShiftedKeyboard) {
-                current = mLanguageKeyboard;
+            if (current == mSymbolsPage1Keyboard || current == mSymbolsPage2Keyboard) {
+                current = mLanguagePage1Keyboard;
             } else {
-                current = mSymbolsKeyboard;
+                current = mSymbolsPage1Keyboard;
             }
             mInputView.setKeyboard(current);
-            if (current == mSymbolsKeyboard) {
+            if (current == mSymbolsPage1Keyboard) {
                 current.setShifted(false);
             }
-        } else if (primaryCode == 10) {
-        	getCurrentInputConnection().performEditorAction(mActionId);
-        } else if (primaryCode == ' ' && mComposing.length() == 0) {
-        	getCurrentInputConnection().commitText(" ", 1);
+        } else if (primaryCode == TranslatorKeyboard.KEYCODE_PAGE_CHANGE &&
+                   mInputView != null) {
+        	TranslatorKeyboard current = (TranslatorKeyboard) mInputView.getKeyboard();
+            if (current == mLanguagePage1Keyboard) {
+                current = mLanguagePage2Keyboard;
+            } else {
+                current = mLanguagePage1Keyboard;
+            }
+            mInputView.setKeyboard(current);
+    	} else if (primaryCode == 10) {
+        	if ((mActionId & EditorInfo.IME_FLAG_NO_ENTER_ACTION) == 0)
+        		getCurrentInputConnection().performEditorAction(mActionId & EditorInfo.IME_MASK_ACTION);
+        	else
+        		handleCharacter(primaryCode, keyCodes);
+        } else if (primaryCode == ' ') {
+        	if (mComposingText.length() + mComposingWord.length() == 0)
+        		getCurrentInputConnection().commitText(" ", 1);
+        	else if (mComposingWord.length() > 0) {
+        		mComposingText.append(mComposingWord);
+        		mComposingText.append(' ');
+        		mComposingWord.setLength(0);
+        		getCurrentInputConnection().setComposingText(getComposingString(), 1);
+        	} else {
+        		mComposingText.append(' ');
+        		getCurrentInputConnection().setComposingText(getComposingString(), 1);
+        	}
         } else {
             handleCharacter(primaryCode, keyCodes);
         }
@@ -404,7 +433,7 @@ public class TranslatorInputMethodService extends InputMethodService
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) return;
         ic.beginBatchEdit();
-        if (mComposing.length() > 0) {
+        if (mComposingText.length() > 0) {
             commitTyped(ic);
         }
         ic.commitText(text, 0);
@@ -419,40 +448,57 @@ public class TranslatorInputMethodService extends InputMethodService
      */
     private void updateCandidates() {
         if (!mCompletionOn) {
-            if (mComposing.length() > 0) {
-                ArrayList<String> list = new ArrayList<String>();
-                list.add(mComposing.toString());
-                list.add("alfa");
-                list.add("beta");
-                setSuggestions(list, true, true);
-                Log.d("KEYBOARD", mComposing.toString());
+            if (mComposingWord.length() > 1) {
+                mCompletions = 
+                	mTranslator.lookupWordPrefix(mComposingWord.toString());
+                setSuggestions(mCompletions, true, true);
             } else {
                 setSuggestions(null, false, false);
             }
         }
     }
     
-    public void setSuggestions(List<String> suggestions, boolean completions,
+    public void setSuggestions(CompletionInfo[] completions, boolean isCompletions,
             boolean typedWordValid) {
-        if (suggestions != null && suggestions.size() > 0) {
+        if (completions != null && completions.length > 0) {
             setCandidatesViewShown(true);
         } else if (isExtractViewShown()) {
             setCandidatesViewShown(true);
         }
         if (mCandidateView != null) {
-            mCandidateView.setSuggestions(suggestions, completions, typedWordValid);
+            mCandidateView.setSuggestions(completions, isCompletions, typedWordValid);
         }
     }
     
     private void handleBackspace() {
-        final int length = mComposing.length();
-        if (length > 1) {
-            mComposing.delete(length - 1, length);
-            getCurrentInputConnection().setComposingText(mComposing, 1);
+        int wordLength = mComposingWord.length();
+        int textLength = mComposingText.length();
+        if (wordLength > 1) {
+        	mComposingWord.delete(wordLength - 1, wordLength);
+            getCurrentInputConnection().setComposingText(getComposingString(), 1);
+            if (mPredictionOn)
+            	updateCandidates();
+        } else if (wordLength > 0) {
+            mComposingWord.setLength(0);
+            getCurrentInputConnection().setComposingText(getComposingString(), 1);
             updateCandidates();
-        } else if (length > 0) {
-            mComposing.setLength(0);
-            getCurrentInputConnection().commitText("", 0);
+        } else if (textLength > 0) {
+        	if (mComposingText.charAt(textLength - 1) == ' ') {
+	        	mComposingText.delete(textLength - 1, textLength);
+	            getCurrentInputConnection().setComposingText(getComposingString(), 1);
+        	} else {
+        		mComposingText.delete(textLength - 1, textLength);
+        		textLength--;
+        		int index = mComposingText.lastIndexOf(" ");
+        		if (index == -1) {
+        			mComposingWord.append(mComposingText.toString());
+        			mComposingText.setLength(0);
+        		} else {
+        			mComposingWord.append(mComposingText.substring(index+1, textLength));
+        			mComposingText.delete(index+1, textLength);
+        		}
+        		getCurrentInputConnection().setComposingText(getComposingString(), 1);
+        	}
             updateCandidates();
         } else {
             keyDownUp(KeyEvent.KEYCODE_DEL);
@@ -466,30 +512,44 @@ public class TranslatorInputMethodService extends InputMethodService
         }
         
         TranslatorKeyboard currentKeyboard = (TranslatorKeyboard) mInputView.getKeyboard();
-        if (mLanguageKeyboard == currentKeyboard) {
+        if (mLanguagePage1Keyboard == currentKeyboard ||
+        	mLanguagePage2Keyboard == currentKeyboard) {
             // Alphabet keyboard
             checkToggleCapsLock();
             mInputView.setShifted(mCapsLock || !mInputView.isShifted());
-        } else if (currentKeyboard == mSymbolsKeyboard) {
-            mSymbolsKeyboard.setShifted(true);
-            mInputView.setKeyboard(mSymbolsShiftedKeyboard);
-            mSymbolsShiftedKeyboard.setShifted(true);
-        } else if (currentKeyboard == mSymbolsShiftedKeyboard) {
-            mSymbolsShiftedKeyboard.setShifted(false);
-            mInputView.setKeyboard(mSymbolsKeyboard);
-            mSymbolsKeyboard.setShifted(false);
+        } else if (currentKeyboard == mSymbolsPage1Keyboard) {
+            mSymbolsPage1Keyboard.setShifted(true);
+            mInputView.setKeyboard(mSymbolsPage2Keyboard);
+            mSymbolsPage2Keyboard.setShifted(true);
+        } else if (currentKeyboard == mSymbolsPage2Keyboard) {
+            mSymbolsPage2Keyboard.setShifted(false);
+            mInputView.setKeyboard(mSymbolsPage1Keyboard);
+            mSymbolsPage1Keyboard.setShifted(false);
         }
     }
-    
+
+    private String getComposingString() {
+    	return mComposingText.toString() + mComposingWord.toString();
+    }
+
     private void handleCharacter(int primaryCode, int[] keyCodes) {
-        if (isInputViewShown()) {
-            if (mInputView.isShifted()) {
+        if (keyCodes.length > 0 && keyCodes[0] > 0) {
+	        for (int i = 0; i < keyCodes.length && keyCodes[i] > 0; i++) {
+	        	int code = keyCodes[i];
+	        	if (mInputView.isShifted())
+	                code = Character.toUpperCase(code);
+	        	mComposingWord.append((char) code);
+	        }
+        } else {
+        	if (mInputView.isShifted())
                 primaryCode = Character.toUpperCase(primaryCode);
-            }
+        	mComposingWord.append((char) primaryCode);
         }
 
-        mComposing.append((char) primaryCode);
-        getCurrentInputConnection().setComposingText(mComposing, 1);
+        if (primaryCode == 10)
+        	commitTyped(getCurrentInputConnection());
+        else
+        	getCurrentInputConnection().setComposingText(getComposingString(), 1);
         updateShiftKeyState(getCurrentInputEditorInfo());
 
         if (mPredictionOn) {
@@ -505,17 +565,18 @@ public class TranslatorInputMethodService extends InputMethodService
 
     void handleChangeSourceLanguage(Language newSource) {
        	updateLanguageKeyboard(newSource);
-       	mSymbolsKeyboard.updateLanguageKeyLabels();
-        mSymbolsShiftedKeyboard.updateLanguageKeyLabels();
+       	mSymbolsPage1Keyboard.updateLanguageKeyLabels();
+        mSymbolsPage2Keyboard.updateLanguageKeyLabels();
         if (mInputView != null) {
         	mInputView.setKeyboard(mCurKeyboard);
         }
     }
 
     void handleChangeTargetLanguage(Language newTarget) {
-    	mLanguageKeyboard.updateLanguageKeyLabels();
-    	mSymbolsKeyboard.updateLanguageKeyLabels();
-    	mSymbolsShiftedKeyboard.updateLanguageKeyLabels();
+    	mLanguagePage1Keyboard.updateLanguageKeyLabels();
+    	mLanguagePage2Keyboard.updateLanguageKeyLabels();
+    	mSymbolsPage1Keyboard.updateLanguageKeyLabels();
+    	mSymbolsPage2Keyboard.updateLanguageKeyLabels();
     	if (mInputView != null) {
     		mInputView.invalidateAllKeys();
     	}
@@ -524,20 +585,26 @@ public class TranslatorInputMethodService extends InputMethodService
     void handleSwitchLanguages() {
     	Language newSource = mTranslator.getSourceLanguage();
     	updateLanguageKeyboard(newSource);
-       	mSymbolsKeyboard.updateLanguageKeyLabels();
-        mSymbolsShiftedKeyboard.updateLanguageKeyLabels();
+       	mSymbolsPage1Keyboard.updateLanguageKeyLabels();
+        mSymbolsPage2Keyboard.updateLanguageKeyLabels();
         if (mInputView != null)
         	mInputView.setKeyboard(mCurKeyboard);
     }
 
 	private void updateLanguageKeyboard(Language language) {
-		TranslatorKeyboard keyboard =
-       		new TranslatorKeyboard(this, language.getKeyboardResource(), mModeId);
-		keyboard.setImeOptions(getResources(), mAttribute.imeOptions);
-		if (mCurKeyboard == mLanguageKeyboard) {
-			mCurKeyboard = keyboard;
+		TranslatorKeyboard keyboard1 =
+       		new TranslatorKeyboard(this, language.getKeyboardPage1Resource(), mModeId);
+		TranslatorKeyboard keyboard2 =
+	       	new TranslatorKeyboard(this, language.getKeyboardPage2Resource(), mModeId);
+		keyboard1.setImeOptions(getResources(), mAttribute.imeOptions);
+		keyboard2.setImeOptions(getResources(), mAttribute.imeOptions);
+		if (mCurKeyboard == mLanguagePage1Keyboard) {
+			mCurKeyboard = keyboard1;
+		} else if (mCurKeyboard == mLanguagePage2Keyboard) {
+			mCurKeyboard = keyboard2;
 		}
-		mLanguageKeyboard = keyboard;
+		mLanguagePage1Keyboard = keyboard1;
+		mLanguagePage2Keyboard = keyboard2;
 	}
 
     private void checkToggleCapsLock() {
@@ -555,19 +622,22 @@ public class TranslatorInputMethodService extends InputMethodService
     }
     
     public void pickSuggestionManually(int index) {
-        if (mCompletionOn && mCompletions != null && index >= 0
-                && index < mCompletions.length) {
-            CompletionInfo ci = mCompletions[index];
-            getCurrentInputConnection().commitCompletion(ci);
+        if (mCompletions != null && 
+        	index >= 0 && index < mCompletions.length) {
+        	CompletionInfo ci = mCompletions[index];            
+
+            if (mCompletionOn)
+            	getCurrentInputConnection().commitCompletion(ci);
+            else {
+            	mComposingWord.setLength(0);
+            	mComposingWord.append(ci.getText());
+            	getCurrentInputConnection().setComposingText(getComposingString(), 1);
+            }
+
             if (mCandidateView != null) {
                 mCandidateView.clear();
             }
             updateShiftKeyState(getCurrentInputEditorInfo());
-        } else if (mComposing.length() > 0) {
-            // If we were generating candidate suggestions for the current
-            // text, we would commit one of them here.  But for this sample,
-            // we will just commit the current text.
-            commitTyped(getCurrentInputConnection());
         }
     }
     

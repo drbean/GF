@@ -23,19 +23,29 @@ lin
 
   n_units_AP card cn a = mkAP (lin AdA (mkUtt (lin NP (mkNP <lin Card card : Card> (lin CN cn))))) (lin A a) ;
 
+  bottle_of_CN np = mkCN (lin N2 (mkN2 (mkN "pullo") (mkPrep partitive)))  (lin NP np) |  mkCN (lin N2 (mkN2 (mkN "pullollinen") (mkPrep partitive)))  (lin NP np);
+  cup_of_CN    np = mkCN (lin N2 (mkN2 (mkN "kuppi") (mkPrep partitive)))  (lin NP np) | mkCN (lin N2 (mkN2 (mkN "kupillinen") (mkPrep partitive)))  (lin NP np) ;
+  glass_of_CN  np =  mkCN (lin N2 (mkN2 (mkN "lasi") (mkPrep partitive))) (lin NP np) | mkCN (lin N2 (mkN2 (mkN "lasillinen") (mkPrep partitive))) (lin NP np) ;
+
+{-
+  where_go_QCl np = mkQCl (lin IAdv (ss "minne")) (mkCl np (mkVP L.go_V)) ;
+  where_come_from_QCl np =  mkQCl (lin IAdv (ss "mistä")) (mkCl np (mkVP L.come_V)) ;
+  
+  go_here_VP = mkVP (mkVP L.go_V) (mkAdv "tänne") ;
+  come_here_VP = mkVP (mkVP L.come_V) (mkAdv "tänne") ;
+  come_from_here_VP = mkVP (mkVP L.come_V) (mkAdv "täältä") ;
+
+  go_there_VP = mkVP (mkVP L.go_V) (mkAdv "sinne") ;
+  come_there_VP = mkVP (mkVP L.come_V) (mkAdv "sinne") ;
+  come_from_there_VP = mkVP (mkVP L.come_V) (mkAdv "sieltä") ;
+-}
+
 lincat
   Weekday = {noun : N ; habitual : SyntaxFin.Adv} ;
   Monthday = NP ;
   Month = N ;
   Year = NP ;
 lin
-  monday_Weekday = mkWeekday "maanantai" ;
-  tuesday_Weekday = mkWeekday "tiistai" ;
-  wednesday_Weekday = mkWeekday "keskiviikko" ;
-  thursday_Weekday = mkWeekday "torstai" ;
-  friday_Weekday = mkWeekday "perjantai" ;
-  saturday_Weekday = mkWeekday"lauantai" ;
-  sunday_Weekday = mkWeekday "sunnuntai" ;
 
   weekdayPunctualAdv w = lin Adv {s = pointWeekday w} ;
   weekdayHabitualAdv w = w.habitual ;
@@ -51,23 +61,24 @@ lin
 
   intYear = symb ;
   intMonthday = symb ;
-  
-  january_Month = mkN "tammikuu" ; 
-  february_Month = mkN "helmikuu" ; 
-  march_Month = mkN "maaliskuu" ; 
-  april_Month = mkN "huhtikuu" ;
-  may_Month = mkN "toukokuu" ;
-  june_Month = mkN "kesäkuu" ;
-  july_Month = mkN "heinäkuu" ;
-  august_Month = mkN "elokuu" ;
-  september_Month = mkN "syyskuu" ;
-  october_Month = mkN "lokakuu" ;
-  november_Month = mkN "marraskuu" ;
-  december_Month = mkN "joulukuu" ;
 
 oper
+  pointWeekday : Weekday -> Str = \w -> (SyntaxFin.mkAdv (casePrep essive) (mkNP w.noun)).s ; 
 
-  mkWeekday : Str -> Weekday = \d -> 
+lincat Language = PN ;
+
+lin InLanguage l = SyntaxFin.mkAdv (mkPrep translative) (mkNP l) ;
+
+lin
+  weekdayN w = w.noun ;
+  monthN m = m ;
+  languagePN l = l ;
+
+--------------- lexicon of special names
+
+oper mkLanguage : Str -> PN = \s -> mkPN s ;
+
+oper mkWeekday : Str -> Weekday = \d -> 
       lin Weekday {
        noun = mkN d ; 
        habitual = case d of {
@@ -76,6 +87,63 @@ oper
          }
       } ; 
 
-  pointWeekday : Weekday -> Str = \w -> (SyntaxFin.mkAdv (casePrep essive) (mkNP w.noun)).s ; 
+
+lin monday_Weekday = mkWeekday "maanantai" ;
+lin tuesday_Weekday = mkWeekday "tiistai" ;
+lin wednesday_Weekday = mkWeekday "keskiviikko" ;
+lin thursday_Weekday = mkWeekday "torstai" ;
+lin friday_Weekday = mkWeekday "perjantai" ;
+lin saturday_Weekday = mkWeekday"lauantai" ;
+lin sunday_Weekday = mkWeekday "sunnuntai" ;
+
+lin january_Month = mkN "tammikuu" ; 
+lin february_Month = mkN "helmikuu" ; 
+lin march_Month = mkN "maaliskuu" ; 
+lin april_Month = mkN "huhtikuu" ;
+lin may_Month = mkN "toukokuu" ;
+lin june_Month = mkN "kesäkuu" ;
+lin july_Month = mkN "heinäkuu" ;
+lin august_Month = mkN "elokuu" ;
+lin september_Month = mkN "syyskuu" ;
+lin october_Month = mkN "lokakuu" ;
+lin november_Month = mkN "marraskuu" ;
+lin december_Month = mkN "joulukuu" ;
+
+lin afrikaans_Language = mkLanguage "afrikaans" ;
+lin amharic_Language = mkLanguage "amhara" ;
+lin arabic_Language = mkLanguage "arabia" ;
+lin bulgarian_Language = mkLanguage "bulgaria" ;
+lin catalan_Language = mkLanguage "katalaani" ;
+lin chinese_Language = mkLanguage "kiina" ;
+lin danish_Language = mkLanguage "tanska" ;
+lin dutch_Language = mkLanguage "hollanti" ;
+lin english_Language = mkLanguage "englanti" ;
+lin estonian_Language = mkLanguage "viro" ;
+lin finnish_Language = mkPN (mkN "suomi" "suomia") ;
+lin french_Language = mkLanguage "ranska" ;
+lin german_Language = mkLanguage "saksa" ;
+lin greek_Language = mkLanguage "kreikka" ;
+lin hebrew_Language = mkLanguage "heprea" ;
+lin hindi_Language = mkLanguage "hindi" ;
+lin japanese_Language = mkLanguage "japani" ;
+lin italian_Language = mkLanguage "italia" ;
+lin latin_Language = mkLanguage "latina" ;
+lin latvian_Language = mkLanguage "latvia" ;
+lin maltese_Language = mkLanguage "malta" ;
+lin nepali_Language = mkLanguage "nepali" ;
+lin norwegian_Language = mkLanguage "norja" ;
+lin persian_Language = mkLanguage "persia" ;
+lin polish_Language = mkLanguage "puola" ;
+lin punjabi_Language = mkLanguage "punjabi" ;
+lin romanian_Language = mkLanguage "romania" ;
+lin russian_Language = mkLanguage "venäjä" ;
+lin sindhi_Language = mkLanguage "sindhi" ;
+lin spanish_Language = mkLanguage "espanja" ;
+lin swahili_Language = mkLanguage "swahili" ;
+lin swedish_Language = mkLanguage "ruotsi" ;
+lin thai_Language = mkLanguage "thai" ;
+lin turkish_Language = mkLanguage "turkki" ;
+lin urdu_Language = mkLanguage "urdu" ;
+
 
 }

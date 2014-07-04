@@ -30,14 +30,15 @@ lin
 ----  GenIP = E.GenIP ;
 ----  GenRP = E.GenRP ;
 
-----  PassVPSlash = E.PassVPSlash ;
-----  PassAgentVPSlash = E.PassAgentVPSlash ;
+  PassVPSlash = E.PassVPSlash ;
+  PassAgentVPSlash = E.PassAgentVPSlash ;
 
   EmptyRelSlash = E.EmptyRelSlash ;
 
 lin
-  CompoundCN noun cn = {
+  CompoundN noun cn = {
     s = \\nf => (noun.rel ! nform2aform nf cn.g) ++ (cn.s ! (indefNForm nf)) ;
+    rel = \\af => (noun.rel ! af) ++ (cn.rel ! af) ; ---- is this correct? AR 29/5/2014
     g = cn.g
   } ;
 

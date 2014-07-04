@@ -1,6 +1,16 @@
 compile = runghc Compile 
 
-all: demo missing
+forApp: compdemo fin Chi gfos
+
+.PHONY: gfos
+
+Chi:
+	$(compile) Chi
+
+all: demo missing gfos
+
+gfos:
+	mkdir -p gfos && cp -p *.gfo gfos
 
 thaidroid: #thaiscript
 	cp -p Phrasebook.pgf FullPhrasebook.pgf

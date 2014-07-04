@@ -46,10 +46,10 @@ oper
 --2 Nouns
 
   mkN : overload {
-    mkN : (muis : Str) -> N ;   -- de muis-muisen, with some predictable exceptions
+    mkN : (bank : Str) -> N ;   -- de bank-banken, with some predictable exceptions
     mkN : (bit : Str) -> Gender -> N ; -- if gender is not predictable
-    mkN : (gat,gaten : Str) -> Gender -> N ; -- worst-case for nouns
-    mkN : (huis, boot : N) -> N ; -- compound huisboot
+    mkN : (gat, gaten : Str) -> Gender -> N ; -- worst-case for nouns
+    mkN : (werk, plaats : N) -> N ; -- compound werkplaats
     mkN : (station, hal : N) -> Case -> N ; -- compound stationshal
   } ;
 
@@ -73,6 +73,7 @@ oper
 
   mkPN : overload {
     mkPN : Str -> PN ; -- proper name
+    mkPN : N -> PN ; -- proper name from noun
     } ;
 
 
@@ -164,13 +165,28 @@ oper
 
   mkV0  : V -> V0 ; --%
   mkVS  : V -> VS ;
-  mkV2S : V -> Prep -> V2S ;
-  mkVV  : V -> VV ;
-  mkV2V : V -> Prep -> V2V ;
+  mkVV  : V -> VV ;  -- with "te"
+  auxVV : V -> VV ;  -- without "te"
+
+  mkV2V : overload {
+    mkV2V : V -> Prep -> V2V ;
+    mkV2V : V -> V2V ;
+    } ;
+  mkV2S : overload {
+    mkV2S : V -> Prep -> V2S ;
+    mkV2S : V -> V2S ;
+    } ;
+  mkV2A : overload {
+    mkV2A : V -> Prep -> V2A ;
+    mkV2A : V -> V2A ;
+    } ;
+  mkV2Q : overload {
+    mkV2Q : V -> Prep -> V2Q ;
+    mkV2Q : V -> V2Q ;
+    } ;
+
   mkVA  : V -> VA ;
-  mkV2A : V -> Prep -> V2A ;
   mkVQ  : V -> VQ ;
-  mkV2Q : V -> Prep -> V2Q ;
 
 --
 --  mkAS  : A -> AS ;
@@ -193,16 +209,18 @@ oper
   mkOrd : A -> Ord = \a -> lin Ord {s = a.s ! Posit} ;
 
   mkN = overload {
-    mkN : (muis : Str) -> N 
+    mkN : (bank : Str) -> N 
     = \a -> lin N (regNoun a) ;
     mkN : (bit : Str) -> Gender -> N 
     = \a,b -> lin N (regNounG a b) ;
+    mkN : (bit : Str) -> Gender -> Gender -> N 
+    = \a,g1,g2 -> lin N (regNounG a g1) | lin N (regNounG a g2) ; -- there are many nouns with variant genders
     mkN : (gat,gaten : Str) -> Gender -> N 
     = \a,b,c -> lin N (mkNoun a b c) ;
-   mkN : (huis,boot : N) -> N
-    = \huis,boot -> lin N {s = \\n => huis.s ! NF Sg Nom + boot.s ! n ; g = boot.g} ;
-   mkN : (huis,boot : N) -> Case -> N
-    = \huis,boot,c -> lin N {s = \\n => huis.s ! NF Sg c + boot.s ! n ; g = boot.g} ;
+   mkN : (werk,plaats : N) -> N
+    = \werk,plaats -> lin N {s = \\n => werk.s ! NF Sg Nom + plaats.s ! n ; g = plaats.g} ;
+   mkN : (werk,plaats : N) -> Case -> N
+    = \werk,plaats,c -> lin N {s = \\n => werk.s ! NF Sg c + plaats.s ! n ; g = plaats.g} ;
   } ;
 
   mkN2 = overload {
@@ -215,6 +233,7 @@ oper
 
   mkPN = overload {
     mkPN : Str -> PN = \s -> lin PN {s = \\_ => s} ;
+    mkPN : N -> PN = \n -> lin PN {s = \\_ => n.s ! NF Sg Nom} ;
     } ;
 
   masculine = Utr ;
@@ -245,16 +264,24 @@ oper
     mkV : (aai,aait,aaien,aaide,aaiden,geaaid : Str) -> V =
       \a,b,c,d,f,g -> lin V (v2vv (mkVerb a b c d d f g)) ;
     mkV : Str -> V -> V = \v,s ->lin V (prefixV v s) ;
+    mkV : V -> Str -> V = \s,v ->lin V (prefixV v s) ; ---- the same, in order matching Wiktionary-generated lexicon
     } ;
   zijnV v = lin V (v2vvAux v VZijn) ;
-  reflV v = lin V {s = v.s ; aux = v.aux ; prefix = v.prefix ; vtype = VRefl} ;
+  reflV v = lin V {s = v.s ; aux = v.aux ; particle = v.particle ; prefix = v.prefix ; vtype = VRefl} ;
+
+  partV = overload {
+    partV : Str -> V -> V = \leuk,vinden ->
+      vinden ** {particle = leuk} ;
+    partV : V -> Str -> V = \vinden,leuk ->
+      vinden ** {particle = leuk} ;
+  } ;
 
   no_geV v = let vs = v.s in {
     s = table {
       VPerf => Predef.drop 2 (vs ! VPerf) ;
       p => vs ! p
       } ;
-    prefix = v.prefix ; lock_V = v.lock_V ; aux = v.aux ; vtype = v.vtype
+    prefix = v.prefix ; lock_V = v.lock_V ; particle = v.particle ; aux = v.aux ; vtype = v.vtype
     } ;
 
   fixprefixV s v = let vs = v.s in {
@@ -262,16 +289,16 @@ oper
       VPerf => s + Predef.drop 2 (vs ! VPerf) ;
       p => s + vs ! p
       } ;
-    prefix = v.prefix ; lock_V = v.lock_V ; aux = v.aux ; vtype = v.vtype
+    prefix = v.prefix ; lock_V = v.lock_V ; aux = v.aux ; particle = v.particle ; vtype = v.vtype
     } ;
 
   zijn_V : V = lin V ResDut.zijn_V ;
   hebben_V : V = lin V ResDut.hebben_V ;
 
   mkV2 = overload {
-    mkV2 : Str -> V2 = \s -> lin V2 (v2vv (regVerb s) ** {c2 = []}) ;
-    mkV2 : V -> V2 = \s -> lin V2 (s ** {c2 = []}) ;
-    mkV2 : V -> Prep -> V2  = \s,p -> lin V2 (s ** {c2 = p.s}) ;
+    mkV2 : Str -> V2 = \s -> lin V2 (v2vv (regVerb s) ** {c2 = <[],False>}) ;
+    mkV2 : V -> V2 = \s -> lin V2 (s ** {c2 = <[],False>}) ;
+    mkV2 : V -> Prep -> V2  = \s,p -> lin V2 (s ** {c2 = <p.s,True>}) ;
     } ;
 
 
@@ -287,7 +314,7 @@ oper
     mkV3 : V -> Prep -> V3 = \v,p -> mkmaxV3 v (mkPrep []) p ; 
     mkV3 : V -> V3 = \v -> mkmaxV3 v (mkPrep []) (mkPrep []) ; 
     } ;
-  mkmaxV3 : V -> Prep -> Prep -> V3 = \v,c,d -> lin V3 (v ** {c2 = c.s ; c3 = d.s}) ;
+  mkmaxV3 : V -> Prep -> Prep -> V3 = \v,c,d -> lin V3 (v ** {c2 = <c.s,True> ; c3 = <d.s,True>}) ;
 
 
 
@@ -453,7 +480,7 @@ oper
 --  werden_V = MorphoDut.werden_V ** {lock_V = <>} ;
 --
   prepV2  : V -> Prep -> V2 ;
-  prepV2 v c = lin V2 (v ** {c2 = c.s}) ;
+  prepV2 v c = lin V2 (v ** {c2 = <c.s,True>}) ; --if it has prep, needed for word order (place of negation)
 --  dirV2 v = prepV2 v (mkPrep [] accusative) ;
 --  datV2 v = prepV2 v (mkPrep [] dative) ;
 --
@@ -461,17 +488,33 @@ oper
   mkVS v = lin VS v ;
   mkVQ v = lin VQ v ;
   mkVV v = lin VV (v ** {isAux = False}) ;
+  auxVV v = lin VV (v ** {isAux = True}) ;
 
   V0 : Type = V ;
 --  AS, A2S, AV : Type = A ;
 --  A2V : Type = A2 ;
 
   mkV0 v = v ;
-  mkV2S v p = lin V2S (prepV2 v p) ;
-  mkV2V v p = lin V2V (prepV2 v p ** {isAux = False}) ;
+
+  mkV2V = overload {
+    mkV2V : V -> Prep -> V2V = \v,p -> lin V2V (prepV2 v p ** {isAux = False}) ;
+    mkV2V : V -> V2V = \v -> lin V2V (prepV2 v (mkPrep []) ** {isAux = False}) ;
+    } ;
+  mkV2S = overload {
+    mkV2S : V -> Prep -> V2S = \v,p -> lin V2S (prepV2 v p) ;
+    mkV2S : V -> V2S = \v -> lin V2S (prepV2 v (mkPrep [])) ;
+    } ;
+  mkV2A = overload {
+    mkV2A : V -> Prep -> V2A = \v,p -> lin V2A (prepV2 v p) ;
+    mkV2A : V -> V2A = \v -> lin V2A (prepV2 v (mkPrep [])) ;
+    } ;
+  mkV2Q = overload {
+    mkV2Q : V -> Prep -> V2Q = \v,p -> lin V2Q (prepV2 v p) ;
+    mkV2Q : V -> V2Q = \v -> lin V2Q (prepV2 v (mkPrep [])) ;
+    } ;
+
+
   mkVA  v   = lin VA v ;
-  mkV2A v p = lin V2A (prepV2 v p) ;
-  mkV2Q v p = lin V2Q (prepV2 v p) ;
 --
 --  mkAS  v = v ** {lock_A = <>} ;
 --  mkA2S v p = mkA2 v p ** {lock_A = <>} ;

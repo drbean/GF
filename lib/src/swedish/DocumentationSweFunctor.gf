@@ -16,7 +16,12 @@ in {
 
 
 lincat
-  Inflection = {s : Str} ; 
+  Inflection = {s : Str} ;
+  Document = {s : Str} ;
+
+{-
+-} --# notpresent
+
   
 oper
    tdf : Str -> Str = \s -> td (intag "i" s) ;
@@ -84,7 +89,7 @@ lin
         paragraph (intag "b" (heading exampleGr_N ++ ":") ++ intag "i" (S.mkAdv (lin Prep p) (S.mkNP S.a_Det L.computer_N)).s)
     } ;
 
-  ExplainInflection e i = ss (i.s ++ paragraph e.s) ;  -- explanation appended in a new paragraph
+  MkDocument b i e = ss (paragraph e.s ++ i.s ++ paragraph e.s) ;  -- explanation appended in a new paragraph
 
 oper 
   verbExample : Cl -> Str = \cl ->
@@ -119,5 +124,8 @@ oper
        tr (th (heading perfect_Parameter ++ heading participle_Parameter) ++ tdf (verb.s ! (VI (VPtPret (Strong (GSg Utr)) Nom))))
        ))
      } ;
+
+{- --# notpresent
+-} 
 
 }

@@ -14,6 +14,7 @@ public class TranslatorKeyboard extends Keyboard {
     private Key mSourceLanguageKey;
     private Key mTargetLanguageKey;
 
+    static final int KEYCODE_PAGE_CHANGE     = -10;
     static final int KEYCODE_SOURCE_LANGUAGE = -100;
     static final int KEYCODE_TARGET_LANGUAGE = -200;
     static final int MAX_LANGUAGE_KEYCODES = 99;
@@ -23,7 +24,7 @@ public class TranslatorKeyboard extends Keyboard {
     public TranslatorKeyboard(Context context, int xmlLayoutResId, int modeId) {
     	super(context, xmlLayoutResId, modeId);
 
-    	mTranslator = ((GFTranslator) context.getApplicationContext()).getTranslator();
+    	mTranslator = ((HLCompiler) context.getApplicationContext()).getTranslator();
     	updateLanguageKeyLabels();
     }
 
@@ -36,9 +37,12 @@ public class TranslatorKeyboard extends Keyboard {
 	}
 
     public static String getLanguageKeyLabel(Language lang) {
-    	return
-    		LocaleUtils.parseJavaLocale(lang.getLangCode(), Locale.getDefault())
-    		           .getISO3Language();
+    	if ("cmn-hans-cn".equalsIgnoreCase(lang.getLangCode())) // this one has no ISO code 
+    		return "chi";
+    	else
+	    	return
+	    		LocaleUtils.parseJavaLocale(lang.getLangCode(), Locale.getDefault())
+	    		           .getISO3Language();
     }
     
     @Override

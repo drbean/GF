@@ -1,7 +1,7 @@
 --# -path=.:../abstract
 
 concrete ExtensionsEng of Extensions = 
-  CatEng ** open MorphoEng, ResEng, ParadigmsEng, (S = SentenceEng), (E = ExtraEng), Prelude in {
+  CatEng ** open MorphoEng, ResEng, ParadigmsEng, (S = SentenceEng), (E = ExtraEng), SyntaxEng, Prelude in {
 
 lincat
   VPI = E.VPI ;
@@ -33,7 +33,7 @@ lin
   EmptyRelSlash = E.EmptyRelSlash ;
 
 lin
-  CompoundCN noun cn = {
+  CompoundN noun cn = {
     s = (\\n,c => noun.s ! Sg ! Nom ++ cn.s ! n ! c) 
       | (\\n,c => noun.s ! Pl ! Nom ++ cn.s ! n ! c)
       | (\\n,c => noun.s ! Sg ! Nom ++ Predef.BIND ++ "-" ++ Predef.BIND ++ cn.s ! n ! c) 
@@ -42,6 +42,12 @@ lin
     g = cn.g
   } ;
   
+  CompoundAP noun adj = {
+    s = (\\_ => noun.s ! Sg ! Nom ++ Predef.BIND ++ "-" ++ Predef.BIND ++ adj.s ! AAdj Posit Nom)
+      | (\\_ => noun.s ! Sg ! Nom ++ adj.s ! AAdj Posit Nom)
+      ;
+    isPre = True
+    } ;
 
    GerundCN vp = {
      s = \\n,c => vp.ad ! AgP3Sg Neutr ++ vp.prp ++
@@ -147,5 +153,14 @@ lin
   AdAdV = cc2 ;
   
   UttAdV adv = adv;
+
+  DirectComplVS t np vs utt = 
+    mkS (lin Adv (optCommaSS utt)) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  DirectComplVQ t np vs q = 
+    mkS (lin Adv (optCommaSS (mkUtt q))) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  FocusObjS np sslash = 
+    mkS (lin Adv (optCommaSS (ss (sslash.c2 ++ np.s ! NPAcc)))) <lin S sslash : S> ;
 
 }

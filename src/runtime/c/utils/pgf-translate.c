@@ -34,7 +34,8 @@ print_result(PgfExprProb* ep, PgfConcr* to_concr,
 		gu_putc(' ', out, err);
 		// Linearize the concrete tree as a simple
 		// sequence of strings.
-		pgf_lzr_linearize_simple(to_concr, ctree, 0, out, err);
+		pgf_lzr_linearize_simple(to_concr, ctree, 0, out, err, ppool);
+
 		if (gu_exn_caught(err) == gu_type(PgfLinNonExist)) {
 			// encountered nonExist. Unfortunately there
 			// might be some output printed already. The
@@ -87,8 +88,8 @@ int main(int argc, char* argv[]) {
 	}
 	
 	// Register a callback for the literal category Symbol
-	pgf_parser_add_literal(from_concr, "Symb",
-	                       &pgf_nerc_literal_callback);
+	pgf_concr_add_literal(from_concr, "Symb",
+	                      &pgf_nerc_literal_callback, err);
 
 	// Create an output stream for stdout
 	GuOut* out = gu_file_out(stdout, pool);

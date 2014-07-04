@@ -1,14 +1,18 @@
---# -path=.:../chinese:../abstract
+--# -path=.:../chunk:alltenses
 
 concrete TranslateChi of Translate = 
   TenseChi,
   NounChi - [PPartNP],
   AdjectiveChi,
   NumeralChi,
-  SymbolChi [PN, Symb, String, CN, Card, NP, MkSymb, SymbPN, CNNumNP],
+  SymbolChi [
+    PN, Symb, String, CN, Card, NP, MkSymb, SymbPN, CNNumNP
+    ],
   ConjunctionChi,
+
   VerbChi - [
-    SlashV2V, PassV2, UseCopula, ComplVV,
+    UseCopula,  -- just removed
+    PassV2, -- generalized
     CompAP, AdvVP  -- Chi exceptions
     ],
   AdverbChi,
@@ -18,12 +22,16 @@ concrete TranslateChi of Translate =
     QuestCl  -- Chi exception
     ],
   RelativeChi,
-  IdiomChi [NP, VP, Tense, Cl, ProgrVP, ExistNP, SelfAdvVP, SelfAdVVP, SelfNP],
+  IdiomChi,
   ConstructionChi,
-  ExtensionsChi,
-  DictionaryChi
-   ** 
-open ResChi, ParadigmsChi, SyntaxChi, Prelude, (G = GrammarChi), (E = ExtraChi) in {
+  DocumentationChi,
+
+  ChunkChi,
+  ExtensionsChi [CompoundN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP],
+
+  DictionaryChi ** 
+ 
+  open ResChi, ParadigmsChi, SyntaxChi, Prelude, (G = GrammarChi), (E = ExtraChi) in {
 
 flags
   literal = Symb ;
@@ -33,10 +41,11 @@ flags
 -- Chinese-specific overrides
 
 lin
-  CompAP = G.CompAP | E.CompBareAP ;                     -- he is good | he good
+  CompAP = E.CompBareAP | G.CompAP ;                      -- he good | he is good
 
-  AdvVP vp adv = E.TopicAdvVP vp adv | G.AdvVP vp adv ;  -- he *today* here sleeps | *today* he here sleeps
+  AdvVP vp adv = G.AdvVP vp adv | E.TopicAdvVP vp adv  ;  -- he *today* here sleeps | *today* he here sleeps
 
-  QuestCl cl = G.QuestCl cl | E.QuestRepV cl ;           -- he comes 'ma' | he come not come
+  QuestCl cl = G.QuestCl cl | E.QuestRepV cl ;            -- he comes 'ma' | he come not come
 
 }
+

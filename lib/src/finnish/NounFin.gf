@@ -116,7 +116,8 @@ concrete NounFin of Noun = CatFin ** open ResFin, MorphoFin, StemFin, Prelude in
       } ;
 
     PossPron p = {
-      s1,sp = \\_,_ => p.s ! NPCase Gen ;
+      s1 = \\_,_ => p.poss ;           -- [] in det position with proDrop
+      sp = \\_,_ => p.s ! NPCase Gen ; -- to prevent [] with proDrop
       s2 = case p.hasPoss of {
              True => table {Front => BIND ++ possSuffixFront p.a ; 
                             Back  => BIND ++ possSuffix p.a } ;
@@ -185,13 +186,13 @@ concrete NounFin of Noun = CatFin ** open ResFin, MorphoFin, StemFin, Prelude in
     UseN2 n = snoun2nounSep n ;
 
     Use2N3 f = {
-      s = (snoun2nounSep f).s ;
+      s = f.s ;
       c2 = f.c2 ;
       h = f.h ;
       isPre = f.isPre
       } ;
     Use3N3 f = {
-      s = (snoun2nounSep f).s ;
+      s = f.s ;
       c2 = f.c3 ;
       h = f.h ;
       isPre = f.isPre2

@@ -1,4 +1,4 @@
-abstract NDPred = Cat [Ant,NP,Utt,IP,IAdv,Conj] ** {
+abstract NDPred = Cat [Ant,NP,Utt,IP,IAdv,IComp,Conj,RS,RP] ** {
 
 cat
 --<  Arg ;
@@ -140,8 +140,11 @@ fun
   UseCN_none : Ant -> Tense -> Pol -> PrCN_none -> PrVP_none ;
   UseCN_np   : Ant -> Tense -> Pol -> PrCN_np   -> PrVP_np ;
 
---<  UseNP     :              Ant -> Tense -> Pol -> NP      -> PrVP aNone ;     -- she is the person
+-- the following are only for aNone
   UseNP_none : Ant -> Tense -> Pol -> NP -> PrVP_none ;
+  UseS_none  : Ant -> Tense -> Pol -> PrCl_none  -> PrVP_none ; -- the fact is that she sleeps
+  UseQ_none  : Ant -> Tense -> Pol -> PrQCl_none -> PrVP_none ; -- the question is who sleeps
+  UseVP_none : Ant -> Tense -> Pol -> PrVPI_none -> PrVP_none ; -- the goal is to sleep
 
 --<  InfVP    : (a : Arg) -> PrVP a -> PrVPI a ;
   InfVP_none : PrVP_none -> PrVPI_none ;
@@ -179,6 +182,9 @@ fun
 --<  QuestIAdv  : (a : Arg) -> IAdv -> PrCl a         -> PrQCl a ;
   QuestIAdv_none : IAdv -> PrCl_none -> PrQCl_none ;
 
+  QuestIComp_none : Ant -> Tense -> Pol -> IComp -> NP  -> PrQCl_none ; -- where is she
+
+
 --<  UseCl  : PrCl aNone  -> PrS ;
   UseCl_none : PrCl_none -> PrS ;
 
@@ -188,7 +194,7 @@ fun
 --<  UseAdvCl : PrAdv aNone -> PrCl aNone -> PrS ;  -- lift adv to front
   UseAdvCl_none : PrAdv_none -> PrCl_none -> PrS ;
 
-  UttS  : PrS -> Utt ;
+  UttPrS  : PrS -> Utt ;
 
 --<  AdvCl   : (a : Arg) -> PrAdv a -> PrCl aNone  -> PrCl a ; 
   AdvCl_none : PrAdv_none -> PrCl_none -> PrCl_none ;
@@ -198,6 +204,15 @@ fun
   AdvQCl_none : PrAdv_none -> PrQCl_none -> PrQCl_none ;
   AdvQCl_np : PrAdv_np -> PrQCl_none -> PrQCl_np ;
 
+-- relatives: just one of each
+  RelCl_none    : PrCl_none         -> RS ;
+  RelVP_none    : RP -> PrVP_none   -> RS ;
+  RelSlash_none : RP -> PrCl_np     -> RS ;
+
+-- imperatives: just one of each
+
+  PrImpSg : PrVP_none -> Utt ;
+  PrImpPl : PrVP_none -> Utt ;  
 
 -- participles as adjectives
 
@@ -210,6 +225,28 @@ fun
 
 --<  AgentPastPartAP : (a : Arg) -> PrV (aNP a) -> NP -> PrAP a ;
   AgentPastPartAP_none : PrV_np -> NP -> PrAP_none ;
+
+-- for aNone only
+  NomVPNP_none   : PrVPI_none -> NP ;   -- translating a document
+
+--<  ByVP      : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- by translating a document
+  ByVP_none    :      PrVP_none -> PrVPI_none -> PrVP_none ; 
+  
+--<  WhenVP    : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- when translating a document
+  WhenVP_none    :      PrVP_none -> PrVPI_none -> PrVP_none ; 
+
+--<  BeforeVP  : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- before translating a document
+  BeforeVP_none    :      PrVP_none -> PrVPI_none -> PrVP_none ; 
+
+--<  AfterVP   : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- after translating a document
+  AfterVP_none    :      PrVP_none -> PrVPI_none -> PrVP_none ; 
+
+--<  InOrderVP : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- in order to translate a document
+  InOrderVP_none    :      PrVP_none -> PrVPI_none -> PrVP_none ; 
+
+--<  WithoutVP : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- without translating a document
+  WithoutVP_none    :      PrVP_none -> PrVPI_none -> PrVP_none ; 
+
 
 -- PrVP coordination
 
@@ -243,5 +280,13 @@ fun
 
 --<  ComplAdv : (a : Arg) -> PrAdv (aNP a) -> NP -> PrAdv a ; -- typically: formation of preposition phrase
   ComplAdv_none : PrAdv_np -> NP -> PrAdv_none ;
+
+--<  SubjUttPreS  : Subj -> PrCl aNone -> PrCl aNone -> Utt ;
+  SubjUttPreS  : Subj -> PrCl_none -> PrCl_none -> Utt ;
+--<  SubjUttPreQ  : Subj -> PrCl aNone -> PrQCl aNone -> Utt ;
+  SubjUttPreQ  : Subj -> PrCl_none -> PrQCl_none -> Utt ;
+--<  SubjUttPost  : Subj -> PrCl aNone -> Utt -> Utt ;
+  SubjUttPost  : Subj -> PrCl_none -> Utt -> Utt ;
+
 
 }

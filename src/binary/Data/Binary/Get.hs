@@ -89,7 +89,12 @@ import Control.Applicative (Applicative(..))
 import Foreign
 
 -- used by splitAtST
-import Control.Monad.ST
+#if MIN_VERSION_base(4,6,0)
+import Control.Monad.ST.Unsafe(unsafeInterleaveST)
+#else
+import Control.Monad.ST(unsafeInterleaveST)
+#endif
+import Control.Monad.ST(runST)
 import Data.STRef
 
 #if defined(__GLASGOW_HASKELL__) && !defined(__HADDOCK__)

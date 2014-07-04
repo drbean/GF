@@ -20,11 +20,21 @@ public class Concr {
 		}
 	}
 
+	public Iterable<TokenProb> complete(String startCat, String s, String prefix) throws ParseError {
+		return new Completer(this, startCat, s, prefix);
+	}
+
 	public native String linearize(Expr expr);
 
 	public native Map<String, String> tabularLinearize(Expr expr);
 
+	public native Object[] bracketedLinearize(Expr expr);
+
 	public native List<MorphoAnalysis> lookupMorpho(String sentence);
+
+	public Iterable<FullFormEntry> lookupWordPrefix(String prefix) {
+		return new Lexicon(this, prefix);
+	}
 
 	public native boolean hasLinearization(String id);
 
@@ -33,6 +43,8 @@ public class Concr {
 	public native void load(InputStream stream);
 
 	public native void unload();
+
+	public native void addLiteral(String cat, LiteralCallback callback);
 
 	//////////////////////////////////////////////////////////////////
 	// private stuff

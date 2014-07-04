@@ -1,5 +1,8 @@
 package org.grammaticalframework.ui.android;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -10,7 +13,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.KeyEvent;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -21,11 +23,11 @@ public class ConversationView extends ScrollView {
 
     private ViewGroup mContent;
     
-    private OnWordSelectedListener mWordListener;
+    private OnClickListener mAlternativesListener;
     private ASR.Listener mSpeechListener;
 
     public ConversationView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+        super(context, attrs, defStyle);        
     }
 
     public ConversationView(Context context, AttributeSet attrs) {
@@ -42,112 +44,184 @@ public class ConversationView extends ScrollView {
         mContent = (ViewGroup) findViewById(R.id.conversation_content);
         mInflater = LayoutInflater.from(getContext());
     }
+    		
+    private class EditorListener implements OnEditorActionListener, OnClickListener {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            if ((actionId & EditorInfo.IME_MASK_ACTION) != 0) {
+            	CharSequence text = v.getText();
+            	InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (inputMethodManager != null) {
+                    inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+                }
+                v.setFocusable(false);
+                mLastUtterance = v;
+                if (mSpeechListener != null)
+                	mSpeechListener.onSpeechInput(text.toString().trim());
+                return true;
+            }
+            return false;
+        }
 
-    public void addFirstPersonUtterance(CharSequence text) {
-        View view = 
+		@Override
+		public void onClick(View v) {
+			v.setFocusableInTouchMode(true);
+			v.requestFocus();
+	        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+	        imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
+		}
+	};
+
+    private EditorListener mEditorListener = new EditorListener();
+    private TextView mLastUtterance = null;
+
+    public void addFirstPersonUtterance(CharSequence text, boolean focused) {
+    	EditText edittext = (EditText) 
         	mInflater.inflate(R.layout.first_person_utterance, mContent, false);
-        TextView textview = (TextView) view.findViewById(R.id.text);
-        textview.setText(text);
-        mContent.addView(view);
-        post(new Runnable() {
-            public void run() {
-                fullScroll(FOCUS_DOWN);
-            }
-        });
-    }
-
-    public void addInputBox() {
-        final View view = 
-        	mInflater.inflate(R.layout.input_box, mContent, false);
-        EditText edittext = (EditText) view.findViewById(R.id.input_text);
-        edittext.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                	InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (inputMethodManager != null) {
-                        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-                    }
-                }
-            }
-        });
-        edittext.setOnEditorActionListener(new OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((actionId & EditorInfo.IME_MASK_ACTION) != 0) {
-                	CharSequence text = v.getText();
-                	mContent.removeView(view);
-                	addFirstPersonUtterance("...");
-                	InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (inputMethodManager != null) {
-                        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
-                    }
-                    if (mSpeechListener != null)
-                    	mSpeechListener.onSpeechInput(text.toString().trim());
-                    return true;
-                }
-                return false;
-            }
-        });
+        edittext.setText(text);
+        edittext.setOnEditorActionListener(mEditorListener);
+        edittext.setOnClickListener(mEditorListener);
+        edittext.setHorizontallyScrolling(false);
+        edittext.setMaxLines(Integer.MAX_VALUE);
         Bundle extras = edittext.getInputExtras(true);
         extras.putBoolean("show_language_toggle", false);
+        mContent.addView(edittext);
 
-        mContent.addView(view);
-        post(new Runnable() {
-            public void run() {
-                fullScroll(FOCUS_DOWN);
-            }
-        });
-    }
-
-    public void addSecondPersonUtterance(CharSequence text) {
-        TextView view = (TextView) 
-        	mInflater.inflate(R.layout.second_person_utterance, mContent, false);
-        view.setText(text);
-        mContent.addView(view);
-        post(new Runnable() {
-            public void run() {
-                fullScroll(FOCUS_DOWN);
-            }
-        });
-    }
-
-    public void updateLastUtterance(CharSequence text, Object lexicon) {
-        int count = mContent.getChildCount();
-        if (count > 0) {
-            View view = mContent.getChildAt(count - 1);
-            TextView textview = (TextView) view.findViewById(R.id.text);
-            textview.setText(text);
-            
-            if (lexicon != null && mWordListener != null) {
-            	ImageView showWordButton = (ImageView) view.findViewById(R.id.show_word);
-            	showWordButton.setVisibility(VISIBLE);
-
-            	final Object lexicon2 = lexicon;
-    	        showWordButton.setOnClickListener(new OnClickListener() {
-    	        	@Override
-    	        	public void onClick(View v) {
-    	        		if (mWordListener != null) {
-    	        			TextView textview = (TextView)
-    	        				((View) v.getParent()).findViewById(R.id.text);
-    	        			CharSequence text = textview.getText();
-    	        			mWordListener.onWordSelected(text, lexicon2);
-    	        		}
-    	        	}
-    	        });    	        
-            }
+        if (focused) {
+	        edittext.requestFocus();
+	        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+	        imm.showSoftInput(edittext, InputMethodManager.SHOW_IMPLICIT);
+        } else {
+        	edittext.setFocusable(false);
         }
+
+        post(new Runnable() {
+            public void run() {
+                fullScroll(FOCUS_DOWN);
+            }
+        });
+        
+        mLastUtterance = edittext;
     }
 
-    public void setOnWordSelectedListener(OnWordSelectedListener listener) {
-    	mWordListener = listener;
+    @SuppressWarnings("deprecation")
+	public CharSequence addSecondPersonUtterance(final CharSequence source, CharSequence target, final Object alternatives) {
+    	TextView view;
+    	if (mLastUtterance != null && mLastUtterance.getTag() != null)
+    		view = (TextView) mLastUtterance.getTag();
+    	else {
+    		view = (TextView)
+    			mInflater.inflate(R.layout.second_person_utterance, mContent, false);
+    		if (mAlternativesListener != null)
+        		view.setOnClickListener(mAlternativesListener);
+        	mContent.addView(view);
+            post(new Runnable() {
+                public void run() {
+                    fullScroll(FOCUS_DOWN);
+                }
+            });
+
+    		mLastUtterance.setTag(view);
+    	}
+
+    	view.setTag(R.string.source_key, source);
+    	view.setTag(R.string.target_key, target);
+    	view.setTag(R.string.alternatives_key, alternatives);
+
+    	// parse by words, marked by %, darkest red color
+    	if (target.charAt(0) == '%') {
+    		view.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_worst_utterance_bg));
+    		target = target.subSequence(2, target.length()) ;
+    	}
+
+    	// parse by chunks, marked by *, red color
+    	else if (target.charAt(0) == '*') {
+    		view.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_chunk_utterance_bg));
+    		target = target.subSequence(2, target.length()) ;
+    	}
+
+    	// parse error or unknown translations (in []) present, darkest red color
+    	else if (target.toString().contains("parse error:") || target.toString().contains("[")) {
+    		view.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_worst_utterance_bg));
+    	}
+
+    	// parse by domain grammar, marked by +, green color
+    	else if (target.charAt(0) == '+') {
+    		view.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_best_utterance_bg));
+    		target = target.subSequence(2, target.length()) ;
+    	}
+    	
+    	else {
+    		view.setBackgroundDrawable(getResources().getDrawable(R.drawable.second_person_utterance_bg));
+    	}
+
+    	view.setText(target);
+        return target;
+    }
+
+    public void updateLastUtterance(CharSequence text) {
+    	if (mLastUtterance != null)
+    		mLastUtterance.setText(text);
+    }
+
+    public void setOnAlternativesListener(final OnAlternativesListener listener) {
+    	if (listener == null)
+    		mAlternativesListener = null;
+    	else
+    		mAlternativesListener = new OnClickListener() {
+	        	@Override
+	        	public void onClick(View v) {
+	        		String source = v.getTag(R.string.source_key).toString();
+	        		Object alternatives = v.getTag(R.string.alternatives_key);
+	        		listener.onAlternativesSelected(source, alternatives);
+	        	}
+	        };
     }
     
     public void setSpeechInputListener(ASR.Listener listener) {
     	mSpeechListener = listener;
     }
     
-    public interface OnWordSelectedListener {
-    	public void onWordSelected(CharSequence word, Object lexicon);
+    public interface OnAlternativesListener {
+    	public void onAlternativesSelected(CharSequence word, Object lexicon);
     }
+
+    public void saveConversation(Bundle state) {
+    	ArrayList<String> firstPersonUtterances   = new ArrayList<String>();
+    	ArrayList<String> secondPersonUtterances  = new ArrayList<String>();
+    	ArrayList<Object> translationAlternatives = new ArrayList<Object>();
+
+    	int childCount = mContent.getChildCount();
+    	for (int i = 0; i < childCount; i++) {
+    		View child = mContent.getChildAt(i);
+    		if (child.getClass() == TextView.class) {
+    			firstPersonUtterances.add(child.getTag(R.string.source_key).toString());
+    			secondPersonUtterances.add(child.getTag(R.string.target_key).toString());
+    			translationAlternatives.add(child.getTag(R.string.alternatives_key));
+    		}
+    	}
+
+    	state.putStringArrayList("first_person_uterances",  firstPersonUtterances);
+		state.putStringArrayList("second_person_uterances", secondPersonUtterances);
+		state.putSerializable("translation_alternatives",(Serializable) translationAlternatives);
+    }
+
+	public void restoreConversation(Bundle state) {
+		ArrayList<String> firstPersonUtterances  = state.getStringArrayList("first_person_uterances");
+		ArrayList<String> secondPersonUtterances = state.getStringArrayList("second_person_uterances");
+		ArrayList<Object> translationAlternatives= (ArrayList<Object>) state.getSerializable("translation_alternatives");
+
+		int i = 0;
+		while (i < firstPersonUtterances.size() && 
+			   i < Math.min(secondPersonUtterances.size(), translationAlternatives.size())) {
+			String text = firstPersonUtterances.get(i);
+			addFirstPersonUtterance(text, false);
+
+			String translation  = secondPersonUtterances.get(i);
+			Object alternatives = translationAlternatives.get(i);
+			addSecondPersonUtterance(text, translation, alternatives);
+
+			i++;
+		}
+	}
 }

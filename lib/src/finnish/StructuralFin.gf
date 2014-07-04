@@ -33,10 +33,9 @@ concrete StructuralFin of Structural = CatFin **
   can_VV = mkVV (mkV "voida" "voi") ;
   during_Prep = postGenPrep "aikana" ;
   either7or_DConj = sd2 "joko" "tai" ** {n = Sg} ;
-  everybody_NP = lin NP (makeNP (lin N (snoun2nounBind (mkN "jokainen"))) Sg) ;
+  everybody_NP = lin NP (makeNP (((mkN "jokainen"))) Sg) ;
   every_Det = MorphoFin.mkDet Sg (snoun2nounBind (mkN "jokainen")) ;
-  everything_NP = makeNP (((snoun2nounBind (mkN "kaikki" "kaiken" "kaikkena"))) **
-    {lock_N = <>}) Sg ;
+  everything_NP = makeNP ((((mkN "kaikki" "kaiken" "kaikkena")))) Sg ;
   everywhere_Adv = ss "kaikkialla" ;
   few_Det  = MorphoFin.mkDet Sg (snoun2nounBind (mkN "harva")) ;
 ---  first_Ord = {s = \\n,c => (mkN "ensimmäinen").s ! NCase n c} ;
@@ -57,7 +56,8 @@ concrete StructuralFin of Structural = CatFin **
   it_Pron = {
     s = \\c => pronSe.s ! npform2case Sg c ; 
     a = agrP3 Sg ; 
-    hasPoss = False
+    hasPoss = False ;
+    poss = "sen" ;
     } ;
   less_CAdv = X.mkCAdv "vähemmän" "kuin" ;
   many_Det = MorphoFin.mkDet Sg (snoun2nounBind (mkN "moni" "monia")) ;
@@ -163,7 +163,7 @@ concrete StructuralFin of Structural = CatFin **
   youPl_Pron = mkPronoun "te" "teidän" "teitä" "teinä" "teihin"  Pl P2 ;
   youPol_Pron = 
     let p = mkPronoun "te" "teidän" "teitä" "teinä" "teihin"  Pl P2 in
-    {s = p.s ; a = AgPol ; hasPoss = True} ;
+    {s = p.s ; a = AgPol ; hasPoss = True ; poss = p.poss} ;
 
 oper
   jokuPron : MorphoFin.Number => (MorphoFin.Case) => Str =
@@ -270,11 +270,10 @@ oper
         }
       } ;
 
-
 oper
-  makeNP  : N -> MorphoFin.Number -> CatFin.NP ; 
+  makeNP  : SNoun -> MorphoFin.Number -> CatFin.NP ; 
   makeNP noun num = {
-    s = \\c => noun.s ! NCase num (npform2case num c) ; 
+    s = \\c => (snoun2nounBind noun).s ! NCase num (npform2case num c) ; 
     a = agrP3 num ;
     isPron, isNeg = False ;
     lock_NP = <>
@@ -290,13 +289,13 @@ lin
 
   if_then_Conj = {s1 = "jos" ; s2 = "niin" ; n = Sg} ;
   nobody_NP = {
-    s = \\c => kukaanPron ! Sg ! npform2case Sg c ; -- requires negative or question polarity
+    s = \\c => kukaanPron ! Sg ! npform2case Sg c ; --- requires negative polarity
     a = agrP3 Sg ; 
     isPron = False ; isNeg = True
     } ;
 
   nothing_NP = {
-    s = \\c => mikaanPron ! Sg ! npform2case Sg c ; --- requires negative or question polarity
+    s = \\c => mikaanPron ! Sg ! npform2case Sg c ; --- requires negative polarity
     a = agrP3 Sg ; 
     isPron = False ; isNeg = True
     } ;

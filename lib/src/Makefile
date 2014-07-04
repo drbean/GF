@@ -2,6 +2,7 @@ RUNGHC=runghc
 RUNMAKE=$(RUNGHC) Make.hs
 
 PROBSFILE=../../treebanks/PennTreebank/ParseEngAbs.probs
+TPROBSFILE=translator/translate.probs
 
 #GF_LIB_PATH=..
 
@@ -132,15 +133,37 @@ TranslateEng: TranslateEng.pgf
 TranslateBul: TranslateBul.pgf
 TranslateChi: TranslateChi.pgf
 TranslateGer: TranslateGer.pgf
+TranslateDut: TranslateDut.pgf
 TranslateSwe: TranslateSwe.pgf
 TranslateHin: TranslateHin.pgf
 TranslateFin: TranslateFin.pgf
 TranslateFre: TranslateFre.pgf
+TranslateIta: TranslateIta.pgf
+TranslateSpa: TranslateSpa.pgf
 
 S=-s
-GFMKT=mkdir -p ../translator && gf $S -make -literal=Symb -probs=$(PROBSFILE) -gfo-dir ../translator
+GFMKT=mkdir -p ../translator && gf $S -make -literal=PN -probs=$(TPROBSFILE) -gfo-dir ../translator
 
 TRANSLATE8=TranslateEng.pgf TranslateBul.pgf TranslateChi.pgf TranslateGer.pgf TranslateSwe.pgf TranslateHin.pgf TranslateFin.pgf TranslateFre.pgf
+TRANSLATE10=TranslateEng.pgf TranslateBul.pgf TranslateChi.pgf TranslateGer.pgf TranslateSwe.pgf TranslateHin.pgf TranslateFin.pgf TranslateFre.pgf TranslateIta.pgf TranslateSpa.pgf
+
+TRANSLATE11=$(TRANSLATE10) TranslateDut.pgf
+
+# Without dependencies:
+Translate10:
+	$(GFMKT) -name=Translate10 $(TRANSLATE10) +RTS -K32M
+
+# With dependencies:
+Translate10.pgf: $(TRANSLATE10)
+	$(GFMKT) -name=Translate10 $(TRANSLATE10) +RTS -K32M
+
+# Without dependencies:
+Translate11:
+	$(GFMKT) -name=Translate11 $(TRANSLATE11) +RTS -K32M
+
+# With dependencies:
+Translate11.pgf: $(TRANSLATE11)
+	$(GFMKT) -name=Translate11 $(TRANSLATE11) +RTS -K32M
 
 # Without dependencies:
 Translate8:
@@ -154,11 +177,14 @@ Translate8.pgf: $(TRANSLATE8)
 TranslateEng.pgf:: ; $(GFMKT) -name=TranslateEng translator/TranslateEng.gf
 TranslateBul.pgf:: ; $(GFMKT) -name=TranslateBul translator/TranslateBul.gf
 TranslateChi.pgf:: ; $(GFMKT) -name=TranslateChi translator/TranslateChi.gf +RTS -K64M
-TranslateFin.pgf:: ; $(GFMKT) -name=TranslateFin translator/TranslateFin.gf +RTS -K32M
+TranslateFin.pgf:: ; $(GFMKT) -name=TranslateFin translator/TranslateFin.gf +RTS -K64M
 TranslateGer.pgf:: ; $(GFMKT) -name=TranslateGer translator/TranslateGer.gf
+TranslateDut.pgf:: ; $(GFMKT) -name=TranslateDut translator/TranslateDut.gf
 TranslateHin.pgf:: ; $(GFMKT) -name=TranslateHin translator/TranslateHin.gf
-TranslateFre.pgf:: ; $(GFMKT) -name=TranslateFre translator/TranslateFre.gf
+TranslateFre.pgf:: ; $(GFMKT) -name=TranslateFre translator/TranslateFre.gf +RTS -K64M
 TranslateSwe.pgf:: ; $(GFMKT) -name=TranslateSwe translator/TranslateSwe.gf
+TranslateIta.pgf:: ; $(GFMKT) -name=TranslateIta translator/TranslateIta.gf +RTS -K64M
+TranslateSpa.pgf:: ; $(GFMKT) -name=TranslateSpa translator/TranslateSpa.gf +RTS -K64M
 
 # Selected language pairs:
 TranslateEngFin: ; $(GFMKT) -name=TranslateEngFin TranslateEng.pgf TranslateFin.pgf
@@ -188,27 +214,27 @@ ParseFin: ParseFin.pgf
 ParseFre: ParseFre.pgf
 
 S=-s
-GFMKP=mkdir -p ../parse8 && gf $S -make -literal=Symb -probs=$(PROBSFILE) -gfo-dir ../parse8
+GFMKP=mkdir -p ../parse8 && gf $S -make -literal=PN -probs=$(PROBSFILE) -gfo-dir ../parse8
 
 PARSE8=ParseEng.pgf ParseBul.pgf ParseChi.pgf ParseGer.pgf ParseSwe.pgf ParseHin.pgf ParseFin.pgf ParseFre.pgf
 
 # Without dependencies:
 Parse8:
-	$(GFMKP) -name=Parse8 $(PARSE8) +RTS -K32M
+	$(GFMKP) -name=Parse8 $(PARSE8) +RTS -K200M
 
 # With dependencies:
 Parse8.pgf: $(PARSE8)
-	$(GFMKP) -name=Parse8 $(PARSE8) +RTS -K32M
+	$(GFMKP) -name=Parse8 $(PARSE8) +RTS -K200M
 
 # Parse grammars for individual languages
-ParseEng.pgf:: ; $(GFMKP) -name=ParseEng english/ParseEng.gf
-ParseBul.pgf:: ; $(GFMKP) -name=ParseBul bulgarian/ParseBul.gf
-ParseChi.pgf:: ; $(GFMKP) -name=ParseChi chinese/ParseChi.gf
-ParseFin.pgf:: ; $(GFMKP) -name=ParseFin finnish/stemmed/ParseFin.gf +RTS -K32M
-ParseGer.pgf:: ; $(GFMKP) -name=ParseGer german/ParseGer.gf
-ParseHin.pgf:: ; $(GFMKP) -name=ParseHin hindi/ParseHin.gf
-ParseFre.pgf:: ; $(GFMKP) -name=ParseFre french/ParseFre.gf
-ParseSwe.pgf:: ; $(GFMKP) -name=ParseSwe swedish/ParseSwe.gf
+ParseEng.pgf:: ; $(GFMKP) -name=ParseEng english/ParseEng.gf +RTS -K32M
+ParseBul.pgf:: ; $(GFMKP) -name=ParseBul bulgarian/ParseBul.gf +RTS -K32M
+ParseChi.pgf:: ; $(GFMKP) -name=ParseChi chinese/ParseChi.gf +RTS -K200M
+ParseFin.pgf:: ; $(GFMKP) -name=ParseFin finnish/stemmed/ParseFin.gf +RTS -K200M
+ParseGer.pgf:: ; $(GFMKP) -name=ParseGer german/ParseGer.gf +RTS -K200M
+ParseHin.pgf:: ; $(GFMKP) -name=ParseHin hindi/ParseHin.gf +RTS -K200M
+ParseFre.pgf:: ; $(GFMKP) -name=ParseFre french/ParseFre.gf +RTS -K200M
+ParseSwe.pgf:: ; $(GFMKP) -name=ParseSwe swedish/ParseSwe.gf +RTS -K32M
 
 ParseSpa.pgf:: ; $(GFMKP) -name=ParseSpa spanish/ParseSpa.gf
 

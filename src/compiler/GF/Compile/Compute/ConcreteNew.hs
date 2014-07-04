@@ -180,6 +180,7 @@ proj l v =
       VFV vs -> liftM vfv (mapM (proj l) vs)
       VRec rs -> lookup l rs
       VExtR v1 v2 -> proj l v2 `mplus` proj l v1 -- hmm
+      VS (VV pty pvs rs) v2 -> flip VS v2 . VV pty pvs # mapM (proj l) rs
       _ -> return (ok1 VP v l)
 
 ok1 f v1@(VError {}) _ = v1
@@ -280,7 +281,8 @@ strsFromValue t = case t of
            ]
   VFV ts -> mapM strsFromValue ts >>= return . concat
   VStrs ts -> mapM strsFromValue ts >>= return . concat  
-  _ -> fail "cannot get Str from value"
+
+  _ -> fail ("cannot get Str from value " ++ show t)
 
 vfv vs = case nub vs of
            [v] -> v
@@ -296,6 +298,7 @@ select env vv =
             --let vs = map (value0 env) ats
             i <- maybeErr "no match" $ findIndex (==v2) vs
             return (ix (gloc env) "select" rs i)
+      (VT _ _ [(PW,Bind b)],_) -> {-trace "eliminate wild card table" $-} b []
       (v1@(VT _ _ cs),v2) ->
                  err (\_->ok2 VS v1 v2) (err bug id . valueMatch env) $
                  match (gloc env) cs v2
@@ -392,6 +395,7 @@ vapply v vs =
         msg = bug . (("Applying Predef."++showIdent (predefName pre)++": ")++)
     VS (VV t pvs fs) s -> VS (VV t pvs [vapply f vs|f<-fs]) s
     VFV fs -> vfv [vapply f vs|f<-fs]
+    VCApp f vs0 -> VCApp f (vs0++vs)
     v -> bug $ "vapply "++show v++" "++show vs
 
 vbeta bt f (v:vs) =

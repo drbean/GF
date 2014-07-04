@@ -47,13 +47,14 @@ fun
   GenIP       : IP -> IQuant ;      -- whose
   GenRP       : Num -> CN -> RP ;   -- whose car(s)
  
-  CompoundCN  : N -> CN -> CN ;     -- control system / controls system / control-system
+  CompoundN   : N -> N  -> N ;      -- control system / controls system / control-system
+  CompoundAP  : N -> A  -> AP ;     -- language independent / language-independent
 
-  GerundCN    : VP -> CN ;         -- publishing of the document (can get a determiner)
-  GerundNP    : VP -> NP ;         -- publishing the document (by nature definite)
-  GerundAdv   : VP -> Adv ;        -- publishing the document (prepositionless adverb)
+  GerundCN    : VP -> CN ;          -- publishing of the document (can get a determiner)
+  GerundNP    : VP -> NP ;          -- publishing the document (by nature definite)
+  GerundAdv   : VP -> Adv ;         -- publishing the document (prepositionless adverb)
 
-  PresPartAP  : VP -> AP ;         -- sleeping (man), (man) sleeping in the car
+  PresPartAP  : VP -> AP ;          -- sleeping (man), (man) sleeping in the car
 
   PastPartAP      : VPSlash -> AP ;         -- lost (opportunity) ; (opportunity) lost in space
   PastPartAgentAP : VPSlash -> NP -> AP ;   -- (opportunity) lost by the company
@@ -83,6 +84,11 @@ fun
     CompVP      : Ant -> Pol -> VP -> Comp ;    -- (she is) to go
   
     SlashSlashV2V : V2V -> Ant -> Pol -> VPSlash -> VPSlash ;  -- induce them to sell (it) -- analogous to Verb.SlashVV
+
+    DirectComplVS : Temp -> NP -> VS -> Utt  -> S ;    -- I am here, she said / she said: I am here  -- no negation possible
+    DirectComplVQ : Temp -> NP -> VQ -> QS -> S   ;    -- who is there, she asked / she asked: who is there  -- no negation possible
+
+    FocusObjS : NP -> SSlash -> S ;                    -- this woman I love  -- in declarative S, not in QS
 
 
 }

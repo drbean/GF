@@ -1,4 +1,13 @@
 {-# LANGUAGE ExistentialQuantification, DeriveDataTypeable #-}
+-------------------------------------------------
+-- |
+-- Maintainer  : Krasimir Angelov
+-- Stability   : stable
+-- Portability : portable
+--
+-- This is the Haskell binding to the C run-time system for
+-- loading and interpreting grammars compiled in Portable Grammar Format (PGF).
+-------------------------------------------------
 #include <pgf/pgf.h>
 #include <gu/enum.h>
 #include <gu/exn.h>
@@ -16,18 +25,14 @@ module PGF2 (-- * PGF
             ) where
 
 import Prelude hiding (fromEnum)
-import Control.Exception
-import System.IO
-import System.IO.Unsafe
+import Control.Exception(Exception,throwIO)
+import System.IO.Unsafe(unsafePerformIO,unsafeInterleaveIO)
 import PGF2.FFI
 
 import Foreign hiding ( Pool, newPool, unsafePerformIO )
 import Foreign.C
-import Foreign.C.String
-import Foreign.Ptr
 import Data.Typeable
 import qualified Data.Map as Map
-import qualified Data.ByteString as BS
 import Data.IORef
 
  
@@ -55,8 +60,10 @@ readPGF fpath =
                            if ty == gu_type__GuErrno
                              then do perrno <- (#peek GuExn, data.data) exn
                                      errno  <- peek perrno
+                                     gu_pool_free pool
                                      ioError (errnoToIOError "readPGF" (Errno errno) Nothing (Just fpath))
-                             else throw (PGFError "The grammar cannot be loaded")
+                             else do gu_pool_free pool
+                                     throwIO (PGFError "The grammar cannot be loaded")
                    else return pgf
      master <- newForeignPtr gu_pool_finalizer pool
      return PGF {pgf = pgf, pgfMaster = master}
@@ -69,6 +76,7 @@ languages p =
                    do fptr <- wrapMapItorCallback (getLanguages ref)
                       (#poke GuMapItor, fn) itor fptr
                       pgf_iter_languages (pgf p) itor nullPtr
+                      freeHaskellFunPtr fptr
        readIORef ref
   where
     getLanguages :: IORef (Map.Map String Concr) -> MapItorCallback
@@ -164,6 +172,7 @@ lookupMorpho (Concr concr master) sent = unsafePerformIO $
                            (#poke PgfMorphoCallback, callback) cback fptr
                            withCString sent $ \c_sent ->
                              pgf_lookup_morpho concr c_sent cback nullPtr
+                           freeHaskellFunPtr fptr
      readIORef ref
 
 fullFormLexicon :: Concr -> [(String, [MorphoAnalysis])]
@@ -200,17 +209,37 @@ getAnalysis ref self c_lemma c_anal prob exn = do
   anal  <- peekCString c_anal
   writeIORef ref ((lemma, anal, prob):ans)
 
-parse :: Concr -> String -> String -> [(Expr,Float)]
+parse :: Concr -> String -> String -> Either String [(Expr,Float)]
 parse lang cat sent =
   unsafePerformIO $
     do parsePl <- gu_new_pool
        exprPl  <- gu_new_pool
+       exn     <- gu_new_exn nullPtr gu_type__type parsePl
        enum    <- withCString cat $ \cat ->
                     withCString sent $ \sent ->
-                      pgf_parse (concr lang) cat sent nullPtr parsePl exprPl
-       parseFPl <- newForeignPtr gu_pool_finalizer parsePl
-       exprFPl  <- newForeignPtr gu_pool_finalizer exprPl
-       fromPgfExprEnum enum parseFPl (lang,exprFPl)
+                      pgf_parse (concr lang) cat sent exn parsePl exprPl
+       failed  <- gu_exn_is_raised exn
+       if failed
+         then do ty <- gu_exn_caught exn
+                 if ty == gu_type__PgfParseError
+                   then do c_tok <- (#peek GuExn, data.data) exn
+                           tok <- peekCString c_tok
+                           gu_pool_free parsePl
+                           gu_pool_free exprPl
+                           return (Left tok)
+                   else if ty == gu_type__PgfExn
+                          then do c_msg <- (#peek GuExn, data.data) exn
+                                  msg <- peekCString c_msg
+                                  gu_pool_free parsePl
+                                  gu_pool_free exprPl
+                                  throwIO (PGFError msg)
+                          else do gu_pool_free parsePl
+                                  gu_pool_free exprPl
+                                  throwIO (PGFError "Parsing failed")
+         else do parseFPl <- newForeignPtr gu_pool_finalizer parsePl
+                 exprFPl  <- newForeignPtr gu_pool_finalizer exprPl
+                 exprs    <- fromPgfExprEnum enum parseFPl (lang,exprFPl)
+                 return (Right exprs)
 
 linearize :: Concr -> Expr -> String
 linearize lang e = unsafePerformIO $
@@ -226,8 +255,8 @@ linearize lang e = unsafePerformIO $
                    else if ty == gu_type__PgfExn
                           then do c_msg <- (#peek GuExn, data.data) exn
                                   msg <- peekCString c_msg
-                                  throw (PGFError msg)
-                          else throw (PGFError "The abstract tree cannot be linearized")
+                                  throwIO (PGFError msg)
+                          else throwIO (PGFError "The abstract tree cannot be linearized")
          else do lin <- gu_string_buf_freeze sb pl
                  peekCString lin
 

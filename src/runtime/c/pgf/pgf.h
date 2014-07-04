@@ -131,6 +131,10 @@ void
 pgf_fullform_get_analyses(PgfFullFormEntry* entry,
                           PgfMorphoCallback* callback, GuExn* err);
 
+GuEnum*
+pgf_lookup_word_prefix(PgfConcr *concr, GuString prefix,
+                       GuPool* pool, GuExn* err);
+
 PgfExprEnum*
 pgf_parse_with_heuristics(PgfConcr* concr, PgfCId cat, 
                           GuString sentence, double heuristics,
@@ -146,6 +150,27 @@ typedef struct {
 GuEnum*
 pgf_complete(PgfConcr* concr, PgfCId cat, GuString string, 
              GuString prefix, GuExn* err, GuPool* pool);
+
+GuPool*
+pgf_concr_get_pool(PgfConcr* concr);
+
+typedef struct PgfLiteralCallback PgfLiteralCallback;
+
+struct PgfLiteralCallback {
+	PgfExprProb* (*match)(PgfLiteralCallback* self,
+	                      size_t lin_idx,
+	                      GuString sentence, size_t* poffset,
+	                      GuPool *out_pool);
+    GuEnum*    (*predict)(PgfLiteralCallback* self,
+	                      size_t lin_idx,
+	                      GuString prefix,
+	                      GuPool *out_pool);
+};
+
+void
+pgf_concr_add_literal(PgfConcr *concr, PgfCId cat,
+                      PgfLiteralCallback* callback,
+                      GuExn* err);
 
 /// @}
 

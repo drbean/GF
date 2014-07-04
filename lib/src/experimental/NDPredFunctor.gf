@@ -1,5 +1,5 @@
 incomplete concrete NDPredFunctor of NDPred = 
-  Cat [Ant,NP,Utt,IP,IAdv,Conj] ** 
+  Cat [Ant,NP,Utt,IP,IAdv,Conj,RS,RP,Subj] ** 
   open 
     PredInterface,
     Pred,
@@ -84,6 +84,12 @@ lin
     = Pred.UseAdv Pred.aNone ;
   UseNP_none
     = Pred.UseNP ;
+  UseS_none
+    = Pred.UseS ;
+  UseQ_none
+    = Pred.UseQ ;
+  UseVP_none
+    = Pred.UseVP ;
 
   ComplV2_none
     = Pred.ComplV2 Pred.aNone ;
@@ -131,6 +137,9 @@ lin
   QuestIAdv_none 
     = Pred.QuestIAdv Pred.aNone ;
 
+  QuestIComp_none 
+    = Pred.QuestIComp ;
+
   QuestVP_none 
     = Pred.QuestVP Pred.aNone ;
 
@@ -145,13 +154,25 @@ lin
   UseAdvCl_none
     = Pred.UseAdvCl ;
 
-  UttS 
-    = Pred.UttS ;
+  UttPrS 
+    = Pred.UttPrS ;
 
   AdvCl_none, AdvCl_np
     = Pred.AdvCl Pred.aNone ;
   AdvQCl_none, AdvQCl_np
     = Pred.AdvQCl Pred.aNone ;
+
+----  RelCl_none
+----    = Pred.RelCl Pred.aNone ;
+  RelVP_none
+    = Pred.RelVP ;
+  RelSlash_none
+    = Pred.RelSlash ;
+
+  PrImpSg
+    = Pred.PrImpSg ;
+  PrImpPl
+    = Pred.PrImpPl ;
 
   PresPartAP_none, PresPartAP_np
     = Pred.PresPartAP Pred.aNone ;
@@ -161,6 +182,22 @@ lin
 
   AgentPastPartAP_none
     = Pred.AgentPastPartAP Pred.aNone ;
+
+  NomVPNP_none
+    = Pred.NomVPNP ;
+
+  ByVP_none
+    = Pred.ByVP Pred.aNone ;
+  WhenVP_none
+    = Pred.WhenVP Pred.aNone ;
+  BeforeVP_none
+    = Pred.BeforeVP Pred.aNone ;
+  AfterVP_none
+    = Pred.AfterVP Pred.aNone ;
+  InOrderVP_none
+    = Pred.InOrderVP Pred.aNone ;
+  WithoutVP_none
+    = Pred.WithoutVP Pred.aNone ;
 
   StartVPC_none, StartVPC_np
     = Pred.StartVPC Pred.aNone ;
@@ -178,5 +215,12 @@ lin
 
   ComplAdv_none 
     = Pred.ComplAdv Pred.aNone ;
+
+  SubjUttPreS
+    = Pred.SubjUttPreS ;
+  SubjUttPreQ
+    = Pred.SubjUttPreQ ;
+  SubjUttPost
+    = Pred.SubjUttPost ;
 
 }

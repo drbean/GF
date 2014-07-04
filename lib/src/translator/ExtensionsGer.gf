@@ -63,10 +63,20 @@ lin
     PredVPosv = G.PredVP;
     PredVPovs = G.PredVP;
 
-  CompoundCN noun cn = {
-    s = \\a,n,c => glue (noun.s ! Sg ! Nom) (cn.s ! a ! n ! c) ;
+  CompoundN noun cn = {
+    s = \\n,c => glue noun.co (cn.uncap.s ! n ! c) ;
+    co = glue noun.co (cn.uncap.co) ;
+    uncap = {
+      s = \\n,c => glue noun.uncap.co (cn.uncap.s ! n ! c) ;
+      co = glue noun.uncap.co (cn.uncap.co)
+      } ;
     g = cn.g
   } ;
+
+    CompoundAP noun adj = {
+      s = \\af => glue (noun.s ! Sg ! Nom) (adj.s ! Posit ! af) ;
+      isPre = True
+      } ;
 
   GerundN v = { -- parsing
     s = \\n,c => v.s ! VInf False ; --- formalisieren, not formalisierung
@@ -90,7 +100,7 @@ lin
 
   UseQuantPN q pn = {s = \\c => q.s ! False ! Sg ++ pn.s ! npcase2case c ; a = agrgP3 Sg pn.g} ;  -- this London
 
-  SlashV2V v p vp = insertObjc (\\a => p.s ++ case p.p of {CPos => ""; _ => "not"} ++  -- force not to sleep
+  SlashV2V v p vp = insertObjc (\\a => p.s ++ case p.p of {CPos => ""; _ => "nicht"} ++  -- force not to sleep
                                        v.c3 ++ 
                                        infVP v.typ vp a)
                                (predVc v) ;
@@ -107,13 +117,23 @@ lin
           }
     } ;
 -}
-  CompS s = {s = \\_ => "that" ++ s.s ! Main} ;  -- S -> Comp
+  CompS s = {s = \\_ => "dass" ++ s.s ! Main} ;  -- S -> Comp
   CompVP ant p vp = {s = \\_ => useInfVP True vp} ; -- VP -> Comp
 
 lin
   that_RP = which_RP ;
 
   UttAdV adv = adv;
+
+  DirectComplVS t np vs utt = 
+    mkS (lin Adv (optCommaSS utt)) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  DirectComplVQ t np vs q = 
+    mkS (lin Adv (optCommaSS (mkUtt q))) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  FocusObjS np sslash = 
+    mkS (lin Adv (ss (appPrep sslash.c2 np.s))) <lin S sslash : S> ;
+
 
 
 }

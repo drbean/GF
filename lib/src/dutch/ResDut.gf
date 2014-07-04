@@ -5,7 +5,7 @@
 --
 -- (c) 2009 Femke Johansson and Aarne Ranta
 
-resource ResDut = ParamX ** open Prelude in {
+resource ResDut = ParamX ** open Prelude, Predef in {
 
   flags optimize=all ;
 
@@ -76,8 +76,8 @@ resource ResDut = ParamX ** open Prelude in {
     mkAdjective : (_,_,_,_,_ : Str) -> Adjective = \ap,aa,ag,ac,as -> {
       s = table {
         Posit  => table {APred => ap ; AAttr => aa ; AGen => ag} ; 
-        Compar => table {APred => ac ; AAttr => ac + "e" ; AGen => ac + "es"} ; ----
-        Superl => table {APred => as ; AAttr => as + "e" ; AGen => as + "es"}   ----
+        Compar => table {APred => ac ; AAttr => ac + "e" ; AGen => ac + "s"} ; ----
+        Superl => table {APred => as ; AAttr => as + "e" ; AGen => as + "s"}   ----
         }
       } ;
     regAdjective : Str -> Adjective = \s ->  ----
@@ -114,6 +114,8 @@ resource ResDut = ParamX ** open Prelude in {
      | VImp3     -- weest
      | VImpPl    -- wezen
      | VPerf     -- geweest
+     | VPresPart -- zijnde
+     | VGer      -- zijnde
      ;
 
     VPart = VPart_aan | VPart_af | VPart_be ;
@@ -129,7 +131,9 @@ resource ResDut = ParamX ** open Prelude in {
     		VPresSg2 | VPresSg3 | VImp3 => aait; -- jij aait
     		VPastSg => aaide; -- ik aaide  --# notpresent
     		VPastPl => aaiden; -- hij/zij/het/wij aaiden --# notpresent
-    		VPerf   => geaaid -- ik heb geaaid 
+    		VPerf   => geaaid ; -- ik heb geaaid 
+                VPresPart => aaien + "de" ;
+                VGer => aaien + "d"
     	}
     };
     
@@ -159,6 +163,7 @@ resource ResDut = ParamX ** open Prelude in {
       } ;
      prefix = ein ;
      aux = verb.aux ;
+     particle = verb.particle ;
      vtype = verb.vtype 
      } ;
 
@@ -176,43 +181,36 @@ resource ResDut = ParamX ** open Prelude in {
     	 _ => d_regVerb verb stem
     	 
     	};
-
+     consonant : pattern Str = #("b"|"c"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"m"|"n"|"p"|"q"|"r"|"s"|"t"|"v"|"w"|"x"|"y"|"z") ;
+     vowel : pattern Str = #("a"|"e"|"i"|"o"|"u") ;
     -- To make a stem out of a verb
     -- If a stem ends in a 'v' then the 'v' changes into a 'f'
     -- If a stem ends in a 'z' then the 'z' changes into an 's'
     -- If a stem ends on a double consonant then one of them disappears
     -- If a stem ends on a consonant but that consonant has exactly 1 vowel before it
     -- then we have to double this vowel
-    mkStem : Str -> Str =\werken -> 
-    let stem = Predef.tk 2 werken
+    mkStem : Str -> Str =\lopen -> 
+    let 
+      lop  = tk 2 lopen ;    --drop the -en
+      lo   = init lop ;
+      o    = last lo  ;
+      p    = case last lop of { 
+	       "v" => "f" ;
+	       "z" => "s" ;
+	       p   => p
+	      } ;
+      loop = lo + o + p ;  -- voiced consonant to unvoiced, vowel doubling
+      kerf = lo + p ;      -- voiced consonant to unvoiced, no vowel doubling
+      zeg  = tk 3 lopen ;  -- double consonant disappearing
+      werk = lop           -- no changes to stem
+      
     in
-    case stem of {
-    	-- Vowel doubling for verbs whose stem does not end on 'v' or 'z' 	
-    	_+ ("b"|"c"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"m"|"n"|"p"|"q"|"r"|"s"|"t"|"v"|"w"|"x"|"y"|"z") 
-    	 + ("a"|"e"|"i"|"o"|"u")
-    	 + ("b"|"c"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"m"|"n"|"p"|"q"|"r"|"s"|"t"|"w"|"x"|"y") 
-    	 => Predef.tk 2 stem + (Predef.tk 1 (Predef.dp 2 stem)) + Predef.dp 2 stem;
-    	 
-     	-- Vowel doubling for verbs whose stem end on 'v'	
-    	_+ ("b"|"c"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"m"|"n"|"p"|"q"|"r"|"s"|"t"|"v"|"w"|"x"|"y"|"z") 
-    	 + ("a"|"e"|"i"|"o"|"u")
-    	 + "v" => Predef.tk 2 stem + (Predef.tk 1 (Predef.dp 2 stem)) + 
-    	 	(Predef.tk 1 (Predef.dp 2 stem)) +"f";
-    
-        -- Vowel doubling for verbs whose stem end on 'z`'	
-    	_+ ("b"|"c"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"m"|"n"|"p"|"q"|"r"|"s"|"t"|"v"|"w"|"x"|"y"|"z") 
-    	 + ("a"|"e"|"i"|"o"|"u")
-    	 + "z" => Predef.tk 2 stem + (Predef.tk 1 (Predef.dp 2 stem)) + 
-    	 	(Predef.tk 1 (Predef.dp 2 stem)) + "s";
-    
-    	_+ "v" => (Predef.tk 1 stem) + "f";
-    	_+ "z" => (Predef.tk 1 stem) + "s";
-    	
+    case lop of {
+    	_+ #consonant + #vowel + #consonant => loop ; 
     	_+ ("bb" | "dd" | "ff" | "gg" | "kk" | "ll" | "mm" | "nn" | "pp" | 
-    		"rr" | "ss" | "tt") => Predef.tk 1 stem;
-
-    	 
-    	_ => stem
+            "rr" | "ss" | "tt")    => zeg ;
+    	_+ #consonant + ("v"|"z")  => kerf ;
+    	_                          => werk --default case, #consonant + #consonant 
     };
     
     
@@ -287,10 +285,13 @@ resource ResDut = ParamX ** open Prelude in {
        VImp2     => "wees" ;
        VImp3     => "weest" ;
        VImpPl    => "wezen" ;
-       VPerf     => "geweest" 
+       VPerf     => "geweest" ;
+       VPresPart => "zijnde" ;
+       VGer      => "wezend"
        } ;
     aux = VZijn ;
     prefix = [] ;
+    particle = [] ;
     vtype = VAct ;
     } ;
 
@@ -306,10 +307,13 @@ resource ResDut = ParamX ** open Prelude in {
        VImp2     => "heb" ;
        VImp3     => "heeft" ;
        VImpPl    => "hebben" ;
-       VPerf     => "gehad" 
+       VPerf     => "gehad" ;
+       VPresPart => "hebbende" ;
+       VGer      => "hebbend"
        } ;
     aux = VHebben ;
     prefix = [] ;
+    particle = [] ;
     vtype = VAct ;
     } ;
 
@@ -325,10 +329,13 @@ resource ResDut = ParamX ** open Prelude in {
        VImp2     => "zoud" ;  ---- not used
        VImp3     => "zoudt" ;
        VImpPl    => "zouden" ; ----
-       VPerf     => "gezoudt" 
+       VPerf     => "gezoudt" ;
+       VPresPart => "zullende" ;
+       VGer      => "zullend" 
        } ;
     aux = VHebben ;
     prefix = [] ;
+    particle = [] ;
     vtype = VAct ;
     } ;
 
@@ -344,15 +351,18 @@ resource ResDut = ParamX ** open Prelude in {
        VImp2     => "kan" ;  ---- not used
        VImp3     => "kant" ;
        VImpPl    => "kunnen" ; ----
-       VPerf     => "gekund" 
+       VPerf     => "gekund" ;
+       VPresPart => "kunnende" ;
+       VGer      => "kunnend"
        } ;
     aux = VHebben ;
     prefix = [] ;
+    particle = [] ;
     vtype = VAct ;
     } ;
 
   worden_V = irregVerb2 "worden" "werd" "werden" "geworden" ** {
-    aux = VZijn ; prefix = [] ; vtype = VAct} ; 
+    aux = VZijn ; prefix = [] ; particle = [] ; vtype = VAct} ; 
 
     Pronoun : Type = {
       unstressed,stressed : {nom, acc, poss : Str} ;
@@ -377,14 +387,18 @@ param
     Adjf = Strong | Weak ;
 
 
-  oper VVerb = Verb ** {prefix : Str ; aux : VAux ; vtype : VType} ;
+  oper VVerb = Verb ** {prefix : Str ;       -- af + stappen
+			particle : Str ;     -- non-inflecting component, e.g. leuk vinden
+			aux : VAux ;         -- hebben or zijn
+			vtype : VType} ;     -- active or reflexive
+
   param VAux = VHebben | VZijn ;
 
   param VType = VAct | VRefl ;
 
   oper 
     v2vvAux : Verb -> VAux -> VVerb = \v,a -> 
-      {s = v.s ; aux = a ; prefix = [] ; vtype = VAct} ;
+      {s = v.s ; aux = a ; prefix = [] ; particle = [] ; vtype = VAct} ;
     v2vv : Verb -> VVerb = \v -> v2vvAux v VHebben ;
 
 
@@ -393,7 +407,7 @@ param
 ---- clause, inverted, or subordinate.
 
   oper 
-    Preposition = Str ;
+    Preposition = Str ; 
     appPrep : Preposition -> (NPCase => Str) -> Str = \p,np -> p ++ np ! NPAcc ; ----
 
   param  
@@ -458,8 +472,9 @@ param
       n2 : Agr => Str ;      -- je vrouw
       a2 : Str ;             -- vandaag
       isAux : Bool ;         -- is a double infinitive
-      inf : Str * Bool ;     -- sagen (True = non-empty)
-      ext : Str              -- dass sie kommt
+      negBeforeObj : Bool ;  -- ik schoop X niet ; ik houd niet van X ; dat is niet leuk
+      inf : Str * Bool ;     -- zeggen (True = non-empty)
+      ext : Str              -- dat je komt
       } ;
 
   predV : VVerb -> VP = predVGen False ;
@@ -475,6 +490,7 @@ param
     n2  : Agr => Str = \\a => [] ;
     a2  : Str = [] ;
     isAux = isAux ; ----
+    negBeforeObj = False ;
     inf : Str * Bool = <[],False> ;
     ext : Str = []
     } ;
@@ -486,15 +502,18 @@ param
 
 -- Extending a verb phrase with new constituents.
 
-  insertObj : (Agr => Str) -> VP -> VP = insertObjNP False ;
+  --when we call it with a normal VP, just copy the negBeforeObj field of the vp
+  insertObj : (Agr => Str) -> VP -> VP = \obj,vp -> insertObjNP False vp.negBeforeObj obj vp;
 
-  insertObjNP : Bool -> (Agr => Str) -> VP -> VP = \isPron, obj,vp -> {
+  --this is needed when we call insertObjNP in ComplSlash: VPSlash is a subtype of VP so it works
+  insertObjNP : Bool -> Bool -> (Agr => Str) -> VP -> VP = \isPron,negBeforeObj,obj,vp -> {
     s = vp.s ;
     a1 = vp.a1 ;
     n0 = \\a => case isPron of {True  => obj ! a ; _ => []} ++ vp.n0 ! a ;
     n2 = \\a => case isPron of {False => obj ! a ; _ => []} ++ vp.n2 ! a ;
     a2 = vp.a2 ;
     isAux = vp.isAux ;
+    negBeforeObj = negBeforeObj ;
     inf = vp.inf ;
     ext = vp.ext
     } ;
@@ -506,6 +525,7 @@ param
     n2 = vp.n2 ;
     a2 = vp.a2 ;
     isAux = vp.isAux ;
+    negBeforeObj = vp.negBeforeObj ;
     inf = vp.inf ;
     ext = vp.ext
     } ;
@@ -517,6 +537,7 @@ param
     n2 = vp.n2 ;
     a2 = vp.a2 ++ adv ;
     isAux = vp.isAux ;
+    negBeforeObj = vp.negBeforeObj ;
     inf = vp.inf ;
     ext = vp.ext
     } ;
@@ -528,6 +549,7 @@ param
     n2 = vp.n2 ;
     a2 = vp.a2 ;
     isAux = vp.isAux ;
+    negBeforeObj = vp.negBeforeObj ;
     inf = vp.inf ;
     ext = vp.ext ++ ext
     } ;
@@ -539,6 +561,7 @@ param
     n2 = vp.n2 ;
     a2 = vp.a2 ;
     isAux = vp.isAux ; ----
+    negBeforeObj = vp.negBeforeObj ;
     inf = <inf ++ vp.inf.p1, True> ;
     ext = vp.ext
     } ;
@@ -569,21 +592,34 @@ param
           neg   = vp.a1 ! b ;
           obj0  = vp.n0 ! agr ;
           obj   = vp.n2 ! agr ;
-          compl = obj0 ++ neg ++ obj ++ vp.a2 ++ vp.s.prefix ;
-          inf   = 
-            case <vp.isAux, vp.inf.p2, a> of {                  --# notpresent
+	  part  = vp.s.particle ;
+	  compl = case vp.negBeforeObj of {
+	    True => neg ++ obj0 ++ obj ++ part ++ vp.a2 ++ vp.s.prefix ;
+	    _    => obj0 ++ obj ++ neg ++ part ++ vp.a2 ++ vp.s.prefix 
+	  } ;
+          inf : Str  =                                               
+            case <vp.isAux, vp.inf.p2, a> of {                  
               <True,True,Anter> => vp.s.s ! VInf ++ vp.inf.p1 ; --# notpresent
-              _ =>                                              --# notpresent
-                 vp.inf.p1 ++ verb.p2
-              }                                                 --# notpresent
-              ;
+              _ =>                                              
+                 vp.inf.p1 ++ verb.p2                           
+              }                                                 
+              ;                                                 
           extra = vp.ext ;
-          inffin = 
-            case <a,vp.isAux> of {                              --# notpresent
-              <Anter,True> => fin ++ inf ; -- double inf   --# notpresent
-              _ =>                                              --# notpresent
-              inf ++ fin              --- or just auxiliary vp
-            }                                                   --# notpresent
+
+          --for the Sub word order
+          inffin : Str =                                           
+            case <t,a,vp.isAux> of {                          
+                                 -- gezien  zou/zal hebben  
+              <Cond,Anter,False> => vperf ++ fin ++ auxv ! VInf ; --# notpresent
+	      <Fut,Anter,False>  => vperf ++ fin ++ auxv ! VInf ; --# notpresent
+	                         -- zou/zal zien
+	      <Cond,Simul,False> => fin ++ verb.p2 ;          
+	      <Fut,Simul,False>  => fin ++ verb.p2 ;          
+	                     -- wil    kunnen zien (first line in inf)
+	      <_,Anter,True> => fin ++ inf ; -- double inf    --# notpresent
+              _   =>  fin ++ inf                              
+              -- no inf ++ fin, this is not German :-P
+            }                                                  
         in
         case o of {
           Main => subj ++ fin ++ compl ++ inf ++ extra ;
@@ -592,7 +628,7 @@ param
           }
     } ;
 
-  auxVerb : VAux -> VVerb = \a -> case a of {
+  auxVerb : VAux -> Verb = \a -> case a of {
     VHebben => hebben_V ;
     VZijn   => zijn_V 
     } ;

@@ -1,4 +1,4 @@
-abstract Pred = Cat [Ant,NP,Utt,IP,IAdv,Conj] ** {
+abstract Pred = Cat [Ant,NP,Utt,IP,IAdv,Conj,RS,RP,Subj] ** {
 
 cat
   Arg ;
@@ -42,10 +42,13 @@ fun
 
   InfVP     : (a : Arg) -> PrVP a -> PrVPI a ;                                -- to love X
 
-  UseAP     : (a : Arg) -> Ant -> Tense -> Pol -> PrAP a  -> PrVP a ;         -- she is married to X
-  UseAdv    : (a : Arg) -> Ant -> Tense -> Pol -> PrAdv a -> PrVP a ;         -- she is in X
-  UseCN     : (a : Arg) -> Ant -> Tense -> Pol -> PrCN a  -> PrVP a ;         -- she is a member of X
-  UseNP     :              Ant -> Tense -> Pol -> NP      -> PrVP aNone ;     -- she is the person
+  UseAP     : (a : Arg) -> Ant -> Tense -> Pol -> PrAP a      -> PrVP a ;     -- she is married to X
+  UseAdv    : (a : Arg) -> Ant -> Tense -> Pol -> PrAdv a     -> PrVP a ;     -- she is in X
+  UseCN     : (a : Arg) -> Ant -> Tense -> Pol -> PrCN a      -> PrVP a ;     -- she is a member of X
+  UseNP     :              Ant -> Tense -> Pol -> NP          -> PrVP aNone ; -- she is the person
+  UseS      :              Ant -> Tense -> Pol -> PrCl aNone  -> PrVP aNone ; -- the fact is that she sleeps
+  UseQ      :              Ant -> Tense -> Pol -> PrQCl aNone -> PrVP aNone ; -- the question is who sleeps
+  UseVP     :              Ant -> Tense -> Pol -> PrVPI aNone -> PrVP aNone ; -- the goal is to sleep
 
   PredVP    : (a : Arg) -> NP -> PrVP a -> PrCl a ;
 
@@ -58,23 +61,45 @@ fun
   QuestSlash : (a : Arg) -> IP   -> PrQCl (aNP a)  -> PrQCl a ;
   QuestCl    : (a : Arg)         -> PrCl a         -> PrQCl a ;
   QuestIAdv  : (a : Arg) -> IAdv -> PrCl a         -> PrQCl a ;
+  QuestIComp : Ant -> Tense -> Pol -> IComp -> NP  -> PrQCl aNone ; -- where is she
 
   UseCl  : PrCl aNone  -> PrS ;
   UseQCl : PrQCl aNone -> PrS ; -- deprecate QS
 
   UseAdvCl : PrAdv aNone -> PrCl aNone -> PrS ;  -- lift adv to front
   
-  UttS  : PrS -> Utt ;
+  UttPrS  : PrS -> Utt ;
 
   AdvCl   : (a : Arg) -> PrAdv a -> PrCl aNone  -> PrCl a ; 
 
   AdvQCl  : (a : Arg) -> PrAdv a -> PrQCl aNone -> PrQCl a ; 
+
+-- relatives
+  RelCl    : PrCl aNone             -> RS ;
+  RelVP    : RP -> PrVP aNone       -> RS ;
+  RelSlash : RP -> PrCl (aNP aNone) -> RS ;
+
+-- imperatives
+
+  PrImpSg : PrVP aNone -> Utt ;
+  PrImpPl : PrVP aNone -> Utt ;  
 
 -- participles as adjectives
 
   PresPartAP      : (a : Arg) -> PrV a       -> PrAP a ;
   PastPartAP      : (a : Arg) -> PrV (aNP a) -> PrAP a ;
   AgentPastPartAP : (a : Arg) -> PrV (aNP a) -> NP -> PrAP a ;
+
+-- nominalization
+  NomVPNP   : PrVPI aNone -> NP ;   -- translating a document
+
+-- other uses of VP's
+  ByVP      : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- by translating a document
+  WhenVP    : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- when translating a document
+  BeforeVP  : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- before translating a document
+  AfterVP   : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- after translating a document
+  InOrderVP : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- in order to translate a document
+  WithoutVP : (a : Arg) -> PrVP a -> PrVPI aNone -> PrVP a ;  -- without translating a document
 
 -- PrVP coordination
 
@@ -88,5 +113,13 @@ fun
   UseClC   : (a : Arg) -> ClC a  -> PrCl a ;
 
   ComplAdv : (a : Arg) -> PrAdv (aNP a) -> NP -> PrAdv a ; -- typically: formation of preposition phrase
+
+-- subjunction ; we want to preserve the order in translation
+-- Pre is more specialized to make inverted S order
+---- Imp to do
+
+  SubjUttPreS  : Subj -> PrCl aNone -> PrCl aNone -> Utt ;
+  SubjUttPreQ  : Subj -> PrCl aNone -> PrQCl aNone -> Utt ;
+  SubjUttPost  : Subj -> PrCl aNone -> Utt -> Utt ;
 
 }

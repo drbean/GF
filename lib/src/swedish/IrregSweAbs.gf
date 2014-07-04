@@ -17,6 +17,7 @@ abstract IrregSweAbs = Cat ** {
   avskriva_V : V ;
   avstiga_V : V ;
   bära_V : V ;
+  bedja_V : V ;
   bedraga_V : V ;
   bedriva_V : V ;
   befinna_V : V ;
@@ -68,6 +69,7 @@ abstract IrregSweAbs = Cat ** {
   försvinna_V : V ;
   förtiga_V : V ;
   frysa_V : V ;
+  få_V : V ;
   gå_V : V ;
   göra_V : V ;
   genomdriva_V : V ;
@@ -175,6 +177,7 @@ abstract IrregSweAbs = Cat ** {
   utskriva_V : V ;
   vända_V : V ;
   veta_V : V ;
+  vilja_V : V ;
   vina_V : V ;
   vinna_V : V ;
   vrida_V : V ;

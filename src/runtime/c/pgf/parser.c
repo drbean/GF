@@ -54,7 +54,9 @@ typedef struct {
     int max_fid;
     PgfParseState *before;
     PgfParseState *after;
-    PgfExprEnum en;    // enumeration for the generated trees
+    PgfToken prefix;
+    PgfTokenProb* tp;
+    PgfExprEnum en;    // enumeration for the generated trees/tokens
 #ifdef PGF_COUNTS_DEBUG
     int item_full_count;
     int item_real_count;
@@ -155,7 +157,7 @@ pgf_prev_extern_sym(PgfSymbol sym)
 	}
 }
 
-void
+static void
 pgf_add_extern_tok(PgfSymbol* psym, PgfToken tok, GuPool* pool) {
 	PgfSymbol new_sym;
 	size_t tok_len = strlen(tok);
@@ -169,7 +171,7 @@ pgf_add_extern_tok(PgfSymbol* psym, PgfToken tok, GuPool* pool) {
 	*psym = new_sym;
 }
 
-void
+static void
 pgf_add_extern_cat(PgfSymbol* psym, int d, int r, GuPool* pool) {
 	PgfSymbol new_sym;
 	PgfSymbolCat* scat = (PgfSymbolCat*)
@@ -181,6 +183,32 @@ pgf_add_extern_cat(PgfSymbol* psym, int d, int r, GuPool* pool) {
 	scat->d = d;
 	scat->r = r;
 	*psym = new_sym;
+}
+
+PgfSymbol
+pgf_collect_extern_tok(PgfParsing* ps, size_t start, size_t end)
+{
+	PgfSymbol sym = gu_null_variant;
+
+	size_t offset = start;
+	while (offset < end) {
+		size_t len = 0;
+		while (!gu_is_space(ps->sentence[offset+len])) {
+			len++;
+		}
+
+		PgfToken tok = gu_malloc(ps->pool, len+1);
+		memcpy((char*) tok, ps->sentence+offset, len);
+		((char*) tok)[len] = 0;
+
+		pgf_add_extern_tok(&sym, tok, ps->pool);
+
+		offset  += len;
+		while (gu_is_space(ps->sentence[offset]))
+			offset++;
+	}
+
+	return sym;
 }
 
 static size_t
@@ -706,7 +734,7 @@ static PgfItem*
 pgf_new_item(PgfParsing* ps, PgfItemConts* conts, PgfProduction prod)
 {
 	PgfItem* item;
-	if (ps == NULL || ps->free_item == NULL)
+	if (ps->free_item == NULL)
 	  item = gu_new(PgfItem, ps->pool);
 	else {
 	  item = ps->free_item;
@@ -769,10 +797,8 @@ pgf_new_item(PgfParsing* ps, PgfItemConts* conts, PgfProduction prod)
 	pgf_item_set_curr_symbol(item, ps->pool);
 
 #ifdef PGF_COUNTS_DEBUG
-	if (ps != NULL) {
-		ps->item_full_count++;
-		ps->item_real_count++;
-	}
+	ps->item_full_count++;
+	ps->item_real_count++;
 #endif
 
 	return item;
@@ -1150,7 +1176,8 @@ pgf_parsing_lookahead(PgfParsing *ps, PgfParseState* state)
 {
 	PgfSequence* epsilon_seq =
 		gu_seq_index(ps->concr->sequences, PgfSequence, 0);
-	if (gu_seq_length(epsilon_seq->syms) == 0) {
+	if (gu_seq_length(epsilon_seq->syms) == 0 &&
+	    epsilon_seq->idx != NULL) {
 		// Since the sequences are sorted, the epsilon sequence will
 		// always be the first if there is any at all. We should
 		// always add the epsilon in the index, because we do
@@ -1187,7 +1214,7 @@ pgf_parsing_lookahead(PgfParsing *ps, PgfParseState* state)
 					PgfLexiconIdxEntry* entry = gu_buf_extend(state->lexicon_idx);
 					entry->idx       = seq->idx;
 					entry->bind_type = bind_type;
-					entry->offset    = (current - ps->sentence);					
+					entry->offset    = (current - ps->sentence);
 				}
 				i = k+1;
 				goto next;
@@ -1241,7 +1268,7 @@ pgf_new_parse_state(PgfParsing* ps, size_t start_offset, BIND_TYPE bind_type)
 				if ((*pstate)->start_offset == start_offset &&
 				    (*pstate)->end_offset   == start_offset &&
 				    !(*pstate)->needs_bind)
-					return ps->before;
+					return *pstate;
 			} else {
 				if ((*pstate)->start_offset == start_offset)
 					return *pstate;
@@ -1253,7 +1280,7 @@ pgf_new_parse_state(PgfParsing* ps, size_t start_offset, BIND_TYPE bind_type)
 	}
 
 	size_t end_offset = start_offset;
-	GuString current = ps->sentence + start_offset;
+	GuString current = ps->sentence + end_offset;
 	size_t len = strlen(current);
 	while (skip_space(&current, &len)) {
 		end_offset++;
@@ -1292,17 +1319,25 @@ pgf_parsing_add_transition(PgfParsing* ps, PgfToken tok, PgfItem* item)
 	GuString current = ps->sentence + ps->before->end_offset;
 	size_t len = strlen(current);
 
-    if (!ps->before->needs_bind && cmp_string(&current, &len, tok) == 0) {
-		PgfParseState* state =
-			pgf_new_parse_state(ps, (current - ps->sentence), BIND_NONE);
-		if (state->next == NULL) {
-			state->viterbi_prob = 
-				item->inside_prob+item->conts->outside_prob;
+	if (ps->prefix != NULL && ps->sentence[ps->before->end_offset] == 0) {
+		if (gu_string_is_prefix(ps->prefix, tok)) {
+			ps->tp = gu_new(PgfTokenProb, ps->out_pool);
+			ps->tp->tok  = tok;
+			ps->tp->prob = item->inside_prob + item->conts->outside_prob;
 		}
+	} else {
+		if (!ps->before->needs_bind && cmp_string(&current, &len, tok) == 0) {
+			PgfParseState* state =
+				pgf_new_parse_state(ps, (current - ps->sentence), BIND_NONE);
+			if (state->next == NULL) {
+				state->viterbi_prob = 
+					item->inside_prob+item->conts->outside_prob;
+			}
 
-		gu_buf_heap_push(state->agenda, pgf_item_prob_order, &item);
-    } else {
-		pgf_item_free(ps, item);
+			gu_buf_heap_push(state->agenda, pgf_item_prob_order, &item);
+		} else {
+			pgf_item_free(ps, item);
+		}
 	}
 }
 
@@ -1336,53 +1371,68 @@ pgf_parsing_td_predict(PgfParsing* ps,
 			item->inside_prob-conts->ccat->viterbi_prob+
 			item->conts->outside_prob;
 
-		// Top-down prediction for syntactic rules
-		for (size_t i = 0; i < ccat->n_synprods; i++) {
-			PgfProduction prod =
-				gu_seq_get(ccat->prods, PgfProduction, i);		
-			pgf_parsing_production(ps, ps->before, conts, prod);
-		}
+		if (ps->prefix != NULL) {
+			// We do completion:
+			//   - top-down prediction for both syntactic and lexical rules
+			size_t n_prods;
+			if (ccat->fid < ps->concr->total_cats) // in grammar
+				n_prods = gu_seq_length(ccat->prods);
+			else
+				n_prods = ccat->n_synprods;
+			for (size_t i = 0; i < n_prods; i++) {
+				PgfProduction prod =
+					gu_seq_get(ccat->prods, PgfProduction, i);
+				pgf_parsing_production(ps, ps->before, conts, prod);
+			}
+		} else {
+			// Top-down prediction for syntactic rules
+			for (size_t i = 0; i < ccat->n_synprods; i++) {
+				PgfProduction prod =
+					gu_seq_get(ccat->prods, PgfProduction, i);
+				pgf_parsing_production(ps, ps->before, conts, prod);
+			}
 
-		// Bottom-up prediction for lexical and epsilon rules
-		size_t n_idcs = gu_buf_length(ps->before->lexicon_idx);
-		for (size_t i = 0; i < n_idcs; i++) {
-			PgfLexiconIdxEntry* lentry =
-				gu_buf_index(ps->before->lexicon_idx, PgfLexiconIdxEntry, i);
-			PgfParseState* state =
-				pgf_new_parse_state(ps, lentry->offset, lentry->bind_type);
+			// Bottom-up prediction for lexical and epsilon rules
+			size_t n_idcs = gu_buf_length(ps->before->lexicon_idx);
+			for (size_t i = 0; i < n_idcs; i++) {
+				PgfLexiconIdxEntry* lentry =
+					gu_buf_index(ps->before->lexicon_idx, PgfLexiconIdxEntry, i);
+				PgfParseState* state =
+					pgf_new_parse_state(ps, lentry->offset, lentry->bind_type);
 
-			if (state != NULL) {
-				PgfProductionIdxEntry key;
-				key.ccat    = ccat;
-				key.lin_idx = lin_idx;
-				key.papp    = NULL;
-				PgfProductionIdxEntry* value =
-					gu_seq_binsearch(gu_buf_data_seq(lentry->idx),
-									 pgf_production_idx_entry_order,
-									 PgfProductionIdxEntry, &key);
+				if (state != NULL) {
+					PgfProductionIdxEntry key;
+					key.ccat    = ccat;
+					key.lin_idx = lin_idx;
+					key.papp    = NULL;
+					PgfProductionIdxEntry* value =
+						gu_seq_binsearch(gu_buf_data_seq(lentry->idx),
+										 pgf_production_idx_entry_order,
+										 PgfProductionIdxEntry, &key);
 
-				if (value != NULL) {
-                    pgf_parsing_predict_lexeme(ps, state, conts, value);
-                    
-                    PgfProductionIdxEntry* start =
-						gu_buf_data(lentry->idx);
-					PgfProductionIdxEntry* end =
-						start + gu_buf_length(lentry->idx)-1;
+					if (value != NULL) {
+						pgf_parsing_predict_lexeme(ps, state, conts, value);
 
-                    PgfProductionIdxEntry* left = value-1;
-                    while (left >= start &&
-                           value->ccat->fid == left->ccat->fid &&
-                           value->lin_idx   == left->lin_idx) {
-						pgf_parsing_predict_lexeme(ps, state, conts, left);
-						left--;
-					}
+						PgfProductionIdxEntry* start =
+							gu_buf_data(lentry->idx);
+						PgfProductionIdxEntry* end =
+							start + gu_buf_length(lentry->idx)-1;
 
-					PgfProductionIdxEntry* right = value+1;
-                    while (right <= end &&
-                           value->ccat->fid == right->ccat->fid &&
-                           value->lin_idx   == right->lin_idx) {
-						pgf_parsing_predict_lexeme(ps, state, conts, right);
-						right++;
+						PgfProductionIdxEntry* left = value-1;
+						while (left >= start &&
+							   value->ccat->fid == left->ccat->fid &&
+							   value->lin_idx   == left->lin_idx) {
+							pgf_parsing_predict_lexeme(ps, state, conts, left);
+							left--;
+						}
+
+						PgfProductionIdxEntry* right = value+1;
+						while (right <= end &&
+							   value->ccat->fid == right->ccat->fid &&
+							   value->lin_idx   == right->lin_idx) {
+							pgf_parsing_predict_lexeme(ps, state, conts, right);
+							right++;
+						}
 					}
 				}
 			}
@@ -1582,13 +1632,13 @@ pgf_parsing_symbol(PgfParsing* ps, PgfItem* item, PgfSymbol sym)
 							   PgfLiteralCallback*);
 
 				if (callback != NULL) {
-					size_t offset = ps->before->end_offset;
-					PgfSymbol curr_sym = gu_null_variant;
+					size_t start  = ps->before->end_offset;
+					size_t offset = start;
 					PgfExprProb *ep =
-						callback->match(ps->concr, &curr_sym,
+						callback->match(callback,
 						                slit->r,
 				                        ps->sentence, &offset,
-				                        ps->pool, ps->out_pool);
+				                        ps->out_pool);
 
 					if (ep != NULL) {
 						PgfProduction prod;
@@ -1603,7 +1653,7 @@ pgf_parsing_symbol(PgfParsing* ps, PgfItem* item, PgfSymbol sym)
 							pgf_new_parse_state(ps, offset, BIND_NONE);
 						PgfItem* item =
 							pgf_new_item(ps, conts, prod);
-						item->curr_sym = curr_sym;
+						item->curr_sym = pgf_collect_extern_tok(ps,start,offset);
 						item->sym_idx  = pgf_item_symbols_length(item);
 						gu_buf_heap_push(state->agenda, pgf_item_prob_order, &item);
 					}
@@ -1846,6 +1896,8 @@ pgf_new_parsing(PgfConcr* concr, GuString sentence,
 	ps->ccat_full_count = 0;
 	ps->prod_full_count = 0;
 #endif
+	ps->prefix = NULL;
+	ps->tp = NULL;
 	ps->free_item = NULL;
 	ps->heuristic_factor = 0;
 	ps->meta_prob = INFINITY;
@@ -1880,157 +1932,6 @@ void pgf_parsing_print_counts(PgfParsing* ps)
 		ps->prod_full_count);
 }
 #endif
-
-/*static bool
-*************
-typedef struct {
-	PgfTokenState ts;
-	PgfToken tok;
-	PgfProductionIdx *lexicon_idx;
-} PgfRealTokenState;
-
-static bool
-pgf_real_match_token(PgfTokenState* ts, PgfToken tok, PgfItem* item)
-{
-	return strcmp(gu_container(ts, PgfRealTokenState, ts)->tok, tok) == 0;
-}
-
-static PgfToken
-pgf_real_get_token(PgfTokenState* ts) {
-	return gu_container(ts, PgfRealTokenState, ts)->tok;
-}
-
-static PgfProductionIdx*
-pgf_real_get_lexicon_idx(PgfTokenState* ts) {
-	return gu_container(ts, PgfRealTokenState, ts)->lexicon_idx;
-}
-
-static PgfTokenFn pgf_tsfn_PgfRealTokenState = {
-	pgf_real_match_token,
-	pgf_real_get_token,
-	pgf_real_get_lexicon_idx
-};
-
-PgfParseState*
-pgf_parser_next_state(PgfParseState* prev, PgfToken tok)
-{
-#ifdef PGF_COUNTS_DEBUG
-	pgf_parsing_print_counts(prev->ps);
-#endif
-
-	PgfRealTokenState* ts =
-		pgf_new_token_state(PgfRealTokenState, prev->ps->pool);
-	ts->tok = tok;
-    ts->lexicon_idx = gu_map_get(prev->ps->concr->leftcorner_tok_idx,
-                                 tok, PgfProductionIdx*);	
-	if (ts->lexicon_idx != NULL) {
-		PgfLexiconFn clo = { { pgf_parser_compute_lexicon_prob }, &ts->ts };
-		gu_map_iter(ts->lexicon_idx, &clo.fn, NULL);
-	}
-	if (ts->ts.lexical_prob == INFINITY)
-		ts->ts.lexical_prob = 0;
-
-	PgfParseState* state =
-	    pgf_new_parse_state(prev->ps, prev, &ts->ts, prev->ps->pool);
-
-	while (gu_buf_length(state->agenda) == 0) {
-		if (!pgf_parsing_proceed(state))
-			return NULL;
-	}
-
-	return state;
-}
-
-typedef struct {
-	PgfTokenState ts;
-	GuEnum en;
-	GuString prefix;
-	PgfTokenProb* tp;
-	GuPool* pool;
-	PgfParseState* state;
-} PgfPrefixTokenState;
-
-static bool
-^ ^ ^ ^ ^ ^ ^
-pgf_prefix_match_token(PgfTokenState* ts0, PgfToken tok, PgfItem* item)
-{
-	PgfPrefixTokenState* ts = 
-		gu_container(ts0, PgfPrefixTokenState, ts);
-
-	if (gu_string_is_prefix(ts->prefix, tok)) {
-		size_t lin_idx;
-		PgfSequence* seq;
-		pgf_item_sequence(item, &lin_idx, &seq, ts->pool);
-
-		uint16_t seq_idx = item->seq_idx;
-		uint8_t  tok_idx = item->tok_idx;
-
-		// go one token back
-		if (tok_idx > 0)
-			tok_idx--;
-		else
-			seq_idx--;
-
-		ts->tp = gu_new(PgfTokenProb, ts->pool);
-		ts->tp->tok  =
-			pgf_get_tokens(seq, seq_idx, tok_idx, ts->pool);
-		ts->tp->cat  = item->conts->ccat->cnccat->abscat->name;
-		ts->tp->prob = item->inside_prob+item->conts->outside_prob;
-	}
-
-	return false;
-}
-
-static PgfToken
-pgf_prefix_get_token(PgfTokenState* ts) {
-	return "";
-}
-
-static PgfProductionIdx*
-pgf_prefix_get_lexicon_idx(PgfTokenState* ts) {
-	return NULL;
-}
-
-static PgfTokenFn pgf_tsfn_PgfPrefixTokenState = {
-	pgf_prefix_match_token,
-	pgf_prefix_get_token,
-	pgf_prefix_get_lexicon_idx
-};
-
-static void
-pgf_parser_completions_next(GuEnum* self, void* to, GuPool* pool)
-{
-	PgfPrefixTokenState* ts =
-		gu_container(self, PgfPrefixTokenState, en);
-
-	ts->tp   = NULL;
-	ts->pool = pool;
-	while (ts->tp == NULL) {
-		if (!pgf_parsing_proceed(ts->state))
-			break;
-	}
-
-	*((PgfTokenProb**)to) = ts->tp;
-}*/
-
-GuEnum*
-pgf_parsing_completions(PgfParsing* ps, GuString prefix)
-{
-#ifdef PGF_COUNTS_DEBUG
-	pgf_parsing_print_counts(ps);
-#endif
-
-/*	PgfPrefixTokenState* ts =
-		pgf_new_token_state(PgfPrefixTokenState, prev->ps->pool);
-	ts->en.next = pgf_parser_completions_next;
-	ts->prefix  = prefix;
-	ts->tp      = NULL;
-	ts->state   =
-	    pgf_new_parse_state(prev->ps, prev, &ts->ts);
-
-	return &ts->en;*/
-	return NULL;
-}
 
 static int
 cmp_expr_state(GuOrder* self, const void* a, const void* b)
@@ -2476,48 +2377,68 @@ pgf_parse_with_heuristics(PgfConcr* concr, PgfCId cat, GuString sentence,
 	return &ps->en;
 }
 
+static void
+pgf_parser_completions_next(GuEnum* self, void* to, GuPool* pool)
+{
+	PgfParsing* ps =
+		gu_container(self, PgfParsing, en);
+
+	ps->tp = NULL;
+	while (ps->tp == NULL) {
+		if (!pgf_parsing_proceed(ps))
+			break;
+			
+#ifdef PGF_COUNTS_DEBUG
+		pgf_parsing_print_counts(ps);
+#endif
+	}
+
+	*((PgfTokenProb**)to) = ps->tp;
+}
+
 GuEnum*
 pgf_complete(PgfConcr* concr, PgfCId cat, GuString sentence, 
              GuString prefix, GuExn *err, GuPool* pool)
 {
-	// Begin parsing a sentence of the specified category
+	if (concr->sequences == NULL ||
+	    concr->pre_sequences == NULL ||
+	    concr->cnccats == NULL) {
+		GuExnData* err_data = gu_raise(err, PgfExn);
+		if (err_data) {
+			err_data->data = "The concrete syntax is not loaded";
+			return NULL;
+		}
+	}
+
+	// Begin parsing a sentence with the specified category
 	PgfParsing* ps =
-		pgf_parsing_init(concr, cat, 0, sentence, -1, err, pool, pool);
+		pgf_parsing_init(concr, cat, 0, sentence, -1.0, err, pool, pool);
 	if (ps == NULL) {
 		return NULL;
 	}
 
-	// Tokenization
-	GuExn* lex_err = gu_new_exn(NULL, gu_kind(type), pool);
-/*	PgfToken tok = pgf_lexer_read_token(lexer, lex_err);
-	while (!gu_exn_is_raised(lex_err)) {
-		// feed the token to get a new parse state
-		state = pgf_parser_next_state(state, tok);
-		if (state == NULL) {
+#ifdef PGF_COUNTS_DEBUG
+	pgf_parsing_print_counts(ps);
+#endif
+
+	size_t len = strlen(ps->sentence);
+	while (ps->before->end_offset < len) {
+		if (!pgf_parsing_proceed(ps)) {
+			GuExnData* exn = gu_raise(err, PgfParseError);
+			exn->data = (void*) pgf_parsing_last_token(ps, exn->pool);
 			return NULL;
 		}
 
-		tok = pgf_lexer_read_token(lexer, lex_err);
-	}*/
+#ifdef PGF_COUNTS_DEBUG
+		pgf_parsing_print_counts(ps);
+#endif
+	}
 
-	if (gu_exn_caught(lex_err) != gu_type(GuEOF))
-		return NULL;
-
-	// Now begin enumerating the resulting syntax trees
-	return pgf_parsing_completions(ps, prefix);
-}
-
-void
-pgf_parser_add_literal(PgfConcr *concr, PgfCId cat,
-                       PgfLiteralCallback* callback)
-{
-	PgfCncCat* cnccat =
-		gu_map_get(concr->cnccats, cat, PgfCncCat*);
-	if (cnccat == NULL)
-		return;
-
-	gu_map_put(concr->callbacks, cnccat,
-	           PgfLiteralCallback*, callback);
+	// Now begin enumerating the completions
+	ps->en.next = pgf_parser_completions_next;
+	ps->prefix  = prefix;
+	ps->tp      = NULL;
+	return &ps->en;
 }
 
 static void
@@ -2532,7 +2453,9 @@ pgf_morpho_iter(PgfProductionIdx* idx,
 
 		PgfCId lemma = entry->papp->fun->absfun->name;
 		GuString analysis = entry->ccat->cnccat->labels[entry->lin_idx];
-		prob_t prob = entry->papp->fun->absfun->ep.prob;
+		
+		prob_t prob = entry->ccat->cnccat->abscat->prob +
+		              entry->papp->fun->absfun->ep.prob;
 		callback->callback(callback,
 						   lemma, analysis, prob, err);
 		if (!gu_ok(err))
@@ -2581,6 +2504,7 @@ pgf_lookup_morpho(PgfConcr *concr, GuString sentence,
 typedef struct {
 	GuEnum en;
 	PgfSequences* sequences;
+	GuString prefix;
 	size_t seq_idx;
 } PgfFullFormState;
 
@@ -2600,6 +2524,12 @@ gu_fullform_enum_next(GuEnum* self, void* to, GuPool* pool)
 		while (st->seq_idx < n_seqs) {
 			PgfSymbols* syms = gu_seq_index(st->sequences, PgfSequence, st->seq_idx)->syms;
 			GuString tokens = pgf_get_tokens(syms, 0, pool);
+			
+			if (!gu_string_is_prefix(st->prefix, tokens)) {
+				st->seq_idx = n_seqs;
+				break;
+			}
+				
 			if (strlen(tokens) > 0 &&
 				gu_seq_index(st->sequences, PgfSequence, st->seq_idx)->idx != NULL) {
 				entry = gu_new(PgfFullFormEntry, pool);
@@ -2609,7 +2539,7 @@ gu_fullform_enum_next(GuEnum* self, void* to, GuPool* pool)
 				st->seq_idx++;
 				break;
 			}
-			
+
 			st->seq_idx++;
 		}
 	}
@@ -2623,6 +2553,7 @@ pgf_fullform_lexicon(PgfConcr *concr, GuPool* pool)
 	PgfFullFormState* st = gu_new(PgfFullFormState, pool);
 	st->en.next   = gu_fullform_enum_next;
 	st->sequences = concr->sequences;
+	st->prefix    = "";
 	st->seq_idx   = 0;
 	return &st->en;
 }
@@ -2638,6 +2569,33 @@ pgf_fullform_get_analyses(PgfFullFormEntry* entry,
                           PgfMorphoCallback* callback, GuExn* err)
 {
 	pgf_morpho_iter(entry->idx, callback, err);
+}
+
+GuEnum*
+pgf_lookup_word_prefix(PgfConcr *concr, GuString prefix,
+                       GuPool* pool, GuExn* err)
+{
+	if (concr->sequences == NULL) {
+		GuExnData* err_data = gu_raise(err, PgfExn);
+		if (err_data) {
+			err_data->data = "The concrete syntax is not loaded";
+			return NULL;
+		}
+	}
+
+	PgfFullFormState* state = gu_new(PgfFullFormState, pool);
+	state->en.next   = gu_fullform_enum_next;
+	state->sequences = concr->sequences;
+	state->prefix    = prefix;
+	state->seq_idx   = 0;
+
+	if (!gu_seq_binsearch_index(concr->sequences, pgf_sequence_order,
+	                            PgfSequence, (void*) prefix, 
+	                            &state->seq_idx)) {
+		state->seq_idx++;
+	}
+
+	return &state->en;
 }
 
 // The 'pre' construction needs a special handling since

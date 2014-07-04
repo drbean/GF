@@ -11,7 +11,8 @@ oper
 
 -- lexicon constructors
 
-  separateN : Str -> N -> N = \s,n -> mkN (s + "_") n ;
+  separateN : Str -> N -> N = mkSeparateN ; -- pennin raha
+---  separateN : Str -> N -> N = \s,n -> mkN (s + "_") n ; -- pennin_raha
 
   compoundN : Str -> NForms -> N = \s,nf -> lin N (mkStrN s (nforms2snoun nf)) ;
 
@@ -22,7 +23,7 @@ oper
     compoundAdv : Str -> Str    -> Adv = \s,t  -> mkAdv (s + t) ;
     } ;
 
-  compoundV : Str -> VForms -> V = \s,vf -> mkV (lin VK {s = table (Predef.Ints 11) {f => s + vf ! f}}) ;
+  compoundV : Str -> VForms -> V = \s,vf -> mkV (lin VK {s = <table {f => s + vf ! f} : VForms>}) ;
 
   mkWN = overload {
     mkWN : (_ : Str)     -> N = \s -> mkN s ;

@@ -1,7 +1,9 @@
 package org.grammaticalframework.ui.android;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,22 +12,20 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.FrameLayout;
+import android.view.View.OnTouchListener;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.grammaticalframework.ui.android.ASR.State;
 import org.grammaticalframework.ui.android.LanguageSelector.OnLanguageSelectedListener;
-import org.grammaticalframework.ui.android.ConversationView.OnWordSelectedListener;
+import org.grammaticalframework.ui.android.ConversationView.OnAlternativesListener;
+import org.grammaticalframework.pgf.ExprProb;
 import org.grammaticalframework.pgf.MorphoAnalysis;
 
 public class MainActivity extends Activity {
@@ -52,6 +52,8 @@ public class MainActivity extends Activity {
     private boolean input_mode;
 
     private SpeechInputListener mSpeechListener;
+    
+	private View mProgressBarView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +65,32 @@ public class MainActivity extends Activity {
         mSourceLanguageView = (LanguageSelector) findViewById(R.id.source_language);
         mTargetLanguageView = (LanguageSelector) findViewById(R.id.target_language);
         mSwitchLanguagesButton = (ImageView) findViewById(R.id.switch_languages);
+        mProgressBarView = findViewById(R.id.progressBarView);
         
+        OnTouchListener touchFeedbackListener = new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getAction()) {
+	                case MotionEvent.ACTION_DOWN: {
+	                    ImageView view = (ImageView) v;
+	                    view.getDrawable().setColorFilter(0x40808080,android.graphics.PorterDuff.Mode.DARKEN);
+	                    view.invalidate();
+	                    break;
+	                }
+	                case MotionEvent.ACTION_UP:
+	                case MotionEvent.ACTION_CANCEL: {
+	                    ImageView view = (ImageView) v;
+	                    //clear the overlay
+	                    view.getDrawable().clearColorFilter();
+	                    view.invalidate();
+	                    break;
+	                }
+	            }
+	
+	            return false;
+			}
+		};
+
         mStartStopButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,6 +101,7 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        mStartStopButton.setOnTouchListener(touchFeedbackListener);
 
         SharedPreferences pref = getPreferences(MODE_PRIVATE);
         input_mode = pref.getBoolean("input_mode", true);
@@ -84,11 +112,11 @@ public class MainActivity extends Activity {
 
         mSpeechListener = new SpeechInputListener();
         
-        mConversationView.setOnWordSelectedListener(new OnWordSelectedListener() {
+        mConversationView.setOnAlternativesListener(new OnAlternativesListener() {
             @Override
-            public void onWordSelected(CharSequence word, Object lexicon) {
-            	Intent myIntent = new Intent(MainActivity.this, LexicalEntryActivity.class);
-            	myIntent.putExtra("source", word);
+            public void onAlternativesSelected(CharSequence input, Object lexicon) {
+            	Intent myIntent = new Intent(MainActivity.this, AlternativesActivity.class);
+            	myIntent.putExtra("source", input);
             	myIntent.putExtra("analyses", (Serializable) lexicon);
             	MainActivity.this.startActivity(myIntent);
             }
@@ -100,7 +128,7 @@ public class MainActivity extends Activity {
 
         mTts = new TTS(this);
 
-        mTranslator = ((GFTranslator) getApplicationContext()).getTranslator();
+        mTranslator = ((HLCompiler) getApplicationContext()).getTranslator();
 
         mSourceLanguageView.setLanguages(mTranslator.getAvailableLanguages());
         mSourceLanguageView.setOnLanguageSelectedListener(new OnLanguageSelectedListener() {
@@ -123,6 +151,11 @@ public class MainActivity extends Activity {
                 onSwitchLanguages();
             }
         });
+        mSwitchLanguagesButton.setOnTouchListener(touchFeedbackListener);
+        
+		if (savedInstanceState != null) {
+			mConversationView.restoreConversation(savedInstanceState);
+		}
     }
 
 	@Override
@@ -133,40 +166,18 @@ public class MainActivity extends Activity {
 		mTargetLanguageView.setSelectedLanguage(mTranslator.getTargetLanguage());
 	}
 
-	private View mProgressBar = null;
-
 	private void showProgressBar() {
-		TextView localTextView = (TextView) getWindow().findViewById(
-                android.R.id.title);
-        if (localTextView != null) {
-            ViewParent localViewParent = localTextView.getParent();
-            if (localViewParent != null && (localViewParent instanceof FrameLayout)) {
-            	mProgressBar = ((LayoutInflater) getSystemService("layout_inflater"))
-                        .inflate(R.layout.progress_bar, null);
-                FrameLayout.LayoutParams params = 
-                		new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
-                				                     FrameLayout.LayoutParams.WRAP_CONTENT,
-                				                     Gravity.RIGHT);
-                ((FrameLayout) localViewParent).addView(mProgressBar, params);
-            }
-        }
+		mProgressBarView.setVisibility(View.VISIBLE);
 	}
 	
 	private void hideProgressBar() {
-		if (mProgressBar != null) {
-			ViewParent localViewParent = mProgressBar.getParent();
-			
-			if (localViewParent != null && (localViewParent instanceof FrameLayout)) {
-				((FrameLayout) localViewParent).removeView(mProgressBar);
-			}
-		}
+		mProgressBarView.setVisibility(View.GONE);
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		
-		outState.putBoolean("input_mode", input_mode);
+		mConversationView.saveConversation(outState);
 	}
 
 	@Override
@@ -202,6 +213,10 @@ public class MainActivity extends Activity {
 	        	editor.commit();
 
 	            return true;
+	        case R.id.help:
+	        	Intent myIntent = new Intent(MainActivity.this, HelpActivity.class);
+            	MainActivity.this.startActivity(myIntent);
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -254,11 +269,11 @@ public class MainActivity extends Activity {
 
     private void startRecognition() {
     	if (input_mode) {
-    		mConversationView.addFirstPersonUtterance("...");
+    		mConversationView.addFirstPersonUtterance("...", false);
             mAsr.setLanguage(getSourceLanguageCode());
             mAsr.startRecognition();
     	} else {
-    		mConversationView.addInputBox();
+    		mConversationView.addFirstPersonUtterance("", true);
     	}
     }
 
@@ -267,38 +282,78 @@ public class MainActivity extends Activity {
     }
 
     private void handlePartialSpeechInput(String input) {
-        mConversationView.updateLastUtterance(input, null);
+        mConversationView.updateLastUtterance(input);
     }
 
     private void handleSpeechInput(final String input) {
-    	List<MorphoAnalysis> list = mTranslator.lookupMorpho(input);
-    	if (list.size() == 0)
-    		list = null;
+    	final List<MorphoAnalysis> list = mTranslator.lookupMorpho(input);
 
-        mConversationView.updateLastUtterance(input, list);
-        new AsyncTask<Void,Void,String>() {
+        mConversationView.updateLastUtterance(input);
+        new AsyncTask<Void,Void,Pair<String,List<ExprProb>>>() {
         	@Override
         	protected void onPreExecute() {
         		showProgressBar();
         	}
 
             @Override
-            protected String doInBackground(Void... params) {
+            protected Pair<String,List<ExprProb>> doInBackground(Void... params) {
                 return mTranslator.translate(input);
             }
 
             @Override
-            protected void onPostExecute(String result) {
-                outputText(result);
+            protected void onPostExecute(Pair<String,List<ExprProb>> res) {
+            	String text = res.first;
+            	List<ExprProb> transl = res.second;
+            	Object alts = null;
+
+            	// filter out duplicates
+            	int i = 0;
+            	if (list.size() > 0) {
+	            	while (i < list.size()) {
+	            		MorphoAnalysis an = list.get(i);
+	            		boolean found = false;
+	            		for (int j = 0; j < i; j++) {
+	            			if (list.get(j).getLemma().equals(an.getLemma())) {
+	            				found = true;
+	            				break;
+	            			}
+	            		}
+	            		
+	            		if (found)
+	            			list.remove(i);
+	            		else {
+	         				i++;
+	         			}
+	            	}
+	            	alts = list;
+            	} else {
+            		Set<String> strings = new HashSet<String>();
+            		while (i < transl.size()) {
+            			String s = mTranslator.linearize(transl.get(i).getExpr());
+            		   	if (s.length() > 0 && 
+            		   	    (s.charAt(0) == '%' || s.charAt(0) == '*' || s.charAt(0) == '+')) {
+    			    		s = s.substring(2);
+    			    	}
+
+	            		if (strings.contains(s))
+	            			transl.remove(i);
+	            		else {
+	            			strings.add(s);
+	         				i++;
+	         			}
+	            	}
+
+            		alts = transl;
+            	}
+
+                if (DBG) Log.d(TAG, "Speaking: " + res.first);
+            	CharSequence text2 = 
+            		mConversationView.addSecondPersonUtterance(input, text, alts);
+                mTts.speak(getTargetLanguageCode(), text2.toString());
+
                 hideProgressBar();
             }
         }.execute();
-    }
-
-    private void outputText(String text) {
-        if (DBG) Log.d(TAG, "Speaking: " + text);
-        mConversationView.addSecondPersonUtterance(text);
-        mTts.speak(getTargetLanguageCode(), text);
     }
 
     private class SpeechInputListener implements ASR.Listener {

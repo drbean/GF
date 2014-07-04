@@ -171,7 +171,8 @@ Translator.prototype.update_translation=function(i) {
 	}
 	else if(ts) {
 	    clear(ts[i])
-	    ts[i].appendChild(text(segment.target+" "))
+	    ts[i].appendChild(qtext(segment.target))
+	    ts[i].appendChild(text(" "))
 	}
     }
     function update_segment(m,txts) {
@@ -186,44 +187,68 @@ Translator.prototype.update_translation=function(i) {
 
 	function upd3(txts) { update_segment("Apertium",txts) }
 
+	function upd3s(txt) { upd3([{quality:"error",text:txt}]) }
+
 	function upd1(res) {
 	    //console.log(translate_output)
 	    if(res.translation) upd3([res.translation])
-	    else upd3(["["+res.error.message+"]"])
+	    else upd3s("["+res.error.message+"]")
 	}
 
 	function upd0(source) { apertium.translate(source,afrom,ato,upd1) }
 
 	if(!window.apertium)
-	    upd3(["[Apertium is not available]"])
+	    upd3s("[Apertium is not available]")
 	else if(apertium.isTranslatablePair(afrom,ato)) {
 	    if(!eq_options(segment.options,o)) upd0(segment.source)
 	}
 	else
-	    upd3(["[Apertium does not support "+show_translation(o)+"]"])
+	    upd3s("[Apertium does not support "+show_translation(o)+"]")
     }
     function update_gfrobust_translation() {
-	function upd3(txts) { update_segment("GFRobust",txts) }
-	function upd3s(txt) { upd3([txt]) }
-	function upd2(trans,punct) {
-	    if(trans.length==0) upd3s("[no translation]")
-	    else if(trans[0].error)
-		upd3s("[GF robust translation: "+trans[0].error+"]")
-	    else {
-		var ts=[]
-		for(var i=0;i<trans.length;i++) {
-		    ts[i]=trans[i].linearizations[0].text
-		    if(punct) ts[i]=ts[i]+" "+punct
-		}
-		mapc(unlextext,ts,upd3)
+	function upd3(trans,sp,qf) {
+	    var ts=[]
+	    for(var i=0;i<trans.length;i++) {
+		var t=trans[i].linearizations[0].text
+		if(sp.punct) t=t+sp.punct
+		if(!elem(t,ts)) ts.push(t)
 	    }
+	    update_segment("GFRobust",ts.map(qf || trans_text_quality))
 	}
-	function upd0(source,punct) {
+
+	function upd3s(txt) {
+	    update_segment("GFRobust",[{quality:"error",text:txt}])
+	}
+
+	function upd2b(trans,sp) {
+	    function badq(txt) { return {quality:"bad_quality",text:txt} }
+	    if(trans.length==0) upd3s("[no translation]")
+	    else upd3(trans,sp,badq)
+	}
+
+	// upd0b :: {txt:String,punct:String} -> ()
+	function upd0b(sp) {
+	    function upd1b(translate_output) {
+		//console.log(translate_output)
+		upd2b(translate_output,sp)
+	    }
+	    gftranslate.wordforword(sp.txt,o.from,o.to,upd1b)
+	}
+
+	function upd2(trans,sp) {
+	    if(trans.length==0) upd0b(sp) // upd3s("[no translation]")
+	    else if(trans[0].error!=undefined)
+		//upd3s("[GF robust translation problem: "+trans[0].error+"]")
+		upd0b(sp)
+	    else upd3(trans,sp)
+	}
+	// upd0 :: {txt:String,punct:String} -> ()
+	function upd0(sp) {
 	    function upd1(translate_output) {
 		//console.log(translate_output)
-		upd2(translate_output,punct)
+		upd2(translate_output,sp)
 	    }
-	    gftranslate.translate(source,o.from,o.to,0,2,upd1)
+	    gftranslate.translate(sp.txt,o.from,o.to,0,10,upd1)
 	}
 	if(!window.gftranslate)
 		upd3s("[GF robust parser is not available]")
@@ -235,8 +260,8 @@ Translator.prototype.update_translation=function(i) {
 		    var want={from:o.from, to:o.to, method:"GFRobust"}
 		    if(!eq_options(segment.options,want)) {
 			//console.log("Updating "+i)
-			lexgfrobust(segment.source,upd0)
-			//upd0(segment.source)
+			//lexgfrobust(segment.source,upd0)
+			upd0(rmpunct(segment.source))
 		    }
 		    //else console.log("No update ",want,segment.options)
 		}
@@ -249,17 +274,24 @@ Translator.prototype.update_translation=function(i) {
 		    upd3s("["+msg+"]")
 		}
 	    }
-	    gftranslate.get_support(check_support)
+	    function no_support(text,status,ct) {
+		upd3s("[GF Robust translation service error: "+status+"]")
+	    }
+	    gftranslate.get_support(check_support,no_support)
 	}
     }
 
     function update_gf_translation(grammar,gfrom,gto) {
 	var server=t.servers[grammar]
 	function upd3(txts) { update_segment(grammar,txts) }
+	function upd3s(txt) { upd3([{quality:"error",text:txt}]) }
 	function upd2(ts) {
 	    switch(ts.length) {
-	    case 0: upd3(["[no translation]"]);break;
-	    default: mapc(unlextext,ts,upd3); break;
+	    case 0: upd3s("[no translation]");break;
+	    default:
+		//mapc(unlextext,ts,upd3);
+		upd3(ts)
+		break;
 	    }
 	}
 	function upd1(translate_output) {
@@ -267,7 +299,8 @@ Translator.prototype.update_translation=function(i) {
 	    upd2(collect_texts(translate_output[0].translations))
 	}
 	function upd0(source) {
-	    server.translate({from:gfrom,to:gto,input:source},upd1)
+	    server.translate({from:gfrom,to:gto,lexer:"text",unlexer:"text",
+			      input:source},upd1)
 	}
 	var fls=t.gf_supported(grammar,o.from)
 	var tls=t.gf_supported(grammar,o.to)
@@ -275,7 +308,8 @@ Translator.prototype.update_translation=function(i) {
 	    var want={from:o.from, to:o.to, method:grammar}
 	    if(!eq_options(segment.options,want)) {
 		//console.log("Updating "+i)
-		lextext(segment.source,upd0)
+		//lextext(segment.source,upd0)
+		upd0(segment.source)
 	    }
 	    //else console.log("No update ",want,segment.options)
 	}
@@ -287,7 +321,7 @@ Translator.prototype.update_translation=function(i) {
 	    var is=" is "+sup
 	    var msg= fls ? tn+isnot : tls ? fn+isnot :
 		      "Neither "+fn+" nor "+tn+is
-	    upd3(["["+msg+"]"])
+	    upd3s("["+msg+"]")
 	}
     }
 
@@ -818,12 +852,13 @@ Translator.prototype.edit_translation=function(i) {
 	set_manual(s)
 	s.options.from=t.document.options.from
 	s.options.to=t.document.options.to
-	s.target=inp.value // side effect, updating the document in-place
+	s.target={quality:"manual_quality",text:inp.value}
+	         // side effect, updating the document in-place
 	restore();
 	return false;
     }
 
-    var inp=node("input",{name:"it",value:s.target})
+    var inp=node("input",{name:"it",value:qstring(s.target)})
     var e=form({},[inp, submit(), button("Cancel",restore)])
     var target=wrap_class("td","target",e)
     var edit=t.draw_segment_given_target(s,target,i)
@@ -845,7 +880,12 @@ function hide_menu(el) {
 /*
 type Document = { name:String, options:DocOptions, segments:[Segment],
                   globalsight : GlobalSight|null }
-type Segment = { source:String, target:String, options:Options }
+type Segment = { source:String, target:QText, options:Options }
+               & ( {} | { choices:[QText] } )
+type QText = { quality:Quality, text:String }
+             | String  // mostly for backward compatibility
+type Quality = "default_quality" | "low_quality" | "high_quality" 
+             | "manual_quality"
 type DocOptions = Options & { view:View, cloud:Bool }
 type Options = {from: Lang, to: Lang, method:Method}
 type Lang = String // Eng, Swe, Ita, etc
@@ -879,7 +919,7 @@ Translator.prototype.draw_document=function() {
 	function src(seg) { return seg.source }
 	function trg(seg) { return seg.target }
 	function fmt(txt,i) {
-	    var sd=span_class("segment",text(txt+" "))
+	    var sd=span_class("segment",[qtext(txt),text(" ")])
 	    function setclass(cls) {
 		return function() {
 		    targets[i].className=sources[i].className=cls
@@ -906,7 +946,7 @@ Translator.prototype.draw_segment=function(s,i) {
     var t=this
     var dopt=t.document.options
     var opt=s.options
-    var txt=text(s.target)
+    var txt=qtext(s.target)
     if(opt.from!=dopt.from || opt.to!=dopt.to) txt=span_class("error",txt)
     var target=wrap_class("td","target",txt)
     function edit() { t.edit_translation(i) }
@@ -916,9 +956,23 @@ Translator.prototype.draw_segment=function(s,i) {
     return t.draw_segment_given_target(s,target,i)
 }
 
+function qtext(t) {
+    switch(typeof(t)) {
+    case "string": return text(t)
+    default: return span_class(t.quality||"",text(t.text))
+    }
+}
+
+function qstring(t) {
+    switch(typeof(t)) {
+    case "string": return t
+    default: return t.text
+    }
+}
+
 function draw_choices(txts,onclick) {
     function opt(txt) { 
-	var o=dt(text(txt))
+	var o=dt(qtext(txt))
 	o.onclick=function(ev) { ev.stopPropagation(); onclick(txt) }
 	return o
     }
@@ -1036,32 +1090,6 @@ function show_translation(o) {
 
 /* --- Auxiliary functions -------------------------------------------------- */
 
-function lang1(namecode2) {
-    function lang(code,name,code2) {return {code:code, name:name, code2:code2}}
-    var nc=namecode2.split(":");
-    var name=nc[0]
-    var ws=name.split("/");
-    var code2=nc.length>1 ? nc[1] : ""
-    return ws.length==1 ? lang(name.substr(0,3),name,code2)
-	                : lang(ws[0],ws[1],code2);
-}
-
-// Language names and ISO-639 codes (both 3-letter and 2-letter codes)
-// See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-var languages = // [ISO-639-2 code "/"] language name ":" ISO 639-1 code
-    map(lang1,"Amharic:am Arabic:ar Bulgarian:bg Catalan:ca Chinese:zh Danish:da Dutch:nl English:en Finnish:fi French:fr German:de Greek:el Hindi:hi Ina/Interlingua:ia Italian:it Jpn/Japanese:ja Latin:la Norwegian:nb Polish:pl Ron/Romanian:ro Russian:ru Spanish:es Swedish:sv Thai:th Turkish:tr Urdu:ur".split(" "));
-
-var langname={};
-var langcode2={}
-var langcode3={}
-for(var i in languages) {
-    langname[languages[i].code]=languages[i].name
-    langcode2[languages[i].code]=languages[i].code2
-    langcode3[languages[i].code2]=languages[i].code
-}
-function concname(code) { return langname[code] || code; }
-function alangcode(code) { return langcode2[code] || code; }
-
 // Collect alternative texts in the output from PGF service translate command
 function collect_texts(ts) {
     var list=[]
@@ -1175,7 +1203,7 @@ function export_globalsight_download_file(doc) {
     var gs=doc.globalsight.segments
     var ss=doc.segments
     for(var i=0;i<gs.length && i<ss.length;i++)
-	ls=ls.concat(gs[i],ss[i].target)
+	ls=ls.concat(gs[i],qstring(ss[i].target))
 
     ls.push("")
     ls.push("# END GlobalSight Download File")
@@ -1199,6 +1227,7 @@ function save_in_cloud(filename,document,cont) {
     with_dir(save)
 }
 
+/*
 // Like lextext, but separate punctuation from the end
 function lexgfrobust(txt,cont) {
     function rmpunct(txt) {
@@ -1209,6 +1238,27 @@ function lexgfrobust(txt,cont) {
 	cont(gf_unlex(ts),punct)
     }
     lextext(txt,rmpunct)
+}
+*/
+// rmpunct :: String -> {txt:String,punct:String}
+function rmpunct(txt) {
+    function ispunct(c) {
+	switch(c) {
+	case ' ':
+	case '\t':
+	case '\n':
+	case '.':
+	case '?':
+	case '!':
+	    return true
+	default:
+	    return false
+	}
+    }
+    var i=txt.length-1
+    while(i>=0 && ispunct(txt[i])) i--
+    i++
+    return {txt:txt.substr(0,i),punct:txt.substr(i)}
 }
 
 /* --- DOM Support ---------------------------------------------------------- */

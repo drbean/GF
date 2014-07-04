@@ -32,10 +32,10 @@ concrete ExtraFre of ExtraFreAbs = ExtraRomanceFre **
     we8fem_Pron = mkPronoun "nous" "nous" "nous" "nous" "notre" "notre" "nos"
       Fem Pl P1 ;
     whoPl8fem_IP = 
-      {s = \\c => artDef a.g a.n c + quelPron ! a ; a = a}
-      where {a = aagr Fem Sg} ;
+      {s = \\c => "les" + quelPron ! a ; a = a}
+      where {a = aagr Fem Pl} ;
     whoSg8fem_IP = 
-      {s = \\c => artDef a.g a.n c + quelPron ! a ; a = a}
+      {s = \\c => "la" + quelPron ! a ; a = a}
       where {a = aagr Fem Pl} ;
 
     youSg8fem_Pron = mkPronoun 
@@ -49,6 +49,11 @@ concrete ExtraFre of ExtraFreAbs = ExtraRomanceFre **
       let vous = mkPronoun "vous" "vous" "vous" "vous" "votre" "votre" "vos" Fem Pl P2
       in 
       {s = vous.s ; hasClit = vous.hasClit ; poss = vous.poss ; a = vous.a ; isPol = True ; isNeg = False} ;
+
+    ce_Pron = 
+      let ce = elision "c" 
+      in 
+      mkPronoun ce ce ce ("cela" | "ça") "son" (elisPoss "s") "ses" Masc Sg P3 ; ---- variants?
 
     AdvDatVP = insertClit3 datClit ;
     AdvGenVP = insertClit3 genClit ;
@@ -77,8 +82,8 @@ concrete ExtraFre of ExtraFreAbs = ExtraRomanceFre **
     ExistsNP np = 
       mkClause "il" True False np.a (insertComplement (\\_ => (np.s ! Nom).ton) (predV (regV "exister"))) ;
 
-
-    PassAgentVPSlash vps np = passVPSlash 
-      vps ("par" ++ (np.s ! Acc).ton) ;
+--- in ExtraRomance
+--    PassAgentVPSlash vps np = passVPSlash 
+--      vps ("par" ++ (np.s ! Acc).ton) ;
 
 }

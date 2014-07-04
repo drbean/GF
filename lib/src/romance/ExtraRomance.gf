@@ -3,7 +3,7 @@ incomplete concrete ExtraRomance of ExtraRomanceAbs = CatRomance **
     CommonRomance,
     Coordination,
     ResRomance, 
-    (G = Grammar),
+    Grammar,
     Prelude in {
 
     lin TPasseSimple = {s = []} ** {t = RPasse} ;   --# notpresent
@@ -77,23 +77,17 @@ incomplete concrete ExtraRomance of ExtraRomanceAbs = CatRomance **
         } ;
 
     PassVPSlash vps = passVPSlash vps [] ;
-----    PassAgentVPSlash vps np = passVPSlash 
-----      vps (let by = <Grammar.by8agent_Prep : Prep> in by.s ++ (np.s ! by.c).ton) ;
+    PassAgentVPSlash vps np = passVPSlash 
+      vps (let by = <Grammar.by8agent_Prep : Prep> in by.s ++ (np.s ! by.c).ton) ;
 
 oper
-    passVPSlash : VPSlash -> Str -> ResRomance.VP = \vps, ag -> 
+    passVPSlash : VPSlash -> Str -> ResRomance.VP = \vps, agent -> 
       let auxvp = predV auxPassive 
       in
-       insertComplement (\\a => let agr = complAgr a in vps.s.s ! VPart agr.g agr.n) {
+      vps ** {
          s = auxvp.s ;
          agr = auxvp.agr ;
-         neg = vps.neg ;
-         clit1 = vps.clit1 ;
-         clit2 = vps.clit2 ;
-         clit3 = vps.clit3 ;
-         isNeg = vps.isNeg ;
-         comp  = \\a => vps.comp ! a ++ ag ;
-         ext   = vps.ext
+         comp  = \\a => vps.comp ! a ++ (let agr = complAgr a in vps.s.s ! VPart agr.g agr.n) ++ agent ;
         } ;
 
 } 

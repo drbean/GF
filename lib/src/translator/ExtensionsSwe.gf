@@ -35,10 +35,16 @@ lin
 
 
 lin
-  CompoundCN noun cn = {
+  CompoundN noun cn = {
       s = \\n,d,c => noun.co ++ BIND ++ cn.s ! n ! d ! c ; 
-      g = cn.g ;
-      isMod = False
+      co = noun.co ++ BIND ++ cn.s ! Sg ! Indef ! Gen   -- (last+bil)s + chaufför 
+        | noun.co ++ cn.co ;
+      g = cn.g
+      } ;
+
+  CompoundAP noun adj = {
+      s = \\ap => noun.co ++ BIND ++ adj.s ! AF (APosit ap) Nom ; 
+      isPre = True
       } ;
 
   GerundN v = {
@@ -109,5 +115,15 @@ lin
   AdAdV = cc2 ;
   
   UttAdV adv = adv;
+
+  DirectComplVS t np vs utt = 
+    mkS (lin Adv (optCommaSS utt)) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  DirectComplVQ t np vs q = 
+    mkS (lin Adv (optCommaSS (mkUtt q))) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  FocusObjS np sslash = 
+    mkS (lin Adv (ss (sslash.c2.s ++ np.s ! NPAcc))) <lin S sslash : S> ;
+
 
 }
