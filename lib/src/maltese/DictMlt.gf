@@ -783,12 +783,12 @@ concrete DictMlt of DictMltAbs = CatMlt ** open ParadigmsMlt in {
     balla'_BLGH_2_7436_V      = mkV_II "balla'" (mkRoot "b-l-għ") ;
     tballa'_BLGH_5_7437_V     = mkV_V "tballa'" (mkRoot "b-l-għ") ;
     nbela'_BLGH_7_7438_V      = mkV_VII "bela'" "nbela'" (mkRoot "b-l-għ") ;
-    blehhen_BLHN_1_7439_V     = mkV strong form1 (mkRoot "bl-ħ-n") (mkVowels "e" "e")
+    blehhen_BLHN_2_7439_V     = mkV strong form1 (mkRoot "bl-ħ-n") (mkVowels "e" "e")
       "bleħħint" "bleħħint" "bleħħen" "bleħħnet" "bleħħinna" "bleħħintu" "bleħħnu"
       "nbleħħen" "tbleħħen" "jibleħħen" "tbleħħen" "nbleħħnu" "tbleħħnu" "jibleħħnu"
       "bleħħen" "bleħħnu"
       ;
-    tblehhen_BLHN_2_7440_V    = mkV strong form2 (mkRoot "bl-ħ-n") (mkVowels "e" "e")
+    tblehhen_BLHN_5_7440_V    = mkV strong form2 (mkRoot "bl-ħ-n") (mkVowels "e" "e")
       "tbleħħint" "tbleħħint" "tbleħħen" "tbleħħnet" "tbleħħinna" "tbleħħintu" "tbleħħnu"
       "nitbleħħen" "titbleħħen" "jitbleħħen" "titbleħħen" "nitbleħħnu" "titbleħħnu" "jitbleħħnu"
       "tbleħħen" "tbleħħnu"
@@ -1871,7 +1871,7 @@ concrete DictMlt of DictMltAbs = CatMlt ** open ParadigmsMlt in {
     thajjar_HJR_5_8506_V      = mkV_V "tħajjar" (mkRoot "ħ-j-r") ;
     htar_HJR_8_8507_V         = mkV_VIII "ħtar" (mkRoot "ħ-j-r") ;
     hat_HJT_1_8508_V          = pastPartV "meħjut" (mkV "ħat" (mkRoot "ħ-j-t")) ;
-    nhat_HJT_7_8509_V         = mkV_VII "ħât" "nħât" (mkRoot "ħ-j-t") ;
+    nhat_HJT_7_8509_V         = mkV_VII "ħat" "nħat" (mkRoot "ħ-j-t") ; -- mkV_VII "ħât" "nħât" (mkRoot "ħ-j-t") ;
     hajjet_HJT_2_8510_V       = mkV_II "ħajjet" (mkRoot "ħ-j-t") ;
     thajjet_HJT_5_8511_V      = mkV_V "tħajjet" (mkRoot "ħ-j-t") ;
     hela_HLJ_1_8512_V         = mkV "ħela" (mkRoot "ħ-l-j") ;
@@ -2260,7 +2260,7 @@ concrete DictMlt of DictMltAbs = CatMlt ** open ParadigmsMlt in {
     matal_MTL_1_8887_V        = mkV "matal" (mkRoot "m-t-l") ;
     mattal_MTL_2_8888_V       = mkV_II "mattal" (mkRoot "m-t-l") ;
     matal_MTL_3_8889_V        = mkV_III "matal" (mkRoot "m-t-l") ;
-    tmatal_MTL_6_8890_V       = mkV_VI "tmâtal" (mkRoot "m-t-l") ;
+    tmatal_MTL_6_8890_V       = mkV_VI "tmatal" (mkRoot "m-t-l") ; -- mkV_VI "tmâtal" (mkRoot "m-t-l") ;
     mtal_MTL_9_8891_V         = mkV_IX "mtal" (mkRoot "m-t-l") ;
     mattar_MTR_2_8892_V       = mkV_II "mattar" (mkRoot "m-t-r") ;
     tmattar_MTR_5_8893_V      = mkV_V "tmattar" (mkRoot "m-t-r") ;
@@ -2424,7 +2424,7 @@ concrete DictMlt of DictMltAbs = CatMlt ** open ParadigmsMlt in {
     naqas_NQS_1_9047_V        = mkV "naqas" (mkRoot "n-q-s") ;
     naqqas_NQS_2_9048_V       = mkV_II "naqqas" (mkRoot "n-q-s") ;
     tnaqqas_NQS_5_9049_V      = mkV_V "tnaqqas" (mkRoot "n-q-s") ;
-    nqas_NQS_9_9050_V         = mkV_IX "nqâs" (mkRoot "n-q-s") ;
+    nqas_NQS_9_9050_V         = mkV_IX "nqas" (mkRoot "n-q-s") ; -- mkV_IX "nqâs" (mkRoot "n-q-s") ;
     naqax_NQX_1_9051_V        = mkV "naqax" (mkRoot "n-q-x") ;
     naqqax_NQX_2_9052_V       = mkV_II "naqqax" (mkRoot "n-q-x") ;
     tnaqqax_NQX_5_9053_V      = mkV_V "tnaqqax" (mkRoot "n-q-x") ;
@@ -2813,7 +2813,7 @@ concrete DictMlt of DictMltAbs = CatMlt ** open ParadigmsMlt in {
     trabah_RHB_6_9434_V       = mkV_VI "trabah" (mkRoot "r-h-b") ;
     rahan_RHN_1_9435_V        = mkV "rahan" (mkRoot "r-h-n") ;
     rahhan_RHN_2_9436_V       = mkV_II "rahhan" (mkRoot "r-h-n") ;
-    rahan_RHN_3_9437_V        = mkV_III "râhan" (mkRoot "r-h-n") ;
+    rahan_RHN_3_9437_V        = mkV_III "rahan" (mkRoot "r-h-n") ; -- mkV_III "râhan" (mkRoot "r-h-n") ;
     rtahan_RHN_8_9438_V       = mkV_VIII "rtahan" (mkRoot "r-h-n") ;
     rahhal_RHL_2_9439_V       = mkV_II "raħħal" (mkRoot "r-ħ-l") ;
     trahhal_RHL_5_9440_V      = mkV_V "traħħal" (mkRoot "r-ħ-l") ;
@@ -4293,6 +4293,7 @@ concrete DictMlt of DictMltAbs = CatMlt ** open ParadigmsMlt in {
     itteka_TKW_1_10825_V      = mkV "itteka" (mkRoot "t-k-w") ;
     ntemm_TMM_7_10826_V       = mkV_VII "temm" "ntemm" (mkRoot "t-m-m") ;
     nghadda_GHDJ_7_10828_V    = mkV_VII "għadda" "ngħadda" (mkRoot "għ-d-j") ;
+    nqies_QJS_7_10829_V       = mkV_VII "qies" "nqies" (mkRoot "q-j-s") ;
 
   -- Loan verbs
   lin
