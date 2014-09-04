@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------
 
 module GF.Infra.CheckM
-          (Check, CheckResult, Message, runCheck,
+          (Check, CheckResult, Message, runCheck, runCheck',
 	   checkError, checkCond, checkWarn, checkWarnings, checkAccumError,
 	   checkIn, checkInModule, checkMap, checkMapRecover,
            parallelCheck, accumulateError, commitCheck,
@@ -23,12 +23,14 @@ import GF.Data.Operations
 --import GF.Infra.Ident
 --import GF.Grammar.Grammar(msrc) -- ,Context
 import GF.Infra.Location(ppLocation,sourcePath)
+import GF.Infra.Option(Options,noOptions,verbAtLeast,Verbosity(..))
 
 import qualified Data.Map as Map
 import GF.Text.Pretty
 import System.FilePath(makeRelative)
 import Control.Parallel.Strategies(parList,rseq,using)
-import Control.Monad(liftM)
+import Control.Monad(liftM,ap)
+import Control.Applicative(Applicative(..))
 
 type Message = Doc
 type Error   = Message
@@ -49,6 +51,10 @@ instance Monad Check where
                case unCheck f {-ctxt-} ws of
                  (ws,Success x) -> unCheck (g x) {-ctxt-} ws
                  (ws,Fail msg)  -> (ws,Fail msg)
+
+instance Applicative Check where
+  pure = return
+  (<*>) = ap
 
 instance ErrorMonad Check where
   raise s = checkError (pp s)
@@ -93,15 +99,19 @@ commitCheck c =
     list = vcat . reverse
 
 -- | Run an error check, report errors and warnings
-runCheck :: ErrorMonad m => Check a -> m (a,String)
-runCheck c =
+runCheck c = runCheck' noOptions c
+
+-- | Run an error check, report errors and (optionally) warnings
+runCheck' :: ErrorMonad m => Options -> Check a -> m (a,String)
+runCheck' opts c =
     case unCheck c {-[]-} ([],[]) of
-      (([],ws),Success v) -> return (v,render (list ws))
+      (([],ws),Success v) -> return (v,render (wlist ws))
       (msgs   ,Success v) -> bad msgs
       ((es,ws),Fail    e) -> bad ((e:es),ws)
   where
-    bad (es,ws) = raise (render $ list ws $$ list es)
+    bad (es,ws) = raise (render $ wlist ws $$ list es)
     list = vcat . reverse
+    wlist ws = if verbAtLeast opts Normal then list ws else empty
 
 parallelCheck :: [Check a] -> Check [a]
 parallelCheck cs =

@@ -14297,7 +14297,7 @@ lin owe_V = mkV (mkV "estar") "en deuda" | mkV "deber" | mkV "adeudar" ; -- stat
 lin owe_V2 = mkV2 (mkV (mkV "estar") "en deuda") | mkV2 (mkV "deber") | mkV2 (mkV "adeudar") ; -- status=guess
 lin owl_N = mkN "búho" | mkN "lechuza" ; -- status=guess
 lin own_A = mkA "propio" ; -- status=guess
-lin own_V2 = mkV2 (reconocer_V) | mkV2 (mkV "admitir") ;
+lin own_V2 = mkV2 poseer_V ;
 lin owner_N = mkN "propietario" | mkN "dueño" | mkN "poseedor" masculine ;
 lin ownership_N = mkN "posesión" feminine | mkN "propiedad" masculine ; -- status=guess
 lin ox_N = mkN "buey" masculine | mkN "toro" feminine | mkN "novillo" ; -- status=guess status=guess status=guess
@@ -18783,6 +18783,8 @@ lin somatic_A = mkA "somático" ; -- status=guess
 lin sombrero_N = mkN "sombrero mexicano" | mkN " sombrero de charro" ; -- status=guess status=guess
 lin somePl_Det = S.somePl_Det ;
 lin someSg_Det = S.someSg_Det ;
+lin some_Det = mkDet "un poco de" ;
+lin some_Quant = mkQuantifier "algún" "alguna" "algunos" "algunas" ;
 lin somebody_NP = S.somebody_NP ;
 lin someday_Adv = mkAdv "algún día" ; -- status=guess
 lin somehow_Adv = mkAdv "de algún modo" | mkAdv "de alguna manera" ; -- status=guess

@@ -18,11 +18,10 @@
 -- and @file.gfo@ otherwise.
 -----------------------------------------------------------------------------
 
-module GF.Compile.ReadFiles 
+module GF.Compile.ReadFiles
            ( getAllFiles,ModName,ModEnv,importsOfModule,
-             gfoFile,gfFile,isGFO,gf2gfo,
-             parseSource,lift,
-             getOptionsFromFile,getPragmas) where
+             findFile,gfImports,gfoImports,
+             parseSource,getOptionsFromFile,getPragmas) where
 
 import Prelude hiding (catch)
 import GF.System.Catch
@@ -33,18 +32,20 @@ import GF.Data.Operations
 import GF.Grammar.Lexer
 import GF.Grammar.Parser
 import GF.Grammar.Grammar
-import GF.Grammar.Binary
+import GF.Grammar.Binary(decodeModuleHeader)
 
 import System.IO(mkTextEncoding)
-import qualified Data.ByteString.UTF8 as UTF8
 import GF.Text.Coding(decodeUnicodeIO)
+
+import qualified Data.ByteString.UTF8 as UTF8
+import qualified Data.ByteString.Char8 as BS
 
 import Control.Monad
 import Data.Maybe(isJust)
-import qualified Data.ByteString.Char8 as BS
+import Data.Char(isSpace)
 import qualified Data.Map as Map
 import Data.Time(UTCTime)
-import GF.System.Directory
+import GF.System.Directory(getModificationTime,doesFileExist,canonicalizePath)
 import System.FilePath
 import GF.Text.Pretty
 
@@ -91,58 +92,60 @@ getAllFiles opts ps env file = do
                       | otherwise = (st0,t0)
            return ((name,st,t,has_src,imps,p):ds)
 
+    gfoDir = flag optGFODir opts
+
     -- searches for module in the search path and if it is found
     -- returns 'ModuleInfo'. It fails if there is no such module
   --findModule :: ModName -> IOE ModuleInfo
     findModule name = do
-      (file,gfTime,gfoTime) <- do
-          mb_gfFile <- getFilePath ps (gfFile name)
-          case mb_gfFile of
-            Just gfFile -> do gfTime  <- modtime gfFile
-                              mb_gfoTime <- maybeIO $ modtime (gf2gfo opts gfFile)
-                              return (gfFile, Just gfTime, mb_gfoTime)
-            Nothing     -> do mb_gfoFile <- getFilePath (maybe id (:) (flag optGFODir opts) ps) (gfoFile name)
-                              case mb_gfoFile of
-                                Just gfoFile -> do gfoTime <- modtime gfoFile
-                                                   return (gfoFile, Nothing, Just gfoTime)
-                                Nothing      -> raise (render ("File" <+> gfFile name <+> "does not exist." $$
-                                                                      "searched in:" <+> vcat ps))
-
+      (file,gfTime,gfoTime) <- findFile gfoDir ps name
 
       let mb_envmod = Map.lookup name env
           (st,t) = selectFormat opts (fmap fst mb_envmod) gfTime gfoTime
 
       (st,(mname,imps)) <-
-                      case st of
-                        CSEnv  -> return (st, (name, maybe [] snd mb_envmod))
-                        CSRead -> do mb_mo <- liftIO $ decodeModuleHeader ((if isGFO file then id else gf2gfo opts) file)
-                                     case mb_mo of
-                                       Just mo -> return (st,importsOfModule mo)
-                                       Nothing
-                                         | isGFO file -> raise (file ++ " is compiled with different GF version and I can't find the source file")
-                                         | otherwise  -> do mo <- parseModHeader opts file
-                                                            return (CSComp,importsOfModule mo)
-                        CSComp -> do mo <- parseModHeader opts file
-                                     return (st,importsOfModule mo)
+          case st of
+            CSEnv  -> return (st, (name, maybe [] snd mb_envmod))
+            CSRead -> do let gfo = if isGFO file then file else gf2gfo opts file
+                         mb_imps <- gfoImports gfo
+                         case mb_imps of
+                           Just imps -> return (st,imps)
+                           Nothing
+                             | isGFO file -> raise (file ++ " is compiled with different GF version and I can't find the source file")
+                             | otherwise  -> do imps <- gfImports opts file
+                                                return (CSComp,imps)
+            CSComp -> do imps <- gfImports opts file
+                         return (st,imps)
       testErr (mname == name)
               ("module name" +++ mname +++ "differs from file name" +++ name)
       return (name,st,t,isJust gfTime,imps,dropFileName file)
+--------------------------------------------------------------------------------
 
-modtime path = liftIO $ getModificationTime path
+findFile gfoDir ps name =
+    maybe noSource haveSource =<< getFilePath ps (gfFile name)
+  where
+    haveSource gfFile =
+      do gfTime  <- getModificationTime gfFile
+         mb_gfoTime <- maybeIO $ getModificationTime (gf2gfo' gfoDir gfFile)
+         return (gfFile, Just gfTime, mb_gfoTime)
 
-isGFO :: FilePath -> Bool
-isGFO = (== ".gfo") . takeExtensions
+    noSource =
+        maybe noGFO haveGFO =<< getFilePath gfoPath (gfoFile name)
+      where
+        gfoPath = maybe id (:) gfoDir ps
 
-gfoFile :: FilePath -> FilePath
-gfoFile f = addExtension f "gfo"
+        haveGFO gfoFile =
+          do gfoTime <- getModificationTime gfoFile
+             return (gfoFile, Nothing, Just gfoTime)
 
-gfFile :: FilePath -> FilePath
-gfFile f = addExtension f "gf"
+        noGFO = raise (render ("File" <+> gfFile name <+> "does not exist." $$
+                               "searched in:" <+> vcat ps))
 
-gf2gfo :: Options -> FilePath -> FilePath
-gf2gfo opts file = maybe (gfoFile (dropExtension file))
-                         (\dir -> dir </> gfoFile (dropExtension (takeFileName file)))
-                         (flag optGFODir opts)
+gfImports opts file = importsOfModule `fmap` parseModHeader opts file
+
+gfoImports gfo = fmap importsOfModule `fmap` liftIO (decodeModuleHeader gfo)
+
+--------------------------------------------------------------------------------
 
 -- From the given Options and the time stamps computes
 -- whether the module have to be computed, read from .gfo or
@@ -213,7 +216,7 @@ importsOfModule (m,mi) = (modName m,depModInfo mi [])
 
 parseModHeader opts file =
   do --ePutStrLn file
-     (_,parsed) <- parseSource opts pModHeader =<< lift (BS.readFile file)
+     (_,parsed) <- parseSource opts pModHeader =<< liftIO (BS.readFile file)
      case parsed of
        Right mo          -> return mo
        Left (Pn l c,msg) ->
@@ -229,42 +232,46 @@ toUTF8 opts0 raw =
          coding = getEncoding $ opts0 `addOptions` opts
      utf8 <- if coding=="UTF-8"
              then return raw
-             else lift $ do --ePutStrLn $ "toUTF8 from "++coding
-                            enc <- mkTextEncoding coding
-                            -- decodeUnicodeIO uses a lot of stack space,
-                            -- so we need to split the file into smaller pieces
-                            ls <- mapM (decodeUnicodeIO enc) (BS.lines raw)
-                            return $ UTF8.fromString (unlines ls)
+             else if coding=="CP1252" -- Latin1
+                  then return . UTF8.fromString $ BS.unpack raw -- faster
+                  else do --ePutStrLn $ "toUTF8 from "++coding
+                          recodeToUTF8 coding raw
      return (given,utf8)
 
---lift io = ioe (fmap Ok io `catch` (return . Bad . show))
-lift io = liftIO io
+recodeToUTF8 coding raw =
+  liftIO $
+  do enc <- mkTextEncoding coding
+     -- decodeUnicodeIO uses a lot of stack space,
+     -- so we need to split the file into smaller pieces
+     ls <- mapM (decodeUnicodeIO enc) (BS.lines raw)
+     return $ UTF8.fromString (unlines ls)
 
 -- | options can be passed to the compiler by comments in @--#@, in the main file
-getOptionsFromFile :: (MonadIO m,ErrorMonad m) => FilePath -> m Options
+--getOptionsFromFile :: (MonadIO m,ErrorMonad m) => FilePath -> m Options
 getOptionsFromFile file = do
-  s <- either (\_ -> raise $ "File " ++ file ++ " does not exist") return =<<
-       liftIO (try $ BS.readFile file)
-  opts <- getPragmas s
+  opts <- either failed getPragmas =<< (liftIO $ try $ BS.readFile file)
   -- The coding flag should not be inherited by other files
   return (addOptions opts (modifyFlags $ \ f -> f{optEncoding=Nothing}))
+  where
+    failed _ = raise $ "File " ++ file ++ " does not exist"
 
 
 getPragmas :: (ErrorMonad m) => BS.ByteString -> m Options
 getPragmas = parseModuleOptions . 
              map (BS.unpack . BS.unwords . BS.words . BS.drop 3) .
-             filter (BS.isPrefixOf (BS.pack "--#")) . BS.lines
+             filter (BS.isPrefixOf (BS.pack "--#")) .
+--           takeWhile (BS.isPrefixOf (BS.pack "--")) .
+--           filter (not . BS.null) .
+             map (BS.dropWhile isSpace) .
+             BS.lines
 
---getFilePath :: MonadIO m => [FilePath] -> String -> m (Maybe FilePath)
-getFilePath paths file =
-   liftIO $ do --ePutStrLn $ "getFilePath "++show paths++" "++show file
-               get paths
+getFilePath :: MonadIO m => [FilePath] -> String -> m (Maybe FilePath)
+getFilePath paths file = get paths
   where
     get []     = return Nothing
-    get (p:ps) = do
-      let pfile = p </> file
-      exist <- doesFileExist pfile
-      if not exist
-        then get ps
-        else do pfile <- canonicalizePath pfile
-                return (Just pfile)
+    get (p:ps) = do let pfile = p </> file
+                    exist <- doesFileExist pfile
+                    if not exist
+                      then get ps
+                      else do pfile <- canonicalizePath pfile
+                              return (Just pfile)
