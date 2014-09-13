@@ -81,7 +81,7 @@ haskPreamble gadt name =
 predefInst gadt gtyp typ destr consr = 
   (if gadt
     then [] 
-    else ("newtype" +++ gtyp +++ "=" +++ gtyp +++ typ +++ " deriving (Show,Eq)\n\n") 
+    else ("newtype" +++ gtyp +++ "=" +++ gtyp +++ typ +++ " deriving Show\n\n") 
     ) 
   ++
   "instance Gf" +++ gtyp +++ "where" ++++
@@ -107,12 +107,12 @@ hDatatype _ _ ("Cn",_) = "" ---
 hDatatype gId _ (cat,[]) = "data" +++ gId cat
 hDatatype gId _ (cat,rules) | isListCat (cat,rules) = 
  "newtype" +++ gId cat +++ "=" +++ gId cat +++ "[" ++ gId (elemCat cat) ++ "]" 
-  +++ "deriving (Show,Eq)"
+  +++ "deriving Show"
 hDatatype gId lexical (cat,rules) =
  "data" +++ gId cat +++ "=" ++
  (if length rules == 1 then "" else "\n  ") +++
  foldr1 (\x y -> x ++ "\n |" +++ y) constructors ++++
- "  deriving (Show,Eq)"
+ "  deriving Show"
   where
     constructors = [gId f +++ foldr (+++) "" (map (gId) xx) | (f,xx) <- nonLexicalRules (lexical cat) rules]
                    ++ if lexical cat then [lexicalConstructor cat +++ "String"] else []
