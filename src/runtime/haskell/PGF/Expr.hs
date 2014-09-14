@@ -31,12 +31,6 @@ import Control.Monad
 import qualified Text.PrettyPrint as PP
 import qualified Text.ParserCombinators.ReadP as RP
 
-data Literal = 
-   LStr String                      -- ^ string constant
- | LInt Int                         -- ^ integer constant
- | LFlt Double                      -- ^ floating point constant
- deriving (Eq,Ord,Show)
-
 type MetaId = Int
 
 data BindType = 
@@ -274,10 +268,6 @@ pattScope scope (PTilde e)   = scope
 ppBind Explicit x = ppCId x
 ppBind Implicit x = PP.braces (ppCId x)
 
-ppLit (LStr s) = PP.text (show s)
-ppLit (LInt n) = PP.int n
-ppLit (LFlt d) = PP.double d
-
 ppMeta :: MetaId -> PP.Doc
 ppMeta n
   | n == 0    = PP.char '?'
@@ -325,8 +315,8 @@ data Value
   | VClosure Env Expr
   | VImplArg Value
 
-type Sig = ( Map.Map CId (Type,Int,Maybe ([Equation],[Instr]),Double) -- type and def of a fun
-           , Int -> Maybe Expr                                      -- lookup for metavariables
+type Sig = ( Map.Map CId (Type,Int,Maybe ([Equation],[[Instr]]),Double) -- type and def of a fun
+           , Int -> Maybe Expr                                          -- lookup for metavariables
            )
 type Env = [Value]
 

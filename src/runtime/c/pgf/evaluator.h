@@ -24,9 +24,15 @@ typedef struct {
 } PgfValue;
 
 PgfClosure*
+pgf_evaluate_indirection(PgfEvalState* state, PgfClosure* closure);
+
+PgfClosure*
 pgf_evaluate_value(PgfEvalState* state, PgfClosure* closure);
 
 void
 pgf_evaluate_save_variables(PgfEvalState* state, PgfValue* val);
+
+void
+pgf_evaluate_slide(PgfEvalState* state, size_t a, size_t b);
 
 #endif
