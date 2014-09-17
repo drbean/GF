@@ -5,10 +5,9 @@ concrete AppSpa of App =
 
   TranslateSpa - [
   -- Verb
-    ComplVS, ComplVQ, ComplVA,
-    Slash2V3, Slash3V3, SlashV2V, SlashV2S, SlashV2Q, SlashV2A,
+    SlashV2V,             -- replaced by more efficient inlined versions
+    Slash2V3, Slash3V3, SlashV2S, SlashV2Q, SlashV2A, 
     SlashVV, SlashV2VNP,
-    PassVP, ReflVP,
     AdvVPSlash, AdVVPSlash, VPSlashPrep,
   -- Sentence
     PredSCVP, 
@@ -18,11 +17,7 @@ concrete AppSpa of App =
     ComplSlashIP,AdvQVP,AddAdvQVP,QuestQVP,
   -- Idiom
     CleftNP, CleftAdv,
-    ExistIP,
-    ExistNPAdv, ExistIPAdv,
-    ImpP3,
-    SelfAdvVP, SelfAdVVP, SelfNP
-    
+    ImpP3    
   -- Construction
   -- Extensions
   ]
@@ -41,5 +36,12 @@ lin
   GObjectPlease o = lin Text (mkUtt o) ;
   PhrasePhr p = {s = "+" ++ p.s} | p ;
   Phrase_Chunk p = p ;
+
+
+ComplV2V v np vp = mkVP v np vp ;
+ComplV2A v np vp = mkVP v np vp ;
+ComplV2Q v np vp = mkVP v np vp ;
+ComplV2S v np vp = mkVP v np vp ;
+ComplV3  v np vp = mkVP v np vp ;
 
 }
