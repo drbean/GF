@@ -34,9 +34,11 @@ concrete TranslateEng of Translate =
   DocumentationEng,
 
   ChunkEng,
-  ExtensionsEng [CompoundN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP,
-  DirectComplVS, DirectComplVQ, FocusObjS
+  ExtensionsEng [
+    CompoundN,AdAdV,UttAdV,ApposNP,MkVPI, MkVPS, PredVPS, PassVPSlash, PassAgentVPSlash, CompoundAP
+    , DirectComplVS, DirectComplVQ, FocusObjS
     , PastPartAP, PastPartAgentAP, PresPartAP, GerundNP, GerundAdv
+    , WithoutVP, InOrderToVP, ByVP
     ],
   DictionaryEng ** 
 open MorphoEng, ResEng, ParadigmsEng, (G = GrammarEng), (E = ExtraEng), Prelude in {
@@ -78,6 +80,5 @@ lin
   DetNP d = G.DetNP d | G.DetCN d (UseN (mkN "one")) ; -- I like this / I like this one ; it / the one
 
   OrdNumeralSuperl n a = G.OrdNumeralSuperl n a | {s = \\c => n.s ! NOrd ! Nom ++ Predef.BIND ++ "-" ++ Predef.BIND ++ a.s ! AAdj Superl c} ;
-
 
 }
