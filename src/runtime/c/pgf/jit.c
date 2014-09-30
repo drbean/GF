@@ -1089,8 +1089,30 @@ pgf_jit_function(PgfReader* rdr, PgfAbstr* abstr,
 				}
 
 				if (b-(a+1) > 0)
-					jit_subi_p(JIT_SP, JIT_SP, (b-(a+1))*sizeof(PgfClosure*));
+					jit_addi_p(JIT_SP, JIT_SP, (b-(a+1))*sizeof(PgfClosure*));
 				jit_bare_ret(a*sizeof(PgfClosure*));
+				break;
+			}
+			case PGF_INSTR_DROP: {
+				size_t n      = pgf_read_int(rdr);
+				size_t target = pgf_read_int(rdr);
+
+#ifdef PGF_JIT_DEBUG
+				gu_printf(out, err, "DROP        %d %03d\n", n, target);
+#endif
+				
+				if (n > 0)
+					jit_addi_p(JIT_SP, JIT_SP, n*sizeof(PgfClosure*));
+				
+				jit_insn *jump =
+					jit_jmpi(jit_forward());
+
+				PgfSegmentPatch label_patch;
+				label_patch.segment = target;
+				label_patch.ref     = jump;
+				label_patch.is_abs  = false;
+				gu_buf_push(rdr->jit_state->segment_patches, PgfSegmentPatch, label_patch);
+
 				break;
 			}
 			case PGF_INSTR_FAIL:
