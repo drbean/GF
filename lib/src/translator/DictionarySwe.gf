@@ -5648,7 +5648,7 @@ lin belt_up_V = mkV "skärper" ; -- comment=4
 lin belting_N = mkN "rem" "remmen" "remmar" "remmarna" ; -- comment=3
 lin beltlike_A = variants {} ; -- status=guess
 lin beltway_N = variants {} ; -- status=guess
-lin beluga_N = mkN "hus" neutrum ; -- status=guess
+lin beluga_N = mkN "beluga" utrum ;
 lin belvedere_N = variants {} ; -- status=guess
 lin bemoan_V2 = variants {} ; -- status=guess
 lin bemused_A = variants {} ; -- status=guess
@@ -22536,7 +22536,6 @@ lin fortunately_Adv = adjAdv fortunate_A ; -- -- derived
 lin fortune_N = mkN "öde" ; -- SaldoWN
 lin fortuneteller_N = variants {} ; -- status=guess
 lin fortunetelling_N = variants {} ; -- status=guess
-lin forty_A = variants {} ; -- status=guess
 lin forty_N = variants {} ; -- status=guess
 lin fortyish_A = variants {} ; -- status=guess
 lin forum_N = mkN "forum" neutrum ; -- SaldoWN
@@ -25811,10 +25810,9 @@ lin harbour_N = L.harbour_N ;
 lin harbour_V = mkV "nära" "närde" "närt" ; -- comment=3
 lin harbour_V2 = variants {} ; -- status=guess
 lin harbourage_N = variants {} ; -- status=guess
-lin hard_1_A = mkA "hård" "hårt" ;
+lin hard_1_A = mkA "hård" "hårt" | mkA "häftig" ;
 lin hard_2_A = mkA "svår" ;
-lin hard_A = mkA "hård" "hårt" | mkA "häftig" ;
-lin hard_Adv = mkAdv "hårt" ;
+lin hardly_AdV = mkAdV "knappast" | adjAdv hard_2_A ; -- derived
 lin hard_baked_A = variants {} ; -- status=guess
 lin hard_bitten_A = variants {} ; -- status=guess
 lin hard_boiled_A = variants {} ; -- status=guess
@@ -25837,7 +25835,6 @@ lin hardihood_N = variants {} ; -- status=guess
 lin hardiness_N = variants {} ; -- status=guess
 lin hardinggrass_N = variants {} ; -- status=guess
 lin hardliner_N = variants {} ; -- status=guess
-lin hardly_Adv = mkAdv "knappast" | adjAdv hard_2_A ; -- derived
 lin hardness_N = mkN "hårdhet" "hårdheter" ; -- comment=2
 lin hardscrabble_A = variants {} ; -- status=guess
 lin hardship_N = mkN "vedermöda" ; -- SaldoWN
@@ -28855,10 +28852,11 @@ lin indexless_A = variants {} ; -- status=guess
 lin india_PN = mkPN "Indien" neutrum ; -- src=geonames status=guess
 lin india_rubber_N = variants {} ; -- status=guess
 lin indiaman_N = variants {} ; -- status=guess
-lin indianFem_N = mkN "indiska" ;
-lin indianMasc_N = mkN "indier" "indiern" "indier" "indierna" ;
+lin indianFem_1_N = mkN "indiska" ;
+lin indianMasc_1_N = mkN "indier" "indiern" "indier" "indierna" ;
 lin indian_A = mkA "indisk" ;
-lin indian_N = mkN "indian" "indianer" ;
+lin indianFem_2_N = mkN "indian" "indianer" ;
+lin indianMasc_2_N = mkN "indianska" ;
 lin indiana_PN = mkPN "Indiana" neutrum ; -- src=geonames status=guess
 lin indianapolis_PN = mkPN "Indianapolis" neutrum ; -- src=geonames status=guess
 lin indicate_V2 = mkV2 (mkV "indikera") | mkV2 (mkV "visa") | mkV2 (mkV "uppge" "uppgav" "uppgivit") | mkV2 (mkV "ange" "angav" "angivit") ;
@@ -34324,7 +34322,6 @@ lin manure_V2 = mkV2 (mkV "gödsla") ; -- status=guess, src=wikt
 lin manuscript_N = mkN "manuskript" neutrum | mkN "manuskript" neutrum ; -- SaldoWN -- comment=2
 lin manx_A = variants {} ; -- status=guess
 lin manx_N = variants {} ; -- status=guess
-lin many_A = variants {} ; -- status=guess
 lin many_Det = S.many_Det | M.mkDet "mången" "månget" singular ;
 lin many_sided_A = variants {} ; -- status=guess
 lin manzanita_N = variants {} ; -- status=guess
@@ -38048,7 +38045,6 @@ lin ninja_N = mkN "ninja" ; -- status=guess
 lin ninjutsu_N = variants {} ; -- status=guess
 lin ninny_N = variants {} ; -- status=guess
 lin ninon_N = variants {} ; -- status=guess
-lin ninth_A = mkA "nionde" ; -- status=guess
 lin ninth_N = mkN "niondel" "niondelen" "niondelar" "niondelarna" ; -- comment=2
 lin niobe_PN = mkPN "Niobe" ; -- src=eng status=guess
 lin niobite_N = variants {} ; -- status=guess
@@ -51259,10 +51255,9 @@ lin sevenfold_Adv = mkAdv "sjufaldig" | mkAdv "sjufaldigt" ; -- status=guess sta
 lin sevenoaks_PN = mkPN "Sevenoaks" neutrum ; -- src=geonames status=guess
 lin sever_V = mkV "skilja" "skilde" "skilt" ; -- comment=5
 lin sever_V2 = dirV2 (partV (mkV "skilja" "skilde" "skilt") "av") ; -- comment=2
-lin several_A = variants {} ;
 lin several_Det = M.mkDet "flera" plural ;
 lin several_Num = M.mkNum "flera" ; -- status=guess
-lin severally_Adv = adjAdv several_A ; -- status=guess -- derived
+lin severally_Adv = variants {}; -- status=guess -- derived
 lin severalty_N = variants {} ; -- status=guess
 lin severance_N = mkN "avskiljande" ; -- comment=3
 lin severe_A = mkA "sträng" ; -- comment=13

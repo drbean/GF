@@ -8756,12 +8756,10 @@ lin harbinger_N = mkN "voorbode" masculine ; -- status=guess
 lin harbour_N = L.harbour_N ;
 lin hard_1_A = mkA "hard" ;
 lin hard_2_A = mkA "lastig" ;
-lin hard_A = hard_1_A | hard_2_A ;
-lin hard_Adv = mkAdv "hard" | mkAdv "lastig" ;
+lin hardly_AdV = lin AdV {s = "hard"} | lin AdV {s = "lastig"} ;
 lin harden_V = mkV (mkV "hard") "worden" | mkV "verharden" | mkV "verstijven" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin harden_V2 = mkV2 (mkV (mkV "hard") "worden") | mkV2 (mkV "verharden") | mkV2 (mkV "verstijven") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin hardheaded_A = mkA "pragmatisch" ; -- status=guess
-lin hardly_Adv = mkAdv "nauwelijks" | adjAdv hard_2_A ; -- derived
 lin hardness_N = mkN "hardheid" feminine ; -- status=guess
 lin hardship_N = mkN "ellende" feminine ; -- status=guess
 lin hardware_N = mkN "ijzerwinkel" masculine | mkN "ijzerwarenwinkel" masculine ; -- status=guess status=guess
@@ -12952,7 +12950,6 @@ lin nimbus_N = mkN "nimbus" | mkN "halo" masculine ; -- status=guess status=gues
 lin nimrod_PN = mkPN "Nimrod" ; -- src=eng status=guess
 lin nincompoop_N = mkN "lomperd" | mkN "domoor" | mkN "stommeling" | mkN "oetlul" ; -- status=guess status=guess status=guess status=guess
 lin ninja_N = mkN "ninja" ; -- status=guess
-lin ninth_A = mkA "negende" | mkA "9e)" ; -- status=guess status=guess
 lin ninth_N = mkN "negende" ; -- status=guess
 lin niobe_PN = mkPN "Niobe" ; -- src=eng status=guess
 lin niobium_N = mkN "niobium" neuter ; -- status=guess
@@ -17092,7 +17089,6 @@ lin seven_sisters_PN = mkPN "Seven sisters" ; -- src=eng status=guess
 lin sevenoaks_PN = mkPN "Sevenoaks" ; -- src=geonames status=guess
 lin sever_V = mkV "lossnijden" ; -- status=guess, src=wikt
 lin sever_V2 = mkV2 (mkV "lossnijden") ; -- status=guess, src=wikt
-lin several_A = variants {} ;
 lin several_Det = mkDet "verscheidene" | mkDet "divers" ;
 lin severally_Adv = adjAdv several_A ; -- derived
 lin severance_N = mkN "scheiding" feminine | mkN "lossnijden" | mkN "los zijn" ; -- status=guess status=guess status=guess

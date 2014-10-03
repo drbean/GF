@@ -10171,8 +10171,6 @@ lin cheat_V2 = mkV2 (mkV "betrügen" | prefixV "fremd" (irregV "gehen" "geht" "g
 lin cheat_on_V2 = variants {} ;
 lin cheat_out_of_V3 = variants {} ;
 lin chebab_N = variants {} ;
-lin check_1_V2 = variants {} ;
-lin check_2_V2 = variants {} ;
 lin check_N = mkN "Rechnung" ; -- status=guess
 lin check_V = mkV "checken" | fixprefixV "über" (mkV "prüfen") ; -- note: I checked - ich habe ES gecheckt/überprüft
 lin check_V2 = mkV2 (fixprefixV "über" (mkV "prüfen")) | mkV2 (mkV "prüfen") | mkV2 (mkV "checken") ;
@@ -21749,8 +21747,6 @@ lin fistmele_N = variants {} ;
 lin fistula_N = mkN "Fistel" "Fisteln" feminine ; -- status=guess
 lin fistular_A = variants {} ;
 lin fistulous_A = variants {} ;
-lin fit_1_V2 = variants {} ;
-lin fit_2_V2 = variants {} ;
 lin fit_A = mk3A "sexy" "sexyer" "sexyste" | mk3A "scharf" "schärfer" "schärfste" | mkA "heiß" ; -- status=guess status=guess status=guess
 lin fit_N = mkN "Paßform" feminine ; -- status=guess
 lin fit_V = mkV "passen" ;
@@ -22627,7 +22623,6 @@ lin fortunately_Adv = mkAdv "glücklicherweise" | mkAdv "zum Glück" | adjAdv fo
 lin fortune_N = mkN "Glück" neuter ; -- status=guess
 lin fortuneteller_N = mkN "Wahrsager" "Wahrsager" masculine | mkN "Wahrsagerin" feminine ; -- status=guess status=guess
 lin fortunetelling_N = variants {} ;
-lin forty_A = variants {} ;
 lin forty_N = variants {} ;
 lin fortyish_A = variants {} ;
 lin forum_N = mkN "Forum" neuter ; -- status=guess
@@ -24504,9 +24499,6 @@ lin go_with_V2 = variants {} ;
 lin go_without_V2 = variants {} ;
 lin goad_N = mkN "Stachelstock" masculine ; -- status=guess
 lin goad_V2 = mkV2 (mkV "anstacheln") ; -- status=guess, src=wikt
-lin goal_1_N = variants {} ;
-lin goal_2_N = variants {} ;
-lin goal_3_N = variants {} ;
 lin goal_N = mkN "Tor" "Tore" neuter | mkN "Ziel" "Ziele" neuter ; -- split: football goal / goal in life
 lin goal_kick_N = variants {} ;
 lin goal_line_N = variants {} ;
@@ -25926,7 +25918,7 @@ lin harbour_V2 = variants {} ;
 lin harbourage_N = variants {} ;
 lin hard_1_A = mkA "hart" "härter" "härteste" ;
 lin hard_2_A = mkA "schwer" ;
-lin hard_Adv = mkAdv "schwer" ;
+lin hardly_AdV = lin AdV {s = "kaum"} ;
 lin hard_baked_A = variants {} ;
 lin hard_bitten_A = variants {} ;
 lin hard_boiled_A = variants {} ;
@@ -25950,7 +25942,6 @@ lin hardihood_N = variants {} ;
 lin hardiness_N = variants {} ;
 lin hardinggrass_N = variants {} ;
 lin hardliner_N = variants {} ;
-lin hardly_Adv = mkAdv "kaum" | adjAdv hard_2_A ; -- derived
 lin hardness_N = mkN "Härte" feminine ; -- status=guess
 lin hardscrabble_A = variants {} ;
 lin hardship_N = mkN "Härte" feminine | mkN "Not" "Nöte" feminine ; -- status=guess status=guess
@@ -28985,7 +28976,10 @@ lin indiaman_N = variants {} ;
 lin indianFem_N = variants {} ;
 lin indianMasc_N = variants {} ;
 lin indian_A = mkA "indisch" ;
-lin indian_N = variants {} ;
+lin indianMasc_1_N = variants {} ;
+lin indianFem_1_N = variants {} ;
+lin indianMasc_2_N = variants {} ;
+lin indianFem_2_N = variants {} ;
 lin indiana_PN = mkPN "Indiana" ; -- src=geonames status=guess
 lin indianapolis_PN = mkPN "Indianapolis" ; -- src=geonames status=guess
 lin indicate_V2 = mkV2 (prefixV "an" (mkV "zeigen")) | mkV2 (mkV "zeigen") ;
@@ -34473,7 +34467,6 @@ lin manure_V2 = mkV2 (mkV "düngen") ; -- status=guess, src=wikt
 lin manuscript_N = mkN "Manuskript" "Manuskripte" neuter | mkN "Handschrift" "Handschriften" feminine | mkN "Kodex" masculine ; -- status=guess status=guess status=guess
 lin manx_A = variants {} ;
 lin manx_N = variants {} ;
-lin many_A = variants {} ;
 lin many_Det = S.many_Det ;
 lin many_sided_A = variants {} ;
 lin manzanita_N = variants {} ;
@@ -36166,9 +36159,6 @@ lin misrelated_A = variants {} ;
 lin misrepresent_V2 = variants {} ;
 lin misrepresentation_N = variants {} ;
 lin misrule_N = variants {} ;
-lin miss_1_V2 = variants {} ;
-lin miss_2_V2 = variants {} ;
-lin miss_3_V2 = variants {} ;
 lin miss_N = mkN "Fräulein" neuter ; -- status=guess
 lin miss_V = prefixV "daneben" I.schießen_V | prefixV "daneben" I.schlagen_V ;
 lin miss_V2 = mkV2 (fixprefixV "ver" (mkV "passen")) | mkV2 (mkV "fehlen") ; -- miss a deadline / miss someone - NOTE: I miss you = du fehlst mir!
@@ -38210,7 +38200,6 @@ lin ninja_N = mkN "Ninja" ; -- status=guess
 lin ninjutsu_N = mkN "Ninjutsu" neuter ; -- status=guess
 lin ninny_N = variants {} ;
 lin ninon_N = variants {} ;
-lin ninth_A = mkA "neunte" ; -- status=guess
 lin ninth_N = variants {} ;
 lin niobe_PN = mkPN "Niobe" ; -- src=eng status=guess
 lin niobite_N = variants {} ;
@@ -44556,8 +44545,6 @@ lin prescriptive_A = variants {} ;
 lin prescriptivism_N = variants {} ;
 lin preseason_N = variants {} ;
 lin presence_N = mkN "Anwesenheit" feminine ; -- status=guess
-lin present_1_N = variants {} ;
-lin present_2_N = variants {} ;
 lin present_A = mkA "gegenwärtig" | mkA "anwesend" ; -- split: current | physically present
 lin present_N = mkN "Gegenwart" feminine | mkN "Geschenk" "Geschenke" neuter ; -- split: current time / gift
 lin present_V2 = mkV2 (mkV "präsentieren") ;
@@ -51462,7 +51449,6 @@ lin sevenfold_Adv = mkAdv "siebenfach" ; -- status=guess
 lin sevenoaks_PN = mkPN "Sevenoaks" ; -- src=geonames status=guess
 lin sever_V = prefixV "ab" (regV "trennen") ; -- status=guess, src=wikt
 lin sever_V2 = mkV2 (prefixV "ab" (regV "trennen")) ; -- status=guess, src=wikt
-lin several_A = variants {} ;
 lin several_Det = M.detLikeAdj False M.Pl "mehrer" ;
 lin several_Num = variants {} ;
 lin severally_Adv = adjAdv several_A ; -- derived

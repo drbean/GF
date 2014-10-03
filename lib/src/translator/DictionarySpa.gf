@@ -10214,15 +10214,13 @@ lin harbour_V = mkV "cobijar" ; -- status=guess, src=wikt
 lin harbour_V2 = mkV2 (mkV "cobijar") ; -- status=guess, src=wikt
 lin hard_1_A = mkA "duro" ;
 lin hard_2_A = mkA "difícil" | mkA "arduo" ;
-lin hard_A = mkA "duro" | mkA "fuerte" ;
-lin hard_Adv = mkAdv "arduamente" ;
 lin hardback_N = mkN "tapa dura" ; -- status=guess
 lin hardcover_N = mkN "tapa dura" ; -- status=guess
 lin harden_V = endurecer_V ; -- status=guess, src=wikt
 lin harden_V2 = mkV2 (endurecer_V) ; -- status=guess, src=wikt
 lin hardening_N = mkN "endurecimiento" ; -- status=guess
 lin hardheaded_A = mkA "pragmático" ; -- status=guess
-lin hardly_Adv = mkAdv "apenas" | adjAdv hard_2_A ; -- derived
+lin hardly_AdV = mkAdV "apenas" | adjAdv hard_2_A ; -- derived
 lin hardness_N = mkN "dureza" ; -- status=guess
 lin hardship_N = mkN "sufrimientos" | mkN "apuro" ; -- status=guess
 lin hardware_N = mkN "hardware" masculine ; -- status=guess
@@ -14795,7 +14793,6 @@ lin nijmegen_PN = mkPN "Nimega" ; -- status=guess src=geonames
 lin nil_N = mkN "nada" | mkN "cero" ; -- status=guess status=guess
 lin nimble_A = mkA "ágil" ; -- status=guess
 lin nincompoop_N = mkN "bobo" | mkN "soso" | mkN "sosaina" | mkN "tonto" | mkN "memo" | mkN "panoli" masculine | mkN "lila" | mkN "pavitonto" | mkN "pasmarote" | mkN "bendito" | mkN "majadero" | mkN "papanatas" masculine | mkN "primo" | mkN "Juan Lanas" | mkN "imbécil" masculine | mkN "gilipollas" masculine ; -- status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess status=guess
-lin ninth_A = mkA "noveno" ; -- status=guess status=guess
 lin ninth_N = mkN "noveno" ; -- status=guess
 lin niobium_N = mkN "niobio" ; -- status=guess
 lin nip_V = mkV (mkV "cortar") "de raíz" ; -- status=guess, src=wikt
@@ -19469,9 +19466,8 @@ lin settling_N = mkN "decantación" feminine | mkN "concho" ; -- status=guess st
 lin sevenoaks_PN = mkPN "Sevenoaks" ; -- status=guess src=geonames
 lin sever_V = mkV "cortar" | romper_V ; -- status=guess, src=wikt status=guess, src=wikt
 lin sever_V2 = mkV2 (mkV "cortar") | mkV2 (romper_V) ; -- status=guess, src=wikt status=guess, src=wikt
-lin several_A = variants {} ;
 lin several_Det = mkDeterminer "varios" "varias" Pl False ;
-lin severally_Adv = adjAdv several_A ; -- derived
+lin severally_Adv = variants {};
 lin severe_A = mkA "severo" | mkA "austero" ; -- status=guess
 lin severely_Adv = adjAdv severe_A ; -- -- derived
 lin severity_N = mkN "seriedad" | mkN "severidad" feminine ; -- status=guess status=guess

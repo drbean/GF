@@ -8565,10 +8565,8 @@ lin harass_V2 = mkV2 (mkV "molestare") | mkV2 (mkV "vessare") | mkV2 (mkV "torme
 lin harbin_PN = mkPN "Harbin" ; -- status=guess src=geonames
 lin harbinger_N = mkN "messaggero" | mkN "araldo" ;
 lin harbour_N = L.harbour_N ;
-lin hard_1_A = variants {} ; --
-lin hard_2_A = variants {} ; --
-lin hard_A = mkA "sodo" | mkA "sode" ; -- status=guess status=guess
-lin hard_Adv = variants {} ; --
+lin hard_1_A = mkA "sodo" | mkA "sode"; --
+lin hard_2_A = mkA "sodo" | mkA "sode"; --
 lin hardly_Adv = adjAdv hard_2_A ; -- -- derived
 lin hardness_N = mkN "durezza" ; -- status=guess
 lin hardship_N = mkN "avversità" feminine | mkN "difficoltà" feminine ; -- status=guess status=guess
@@ -12387,7 +12385,6 @@ lin nimbleness_N = mkN "leggerezza" | mkN "agilità" | mkN "scioltezza" ; -- sta
 lin nimbus_N = mkN "nimbo" ; -- status=guess
 lin nincompoop_N = mkN "cretino" | mkN "imbecille" masculine | mkN "stupido" | mkN "idiota" masculine | mkN "coglione" masculine ; -- status=guess status=guess status=guess status=guess status=guess
 lin ninja_N = mkN "ninja" masculine ; -- status=guess
-lin ninth_A = mkA "nono" ;
 lin ninth_N = mkN "nono" ; -- status=guess
 lin niobium_N = mkN "niobio" ; -- status=guess
 lin nip_V = mkV "troncare" ; ----
@@ -16396,9 +16393,8 @@ lin settle_V2 = mkV2 (mkV "calmarsi") ; -- status=guess, src=wikt
 lin settlement_N = mkN "insediamento" ; -- status=guess
 lin settler_N = mkN "digestivo" ; -- status=guess
 lin sevenoaks_PN = mkPN "Sevenoaks" ; -- status=guess src=geonames
-lin several_A = variants {} ;
 lin several_Det = variants {} ; --
-lin severally_Adv = adjAdv several_A ; -- derived
+lin severally_Adv = variants {};
 lin severe_A = mkA "duro" | mkA "severo" | mkA "rigido" ; -- status=guess status=guess status=guess
 lin severely_Adv = adjAdv severe_A ; -- -- derived
 lin severity_N = mkN "severità" feminine ; -- status=guess
