@@ -9,13 +9,8 @@
 
 
 typedef GuString PgfCId;
-extern GU_DECLARE_TYPE(PgfCId, typedef);
 
 typedef GuString PgfToken;
-
-extern GU_DECLARE_TYPE(PgfExn, abstract);
-extern GU_DECLARE_TYPE(PgfParseError, abstract);
-extern GU_DECLARE_TYPE(PgfTypeError, abstract);
 
 typedef struct PgfPGF PgfPGF;
 
@@ -40,7 +35,7 @@ GuString
 pgf_abstract_name(PgfPGF*);
 
 void
-pgf_iter_languages(PgfPGF*, GuMapItor*, GuExn* err);
+pgf_iter_languages(PgfPGF*, GuMapItor* itor, GuExn* err);
 
 PgfConcr*
 pgf_get_language(PgfPGF*, PgfCId lang);
@@ -52,17 +47,17 @@ GuString
 pgf_language_code(PgfConcr* concr);
 
 void
-pgf_iter_categories(PgfPGF* pgf, GuMapItor* fn, GuExn* err);
+pgf_iter_categories(PgfPGF* pgf, GuMapItor* itor, GuExn* err);
 
 PgfCId
 pgf_start_cat(PgfPGF* pgf);
 
 void
-pgf_iter_functions(PgfPGF* pgf, GuMapItor* fn, GuExn* err);
+pgf_iter_functions(PgfPGF* pgf, GuMapItor* itor, GuExn* err);
 
 void
 pgf_iter_functions_by_cat(PgfPGF* pgf, PgfCId catname,
-                          GuMapItor* fn, GuExn* err);
+                          GuMapItor* itor, GuExn* err);
 
 PgfType*
 pgf_function_type(PgfPGF* pgf, PgfCId funname);

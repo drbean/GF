@@ -17,7 +17,9 @@ generateByteCode gr arity eqs =
       b = if arity == 0 || null eqs
             then instrs
             else CHECK_ARGS arity:instrs
-  in reverse bs
+  in case bs of
+       [[FAIL]] -> []         -- in the runtime this is a more efficient variant of [[FAIL]]
+       _        -> reverse bs
   where
     is = push_is (arity-1) arity []
 
@@ -100,8 +102,10 @@ compileFun gr arity st vs (Q (m,id))  h0 bs args =
               is1    = setArgs st args
               diff   = c_arity-n_args
           in if diff <= 0
-               then let h1  = h0 + 2 + n_args
-                    in (h1,bs,PUT_CONSTR (i2i id):is1++[EVAL (HEAP h0) (if arity == 0 then (UpdateCall st st) else (TailCall arity st st))])
+               then if n_args == 0
+                      then (h0,bs,[EVAL (GLOBAL (i2i id)) (if arity == 0 then (UpdateCall st st) else (TailCall arity st st))])
+                      else let h1  = h0 + 2 + n_args
+                           in (h1,bs,PUT_CONSTR (i2i id):is1++[EVAL (HEAP h0) (if arity == 0 then (UpdateCall st st) else (TailCall arity st st))])
                else let h1  = h0 + 1 + n_args
                         is2 = [SET (FREE_VAR i) | i <- [0..n_args-1]] ++ [SET (ARG_VAR (i+1)) | i <- [0..diff-1]]
                         b   = CHECK_ARGS diff : ALLOC (c_arity+2) : PUT_CONSTR (i2i id) : is2 ++ [EVAL (HEAP h0) (TailCall diff (diff+1) (diff+1))]
@@ -130,17 +134,17 @@ compileFun gr arity st vs (Let (x, (_, e1)) e2) h0 bs args =
 compileFun gr arity st vs e _ _ _ = error (show e)
 
 compileArg gr st vs (Q(m,id)) h0 bs =
-  let h1 = h0 + 2
-  in case lookupAbsDef gr m id of
-       Ok (_,Just _) -> (h1,bs,GLOBAL (i2i id),[])
-       _             -> let Ok ty = lookupFunType gr m id
-                            (ctxt,_,_) = typeForm ty
-                            c_arity    = length ctxt
-                        in if c_arity == 0
-                             then (h1,bs,HEAP h0,[PUT_CONSTR (i2i id)])
-                             else let is2 = [SET (ARG_VAR (i+1)) | i <- [0..c_arity-1]]
-                                      b   = CHECK_ARGS c_arity : ALLOC (c_arity+2) : PUT_CONSTR (i2i id) : is2 ++ [EVAL (HEAP h0) (TailCall c_arity (c_arity+1) (c_arity+1))]
-                                  in (h1,b:bs,HEAP h0,[PUT_CLOSURE (length bs),SET_PAD])
+  case lookupAbsDef gr m id of
+    Ok (_,Just _) -> (h0,bs,GLOBAL (i2i id),[])
+    _             -> let Ok ty = lookupFunType gr m id
+                         (ctxt,_,_) = typeForm ty
+                         c_arity    = length ctxt
+                     in if c_arity == 0
+                          then (h0,bs,GLOBAL (i2i id),[])
+                          else let is2 = [SET (ARG_VAR (i+1)) | i <- [0..c_arity-1]]
+                                   b   = CHECK_ARGS c_arity : ALLOC (c_arity+2) : PUT_CONSTR (i2i id) : is2 ++ [EVAL (HEAP h0) (TailCall c_arity (c_arity+1) (c_arity+1))]
+                                   h1  = h0 + 2
+                               in (h1,b:bs,HEAP h0,[PUT_CLOSURE (length bs),SET_PAD])
 compileArg gr st vs (QC qid)    h0 bs =
   compileArg gr st vs (Q qid) h0 bs
 compileArg gr st vs (Vr x)      h0 bs =

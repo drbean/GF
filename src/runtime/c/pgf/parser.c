@@ -13,7 +13,6 @@
 //#define PGF_RESULT_DEBUG
 
 typedef GuBuf PgfItemBuf;
-static GU_DEFINE_TYPE(PgfItemBuf, abstract, _);
 
 typedef struct PgfParseState PgfParseState;
 
@@ -26,20 +25,9 @@ struct PgfItemConts {
 	int ref_count;			// how many items point to this cont?
 };
 
-static GU_DEFINE_TYPE(PgfItemConts, abstract, _);
-
 typedef GuSeq PgfItemContss;
-static GU_DEFINE_TYPE(PgfItemContss, abstract);
-
 typedef GuMap PgfContsMap;
-static GU_DEFINE_TYPE(PgfContsMap, GuMap,
-                      gu_type(PgfCCat), NULL,
-                      gu_ptr_type(PgfItemContss), &gu_null_struct);
-
 typedef GuMap PgfGenCatMap;
-static GU_DEFINE_TYPE(PgfGenCatMap, GuMap,
-		              gu_type(PgfItemConts), NULL,
-		              gu_ptr_type(PgfCCat), &gu_null_struct);
 
 typedef GuBuf PgfCCatBuf;
 
@@ -149,6 +137,8 @@ pgf_prev_extern_sym(PgfSymbol sym)
 	case PGF_SYMBOL_BIND:
 	case PGF_SYMBOL_SOFT_BIND:
 		return *((PgfSymbol*) (((PgfSymbolBIND*) i.data)+1));
+	case PGF_SYMBOL_CAPIT:
+		return *((PgfSymbol*) (((PgfSymbolCAPIT*) i.data)+1));
 	case PGF_SYMBOL_NE:
 		return *((PgfSymbol*) (((PgfSymbolNE*) i.data)+1));
 	default:
@@ -1045,7 +1035,7 @@ pgf_parsing_complete(PgfParsing* ps, PgfItem* item, PgfExprProb *ep)
 #ifdef PGF_PARSER_DEBUG
     GuPool* tmp_pool = gu_new_pool();
     GuOut* out = gu_file_out(stderr, tmp_pool);
-    GuExn* err = gu_exn(NULL, type, tmp_pool);
+    GuExn* err = gu_exn(tmp_pool);
     if (tmp_ccat == NULL) {
 	    gu_printf(out, err, "[");
 		pgf_print_range(item->conts->state, ps->before, out, err);
@@ -1157,6 +1147,9 @@ pgf_symbols_cmp(GuString* psent, size_t sent_len, BIND_TYPE* pbind, PgfSymbols* 
 		}
 		case PGF_SYMBOL_SOFT_BIND: {
 			*pbind = BIND_SOFT;
+			break;
+		}
+		case PGF_SYMBOL_CAPIT: {
 			break;
 		}
 		case PGF_SYMBOL_NE: {
@@ -1293,8 +1286,8 @@ pgf_new_parse_state(PgfParsing* ps, size_t start_offset, BIND_TYPE bind_type)
 	state->next = *pstate;
     state->agenda = gu_new_buf(PgfItem*, ps->pool);
     state->meta_item = NULL;
-	state->generated_cats = gu_map_type_new(PgfGenCatMap, ps->pool);
-	state->conts_map = gu_map_type_new(PgfContsMap, ps->pool);
+	state->generated_cats = gu_new_addr_map(PgfItemConts*, PgfCCat*, &gu_null_struct, ps->pool);
+	state->conts_map = gu_new_addr_map(PgfCCat*, PgfItemContss*, &gu_null_struct, ps->pool);
 	state->needs_bind = (bind_type == BIND_NONE) &&
 	                    (start_offset == end_offset);
 	state->start_offset = start_offset;
@@ -1482,54 +1475,48 @@ pgf_parsing_meta_scan(PgfParsing* ps,
 	gu_buf_heap_push(ps->before->agenda, pgf_item_prob_order, &item);
 }
 
-typedef struct {
-	GuMapItor fn;
-	PgfParsing* ps;
-	PgfItem* meta_item;
-} PgfMetaPredictFn;
-
 static void
-pgf_parsing_meta_predict(GuMapItor* fn, const void* key, void* value, GuExn* err)
+pgf_parsing_meta_predict(PgfParsing* ps, PgfItem* meta_item)
 {
-	(void) (err);
+	PgfAbsCats* cats = ps->concr->abstr->cats;
+	size_t n_cats = gu_seq_length(cats);
 	
-	PgfAbsCat* abscat = *((PgfAbsCat**) value);
-    PgfMetaPredictFn* clo = (PgfMetaPredictFn*) fn;
-    PgfParsing* ps = clo->ps;
-    PgfItem* meta_item  = clo->meta_item;
-
-	if (abscat->prob == INFINITY)
-		return;
-
-    PgfCncCat* cnccat =
-		gu_map_get(ps->concr->cnccats, abscat->name, PgfCncCat*);
-	if (cnccat == NULL)
-		return;
-
-	size_t n_cats = gu_seq_length(cnccat->cats);
 	for (size_t i = 0; i < n_cats; i++) {
-		PgfCCat* ccat = gu_seq_get(cnccat->cats, PgfCCat*, i);
-		if (ccat->prods == NULL) {
-			// empty category
+		PgfAbsCat* abscat = gu_seq_index(cats, PgfAbsCat, i);
+
+		if (abscat->prob == INFINITY)
 			continue;
-		}
 
-		for (size_t lin_idx = 0; lin_idx < cnccat->n_lins; lin_idx++) {
-			PgfItem* item = 
-				pgf_item_copy(meta_item, ps);
-			item->inside_prob +=
-				ccat->viterbi_prob+abscat->prob;
+		PgfCncCat* cnccat =
+			gu_map_get(ps->concr->cnccats, abscat->name, PgfCncCat*);
+		if (cnccat == NULL)
+			continue;
 
-			size_t nargs = gu_seq_length(meta_item->args);
-			item->args = gu_new_seq(PgfPArg, nargs+1, ps->pool);
-			memcpy(gu_seq_data(item->args), gu_seq_data(meta_item->args),
-			       nargs * sizeof(PgfPArg));
-			gu_seq_set(item->args, PgfPArg, nargs,
-			           ((PgfPArg) { .hypos = NULL, .ccat = ccat }));
+		size_t n_cats = gu_seq_length(cnccat->cats);
+		for (size_t i = 0; i < n_cats; i++) {
+			PgfCCat* ccat = gu_seq_get(cnccat->cats, PgfCCat*, i);
+			if (ccat->prods == NULL) {
+				// empty category
+				continue;
+			}
 
-			pgf_add_extern_cat(&item->curr_sym, nargs, lin_idx, ps->pool);
+			for (size_t lin_idx = 0; lin_idx < cnccat->n_lins; lin_idx++) {
+				PgfItem* item = 
+					pgf_item_copy(meta_item, ps);
+				item->inside_prob +=
+					ccat->viterbi_prob+abscat->prob;
 
-			gu_buf_heap_push(ps->before->agenda, pgf_item_prob_order, &item);
+				size_t nargs = gu_seq_length(meta_item->args);
+				item->args = gu_new_seq(PgfPArg, nargs+1, ps->pool);
+				memcpy(gu_seq_data(item->args), gu_seq_data(meta_item->args),
+					   nargs * sizeof(PgfPArg));
+				gu_seq_set(item->args, PgfPArg, nargs,
+						   ((PgfPArg) { .hypos = NULL, .ccat = ccat }));
+
+				pgf_add_extern_cat(&item->curr_sym, nargs, lin_idx, ps->pool);
+
+				gu_buf_heap_push(ps->before->agenda, pgf_item_prob_order, &item);
+			}
 		}
 	}
 }
@@ -1737,6 +1724,9 @@ pgf_parsing_symbol(PgfParsing* ps, PgfItem* item, PgfSymbol sym)
 		}
 		break;
 	}
+	case PGF_SYMBOL_CAPIT: {
+		break;
+	}
 	default:
 		gu_impossible();
 	}
@@ -1748,7 +1738,7 @@ pgf_parsing_item(PgfParsing* ps, PgfItem* item)
 #ifdef PGF_PARSER_DEBUG
     GuPool* tmp_pool = gu_new_pool();
     GuOut* out = gu_file_out(stderr, tmp_pool);
-    GuExn* err = gu_exn(NULL, type, tmp_pool);
+    GuExn* err = gu_exn(tmp_pool);
     pgf_print_item(item, ps->before, out, err, tmp_pool);
     gu_pool_free(tmp_pool);
 #endif
@@ -1833,8 +1823,7 @@ pgf_parsing_item(PgfParsing* ps, PgfItem* item)
 					pgf_parsing_meta_scan(ps, item, meta_token_prob);
 				}
 
-				PgfMetaPredictFn clo = { { pgf_parsing_meta_predict }, ps, item };
-				gu_map_iter(ps->concr->abstr->cats, &clo.fn, NULL);
+				pgf_parsing_meta_predict(ps, item);
 			}
 		} else {
 			pgf_parsing_symbol(ps, item, item->curr_sym);
@@ -1849,28 +1838,28 @@ pgf_parsing_item(PgfParsing* ps, PgfItem* item)
 static void
 pgf_parsing_set_default_factors(PgfParsing* ps, PgfAbstr* abstr)
 {
-	PgfLiteral lit;
+	PgfFlag* flag;
 	
-	lit =
-		gu_map_get(abstr->aflags, "heuristic_search_factor", PgfLiteral);
-	if (!gu_variant_is_null(lit)) {
-		GuVariantInfo pi = gu_variant_open(lit);
+	flag =
+		gu_seq_binsearch(abstr->aflags, pgf_flag_order, PgfFlag, "heuristic_search_factor");
+	if (flag != NULL) {
+		GuVariantInfo pi = gu_variant_open(flag->value);
 		gu_assert (pi.tag == PGF_LITERAL_FLT);
 		ps->heuristic_factor = ((PgfLiteralFlt*) pi.data)->val;
 	}
 
-	lit =
-		gu_map_get(abstr->aflags, "meta_prob", PgfLiteral);
-	if (!gu_variant_is_null(lit)) {
-		GuVariantInfo pi = gu_variant_open(lit);
+	flag =
+		gu_seq_binsearch(abstr->aflags, pgf_flag_order, PgfFlag, "meta_prob");
+	if (flag != NULL) {
+		GuVariantInfo pi = gu_variant_open(flag->value);
 		gu_assert (pi.tag == PGF_LITERAL_FLT);
 		ps->meta_prob = - log(((PgfLiteralFlt*) pi.data)->val);
 	}
 
-	lit =
-		gu_map_get(abstr->aflags, "meta_token_prob", PgfLiteral);
-	if (!gu_variant_is_null(lit)) {
-		GuVariantInfo pi = gu_variant_open(lit);
+	flag =
+		gu_seq_binsearch(abstr->aflags, pgf_flag_order, PgfFlag, "meta_token_prob");
+	if (flag != NULL) {
+		GuVariantInfo pi = gu_variant_open(flag->value);
 		gu_assert (pi.tag == PGF_LITERAL_FLT);
 		ps->meta_token_prob = - log(((PgfLiteralFlt*) pi.data)->val);
 	}
@@ -2237,7 +2226,7 @@ pgf_parse_result_next(PgfParsing* ps)
 		GuPool* tmp_pool = gu_new_pool();
 		GuOut* out = gu_file_out(stderr, tmp_pool);
 		GuWriter* wtr = gu_new_utf8_writer(out, tmp_pool);
-		GuExn* err = gu_exn(NULL, type, tmp_pool);
+		GuExn* err = gu_exn(tmp_pool);
 		pgf_print_expr_state0(st, wtr, err, tmp_pool);
 		gu_pool_free(tmp_pool);
 #endif
@@ -2322,8 +2311,6 @@ pgf_parsing_last_token(PgfParsing* ps, GuPool* pool)
 	tok[end-start] = 0;
 	return tok;
 }
-
-GU_DEFINE_TYPE(PgfParseError, abstract, _);
 
 GuEnum*
 pgf_parse(PgfConcr* concr, PgfCId cat, GuString sentence,

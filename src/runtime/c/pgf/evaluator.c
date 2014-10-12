@@ -72,10 +72,6 @@ repeat:;
 			val->args[i] = args[n_args-i-1];
 		}
 
-		PgfIndirection* indir = (PgfIndirection*) thunk;
-		indir->header.code = state->eval_gates->evaluate_indirection;
-		indir->val         = &val->header;
-
 		res = &val->header;
 		break;
 	}
@@ -83,11 +79,11 @@ repeat:;
 		PgfExprFun* efun = ei.data;
 
 		PgfAbsFun* absfun =
-			gu_map_get(state->pgf->abstract.funs, efun->fun, PgfAbsFun*);
+			gu_seq_binsearch(state->pgf->abstract.funs, pgf_absfun_order, PgfAbsFun, efun->fun);
 		gu_assert(absfun != NULL);
 
-		if (absfun->closure_id > 0) {
-			res = &state->globals[absfun->closure_id-1].header;
+		if (absfun->closure.code != NULL) {
+			res = (PgfClosure*) &absfun->closure;
 
 			if (n_args > 0) {
 				PgfValuePAP* val = gu_new_flex(state->pool, PgfValuePAP, args, n_args);
@@ -105,7 +101,7 @@ repeat:;
 			if (n_args == arity) {
 				PgfValue* val = gu_new_flex(state->pool, PgfValue, args, arity);
 				val->header.code = state->eval_gates->evaluate_value;
-				val->absfun = absfun;
+				val->con = (PgfClosure*) &absfun->closure;
 
 				for (size_t i = 0; i < arity; i++) {
 					val->args[i] = args[--n_args];
@@ -165,10 +161,6 @@ repeat:;
 				
 				lambda->expr = expr;
 			}
-
-			PgfIndirection* indir = (PgfIndirection*) thunk;
-			indir->header.code = state->eval_gates->evaluate_indirection;
-			indir->val = res;
 		}
 		break;
 	}
@@ -189,10 +181,6 @@ repeat:;
 		}
 
 		res = tmp_env->closure;
-
-		PgfIndirection* indir = (PgfIndirection*) thunk;
-		indir->header.code = state->eval_gates->evaluate_indirection;
-		indir->val         = res;
 
 		if (n_args > 0) {
 			PgfValuePAP* val = gu_new_flex(state->pool, PgfValuePAP, args, n_args);
@@ -252,9 +240,10 @@ pgf_value2expr(PgfEvalState* state, int level, PgfClosure* clos, GuPool* pool)
 
 	if (clos->code == state->eval_gates->evaluate_value) {
 		PgfValue* val = (PgfValue*) clos;
+		PgfAbsFun* absfun = gu_container(val->con, PgfAbsFun, closure);
 
-		expr   = val->absfun->ep.expr;
-		n_args = val->absfun->arity;
+		expr   = absfun->ep.expr;
+		n_args = absfun->arity;
 		args   = val->args;
 	} else if (clos->code == state->eval_gates->evaluate_value_gen) {
 		PgfValueGen* val = (PgfValueGen*) clos;
@@ -372,19 +361,21 @@ pgf_value2expr(PgfEvalState* state, int level, PgfClosure* clos, GuPool* pool)
 PgfExpr
 pgf_compute(PgfPGF* pgf, PgfExpr expr, GuExn* err, GuPool* pool, GuPool* out_pool)
 {
-	size_t n_closures = gu_seq_length(pgf->abstract.eval_gates->defrules);
+	size_t n_cafs =
+		(pgf->abstract.eval_gates->cafs == NULL) 
+			? 0 : gu_seq_length(pgf->abstract.eval_gates->cafs);
 
 	PgfEvalState* state = 
-		gu_new_flex(pool, PgfEvalState, globals, n_closures);
+		gu_new_flex(pool, PgfEvalState, cafs, n_cafs);
 	state->pgf   = pgf;
 	state->eval_gates = pgf->abstract.eval_gates;
 	state->pool  = pool;
 	state->err   = err;
 
-	PgfFunction* defrules = gu_seq_data(state->eval_gates->defrules);
-	for (size_t i = 0; i < n_closures; i++) {
-		state->globals[i].header.code = defrules[i];
-		state->globals[i].val = NULL;
+	PgfFunction* cafs = gu_seq_data(state->eval_gates->cafs);
+	for (size_t i = 0; i < n_cafs; i++) {
+		state->cafs[i].header.code = cafs[i];
+		state->cafs[i].val = NULL;
 	}
 
 	PgfExprThunk* thunk =

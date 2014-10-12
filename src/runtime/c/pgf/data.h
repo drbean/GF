@@ -4,18 +4,23 @@
 #include <gu/variant.h>
 #include <gu/map.h>
 #include <gu/string.h>
-#include <gu/type.h>
 #include <gu/seq.h>
 #include <pgf/pgf.h>
 
 typedef struct PgfCCat PgfCCat;
-extern GU_DECLARE_TYPE(PgfCCat, abstract);
 
 typedef GuSeq PgfCCats;
 
-#define PgfCIdMap GuStringMap			 
-typedef PgfCIdMap PgfFlags; // PgfCId -> PgfLiteral
-extern GU_DECLARE_TYPE(PgfFlags, GuMap);
+#define PgfCIdMap GuStringMap
+
+typedef struct {
+	PgfCId name;
+	PgfLiteral value;
+} PgfFlag;
+
+typedef GuSeq PgfFlags;
+
+extern GuOrder pgf_flag_order[1];
 
 // PgfPatt
 
@@ -34,7 +39,7 @@ typedef enum {
 
 typedef	struct {
 	PgfCId ctor;
-	GuLength n_args;
+	size_t n_args;
 	PgfPatt args[];
 } PgfPattApp;
 
@@ -63,11 +68,13 @@ typedef struct {
 
 typedef struct {
 	PgfExpr body;
-	GuLength n_patts;
+	size_t n_patts;
 	PgfPatt patts[];
 } PgfEquation;
 
 typedef GuSeq PgfEquations;
+
+typedef void *PgfFunction;
 
 typedef struct {
 	PgfCId name;
@@ -76,13 +83,20 @@ typedef struct {
 	PgfEquations* defns; // maybe null
 	PgfExprProb ep;
 	void* predicate;
-	size_t closure_id;
+	struct {
+		PgfFunction code;
+		union {
+			size_t caf_offset;
+			PgfFunction* con;
+		};
+	} closure;
 } PgfAbsFun;
 
-extern GU_DECLARE_TYPE(PgfAbsFun, abstract);
+typedef GuSeq PgfAbsFuns;
+
+extern GuOrder pgf_absfun_order[1];
 
 typedef GuMap PgfMetaChildMap;
-extern GU_DECLARE_TYPE(PgfMetaChildMap, GuMap);
 
 typedef struct {
 	PgfCId name;
@@ -93,15 +107,18 @@ typedef struct {
 	void* predicate;
 } PgfAbsCat;
 
-extern GU_DECLARE_TYPE(PgfAbsCat, abstract);
+typedef GuSeq PgfAbsCats;
+
+extern GuOrder pgf_abscat_order[1];
+
 
 typedef struct PgfEvalGates PgfEvalGates;
 
 typedef struct {
 	PgfCId name;
 	PgfFlags* aflags;
-	PgfCIdMap* funs; // |-> PgfAbsFun*
-	PgfCIdMap* cats; // |-> PgfAbsCat*
+	PgfAbsFuns* funs;
+	PgfAbsCats* cats;
 	PgfAbsFun* abs_lin_fun;
 	PgfEvalGates* eval_gates;
 } PgfAbstr;
@@ -122,12 +139,16 @@ typedef enum {
   PGF_INSTR_FAIL        = 14
 } PgfInstruction;
 
+typedef GuSeq PgfConcrs;
+
+extern GuOrder pgf_concr_order[1];
+
 struct PgfPGF {
 	uint16_t major_version;
 	uint16_t minor_version;
 	PgfFlags* gflags;
 	PgfAbstr abstract;
-	PgfCIdMap* concretes; // |-> PgfConcr*
+	PgfConcrs* concretes;
 	GuPool* pool;         // the pool in which the grammar is allocated
 };
 
@@ -144,8 +165,6 @@ typedef struct {
 	 * parameter (or their combination) each tuple element
 	 * represents. */
 } PgfCncCat;
-
-extern GU_DECLARE_TYPE(PgfCncCat, abstract);
 
 typedef GuSeq PgfTokens;
 
@@ -166,18 +185,14 @@ typedef struct {
 typedef struct PgfItemConts PgfItemConts;
 
 typedef PgfCIdMap PgfPrintNames;
-extern GU_DECLARE_TYPE(PgfPrintNames, GuStringMap);
 
 typedef GuStringMap PgfCncFunOverloadMap;
-extern GU_DECLARE_TYPE(PgfCncFunOverloadMap, GuStringMap);
 
 typedef GuMap PgfCncOverloadMap;
-extern GU_DECLARE_TYPE(PgfCncOverloadMap, GuMap);
 
 typedef struct PgfItem PgfItem;
 
 typedef GuMap PgfCallbacksMap;
-extern GU_DECLARE_TYPE(PgfCallbacksMap, GuMap);
 
 typedef GuVariant PgfSymbol;
 
@@ -189,6 +204,7 @@ typedef enum {
 	PGF_SYMBOL_KP,
 	PGF_SYMBOL_BIND,
 	PGF_SYMBOL_SOFT_BIND,
+	PGF_SYMBOL_CAPIT,
 	PGF_SYMBOL_NE
 } PgfSymbolTag;
 
@@ -211,7 +227,7 @@ typedef struct PgfSymbolKP
 	/**< Default form that this symbol takes if none of of the
 	 * variant forms is triggered. */
 
-	GuLength n_forms;
+	size_t n_forms;
 	PgfAlternative forms[]; 
 	/**< Variant forms whose choise depends on the following
 	 * symbol. */
@@ -222,6 +238,9 @@ typedef struct {
 
 typedef struct {
 } PgfSymbolBIND;
+
+typedef struct {
+} PgfSymbolCAPIT;
 
 typedef GuBuf PgfProductionIdx;
 
@@ -236,7 +255,7 @@ typedef struct {
 	PgfAbsFun* absfun;
 	PgfExprProb *ep;
     int funid;
-	GuLength n_lins;
+	size_t n_lins;
 	PgfSequence* lins[];
 } PgfCncFun;
 
@@ -261,7 +280,6 @@ struct PgfConcr {
 	GuFinalizer fin;  // and this is the finalizer in the pool of the whole grammar
 };
 
-extern GU_DECLARE_TYPE(PgfConcr, abstract);
 
 
 // PgfProduction
@@ -306,7 +324,6 @@ typedef struct {
 } PgfProductionMeta;
 
 typedef GuSeq PgfProductionSeq;
-extern GU_DECLARE_TYPE(PgfProductionSeq, abstract);
 
 typedef struct {
 	PgfCCat* ccat;

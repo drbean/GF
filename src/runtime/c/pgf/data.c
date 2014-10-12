@@ -1,5 +1,4 @@
 #include "data.h"
-#include <gu/type.h>
 #include <gu/variant.h>
 #include <gu/assert.h>
 #include <math.h>
@@ -22,38 +21,38 @@ pgf_tokens_equal(PgfTokens* t1, PgfTokens* t2)
 	return true;
 }
 
-GU_DEFINE_TYPE(PgfCId, typedef, gu_type(GuString));
+static int
+pgf_flag_cmp_fn(GuOrder* self, const void* p1, const void* p2)
+{
+	(void) self;
+	return strcmp((GuString) p1, ((PgfFlag*) p2)->name);
+}
 
-#define gu_type__PgfCIdMap gu_type__GuStringMap
-typedef GuType_GuStringMap GuType_PgfCIdMap;
-#define GU_TYPE_INIT_PgfCIdMap GU_TYPE_INIT_GuStringMap
+GuOrder pgf_flag_order[1] = { { pgf_flag_cmp_fn } };
 
-GU_DEFINE_TYPE(PgfCCat, abstract);
+static int
+pgf_abscat_cmp_fn(GuOrder* self, const void* p1, const void* p2)
+{
+	(void) self;
+	return strcmp((GuString) p1, ((PgfAbsCat*) p2)->name);
+}
 
-GU_DEFINE_TYPE(PgfCncCat, abstract);
+GuOrder pgf_abscat_order[1] = { { pgf_abscat_cmp_fn } };
 
-GU_DEFINE_TYPE(PgfDummyVariant, GuVariant);
+static int
+pgf_absfun_cmp_fn(GuOrder* self, const void* p1, const void* p2)
+{
+	(void) self;
+	return strcmp((GuString) p1, ((PgfAbsFun*) p2)->name);
+}
 
-GU_DEFINE_TYPE(PgfFlags, GuStringMap, gu_type(PgfDummyVariant), &gu_null_variant);
+GuOrder pgf_absfun_order[1] = { { pgf_absfun_cmp_fn } };
 
-GU_DEFINE_TYPE(PgfProductionSeq, abstract);
-GU_DEFINE_TYPE(PgfProductionBuf, abstract);
+static int
+pgf_concr_cmp_fn(GuOrder* self, const void* p1, const void* p2)
+{
+	(void) self;
+	return strcmp((GuString) p1, ((PgfConcr*) p2)->name);
+}
 
-GU_DEFINE_TYPE(PgfAbsFun, abstract);
-
-static prob_t inf_prob = INFINITY;
-
-GU_DEFINE_TYPE(prob_t, GuFloating, _);
-
-GU_DEFINE_TYPE(PgfMetaChildMap, GuMap,
-		       gu_type(PgfAbsCat), NULL,
-		       gu_type(prob_t), &inf_prob);
-
-GU_DEFINE_TYPE(PgfAbsCat, abstract);
-
-static GuString empty_string = "";
-
-GU_DEFINE_TYPE(
-	PgfPrintNames, PgfCIdMap, gu_type(GuString), &empty_string);
-
-GU_DEFINE_TYPE(PgfConcr, abstract);
+GuOrder pgf_concr_order[1] = { { pgf_concr_cmp_fn } };
