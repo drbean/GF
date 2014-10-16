@@ -68,11 +68,11 @@ compileEquations gr arity st (i:is) eqs       fl bs = whilePP eqs Map.empty
         (EFloat d) -> CASE_LIT (LFlt d)
 
     compileBranch0 fl bs ((t,n),eqs) =
-      let (bs1,instrs) = compileEquations gr arity (st+n) (push_is st n is) eqs fl bs
+      let (bs1,instrs) = compileEquations gr arity (st+n) (push_is (st+n-1) n is) eqs fl bs
       in (bs1, case_instr t n (length bs1) : instrs)
 
     compileBranch l bs ((t,n),eqs) =
-      let (bs1,instrs) = compileEquations gr arity (st+n) (push_is st n is) eqs fl ((case_instr t n (length bs1) : instrs) : bs)
+      let (bs1,instrs) = compileEquations gr arity (st+n) (push_is (st+n-1) n is) eqs fl ((case_instr t n (length bs1) : instrs) : bs)
       in bs1
 
 mkFail st1 Nothing        = FAIL
@@ -131,6 +131,11 @@ compileFun gr arity st vs (Let (x, (_, e1)) e2) h0 bs args =
   let (h1,bs1,arg,is1) = compileLambda gr st vs [] e1 h0 bs
       (h2,bs2,is2) = compileFun gr arity st ((x,arg):vs) e2 h1 bs1 args
   in (h2,bs2,is1++is2)
+compileFun gr arity st vs (Glue e1 e2) h0 bs args =
+  let (h1,bs1,arg1,is1) = compileArg gr st vs e1 h0 bs
+      (h2,bs2,arg2,is2) = compileArg gr st vs e2 h1 bs1
+      (st1,is3) = pushArgs st [arg2,arg1]
+  in (h2,bs2,is1++is2++is3++[ADD])
 compileFun gr arity st vs e _ _ _ = error (show e)
 
 compileArg gr st vs (Q(m,id)) h0 bs =
@@ -153,10 +158,10 @@ compileArg gr st vs (EInt n)    h0 bs =
   let h1 = h0 + 2
   in (h1,bs,HEAP h0,[PUT_LIT (LInt n)])
 compileArg gr st vs (K s)       h0 bs =
-  let h1 = h0 + 1 + (length s + 4) `div` 4
+  let h1 = h0 + 2
   in (h1,bs,HEAP h0,[PUT_LIT (LStr s)])
 compileArg gr st vs (EFloat d)  h0 bs =
-  let h1 = h0 + 3
+  let h1 = h0 + 2
   in (h1,bs,HEAP h0,[PUT_LIT (LFlt d)])
 compileArg gr st vs (Typed e _) h0 bs =
   compileArg gr st vs e h0 bs
@@ -202,7 +207,7 @@ compileLambda gr st vs xs e           h0 bs =
                                (arity+1)
                                (zip xs (map ARG_VAR  [0..]) ++
                                 zip ys (map FREE_VAR [0..]))
-                               e bs
+                               e (b1:bs)
       b1 = if arity == 0
              then b
              else CHECK_ARGS arity:b
@@ -210,7 +215,7 @@ compileLambda gr st vs xs e           h0 bs =
              then [SET_PAD]
              else map (SET . shiftIVal st . getVar vs) ys
       h1 = h0 + 1 + length is
-  in (h1,b1:bs1,HEAP h0,PUT_CLOSURE (length bs1) : is)
+  in (h1,bs1,HEAP h0,PUT_CLOSURE (length bs) : is)
 
 getVar vs x =
   case lookup x vs of

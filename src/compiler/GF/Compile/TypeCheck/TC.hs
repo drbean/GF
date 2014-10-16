@@ -42,10 +42,11 @@ data AExp =
    | AApp  AExp AExp Val 
    | AAbs  Ident Val AExp 
    | AProd Ident AExp AExp 
--- | AEqs  [([Exp],AExp)] --- not used
+-- -- | AEqs  [([Exp],AExp)] --- not used
    | ARecType [ALabelling]
    | AR    [AAssign]
    | AP    AExp Label Val
+   | AGlue AExp AExp
    | AData Val
   deriving (Eq,Show)
 
@@ -162,6 +163,10 @@ checkExp th tenv@(k,rho,gamma) e ty = do
     P r l -> do (r',cs) <- checkExp th tenv r (VRecType [(l,typ)])
                 return (AP r' l typ,cs)
 
+    Glue x y -> do cs1 <- eqVal k valAbsFloat typ
+                   (x,cs2) <- checkExp th tenv x typ
+                   (y,cs3) <- checkExp th tenv y typ
+                   return (AGlue x y,cs1++cs2++cs3)
     _ -> checkInferExp th tenv e typ
 
 checkInferExp :: Theory -> TCEnv -> Exp -> Val -> Err (AExp, [(Val,Val)])

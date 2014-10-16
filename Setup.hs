@@ -28,7 +28,7 @@ main = defaultMainWithHooks simpleUserHooks{ preBuild  = gfPreBuild
                                            , postInst  = gfPostInst
                                            , preCopy   = const . checkRGLArgs
                                            , postCopy  = gfPostCopy
-                                           , sDistHook = sdistRGL
+                                           , sDistHook = sdistError
                                            }
   where
     gfPreBuild args  = gfPre args . buildDistPref
@@ -164,7 +164,7 @@ copyAll s from to = do
   putStrLn $ "Installing [" ++ s ++ "] " ++ to
   createDirectoryIfMissing True to
   mapM_ (\file -> copyFile (from </> file) (to </> file)) =<< ls from
-
+{-
 sdistRGL pkg mb_lbi hooks flags = do
   paths <- getRGLFiles rgl_src_dir []
   let pkg' = pkg{dataFiles=paths}
@@ -181,6 +181,12 @@ sdistRGL pkg mb_lbi hooks flags = do
                then return (path : paths)
                else return paths
         else getRGLFiles path paths
+-}
+
+-- | Cabal doesn't know how to correctly create the source distribution, so
+-- we print an error message with the correct instructions when someone tries
+-- `cabal sdist`.
+sdistError _ _ _ _ = fail "Error: Use `make sdist` to create the source distribution file"
 
 rgl_src_dir         = "lib" </> "src"
 rgl_dst_dir lbi = buildDir lbi </> "rgl"
