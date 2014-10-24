@@ -13,16 +13,17 @@
 -----------------------------------------------------------------------------
 
 module GF.Infra.Ident (-- ** Identifiers
+              ModuleName(..), moduleNameS,
 	      Ident, ident2utf8, showIdent, prefixIdent,
-	      identS, identC, identV, identA, identAV, identW,
+              -- *** Normal identifiers (returned by the parser)
+	      identS, identC, identW,
+              -- *** Special identifiers for internal use
+              identV, identA, identAV,
 	      argIdent, isArgIdent, getArgIndex,
               varStr, varX, isWildIdent, varIndex,
-              -- ** Raw Identifiers
+              -- *** Raw identifiers
               RawIdent, rawIdentS, rawIdentC, ident2raw, prefixRawIdent,
-              isPrefixOf, showRawIdent{-,
-	      -- ** Refreshing identifiers
-	      IdState, initIdStateN, initIdState,
-	      lookVar, refVar, refVarPlus-}
+              isPrefixOf, showRawIdent
 	     ) where
 
 import qualified Data.ByteString.UTF8 as UTF8
@@ -32,6 +33,15 @@ import qualified Data.ByteString.Char8 as BS(append,isPrefixOf)
 import Data.Char(isDigit)
 import PGF.Internal(Binary(..))
 import GF.Text.Pretty
+
+
+-- | Module names
+newtype ModuleName = MN Ident deriving (Eq,Ord)
+
+moduleNameS = MN . identS
+
+instance Show ModuleName where showsPrec d (MN m) = showsPrec d m
+instance Pretty ModuleName where pp (MN m) = pp m
 
 
 -- | the constructors labelled /INTERNAL/ are
@@ -48,6 +58,8 @@ data Ident =
   deriving (Eq, Ord, Show, Read)
 
 -- | Identifiers are stored as UTF-8-encoded bytestrings.
+-- (It is also possible to use regular Haskell 'String's, with somewhat
+-- reduced performance and increased memory use.)
 newtype RawIdent = Id { rawId2utf8 :: UTF8.ByteString }
   deriving (Eq, Ord, Show, Read)
 
@@ -87,12 +99,7 @@ identS :: String -> Ident
 identS = identC . rawIdentS
 
 identC :: RawIdent -> Ident
-identV :: RawIdent -> Int -> Ident
-identA :: RawIdent -> Int -> Ident
-identAV:: RawIdent -> Int -> Int -> Ident
 identW :: Ident
-(identC, identV, identA, identAV, identW) = 
-    (IC,     IV,     IA,     IAV,     IW)
 
 
 prefixIdent :: String -> Ident -> Ident
@@ -100,6 +107,13 @@ prefixIdent pref = identC . Id . BS.append (pack pref) . ident2utf8
 
 -- normal identifier
 -- ident s = IC s
+
+identV :: RawIdent -> Int -> Ident
+identA :: RawIdent -> Int -> Ident
+identAV:: RawIdent -> Int -> Int -> Ident
+
+(identC, identV, identA, identAV, identW) = 
+    (IC,     IV,     IA,     IAV,     IW)
 
 -- | to mark argument variables
 argIdent :: Int -> Ident -> Int -> Ident

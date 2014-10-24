@@ -9019,6 +9019,7 @@ lin form_V = mkV "formar" ;
 lin form_V2 = mkV2 (mkV "formar") ;
 lin formal_A = mkA "formal" ;
 lin formaldehyde_N = mkN "formaldehído" ; -- status=guess
+lin formalism_N = mkN "formalismo" ;
 lin formalize_V2 = mkV2 (mkV "formalizar") ; -- status=guess, src=wikt
 lin formally_Adv = adjAdv formal_A ; -- -- derived
 lin format_N = mkN "formato" ; -- status=guess
@@ -12142,7 +12143,8 @@ lin jurist_N = mkN "jurista" masculine ; -- status=guess
 lin juror_N = mkN "jurado" ; -- status=guess
 lin jury_N = mkN "jurado" ; -- status=guess
 lin just_A = mkA "casi" | mkA "por poco" ; -- status=guess
-lin just_Adv = mkAdv "por si acaso" | mkAdv "por si las moscas" ;
+lin just_Adv = mkAdv "solamente" | mkAdv "por si acaso" ;
+lin just_AdV = mkAdV "solamente" ;
 lin justice_N = mkN "justicia" | mkN "justedad" | mkN "justeza" ; -- status=guess
 lin justification_N = mkN "justificación" feminine ; -- status=guess
 lin justified_A = variants {} ; --
@@ -20389,8 +20391,8 @@ lin spacious_A = mkA "espacioso" ; -- status=guess
 lin spade_N = mkN "negro" | mkN "mulato" ; -- status=guess status=guess
 lin spadix_N = mkN "espádice" masculine ; -- status=guess
 lin spaghetti_N = mkN "espagueti" masculine ; -- status=guess
-lin spain_PN = mkPN "la Madre Patria" ; -- status=guess src=geonames
-lin spalding_PN = mkPN "Spalding" ; -- status=guess src=geonames
+lin spain_PN = mkPN "España" ;
+lin spalding_PN = mkPN "Spalding" ;
 lin spallation_N = mkN "estallido" | mkN "fragmentación" feminine | mkN "astillado" | mkN "explosión" feminine | mkN "reventón" masculine ; -- status=guess status=guess status=guess status=guess status=guess
 lin spam_N = mkN "correo basura" ; -- status=guess
 lin span_N = mkN "cuarta" | mkN "palmo" ; -- status=guess status=guess

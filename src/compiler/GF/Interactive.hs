@@ -153,7 +153,7 @@ execute1 opts gfenv0 s0 =
     continue = return . Just
     stop = return Nothing
     env = commandenv gfenv0
-    sgr = sourcegrammar gfenv0
+    sgr = grammar gfenv0
     gfenv = gfenv0 {history = s0 : history gfenv0}
     pwords s = case words s of
                  w:ws -> getCommandOp w :ws
@@ -238,7 +238,7 @@ execute1 opts gfenv0 s0 =
       let (os,ts) = partition (isPrefixOf "-") ws
       let strip = if elem "-strip" os then stripSourceGrammar else id
       let mygr = strip $ case ts of
-            _:_ -> mGrammar [(i,m) | (i,m) <- modules sgr, elem (showIdent i) ts] 
+            _:_ -> mGrammar [(i,m) | (i,m) <- modules sgr, elem (render i) ts]
             [] -> sgr
       case 0 of
         _ | elem "-detailedsize" os -> putStrLn (printSizesGrammar mygr)
@@ -246,9 +246,9 @@ execute1 opts gfenv0 s0 =
                let sz = sizesGrammar mygr
                putStrLn $ unlines $
                  ("total\t" ++ show (fst sz)): 
-                 [showIdent j ++ "\t" ++ show (fst k) | (j,k) <- snd sz]
+                 [render j ++ "\t" ++ show (fst k) | (j,k) <- snd sz]
         _ | elem "-save" os -> mapM_ 
-                 (\ m@(i,_) -> let file = (showIdent i ++ ".gfh") in 
+                 (\ m@(i,_) -> let file = (render i ++ ".gfh") in
                     restricted $ writeFile file (render (ppModule Qualified m)) >> P.putStrLn ("wrote " ++ file))
                  (modules mygr)  
         _ -> putStrLn $ render mygr
@@ -280,7 +280,7 @@ execute1 opts gfenv0 s0 =
          continue gfenv'
 
     empty = continue $ gfenv {
-              commandenv=emptyCommandEnv, sourcegrammar = emptySourceGrammar
+              commandenv=emptyCommandEnv, grammar = emptyGrammar
              }
 
     define_command (f:ws) =
@@ -355,8 +355,8 @@ fetchCommand gfenv = do
 importInEnv :: GFEnv -> Options -> [FilePath] -> SIO GFEnv
 importInEnv gfenv opts files
     | flag optRetainResource opts =
-        do src <- importSource (sourcegrammar gfenv) opts files
-           return $ gfenv {sourcegrammar = src}
+        do src <- importSource (grammar gfenv) opts files
+           return $ gfenv {grammar = src}
     | otherwise =
         do let opts' = addOptions (setOptimization OptCSE False) opts
                pgf0 = multigrammar (commandenv gfenv)
@@ -398,14 +398,14 @@ prompt env
     abs = abstractName (multigrammar env)
 
 data GFEnv = GFEnv {
-  sourcegrammar :: SourceGrammar, -- gfo grammar -retain
+  grammar :: Grammar, -- gfo grammar -retain
   commandenv :: CommandEnv,
   history    :: [String]
   }
 
 emptyGFEnv :: GFEnv
 emptyGFEnv =
-  GFEnv emptySourceGrammar (mkCommandEnv emptyPGF) [] {-0-}
+  GFEnv emptyGrammar (mkCommandEnv emptyPGF) [] {-0-}
 
 wordCompletion gfenv (left,right) = do
   case wc_type (reverse left) of

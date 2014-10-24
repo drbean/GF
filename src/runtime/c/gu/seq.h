@@ -3,9 +3,17 @@
 
 #include <gu/mem.h>
 
-typedef struct GuBuf GuBuf;
+typedef struct {
+	size_t len;
+	uint8_t data[0];
+} GuSeq;
 
-typedef struct GuSeq GuSeq;
+typedef struct {
+	GuSeq* seq;
+	size_t elem_size;
+	size_t avail_len;
+	GuFinalizer fin;
+} GuBuf;
 
 GuSeq*
 gu_empty_seq();
@@ -31,12 +39,17 @@ gu_realloc_seq_(GuSeq* seq, size_t elem_size, size_t length);
 void
 gu_seq_free(GuSeq* seq);
 
-size_t
-gu_seq_length(GuSeq* seq);
+inline size_t
+gu_seq_length(GuSeq* seq)
+{
+	return seq->len;
+}
 
-void*
-gu_seq_data(GuSeq* seq);
-
+inline void*
+gu_seq_data(GuSeq* seq)
+{
+	return seq->data;
+}
 
 #define gu_seq_index(SEQ, T, I)			\
 	(&((T*)gu_seq_data(SEQ))[I])
@@ -56,17 +69,29 @@ gu_make_buf(size_t elem_size, GuPool* pool);
 #define gu_new_buf(T, POOL)			\
 	gu_make_buf(sizeof(T), (POOL))
 
-size_t
-gu_buf_length(GuBuf* buf);
+inline size_t
+gu_buf_length(GuBuf* buf)
+{
+	return buf->seq->len;
+}
 
-size_t
-gu_buf_avail(GuBuf* buf);
+inline size_t
+gu_buf_avail(GuBuf* buf)
+{
+	return buf->avail_len;
+}
 
-void*
-gu_buf_data(GuBuf* buf);
+inline void*
+gu_buf_data(GuBuf* buf)
+{
+	return &buf->seq->data;
+}
 
-GuSeq*
-gu_buf_data_seq(GuBuf* buf);
+inline GuSeq*
+gu_buf_data_seq(GuBuf* buf)
+{
+	return buf->seq;
+}
 
 #define gu_buf_index(BUF, T, I)			\
 	(&((T*)gu_buf_data(BUF))[I])
@@ -85,8 +110,11 @@ gu_buf_push_n(GuBuf* buf, const void* elems, size_t n_elems);
 void*
 gu_buf_extend_n(GuBuf* buf, size_t n_elems);
 
-void*
-gu_buf_extend(GuBuf* buf);
+inline void*
+gu_buf_extend(GuBuf* buf)
+{
+	return gu_buf_extend_n(buf, 1);
+}
 
 #define gu_buf_push(BUF, T, VAL)				\
 	GU_BEGIN						\
@@ -99,14 +127,20 @@ gu_buf_pop_n(GuBuf* buf, size_t n_elems, void* data_out);
 const void*
 gu_buf_trim_n(GuBuf* buf, size_t n_elems);
 
-const void*
-gu_buf_trim(GuBuf* buf);
+inline const void*
+gu_buf_trim(GuBuf* buf)
+{
+	return gu_buf_trim_n(buf, 1);
+}
 
 void*
 gu_buf_insert(GuBuf* buf, size_t n_index);
 
-void
-gu_buf_flush(GuBuf* buf);
+inline void
+gu_buf_flush(GuBuf* buf)
+{
+	buf->seq->len = 0;
+}
 
 #define gu_buf_pop(BUF, T)			\
 	(*(T*)gu_buf_trim(BUF))
@@ -151,37 +185,3 @@ GuOut*
 gu_buf_out(GuBuf* buf, GuPool* pool);
 
 #endif
-
-
-#if defined(GU_TYPE_H_) && !defined(GU_SEQ_H_TYPE_)
-#define GU_SEQ_H_TYPE_
-
-extern GU_DECLARE_KIND(GuSeq);
-extern GU_DECLARE_KIND(GuBuf);
-
-struct GuSeqType {
-	GuType_GuOpaque opaque_base;
-	GuType* elem_type;
-};
-
-typedef const struct GuSeqType GuSeqType, GuType_GuSeq;
-
-#define GU_TYPE_INIT_GuSeq(k_, t_, elem_type_) {	   \
-	.opaque_base = GU_TYPE_INIT_GuOpaque(k_, t_, _), \
-	.elem_type = elem_type_,		   	\
-}
-
-typedef struct GuBufType GuBufType, GuType_GuBuf;
-
-struct GuBufType {
-	GuType_abstract abstract_base;
-	GuType* elem_type;
-};
-
-#define GU_TYPE_INIT_GuBuf(KIND, BUF_T, ELEM_T) { \
-	.abstract_base = GU_TYPE_INIT_abstract(KIND, BUF_T, _), \
-	.elem_type = ELEM_T \
-}
-
-#endif 
-
