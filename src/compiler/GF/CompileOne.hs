@@ -24,8 +24,10 @@ import GF.Infra.CheckM(runCheck')
 import GF.Data.Operations(ErrorMonad,liftErr,(+++),done)
 
 import GF.System.Directory(doesFileExist,getCurrentDirectory,renameFile)
+import System.FilePath(makeRelative)
 import qualified Data.Map as Map
 import GF.Text.Pretty(render,(<+>),($$)) --Doc,
+import GF.System.Console(TermColors(..),getTermColors)
 import Control.Monad((<=<))
 
 type OneOutput = (Maybe FullPath,CompiledModule)
@@ -48,14 +50,15 @@ compileOne opts srcgr file =
 -- | Read a compiled GF module.
 -- Also undo common subexp optimization, to enable normal computations.
 reuseGFO opts srcgr file =
-  do sm00 <- putPointE Verbose opts ("+ reading" +++ file) $
+  do cwd <- getCurrentDirectory
+     let rfile = makeRelative cwd file
+     sm00 <- putPointE Verbose opts ("+ reading" +++ rfile) $
              decodeModule file
      let sm0 = (fst sm00,(snd sm00){mflags=mflags (snd sm00) `addOptions` opts})
 
      idump opts Source sm0
 
      let sm1 = unsubexpModule sm0
-     cwd <- getCurrentDirectory
      (sm,warnings) <- -- putPointE Normal opts "creating indirections" $ 
                       runCheck' opts $ extendModule cwd srcgr sm1
      warnOut opts warnings
@@ -71,11 +74,12 @@ reuseGFO opts srcgr file =
 -- stores it in a @.gfo@ file
 -- (or a tags file, if running with the @-tags@ option)
 useTheSource opts srcgr file =
-      do sm <- putpOpt ("- parsing" +++ file)
-                       ("- compiling" +++ file ++ "... ")
+      do cwd <- getCurrentDirectory
+         let rfile = makeRelative cwd file
+         sm <- putpOpt ("- parsing" +++ rfile)
+                       ("- compiling" +++ rfile ++ "... ")
                        (getSourceModule opts file)
          idump opts Source sm
-         cwd <- getCurrentDirectory
          compileSourceModule opts cwd (Just file) srcgr sm
   where
     putpOpt v m act
@@ -85,7 +89,7 @@ useTheSource opts srcgr file =
 
 type CompileSource = Grammar -> Module -> IOE OneOutput
 
---compileSourceModule :: Options -> FilePath -> Maybe FilePath -> CompileSource
+--compileSourceModule :: Options -> InitPath -> Maybe FilePath -> CompileSource
 compileSourceModule opts cwd mb_gfFile gr =
     if flag optTagsOnly opts
     then generateTags <=< ifComplete middle               <=< frontend
@@ -111,7 +115,7 @@ compileSourceModule opts cwd mb_gfFile gr =
 
     generateGFO mo =
       do let mb_gfo = fmap (gf2gfo opts) mb_gfFile
-         maybeM (flip (writeGFO opts) mo) mb_gfo
+         maybeM (flip (writeGFO opts cwd) mo) mb_gfo
          return (mb_gfo,mo)
 
     generateTags mo =
@@ -135,12 +139,13 @@ compileSourceModule opts cwd mb_gfFile gr =
     maybeM f = maybe done f
 
 
---writeGFO :: Options -> FilePath -> SourceModule -> IOE ()
-writeGFO opts file mo =
-    putPointE Normal opts ("  write file" +++ file) $
+--writeGFO :: Options -> InitPath -> FilePath -> SourceModule -> IOE ()
+writeGFO opts cwd file mo =
+    putPointE Normal opts ("  write file" +++ rfile) $
       do encodeModule tmp mo2
          renameFile tmp file
   where
+    rfile = makeRelative cwd file
     tmp = file++".tmp"
     mo2 = (m,mi{jments=Map.filter notAnyInd (jments mi)})
     (m,mi) = subexpModule mo
@@ -157,7 +162,8 @@ idump opts pass = intermOut opts (Dump pass) . ppModule Internal
 
 warnOut opts warnings
   | null warnings = done
-  | otherwise     = do ePutStr "\ESC[34m";ePutStr ws;ePutStrLn "\ESC[m"
+  | otherwise     = do t <- getTermColors
+                       ePutStr (blueFg t);ePutStr ws;ePutStrLn (restore t)
   where
     ws = if flag optVerbosity opts == Normal
          then '\n':warnings
