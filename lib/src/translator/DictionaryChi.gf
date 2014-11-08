@@ -1879,7 +1879,6 @@ lin anorthite_N = mkN "钙长石" ; -- open-multilingual-wordnet
 lin anorthitic_A = mkA "钙长石" ; -- open-multilingual-wordnet
 lin anorthopia_N = mkN "不正视" ; -- open-multilingual-wordnet
 lin anosmia_N = mkN "嗅觉丧失症" | mkN "嗅觉缺失" ; -- open-multilingual-wordnet
-lin another_A = mkA "他" | mkA "再" | mkA "别" ;
 lin another_Det = mkpDet "他" | mkpDet "再" | mkpDet "别" | {-HSK-} mkpDet "其他" ;
 lin another_Quant = mkQuant "另一" ;
 lin anovulation_N = mkN "停止排卵" | mkN "排卵停止" | mkN "排卵抑制" ; -- open-multilingual-wordnet
@@ -12472,21 +12471,14 @@ lin fauvism_N = mkN "野獸派" | mkN "野兽派" ; -- status=guess -- status=gu
 lin faux_pas_N = mkN "出丑" | mkN "失态" | mkN "失礼" ; -- open-multilingual-wordnet
 lin faversham_PN = foreignPN "Faversham" ; -- comment=src=geonames status=guess
 lin favism_N = mkN "蚕豆病" | mkN "豆类中毒" ; -- open-multilingual-wordnet
-lin favor_N = mkN "恩惠" | mkN "好意" | mkN "幫忙" | mkN "帮忙" ; -- status=guess -- status=guess -- status=guess -- status=guess
-lin favor_V = mkV "支持" ;
-lin favor_V2 = mkV2 "促成" ;
-lin favor_VS = mkVS "赞成" ;
-lin favorable_A = mkA "优惠" | mkA "有利" | mkA "良好" ;
-lin favorite_A = mkA "最喜愛" | mkA "最喜爱" ; -- status=guess -- status=guess
-lin favoritism_N = mkN "偏爱" | mkN "偏袒" | mkN "徇私" | mkN "歧视" ; -- open-multilingual-wordnet
-lin favour_N = mkN "赞成" ;
-lin favour_V = variants {} ; -- comment=mkV2 "青睐" ;
-lin favour_V2 = mkV2 "青睐" ;
-lin favour_VS = variants {} ; -- comment=mkV2 "青睐" ;
-lin favourable_A = mkA "有利" ;
+lin favour_N = mkN "赞成" | mkN "恩惠" | mkN "好意" | mkN "幫忙" | mkN "帮忙" ; -- status=guess -- status=guess -- status=guess -- status=guess
+lin favour_V = mkV "支持"; -- comment=mkV2 "青睐" ;
+lin favour_V2 = mkV2 "青睐" | mkV2 "促成";
+lin favour_VS = mkVS "赞成" ;
+lin favourable_A = mkA "有利" | mkA "优惠" | mkA "良好" ;
 lin favouriteFem_N = mkN "最爱" [] ;
 lin favouriteMasc_N = mkN "最爱" [] ;
-lin favourite_A = mkA "特别喜爱" ;
+lin favourite_A = mkA "特别喜爱" | mkA "最喜愛" | mkA "最喜爱" ; -- status=guess -- status=guess
 lin favouritism_N = mkN "偏爱" | mkN "偏袒" | mkN "徇私" | mkN "歧视" ; -- open-multilingual-wordnet
 lin favus_N = mkN "头部鳞癣" | mkN "毛囊癣" | mkN "瘌痢" | mkN "黄癣" ; -- open-multilingual-wordnet
 lin fawley_PN = foreignPN "Fawley" ; -- comment=src=eng status=guess
@@ -25232,9 +25224,9 @@ lin progeria_N = mkN "早老" | mkN "早衰" ; -- open-multilingual-wordnet
 lin progestin_N = mkN "妊娠素" | mkN "孕激素" | mkN "孕酮" | mkN "黄体酮" ; -- open-multilingual-wordnet
 lin prognosis_N = mkN "预测" ;
 lin prognostication_N = mkN "预测""次" ;
-lin program_N = mkN "节目" | {-HSK-} mkN "节目" "臺" | mkN "计划" "個" ;
+lin program_N = mkN "程序" | mkN "节目" | {-HSK-} mkN "节目" "臺" | mkN "计划" "個" ; ---- split: computer program ; TV program
 lin program_V2 = mkV2 "编程" ;
-lin program_V2V = mkV2V "使+被程序指令" ;
+lin program_V2V = mkV2V "程序指令" ;
 lin programmable_A = mkA "可編程" | mkA "可编程" ; -- status=guess -- status=guess
 lin programme_N = mkN "节目" "个" ;
 lin programme_V2 = mkV2 "编程" ;
@@ -32607,8 +32599,8 @@ lin transitional_A = mkA "过渡期" ;
 lin transitive_A = mkA "及物" ;
 lin transitory_A = mkA "短暂" ;
 lin translatable_A = mkA "可译" | mkA "可转移" ; -- open-multilingual-wordnet
-lin translate_V = mkV "翻" | mkV "翻译" ;
-lin translate_V2 = mkV2 "翻" | mkV2 "翻译" ;
+lin translate_V = mkV "翻译" ; -- | mkV "翻" ; 
+lin translate_V2 = mkV2 "翻译" ; -- | mkV2 "翻" ; 
 lin translation_N = mkN "翻译" | {-HSK-} mkN "翻译" "個" ;
 lin translator_N = mkN "翻译" | {-HSK-} mkN "翻译" "個" ;
 lin transliterate_V2 = mkV2 (mkV "轉寫") | mkV2 (mkV "转写") | mkV2 (mkV "音譯") | mkV2 (mkV "音译") ; -- status=guess, src=wikt -- status=guess, src=wikt -- status=guess, src=wikt -- status=guess, src=wikt
@@ -32865,7 +32857,7 @@ lin try_N = mkN "尝试" ;
 lin try_V = mkV "试" | {-HSK-} mkV "试图" ;
 lin try_V2 = mkV2 "尝试" | {-HSK-} mkV2 "试" ;
 lin try_VS = mkVS "尝试" ;
-lin try_VV = mkVV "试" | {-HSK-} mkVV "试图" ;
+lin try_VV = mkVV "试着" | {-HSK-} mkVV "试图" ;
 lin try_out_V = mkV "化验" | mkV "检验" | mkV "测试" | mkV "试验" ; -- open-multilingual-wordnet
 lin try_out_V2 = mkV2 "尝试" ;
 lin tryst_N = mkN "幽會" | mkN "幽会" | {-mwn-} mkN "约会" ; -- status=guess -- status=guess -- open-multilingual-wordnet
@@ -35099,7 +35091,7 @@ lin wistful_A = mkA "渴望" ;
 lin wit_N = mkN "智力" ;
 lin witch_N = mkN "女巫" ;
 lin witchcraft_N = mkN "魔法" ;
-lin with_Prep = S.with_Prep ;
+lin with_Prep = mkPrep "用" | mkPrep "和" "一起" ; ---- split: with chopsticks ; with you ; with meat ; 
 lin with_regard_to_Prep = mkPrep "关于" ;
 lin with_respect_to_Prep = mkPrep "关于" ;
 lin witham_PN = foreignPN "Witham" ; -- comment=src=geonames status=guess
