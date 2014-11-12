@@ -12,8 +12,9 @@
 -- (Description of the module)
 -----------------------------------------------------------------------------
 
-module GF.Infra.UseIO(module GF.Infra.UseIO,
-                      -- ** Reused
+module GF.Infra.UseIO(-- ** Files and IO
+                      module GF.Infra.UseIO,
+                      -- *** Reused
                       MonadIO(..),liftErr) where
 
 import Prelude hiding (catch)
@@ -40,7 +41,7 @@ import Control.Exception(evaluate)
 --putIfVerb :: MonadIO io => Options -> String -> io ()
 putIfVerb opts msg = when (verbAtLeast opts Verbose) $ putStrLnE msg
 
--- ** GF files path and library path manipulation
+-- *** GF files path and library path manipulation
 
 type FileName = String
 type InitPath = String -- ^ the directory portion of a pathname
@@ -123,19 +124,21 @@ splitInModuleSearchPath s = case break isPathSep s of
 
 --
 
--- ** IO monad with error; adapted from state monad
+-- *** Error handling in the IO monad
 
 -- | Was: @newtype IOE a = IOE { appIOE :: IO (Err a) }@
 type IOE a = IO a
 
-ioe :: IO (Err a) -> IOE a
-ioe io = err fail return =<< io
+--ioe :: IO (Err a) -> IOE a
+--ioe io = err fail return =<< io
 
-appIOE :: IOE a -> IO (Err a)
-appIOE ioe = handle (fmap Ok ioe) (return . Bad)
+-- | Catch exceptions caused by calls to 'raise' or 'fail' in the 'IO' monad.
+-- To catch all 'IO' exceptions, use 'try' instead.
+tryIOE :: IOE a -> IO (Err a)
+tryIOE ioe = handle (fmap Ok ioe) (return . Bad)
 
-runIOE :: IOE a -> IO a
-runIOE = id
+--runIOE :: IOE a -> IO a
+--runIOE = id
 
 -- instance MonadIO IOE where liftIO io = ioe (io >>= return . return)
 
@@ -159,6 +162,8 @@ instance  Monad IOE where
                   appIOE $ err raise f x         -- f :: a -> IOE a
   fail = raise
 -}
+
+-- | Print the error message and return a default value if the IO operation 'fail's
 useIOE :: a -> IOE a -> IO a
 useIOE a ioe = handle ioe (\s -> putStrLn s >> return a)
 
@@ -177,7 +182,7 @@ die :: String -> IO a
 die s = do hPutStrLn stderr s
            exitFailure
 
--- ** Diagnostic output
+-- *** Diagnostic output
 
 class Monad m => Output m where
   ePutStr, ePutStrLn, putStrE, putStrLnE :: String -> m ()
@@ -215,7 +220,7 @@ ioErrorText e = if isUserError e
                 then ioeGetErrorString e
                 else show e
 
--- ** Timing
+-- *** Timing
 
 timeIt act =
   do t1 <- liftIO $ getCPUTime
@@ -223,7 +228,7 @@ timeIt act =
      t2 <- liftIO $ getCPUTime
      return (t2-t1,a)
 
--- ** File IO
+-- *** File IO
 
 writeUTF8File :: FilePath -> String -> IO ()
 writeUTF8File fpath content =
