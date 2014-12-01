@@ -1,10 +1,14 @@
 --# -path=.:../romance:../abstract:../common:prelude
 
-instance DiffIta of DiffRomance = open CommonRomance, PhonoIta, BeschIta, Prelude in {
+instance DiffIta of DiffRomance - [contractInf] = open CommonRomance, PhonoIta, BeschIta, Prelude in {
 
   flags optimize=all ;
     coding=utf8 ;
+------
+-- exception to interface
+  oper contractInf : Bool -> Bool -> Bool = orB ; -- Ita has special contracted inf forms with clitics
 
+------
   param 
     Prepos = P_di | P_a | P_da | P_in | P_su | P_con ;
     VType = VHabere | VEsse | VRefl ;
@@ -84,14 +88,14 @@ instance DiffIta of DiffRomance = open CommonRomance, PhonoIta, BeschIta, Prelud
       _ => copula.s
       } ;
 
-    partAgr : VType -> VPAgr = \vtyp -> case vtyp of {
-      VHabere => vpAgrNone ;
-      _ => VPAgrSubj
-      } ;
-
     vpAgrClit : Agr -> VPAgr = \a0 ->
       let a = complAgr a0 in
       VPAgrClit a.g a.n ;
+
+    partAgr : VType -> Bool = \vtyp -> case vtyp of { -- works for all except Spa
+      VHabere => False ;
+      _ => True
+      } ;
 
     pronArg = \n,p,acc,dat ->
       let 

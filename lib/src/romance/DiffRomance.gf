@@ -25,7 +25,7 @@ interface DiffRomance = open CommonRomance, Prelude in {
 -- Derivatively, if/when the participle agrees to the subject.
 -- (Fre "elle est partie", Ita "lei è partita", Spa not)
 
-  oper partAgr   : VType -> VPAgr ;
+  oper partAgr   : VType -> Bool ;
 
 -- Whether participle agrees to foregoing clitic.
 -- (Fre "je l'ai vue", Spa "yo la he visto")
@@ -105,9 +105,16 @@ param
 oper
   Verb = {s : VF => Str ; vtyp : VType ; p : Str} ;
 
+  VPAgrType : Type              = Str * Bool ;                                                  ---- originally VPAgr, expensive
+  getVPAgr  : Verb -> VPAgrType = \v -> <verbDefaultPart v, partAgr v.vtyp> ;          -- str may be used
+  vpAgrSubj : Verb -> VPAgrType = \v -> <verbDefaultPart v, True> ;                  -- str not used but subject instead    ---- VPAgrSubj
+  vpAgrClits : Verb -> AAgr -> VPAgrType = \v,a -> <v.s ! (VPart a.g a.n), False> ;    -- str used from clitic             ---- vpAgrClit 
+  verbDefaultPart : Verb -> Str = \v -> v.s ! (VPart Masc Sg) ;
+
+
   VP : Type = {
     s      : Verb ;
-    agr    : VPAgr ;                    -- dit/dite dep. on verb, subj, and clitic
+    agr    : VPAgrType ;                -- dit/dite dep. on verb, subj, and clitic
     neg    : RPolarity => (Str * Str) ; -- ne-pas
     clit1  : Str ;                      -- le/se
     clit2  : Str ;                      -- lui
@@ -145,8 +152,12 @@ oper
 -- inverted clause order, only deviant in Fre where also the intervening -t- has to be taken to account
 
   invertedClause : 
-    VType -> (RTense * Anteriority * Number * Person) -> Bool -> (Str * Str) -> (clit,fin,inf,compl,subj,ext : Str) -> Str =
-    \_,_,_,neg,clit,fin,inf,compl,subj,ext -> neg.p1 ++ clit ++ fin ++ neg.p2 ++ inf ++ compl ++ subj ++ ext ;
+    VType -> (RTense * Anteriority * Number * Person) -> Bool -> (Str * Str) -> Str -> (clit,fin,inf,compl,subj,ext : Str) -> Str =
+    \_,_,_,neg,_,clit,fin,inf,compl,subj,ext -> neg.p1 ++ clit ++ fin ++ neg.p2 ++ inf ++ compl ++ subj ++ ext ;
+
+  verbHyphen : Verb -> Str = \v -> [] ; -- in Fre, - or -t-
+
+  contractInf : Bool -> Bool -> Bool = \_,_ -> False ; -- only True in Ita, by orB
 
 }
 

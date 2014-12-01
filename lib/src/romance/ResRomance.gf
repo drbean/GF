@@ -82,7 +82,7 @@ oper
       typ = verb.vtyp ;
     in {
       s      = verb ;
-      agr    = partAgr typ ;
+      agr    = getVPAgr verb ;
       neg    = negation ;
       clit1  = [] ;
       clit2  = [] ;
@@ -98,7 +98,7 @@ oper
     in {
       s   = vp.s ;
       agr = case <np.hasClit, c.isDir, c.c> of {
-        <True,True,Acc> => vpAgrClit np.a ;
+        <True,True,Acc> => vpAgrClits vp.s np.a ;
         _   => vp.agr -- must be dat
         } ;
       clit1 = vp.clit1 ++ obj.c1 ;
@@ -126,40 +126,18 @@ oper
 -- Agreement with preceding relative or interrogative: 
 -- "les femmes que j'ai aimées"
 
-  insertAgr : AAgr -> VP -> VP = \ag,vp -> { 
-    s     = vp.s ;
-    agr   = vpAgrClit (agrP3 ag.g ag.n) ;
-    clit1 = vp.clit1 ; 
-    clit2 = vp.clit2 ; 
-    clit3 = vp.clit3 ;
-    isNeg = vp.isNeg ; 
-    neg   = vp.neg ;
-    comp  = vp.comp ;
-    ext   = vp.ext ;
+  insertAgr : AAgr -> VP -> VP = \ag,vp -> vp ** { 
+    agr   = vpAgrClits vp.s ag ;
     } ;
 
-  insertRefl : VP -> VP = \vp -> { 
+  insertRefl : VP -> VP = \vp -> vp ** { 
     s     = vp.s ** {vtyp = vRefl vp.s.vtyp} ;
-    agr   = VPAgrSubj ;
-    clit1 = vp.clit1 ; 
-    clit2 = vp.clit2 ; 
-    clit3 = vp.clit3 ; 
-    isNeg = vp.isNeg ; 
-    neg   = vp.neg ;
-    comp  = vp.comp ;
-    ext   = vp.ext ;
+    agr   = vpAgrSubj vp.s ;
     } ;
 
-  insertAdv : Str -> VP -> VP = \co,vp -> { 
-    s     = vp.s ;
-    agr   = vp.agr ;
-    clit1 = vp.clit1 ; 
-    clit2 = vp.clit2 ; 
-    clit3 = vp.clit3 ;
+  insertAdv : Str -> VP -> VP = \co,vp -> vp ** { 
     isNeg = vp.isNeg ; --- adv could be neg 
-    neg   = vp.neg ;
     comp  = \\a => vp.comp ! a ++ co ;
-    ext   = vp.ext ;
     } ;
 
   insertAdV : Str -> VP -> VP = \co,vp -> { 
@@ -242,10 +220,16 @@ oper
           verb = vp.s.s ;
           vaux = auxVerb vp.s.vtyp ;
 
-          part = case vp.agr of {
-            VPAgrSubj     => verb ! VPart agr.g agr.n ;
-            VPAgrClit g n => verb ! VPart g n  
+---- VPAgr : this is where it really matters
+          part = case vp.agr.p2 of {
+            False => vp.agr.p1 ;
+            True => verb ! VPart agr.g agr.n
             } ;
+----          part = case vp.agr of {
+----            VPAgrSubj     => verb ! VPart agr.g agr.n ;
+----            VPAgrClit g n => verb ! VPart g n  
+----            } ;
+
 
           vps : Str * Str = case <te,a> of {
             <RPast,Simul> => <verb ! VFin (VImperf m) num per, []> ; --# notpresent
@@ -263,18 +247,20 @@ oper
           fin = vps.p1 ;
           inf = vps.p2 ;
 
+          hypt = verbHyphen vp.s ; -- in French, -t- in some cases, otherwise - ; empty in other langs
+
         in
         case d of {
           DDir => 
             subj ++ neg.p1 ++ clit ++ fin ++ neg.p2 ++ inf ++ compl ++ ext ;
           DInv => 
-            invertedClause vp.s.vtyp <te, a, num, per> hasClit neg clit fin inf compl subj ext
+            invertedClause vp.s.vtyp <te, a, num, per> hasClit neg hypt clit fin inf compl subj ext
           }
     } ;
 
---- in French, pronouns should 
---- have a "-" with possibly a special verb form with "t":
---- "comment fera-t-il" vs. "comment fera Pierre"
+-- in French, pronouns 
+-- have a "-" with possibly a special verb form with "t":
+-- "comment fera-t-il" vs. "comment fera Pierre"
 
   infVP : VP -> Agr -> Str = nominalVP VInfin ;
 
@@ -282,7 +268,8 @@ oper
 
   nominalVP : (Bool -> VF) -> VP -> Agr -> Str = \vf,vp,agr ->
       let
-        iform = orB vp.clit3.hasClit (isVRefl vp.s.vtyp) ;
+        ----iform = orB vp.clit3.hasClit (isVRefl vp.s.vtyp) ;
+        iform = contractInf vp.clit3.hasClit (isVRefl vp.s.vtyp) ;
         inf   = vp.s.s ! vf iform ;
         neg   = vp.neg ! RPos ;             --- Neg not in API
         obj   = vp.s.p ++ vp.comp ! agr ++ vp.ext ! RPos ; ---- pol
