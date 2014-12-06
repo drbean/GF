@@ -31,8 +31,8 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
       role = RObj Acc
       } ;
 
-    i8fem_Pron  = mkPron "аз" "мен" "ми" "мой" "моя" "моят" "моя" "моята" "мое" "моето" "мои" "моите" (GSg Fem)  P1 ;
-    i8neut_Pron = mkPron "аз" "мен" "ми" "мой" "моя" "моят" "моя" "моята" "мое" "моето" "мои" "моите" (GSg Neut) P1 ;
+    i8fem_Pron  = mkPron "аз" "мен" "ме" "ми" "мой" "моя" "моят" "моя" "моята" "мое" "моето" "мои" "моите" (GSg Fem)  P1 ;
+    i8neut_Pron = mkPron "аз" "мен" "ме" "ми" "мой" "моя" "моят" "моя" "моята" "мое" "моето" "мои" "моите" (GSg Neut) P1 ;
     
     whatSg8fem_IP  = mkIP "каква" "каква" (GSg Fem) ;
     whatSg8neut_IP = mkIP "какво" "какво" (GSg Neut) ;
@@ -40,8 +40,8 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
     whoSg8fem_IP  = mkIP "коя" "кого" (GSg Fem) ;
     whoSg8neut_IP = mkIP "кое" "кого" (GSg Neut) ;
     
-    youSg8fem_Pron  = mkPron "ти" "теб" "ти" "твой" "твоя" "твоят" "твоя" "твоята" "твое" "твоето" "твои" "твоите" (GSg Fem) P2 ;
-    youSg8neut_Pron = mkPron "ти" "теб" "ти" "твой" "твоя" "твоят" "твоя" "твоята" "твое" "твоето" "твои" "твоите" (GSg Neut) P2 ;
+    youSg8fem_Pron  = mkPron "ти" "теб" "те" "ти" "твой" "твоя" "твоят" "твоя" "твоята" "твое" "твоето" "твои" "твоите" (GSg Fem) P2 ;
+    youSg8neut_Pron = mkPron "ти" "теб" "те" "ти" "твой" "твоя" "твоят" "твоя" "твоята" "твое" "твоето" "твои" "твоите" (GSg Neut) P2 ;
 
     onePl_Num = {s = table {
                        CFMasc Indef _ | CFFem Indef | CFNeut Indef            => "едни" ;
@@ -76,7 +76,7 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
 
   lin
     BaseVPI x y = {s  = \\d,t,a=>x.s!a++linCoord!t++y.s!a} ;
-    ConsVPI x xs = {s  = \\d,t,a=>x.s!a++(linCoordSep comma)!d!t++xs.s!d!t!a} ;
+    ConsVPI x xs = {s  = \\d,t,a=>x.s!a++(linCoordSep ResBul.comma)!d!t++xs.s!d!t!a} ;
 
     MkVPI vp = {s = daComplex Simul Pos vp ! Perf} ;
     ConjVPI conj vpi = {
@@ -91,7 +91,7 @@ concrete ExtraBul of ExtraBulAbs = CatBul **
 
   lin
     BaseVPS x y = {s  = \\d,t,a=>x.s!a++linCoord!t++y.s!a} ;
-    ConsVPS x xs = {s  = \\d,t,a=>x.s!a++(linCoordSep comma)!d!t++xs.s!d!t!a} ;
+    ConsVPS x xs = {s  = \\d,t,a=>x.s!a++(linCoordSep ResBul.comma)!d!t++xs.s!d!t!a} ;
 
     PredVPS np vps = {s = np.s ! RSubj ++ vps.s ! np.a} ;
 

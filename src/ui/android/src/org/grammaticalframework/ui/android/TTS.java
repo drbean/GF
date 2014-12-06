@@ -22,10 +22,24 @@ public class TTS {
 
     // TODO: handle speak() calls before service connects
     public void speak(String language, String text) {
-    	if (mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+
+
+   	if (mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+
+	    /* hack for missing TTS -- don't use for official release!
+    		if (language.equals("bg-BG")) {
+    			language = "ru-RU";  
+    		}
+    		if (language.equals("ca-ES")) {
+		    language = "es-ES"; // hardly politically correct...
+    		}
+            */
+
+	    /* OR use separate entries for Cantonese and Mandarin  */ 
     		if (language.equals("cmn-Hans-CN")) {
     			language = "yue";
     		}
+
 	        Locale locale = LocaleUtils.parseJavaLocale(language.replace('-', '_'),
 	                                                    Locale.getDefault());
 

@@ -12605,7 +12605,8 @@ lin conservancy_N = variants {} ;
 lin conservation_N = mkN "Schutz" "Schutze" masculine ; -- status=guess
 lin conservatism_N = mkN "Konservatismus" masculine ; -- status=guess
 lin conservative_A = mk3A "konservativ" "konservativer" "konservativste" ; -- status=guess
-lin conservative_N = mkN "Konservativer" masculine ; -- status=guess
+lin conservative_1_N = mkN "Konservativer" masculine ; -- status=guess
+lin conservative_2_N = mkN "Konservativer" masculine ; -- status=guess
 lin conservatoire_N = mkN "Konservatorium" "Konservatorien" neuter | mkN "Musikkonservatorium" neuter | mkN "Musikakademie" feminine | mkN "Hochschule" "Hochschulen" feminine | mkN "Musikschule" "Musikschulen" feminine | mkN "höhere Musikschule" feminine ; -- status=guess status=guess status=guess status=guess status=guess status=guess
 lin conservator_N = variants {} ;
 lin conservatory_N = mkN "Wintergarten" "Wintergärten" masculine | mkN "Gewächshaus" neuter ; -- status=guess status=guess
@@ -50063,13 +50064,11 @@ lin savior_N = mkN "Retter" "Retter" masculine ; -- status=guess
 lin saviour_N = variants {} ;
 lin savoir_faire_N = variants {} ;
 lin savore_V2 = variants {} ;
-lin savory_A = variants {} ;
-lin savory_N = mkN "Bohnenkraut" "Bohnenkräuter" neuter ; -- status=guess
 lin savour_N = variants {} ;
 lin savour_V = variants {} ;
 lin savour_V2 = variants {} ;
 lin savoury_A = variants {} ;
-lin savoury_N = variants {} ;
+lin savoury_N = mkN "Bohnenkraut" "Bohnenkräuter" neuter ; -- status=guess
 lin savoy_N = variants {} ;
 lin savvy_N = variants {} ;
 lin savvy_V = irregV "kapieren" "kapiert" "kapierte" "kapierte" "kapiert" | mkV "schnallen" | irregV "verstehen" "versteht" "verstand" "verstände" "verstanden" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -62022,7 +62021,6 @@ lin unsatisfiable_A = variants {} ;
 lin unsatisfied_A = variants {} ;
 lin unsatisfying_A = mkA "unbefriedigend" ; -- status=guess
 lin unsaturated_A = mkA "ungesättigt" ; -- status=guess
-lin unsavory_A = variants {} ;
 lin unsavoury_A = variants {} ;
 lin unsay_V2 = variants {} ;
 lin unscalable_A = variants {} ;

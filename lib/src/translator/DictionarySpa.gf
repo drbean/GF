@@ -5045,7 +5045,8 @@ lin consequently_Adv = adjAdv consequent_A ; -- -- derived
 lin conservation_N = variants {} ; --
 lin conservatism_N = mkN "conservadurismo" | mkN "conservatismo" ; -- status=guess status=guess
 lin conservative_A = mkA "conservador" ; -- status=guess
-lin conservative_N = mkN "conservador" masculine ; -- status=guess
+lin conservative_1_N = mkN "conservador" masculine ; -- status=guess
+lin conservative_2_N = mkN "conservador" masculine ; -- status=guess
 lin conservator_N = mkN "apoderado" ; -- status=guess
 lin conserve_N = mkN "parque nacional" ; -- status=guess
 lin conserve_V2 = mkV2 (mkV "conservar") ; -- status=guess, src=wikt
@@ -19018,8 +19019,8 @@ lin saving_N = variants {} ; --
 lin savings_N = mkN "ahorros" feminine ; -- status=guess
 lin savior_N = mkN "salvador" masculine ; -- status=guess
 lin saviour_N = mkN "bebé medicamento" ; -- status=guess
-lin savory_A = mkA "sabroso" | mkA "apetitoso" ; -- status=guess status=guess
-lin savory_N = mkN "ajedrea" ; -- status=guess
+lin savoury_A = mkA "sabroso" | mkA "apetitoso" ; -- status=guess status=guess
+lin savoury_N = mkN "ajedrea" ; -- status=guess
 lin saw_N = mkN "proverbio" ; -- status=guess
 lin saw_V = serrar_V ; -- status=guess, src=wikt
 lin saw_V2 = mkV2 (serrar_V) ; -- status=guess, src=wikt
@@ -24330,6 +24331,7 @@ lin york_PN = mkPN "York" ; -- status=guess src=geonames
 lin yorkshire_PN = mkPN "Yorkshire" ; -- status=guess src=geonames
 lin youPlFem_Pron = optProDrop E.youPl8fem_Pron | optProDrop E.youPolPl8fem_Pron ; ---- split
 lin youPl_Pron = optProDrop S.youPl_Pron | optProDrop E.youPolPl_Pron ; ---- split
+lin youPol_Pron = optProDrop S.youPol_Pron ; 
 lin youPolFem_Pron = optProDrop E.youPol8fem_Pron ; -- status=guess
 lin youSgFem_Pron = optProDrop E.youSg8fem_Pron ; -- status=guess
 lin youSg_Pron = optProDrop S.youSg_Pron ; -- status=guess

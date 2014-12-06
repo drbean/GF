@@ -4112,7 +4112,8 @@ lin consequent_A = variants {} ;
 lin consequently_Adv = adjAdv consequent_A ; -- -- derived
 lin conservation_N = variants {} ; --
 lin conservative_A = variants {} ; --
-lin conservative_N = variants {} ; --
+lin conservative_1_N = variants {} ; --
+lin conservative_2_N = variants {} ; --
 lin conservatoire_N = mkN "conservatorio" ; -- status=guess
 lin conservatory_N = mkN "conservatorio" ; -- status=guess
 lin conserve_V2 = mkV2 (mkV "conservare") ; -- status=guess, src=wikt
@@ -16008,8 +16009,8 @@ lin save_V2 = mkV2 (mkV "risparmiare") ; -- status=guess, src=wikt
 lin saving_N = variants {} ; --
 lin savings_N = mkN "conto di risparmio" ; -- status=guess
 lin savior_N = mkN "redentore" masculine | mkN "salvatore" masculine ; -- status=guess status=guess
-lin savory_A = mkA "salato" ; -- status=guess
-lin savory_N = mkN "santoreggia" ; -- status=guess
+lin savoury_A = mkA "salato" ; -- status=guess
+lin savoury_N = mkN "santoreggia" ; -- status=guess
 lin saw_N = mkN "adagio" ; -- status=guess
 lin saw_V = mkV "segare" ; -- status=guess, src=wikt
 lin saw_V2 = mkV2 (mkV "segare") ; -- status=guess, src=wikt
@@ -20434,6 +20435,7 @@ lin york_PN = mkPN "York" ; -- status=guess src=geonames
 lin yorkshire_PN = mkPN "Yorkshire" ; -- status=guess src=geonames
 lin youPlFem_Pron = optProDrop E.youPl8fem_Pron | optProDrop E.youPolPl8fem_Pron ; ---- split
 lin youPl_Pron = optProDrop S.youPl_Pron | optProDrop E.youPolPl_Pron ; ---- split
+lin youPol_Pron = optProDrop S.youPol_Pron ; 
 lin youPolFem_Pron = optProDrop E.youPol8fem_Pron ;
 lin youSgFem_Pron = optProDrop E.youSg8fem_Pron ;
 lin youSg_Pron = optProDrop S.youSg_Pron ;

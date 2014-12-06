@@ -12595,7 +12595,8 @@ fun conservancy_N : N ;
 fun conservation_N : N ;
 fun conservatism_N : N ;
 fun conservative_A : A ;
-fun conservative_N : N ;
+fun conservative_1_N : N ; -- | a person who is conservative
+fun conservative_2_N : N ; -- | a preservative
 fun conservatoire_N : N ;
 fun conservator_N : N ;
 fun conservatory_N : N ;
@@ -36676,11 +36677,11 @@ fun mordacious_A : A ;
 fun mordacity_N : N ;
 fun mordant_A : A ;
 fun mordant_N : N ;
-fun morePl_Det : Det ;
-fun moreSg_Det : Det ;
+---fun morePl_Det : Det ;  -- overshadowed by more_Quant
+---fun moreSg_Det : Det ;  -- 
+fun more_Quant : Quant ;
 fun more_Adv : Adv ;
 fun more_N : N ;
-fun more_Quant : Quant ;
 fun more_than_AdN : AdN ;
 fun more_than_Predet : Predet ;
 fun morecambe_PN : PN ;
@@ -50060,8 +50061,6 @@ fun savior_N : N ;
 fun saviour_N : N ;
 fun savoir_faire_N : N ;
 fun savore_V2 : V2 ;
-fun savory_A : A ;
-fun savory_N : N ;
 fun savour_N : N ;
 fun savour_V : V ;
 fun savour_V2 : V2 ;
@@ -62016,7 +62015,6 @@ fun unsatisfiable_A : A ;
 fun unsatisfied_A : A ;
 fun unsatisfying_A : A ;
 fun unsaturated_A : A ;
-fun unsavory_A : A ;
 fun unsavoury_A : A ;
 fun unsay_V2 : V2 ;
 fun unscalable_A : A ;
@@ -64395,7 +64393,7 @@ fun whetstone_N : N ;
 fun whey_N : N ;
 fun which_IQuant : IQuant  ;
 --fun which_N : N  ; ---- what is this? creates spurious parses. AR 25/9/2014
-fun whichever_A : A ;
+--fun whichever_A : A ; --- the same here
 fun whichever_Quant : Quant ;
 fun whichsoever_A : A ;
 fun whiff_N : N ;
