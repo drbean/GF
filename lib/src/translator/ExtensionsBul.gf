@@ -1,7 +1,7 @@
 --# -path=.:../abstract
 
 concrete ExtensionsBul of Extensions = 
-  CatBul ** open ResBul, (E = ExtraBul), Prelude in {
+  CatBul ** open ResBul, (E = ExtraBul), Prelude, SyntaxBul in {
 
 flags 
   coding = utf8 ;
@@ -42,31 +42,67 @@ lin
     g = cn.g
   } ;
 
-  GerundN v = {
-    s   = \\nform => v.s ! Imperf ! VNoun nform ;
-    rel = \\aform => v.s ! Imperf ! VPresPart aform ++
-                     case v.vtype of {
-                       VMedial c => reflClitics ! c;
-                       _         => []
-                     };
+  CompoundAP n a =
+    let ap : AForm => Str
+           = \\aform => n.rel ! (ASg Neut Indef) ++ a.s ! aform
+    in {s = ap; adv = ap ! (ASg Neut Indef); isPre = True} ;
+
+  GerundCN vp = {
+    s   = \\nform => vp.ad.s ++
+                     vp.s ! Imperf ! VNoun nform ++
+                     vp.compl ! {gn=GSg Neut; p=P3} ;
     g = ANeut
   } ;
   
-  GerundAP v = {
-    s = \\aform => v.s ! Imperf ! VPresPart aform ++
-                   case v.vtype of {
-                     VMedial c => reflClitics ! c;
-                     _         => []
-                   };
-    adv = v.s ! Imperf ! VPresPart (ASg Neut Indef);
-    isPre = True
+  GerundNP vp = {
+    s = \\_ => daComplex Simul Pos vp ! Imperf ! {gn=GSg Neut; p=P1};
+    a = {gn=GSg Neut; p=P3};
+    p = Pos
   } ;
 
-  PastPartAP v = {
-    s = \\aform => v.s ! Perf ! VPassive aform ;
-    adv = v.s ! Perf ! VPassive (ASg Neut Indef);
-    isPre = True
-  } ;
+  GerundAdv vp =
+    {s = vp.ad.s ++
+         vp.s ! Imperf ! VGerund ++
+         vp.compl ! {gn=GSg Neut; p=P3}} ;
+
+  PresPartAP vp =
+    let ap : AForm => Str
+           = \\aform => vp.ad.s ++
+                        vp.s ! Imperf ! VPresPart aform ++
+                        case vp.vtype of {
+                          VMedial c => reflClitics ! c;
+                          _         => []
+                        } ++
+                        vp.compl ! {gn=aform2gennum aform; p=P3} ;
+    in {s = ap; adv = ap ! (ASg Neut Indef); isPre = True} ;
+
+  PastPartAP vp =
+    let ap : AForm => Str
+           = \\aform => vp.ad.s ++
+                        vp.s ! Perf ! VPassive aform ++
+                        vp.compl1 ! {gn=aform2gennum aform; p=P3} ++
+                        vp.compl2 ! {gn=aform2gennum aform; p=P3}
+    in {s = ap; adv = ap ! ASg Neut Indef; isPre = True} ;
+
+  PastPartAgentAP vp np =
+    let ap : AForm => Str
+           = \\aform => vp.ad.s ++
+                        vp.s ! Perf ! VPassive aform ++
+                        vp.compl1 ! {gn=aform2gennum aform; p=P3} ++
+                        vp.compl2 ! {gn=aform2gennum aform; p=P3} ++
+                        "от" ++ np.s ! RObj Acc
+    in {s = ap; adv = ap ! ASg Neut Indef; isPre = True} ;
+
+  ByVP vp =
+    {s = vp.ad.s ++
+         vp.s ! Imperf ! VGerund ++
+         vp.compl ! {gn=GSg Neut; p=P3}} ;
+
+  InOrderToVP vp =
+    {s = "за" ++ daComplex Simul Pos (vp**{vtype=VMedial Acc}) ! Imperf ! {gn=GSg Neut; p=P3}};
+
+  WithoutVP vp =
+    {s = "без" ++ daComplex Simul Pos (vp**{vtype=VMedial Acc}) ! Imperf ! {gn=GSg Neut; p=P3}};
 
   PositAdVAdj a = {s = a.adv} ;
   
@@ -124,23 +160,6 @@ lin
                           }) vp.p
                 (predV vv) ;
 
-  PredVPosv np vp = {
-      s = \\t,a,p,o => 
-        let
-          subj = np.s ! (case vp.vtype of {
-                                        VNormal    => RSubj ;
-                                        VMedial  _ => RSubj ;
-                                        VPhrasal c => RObj c}) ;
-          verb  : Bool => Str
-                = \\q => vpTenses vp ! t ! a ! p ! np.a ! q ! Perf ;
-          compl = vp.compl ! np.a
-        in case o of {
-             Main  => compl ++ subj ++ verb ! False  ;
-             Inv   => verb ! False ++ compl ++ subj ;
-             Quest => compl ++ subj ++ verb ! True
-           }
-    } ;
-
   CompS s = {s = \\_ => "че" ++ s.s; p = Pos} ;
   CompQS qs = {s = \\_ => qs.s ! QIndir; p = Pos} ;
   CompVP ant p vp = {s = let p' = case vp.p of {
@@ -170,5 +189,15 @@ lin
   } ;
 
   UttAdV adv = adv;
+  AdAdV = cc2 ;
+  
+  DirectComplVS t np vs utt = 
+    mkS (lin Adv (optCommaSS utt)) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  DirectComplVQ t np vs q = 
+    mkS (lin Adv (optCommaSS (mkUtt q))) (mkS t positivePol (mkCl np (lin V vs))) ;
+
+  FocusObjS np sslash = 
+    mkS (lin Adv (optCommaSS (ss (sslash.c2.s ++ np.s ! RObj sslash.c2.c)))) (lin S {s=sslash.s ! np.a}) ;
 
 }

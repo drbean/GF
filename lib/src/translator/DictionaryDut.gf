@@ -10,6 +10,8 @@ oper reflMkV : Str -> V = \s -> reflV (mkV s) ;
 oper mkSubj : Str -> Subj = \s -> lin Subj {s = s} ;
 oper mkPredet : Str -> Predet = \s -> lin Predet {s = \\_,_ => s} ;
 oper adjAdv : A -> Adv = \a -> S.mkAdv a ;
+oper advV : V -> Adv -> V = \v,a -> partV v a.s ;
+
 
 lin aachen_PN = mkPN "Aken" ; -- src=geonames status=guess
 lin aardvark_N = mkN "aardvarken" neuter ; -- status=guess
@@ -100,7 +102,6 @@ lin abridgment_N = mkN "bekorting" | mkN "verkorting" ; -- status=guess status=g
 lin abroad_Adv = mkAdv "in het buitenland" | mkAdv "naar het buitenland" ; -- status=guess status=guess
 lin abrogate_V2 = mkV2 (mkV "afschaffen") ; -- status=guess, src=wikt
 lin abrupt_A = mkA "afgeknot" ; -- status=guess
-lin abruptly_Adv = mkAdv "abrupt" | mkAdv "bruusk" | adjAdv abrupt_A ; -- status=guess status=guess -- derived
 lin abruptness_N = mkN "abruptheid" feminine ; -- status=guess
 lin abscess_N = mkN "abces" neuter | mkN "etterbuil" masculine ; -- status=guess status=guess
 lin abscissa_N = mkN "abscis" feminine ; -- status=guess
@@ -111,7 +112,6 @@ lin absent_V2 = mkV2 (mkV (mkV "afwezig") "zijn") | mkV2 (reflMkV "verwijderen")
 lin absinthe_N = mkN "alsem" masculine ; -- status=guess
 lin absolute_A = mkA "absoluut" ; -- status=guess
 lin absolute_N = mkN "absolute waarde" feminine ; -- status=guess
-lin absolutely_Adv = mkAdv "absoluut" | adjAdv absolute_A ; -- status=guess -- derived
 lin absolve_V2 = mkV2 (mkV "beëindigen") | mkV2 (mkV "afwerken") ; -- status=guess, src=wikt status=guess, src=wikt
 lin absorb_V2 = mkV2 (mkV "absorberen") | mkV2 (mkV "imeä") ; -- status=guess, src=wikt status=guess, src=wikt
 lin absorbency_N = mkN "absorptie" feminine ; -- status=guess
@@ -166,7 +166,6 @@ lin accessory_A = mkA "medeplichtig" ; -- status=guess
 lin accessory_N = mkN "accessoire" neuter | mkN "aanhangsel" neuter | mkN "toebehoren" neuter ; -- status=guess status=guess status=guess
 lin accident_N = mkN "ongeluk" neuter ;
 lin accidental_A = variants {} ;
-lin accidentally_Adv = mkAdv "toevallig" | adjAdv accidental_A ; -- status=guess -- derived
 lin acclaim_V2 = mkV2 (mkV "toejuichen") | mkV2 (prijzen_V) | mkV2 (mkV "loven") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin acclamation_N = mkN "gejuich" | mkN "acclamatie" ; -- status=guess status=guess
 lin acclimatization_N = mkN "acclimatisatie" feminine | mkN "aanpassing" feminine ; -- status=guess status=guess
@@ -191,6 +190,7 @@ lin accost_V2 = mkV2 (mkV "aanklampen") ; -- status=guess, src=wikt
 lin account_N = mkN "rekening" ;
 lin account_V = variants {} ; --
 lin account_V2 = variants {} ; --
+lin account_for_V2 = prepV2 OP_account_V OP_for_Prep ; -- guess-p-verb
 lin accountability_N = mkN "verantwoordelijkheid" neuter ; -- status=guess
 lin accountable_A = mkA "verantwoordelijk" | mkA "aansprakelijk" ; -- status=guess status=guess
 lin accountancy_N = mkN "boekhouden" neuter ; -- status=guess
@@ -208,7 +208,6 @@ lin accumulation_N = mkN "accumulatie" feminine | mkN "opstapeling" feminine | m
 lin accumulator_N = mkN "accumulator" masculine ; -- status=guess
 lin accuracy_N = mkN "nauwkeurigheid" | mkN "precisie" ; -- status=guess status=guess
 lin accurate_A = mkA "accuraat" | mkA "precies" | mkA "exact" | mkA "trefzeker" | mkA "nauwkeurig" ; -- status=guess status=guess status=guess status=guess status=guess
-lin accurately_Adv = mkAdv "trefzeker" | adjAdv accurate_A ; -- status=guess -- derived
 lin accusation_N = variants {} ; --
 lin accusative_A = mkA "beschuldigend" ; -- status=guess
 lin accusative_N = mkN "accusatief" masculine | mkN "vierde naamval" masculine | mkN "lijdend voorwerp" neuter ; -- status=guess status=guess status=guess
@@ -266,12 +265,15 @@ lin acrylic_N = mkN "acryl" neuter ; -- status=guess
 lin act_N = mkN "handeling" feminine | mkN "daad" ;
 lin act_V = mkV "gedragen" | mkV "op" (mkV "treden") ;
 lin act_V2 = mkV2 act_V ; ---- subcat
+lin act_on_V2 = prepV2 OP_act_V OP_on_Prep ; -- guess-p-verb
+lin act_out_V2 = prepV2 OP_act_V OP_out_Prep ; -- guess-p-verb
+lin act_up_V = advV OP_act_V OP_up_Adv ; -- guess-p-verb
+lin act_upon_V2 = prepV2 OP_act_V OP_upon_Prep ; -- guess-p-verb
 lin actinium_N = mkN "actinium" neuter ; -- status=guess
 lin action_N = mkN "actie" feminine ;
 lin activate_V2 = mkV2 (mkV "activeren") ; -- status=guess, src=wikt
 lin active_A = mkA "actief" ;
 lin active_N = mkN "bedrijvende vorm" | mkN "actief" neuter | mkN "activum" neuter ; -- status=guess status=guess status=guess
-lin actively_Adv = adjAdv active_A ; -- -- derived
 lin activism_N = mkN "activisme" neuter ; -- status=guess
 lin activistMasc_N = variants {} ; --
 lin activity_N = mkN "activiteit" feminine ;
@@ -305,6 +307,11 @@ lin add_V = mkV "toe" (mkV "voegen") ;
 lin add_V2 = mkV2 add_V ;
 lin add_V3 = L.add_V3 ;
 lin add_VS = mkVS add_V ;
+lin add_in_V = advV OP_add_V OP_in_Adv ; -- guess-p-verb
+lin add_on_V2 = prepV2 OP_add_V OP_on_Prep ; -- guess-p-verb
+lin add_up_V = advV OP_add_V OP_up_Adv ; -- guess-p-verb
+lin add_up_V2 = prepV2 OP_add_V OP_up_Prep ; -- guess-p-verb
+lin add_up_to_V2 = prepV2 (advV OP_add_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin added_A = variants {} ; --
 lin adder_N = mkN "slang" feminine ; -- status=guess
 lin addict_N = mkN "fan" ; -- status=guess
@@ -326,7 +333,6 @@ lin adept_N = mkN "expert" | mkN "deskundige" ; -- status=guess status=guess
 lin adeptness_N = mkN "bekwaamheid" ; -- status=guess
 lin adequacy_N = mkN "deugdelijkheid" ; -- status=guess
 lin adequate_A = mkA "adequaat" | mkA "voldoende" | mkA "deugdelijk" ; -- status=guess status=guess status=guess
-lin adequately_Adv = adjAdv adequate_A ; -- -- derived
 lin adhere_V = mkV "samenhangen" ; -- status=guess, src=wikt
 lin adherence_N = mkN "trouw zijn aan" ; -- status=guess
 lin adieu_N = mkN "adieu" ; -- status=guess
@@ -349,7 +355,6 @@ lin administer_V = mkV "toedienen" ; -- status=guess, src=wikt
 lin administer_V2 = mkV2 (mkV "toedienen") ; -- status=guess, src=wikt
 lin administration_N = mkN "administratie" feminine ;
 lin administrative_A = mkA "bestuurlijk" | mkA "administratief" ; -- status=guess status=guess
-lin administratively_Adv = mkAdv "bestuurlijk" | adjAdv administrative_A ; -- status=guess -- derived
 lin administratorMasc_N = mkN "beheerder" masculine ; -- status=guess
 lin admirable_A = mkA "bewonderenswaardig" ; -- status=guess
 lin admiralty_N = mkN "admiraliteit" | mkN "admiraalschap" ; -- status=guess status=guess
@@ -419,10 +424,8 @@ lin aetiology_N = mkN "etiologie" feminine ; -- status=guess
 lin affair_N = mkN "affaire" ;
 lin affect_V2 = mkV2 (mkV "beinvloeden") | mkV2 (mkV "aan" (mkV "tasten")) ; --- split mkV2 (mkV "beroeren")) ; being deeply affected by something
 lin affected_A = variants {} ;
-lin affectedly_Adv = adjAdv affected_A ; -- derived
 lin affection_N = mkN "genegenheid" ; -- status=guess
 lin affectionate_A = variants {} ;
-lin affectionately_Adv = adjAdv affectionate_A ; -- derived
 lin affidavit_N = mkN "beëdigde verklaring" feminine ; -- status=guess
 lin affinity_N = mkN "welgezindheid" feminine | mkN "affiniteit" ; -- status=guess status=guess
 lin affirmative_N = mkN "bevestigende zin" masculine ; -- status=guess
@@ -470,7 +473,6 @@ lin aggregate_V = reflMkV "verenigen" ; -- status=guess, src=wikt
 lin aggregate_V2 = mkV2 (reflMkV "verenigen") ; -- status=guess, src=wikt
 lin aggression_N = mkN "agressie" ; -- status=guess
 lin aggressive_A = mkA "agressief" ; -- status=guess
-lin aggressively_Adv = mkAdv "agressief" | adjAdv aggressive_A ; -- status=guess -- derived
 lin agile_A = mkA "beweeglijk" | mkA "lenig" | mkA "behendig" ; -- status=guess status=guess status=guess
 lin agility_N = mkN "wendbaarheid" feminine ; -- status=guess
 lin agitation_N = mkN "opwinding" feminine | mkN "agitatie" feminine | mkN "troebelen {p}" ; -- status=guess status=guess status=guess
@@ -485,6 +487,8 @@ lin agra_PN = mkPN "Agra" ; -- src=geonames status=guess
 lin agree_V = mkV "in" (mkV "stemmen") ;
 lin agree_VS = mkVS agree_V ;
 lin agree_VV = mkVV agree_V ;
+lin agree_on_V = advV OP_agree_V OP_on_Adv ; -- guess-p-verb
+lin agree_with_V2 = prepV2 OP_agree_V OP_with_Prep ; -- guess-p-verb
 lin agreeableness_N = mkN "behaaglijkheid" feminine ; -- status=guess
 lin agreed_A = variants {} ; --
 lin agreement_N = mkN "afspraak" | mkN "overeenkomst" | mkN "goedkeuring" feminine ;
@@ -504,6 +508,7 @@ lin aim_N = mkN "doel" neuter | mkN "bedoeling" | mkN "oogmerk" neuter ;
 lin aim_V = mkV "richten" ;
 lin aim_V2 = mkV2 (mkV "richten") ;
 lin aim_VV = mkVV (mkV "richten") ;
+lin aim_at_V2 = prepV2 OP_aim_V OP_at_Prep ; -- guess-p-verb
 lin aimless_A = mkA "doelloos" ; -- status=guess
 lin air_N = mkN "lucht" ;
 lin air_V = mkV "luchten" ; -- status=guess, src=wikt
@@ -597,7 +602,6 @@ lin allegation_N = variants {} ; --
 lin allege_V2 = variants {} ; --
 lin allege_VS = variants {} ; --
 lin alleged_A = mkA "verondersteld" ; -- status=guess
-lin allegedly_Adv = variants {} ; --
 lin allegiance_N = mkN "trouw" | mkN "getrouwheid" | mkN "loyaliteit" | mkN "trouwhartigheid" | mkN "aanhang" masculine ; -- status=guess status=guess status=guess status=guess status=guess
 lin allen_PN = mkPN "Allen" ; -- src=geonames status=guess
 lin allergen_N = mkN "allergeen" neuter ; -- status=guess
@@ -620,6 +624,8 @@ lin allot_V2 = mkV2 (mkV "verdelen") | mkV2 (mkV "toekennen") ; -- status=guess,
 lin allotment_N = mkN "moestuin" masculine ; -- status=guess
 lin allow_V2 = mkV2 I.laten_V ;
 lin allow_V2V = mkV2V I.laten_V ;
+lin allow_for_V2 = prepV2 (lin V OP_allow_V2) OP_for_Prep ; -- guess-p-verb
+lin allow_of_V2 = prepV2 (lin V OP_allow_V2) OP_of_Prep ; -- guess-p-verb
 lin allowance_N = mkN "toestemming" ; -- status=guess
 lin alloy_N = mkN "legering" feminine ; -- status=guess
 lin alloy_V2 = mkV2 (mkV "legeren") ; -- status=guess, src=wikt
@@ -639,7 +645,6 @@ lin almost_Adv = mkAdv "bijna" | mkAdv "nagenoeg" | mkAdv "vrijwel" | mkAdv "zo 
 lin alms_N = mkN "aalmoes" ; -- status=guess
 lin alnwick_PN = mkPN "Alnwick" ; -- src=geonames status=guess
 lin alone_A = mkA "alleen" ;
-lin alone_Adv = mkAdv "alleen" ;
 lin along_Adv = mkAdv "langs" | mkAdv "naar" ;
 lin along_Prep = mkPrep "langs" ;
 lin alongside_Prep = variants {} ; --
@@ -651,7 +656,6 @@ lin alpha_N = mkN "alfa" masculine feminine ; -- status=guess
 lin alphabet_N = mkN "alfabet" ; -- status=guess
 lin alphabetic_A = mkA "alfabetisch" ; -- status=guess
 lin alphabetical_A = mkA "alfabetisch" ; -- status=guess
-lin alphabetically_Adv = mkAdv "alfabetisch" | adjAdv alphabetical_A ; -- status=guess -- derived
 lin alphanumeric_A = mkA "alfanumeriek" ; -- status=guess
 lin already_Adv = L.already_Adv ;
 lin alright_A = variants {} ; --
@@ -663,10 +667,8 @@ lin alter_V2 = variants {} ; --
 lin alteration_N = variants {} ; --
 lin altercation_N = mkN "woordenwisseling" | mkN "dispuut" ; -- status=guess status=guess
 lin alternate_A = variants {} ;
-lin alternately_Adv = mkAdv "beurtelings" | adjAdv alternate_A ; -- status=guess -- derived
 lin alternative_A = mkA "alternatief" ; -- status=guess
 lin alternative_N = variants {} ; --
-lin alternatively_Adv = adjAdv alternative_A ; -- -- derived
 lin alternator_N = mkN "alternator" | mkN "wisselstroomgenerator" ; -- status=guess status=guess
 lin although_Subj = S.although_Subj ;
 lin altimeter_N = mkN "hoogtemeter" masculine ; -- status=guess
@@ -813,7 +815,6 @@ lin angle_V = mkV "hengelen" ; -- status=guess, src=wikt
 lin angle_V2 = mkV2 (mkV "hengelen") ; -- status=guess, src=wikt
 lin anglicism_N = mkN "anglicisme" neuter ; -- status=guess
 lin angola_PN = mkPN "Angola" ; -- src=geonames status=guess
-lin angrily_Adv = adjAdv angry_A ; -- -- derived
 lin angry_A = mkA "kwaad" | mkA "boos" ; -- status=guess status=guess
 lin angst_N = mkN "angst" ; -- status=guess
 lin angstrom_N = mkN "ångström" ; -- status=guess
@@ -851,7 +852,6 @@ lin announcement_N = mkN "aankondiging" feminine ; -- status=guess
 lin announcer_N = mkN "omroeper" masculine ; -- status=guess
 lin annoy_V2 = mkV2 (mkV "ergeren") | mkV2 (mkV "vervelen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin annual_A = mkA "jaarlijks" ;
-lin annually_Adv = mkAdv "jaarlijks" | adjAdv annual_A ; -- status=guess -- derived
 lin annuity_N = mkN "lijfrente" feminine ; -- status=guess
 lin annul_V2 = mkV2 (mkV "ontbinden") | mkV2 (mkV "annuleren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin annulment_N = mkN "vernietiging" feminine | mkN "nietigverklaring" feminine ; -- status=guess status=guess
@@ -863,7 +863,6 @@ lin anomie_N = mkN "anomie" | mkN "wetteloosheid" ; -- status=guess status=guess
 lin anon_PN = mkPN "Anon" ; -- src=eng status=guess
 lin anonymity_N = mkN "anonimiteit" feminine ; -- status=guess
 lin anonymous_A = mkA "naamloos" | mkA "anoniem" ; -- status=guess status=guess
-lin anonymously_Adv = adjAdv anonymous_A ; -- derived
 lin anopia_N = mkN "anopsie" | mkN "anopsia" | mkN "anopie" | mkN "anopia" ; -- status=guess status=guess status=guess status=guess
 lin another_Det = mkDet "een andere" ;
 lin anoxia_N = mkN "anoxie" feminine ; -- status=guess
@@ -872,6 +871,8 @@ lin answer_N = mkN "antwoord" neuter ;
 lin answer_V = mkV "antwoorden" ;
 lin answer_V2 = mkV2 (mkV "antwoorden") | mkV2 (mkV "beantwoorden") ;
 lin answer_V2S = L.answer_V2S ;
+lin answer_back_V2 = mkV2 (advV OP_answer_V OP_back_Adv ) ; -- guess-p-verb
+lin answer_for_V2 = prepV2 OP_answer_V OP_for_Prep ; -- guess-p-verb
 lin ant_N = mkN "mier" feminine ; -- status=guess
 lin anteater_N = mkN "miereneter" masculine ; -- status=guess
 lin antecedent_A = mkA "voorafgaand" | mkA "vroeger" ; -- status=guess status=guess
@@ -965,12 +966,10 @@ lin apparatchik_N = mkN "apparatsjik" masculine ; -- status=guess
 lin apparatus_N = mkN "apparaat" ; -- status=guess
 lin apparel_N = mkN "kleding" ; -- status=guess
 lin apparent_A = mkA "ogenschijnlijk" | mkA "klaar" | mkA "duidelijk" ; -- status=guess status=guess status=guess
-lin apparently_Adv = mkAdv "blijkbaar" | mkAdv "kennelijk" | adjAdv apparent_A ; -- derived
 lin appeal_N = mkN "beroep" neuter ;
 lin appeal_V = mkV (mkV "in") "beroep gaan" | mkV (mkV "in") "hoger beroep gaan" ; -- status=guess, src=wikt status=guess, src=wikt
 lin appeal_V2 = mkV2 (mkV (mkV "in") "beroep gaan") | mkV2 (mkV (mkV "in") "hoger beroep gaan") ; -- status=guess, src=wikt status=guess, src=wikt
 lin appealing_A = variants {} ;
-lin appealingly_Adv = adjAdv appealing_A ; -- derived
 lin appear_V = mkV "verschijnen" "verscheen" "verschenen" ;
 lin appear_VA = mkVA (mkV "uit" see_V) ; -- needs preposition 'er' (ziet er goed uit/appears well)
 lin appear_VS = mkVS (blijken_V) ; -- it appears that ...
@@ -998,6 +997,7 @@ lin apply_V = gelden_V | reflV (mkV "toe" "passen") ;
 lin apply_V2 = mkV2 (mkV "toe" "passen") ;
 lin apply_V2V = mkV2V (mkV "toe" "passen") | mkV2V (mkV "aan" "melden") ; ---- subcat
 lin apply_VV = mkVV (mkV "toe" "passen") ;
+lin apply_for_V2 = prepV2 OP_apply_V OP_for_Prep ; -- guess-p-verb
 lin appoint_V2 = mkV2 (mkV "aan" (mkV "stellen")) | mkV2 (mkV "benoemen") ;
 lin appoint_V2V = mkV2V (mkV "aan" (mkV "stellen")) | mkV2V (mkV "benoemen") ;
 lin appoint_V3 = mkV3 (mkV "aan" (mkV "stellen")) | mkV3 (mkV "benoemen") ; ---- subcat
@@ -1020,7 +1020,6 @@ lin approach_V2 = mkV2 (mkV "benaderen") | mkV2 (mkV "naderen") ;
 lin approachable_A = mkA "benaderbaar" ; -- status=guess
 lin appropriate_A = mkA "aangewezen" | mkA "geschikt" ;
 lin appropriate_V2 = mkV2 (mkV "aanpassen") ; -- status=guess, src=wikt
-lin appropriately_Adv = adjAdv appropriate_A ; -- -- derived
 lin appropriation_N = mkN "toe-eigening" feminine ; -- status=guess
 lin approval_N = mkN "goedkeuring" feminine ; -- status=guess
 lin approve_V = mkV (mkV "instemmen") "met" ; -- status=guess, src=wikt
@@ -1028,7 +1027,6 @@ lin approve_V2 = mkV2 (mkV (mkV "instemmen") "met") ; -- status=guess, src=wikt
 lin approved_A = variants {} ; --
 lin approx_PN = mkPN "Approx" ; -- src=eng status=guess
 lin approximately_A = variants {} ;
-lin approximately_Adv = mkAdv "ongeveer" | adjAdv approximately_A ; -- status=guess -- derived
 lin approximation_N = mkN "benaderen" | mkN "schatten" ; -- status=guess status=guess
 lin apr_PN = mkPN "Apr" ; -- src=eng status=guess
 lin apricot_N = mkN "abrikoos" feminine ; -- status=guess
@@ -1042,7 +1040,6 @@ lin aquatic_A = mkA "aquatisch" | mkA "aquatische" ; -- status=guess status=gues
 lin aqueduct_N = mkN "aquaduct" neuter ; -- status=guess
 lin aquifer_N = mkN "aquifer" masculine ; -- status=guess
 lin arable_A = mkA "bebouwbaar" ; -- status=guess
-lin arbitrarily_Adv = adjAdv arbitrary_A ; -- derived
 lin arbitrary_A = mkA "willekeurig" ; -- status=guess
 lin arbitration_N = mkN "arbitrage" feminine ; -- status=guess
 lin arbroath_PN = mkPN "Arbroath" ; -- src=geonames status=guess
@@ -1090,10 +1087,11 @@ lin argentine_PN = mkPN "Argentine" ; -- src=geonames status=guess
 lin arginine_N = mkN "arginine" ; -- status=guess
 lin argon_N = mkN "argon" neuter ; -- status=guess
 lin arguable_A = mkA "verdedigbaar" ; -- status=guess
-lin arguably_Adv = adjAdv arguable_A ; -- derived
 lin argue_V = mkV "argumenteren" | mkV "redetwisten" ; --- split mkV "betogen" | mkV "beweren" ; implemented sense is a form of discussing, to split sense is argueing a stance (in a monologue)
 lin argue_V2 = mkV2 argue_V ;
 lin argue_VS = mkVS argue_V ;
+lin argue_down_V2 = prepV2 OP_argue_V OP_down_Prep ; -- guess-p-verb
+lin argue_out_V2 = prepV2 OP_argue_V OP_out_Prep ; -- guess-p-verb
 lin argument_N = mkN "argument" neuter ;
 lin aries_PN = mkPN "Aries" ; -- src=eng status=guess
 lin arise_V = mkV "op" staan_V | mkV "op" komen_V | mkV "ont" staan_V | fixprefixV "ver" schijnen_V ;
@@ -1159,7 +1157,6 @@ lin articulate_V2 = mkV2 (mkV "articuleren") ; -- status=guess, src=wikt
 lin artie_PN = mkPN "Artie" ; -- src=eng status=guess
 lin artifact_N = mkN "artefact" neuter ; -- status=guess
 lin artificial_A = mkA "kunstmatig" | mkA "nagemaakt" | mkA "artificieel" ; -- status=guess status=guess status=guess
-lin artificially_Adv = adjAdv artificial_A ; -- derived
 lin artist_N = mkN "kunstenaar" masculine | mkN "kunstenares" feminine | mkN "artiest" masculine | mkN "artieste" feminine ;
 lin artistic_A = mkA "kunstzinnig" | mkA "artistiek" ; -- status=guess status=guess
 lin as_CAdv = S.as_CAdv ;
@@ -1197,6 +1194,16 @@ lin ask_V2 = mkV2 (mkV "vragen") ; ---- subcat
 lin ask_V2Q = L.ask_V2Q ;
 lin ask_V2V = mkV2V (mkV "vragen") ; ---- subcat
 lin ask_VQ = mkVQ (mkV "vragen") ;
+lin ask_about_V2 = prepV2 OP_ask_V OP_about_Prep ; -- guess-p-verb
+lin ask_after_V2 = prepV2 OP_ask_V OP_after_Prep ; -- guess-p-verb
+lin ask_around_V = advV OP_ask_V OP_around_Adv ; -- guess-p-verb
+lin ask_around_V2 = prepV2 OP_ask_V OP_around_Prep ; -- guess-p-verb
+lin ask_for_V2 = prepV2 OP_ask_V OP_for_Prep ; -- guess-p-verb
+lin ask_for_V3 = variants {} ; -- guess-p-verb
+lin ask_in_V2 = prepV2 OP_ask_V OP_in_Prep ; -- guess-p-verb
+lin ask_out_V2 = prepV2 OP_ask_V OP_out_Prep ; -- guess-p-verb
+lin ask_over_V2 = prepV2 OP_ask_V OP_over_Prep ; -- guess-p-verb
+lin ask_round_V2 = prepV2 OP_ask_V OP_round_Prep ; -- guess-p-verb
 lin askern_PN = mkPN "Askern" ; -- src=geonames status=guess
 lin askew_A = mkA "scheef" ; -- status=guess
 lin asking_N = mkN "vraagprijs" ; -- status=guess
@@ -1472,6 +1479,15 @@ lin back_A = mkA "achteraf" ; -- status=guess
 lin back_Adv = mkAdv "terug" ;
 lin back_N = L.back_N ;
 lin back_V = reflV (mkV "terugtrekken") ;
+lin back_away_V = advV OP_back_V OP_away_Adv ; -- guess-p-verb
+lin back_down_V = advV OP_back_V OP_down_Adv ; -- guess-p-verb
+lin back_into_V3 = variants {} ; -- guess-p-verb
+lin back_off_V = advV OP_back_V OP_off_Adv ; -- guess-p-verb
+lin back_out_V = advV OP_back_V OP_out_Adv ; -- guess-p-verb
+lin back_out_of_V2 = prepV2 (advV OP_back_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin back_out_of_V3 = variants {} ; -- guess-p-verb
+lin back_up_V = advV OP_back_V OP_up_Adv ; -- guess-p-verb
+lin back_up_V2 = prepV2 OP_back_V OP_up_Prep ; -- guess-p-verb
 lin backache_N = mkN "rugpijn" ; -- status=guess
 lin backbone_N = mkN "ruggengraat" masculine ; -- status=guess
 lin backfire_V = mkV "falen" ; -- status=guess, src=wikt
@@ -1503,7 +1519,6 @@ lin badajoz_PN = mkPN "Badajoz" ; -- src=geonames status=guess
 lin badalona_PN = mkPN "Badalona" ; -- src=geonames status=guess
 lin badger_N = mkN "das" masculine ; -- status=guess
 lin badger_V2 = mkV2 (mkV "lastigvallen") | mkV2 (mkV "plagen") ; -- status=guess, src=wikt status=guess, src=wikt
-lin badly_Adv = adjAdv bad_A ; -- -- derived
 lin baffle_N = mkN "schot" ; -- status=guess
 lin bag_N = mkN "tas" feminine | mkN "zak" masculine ;
 lin bag_V = mkV "verpakken" | mkV "inpakken" | mkV (mkV "in") "een zak stoppen" | mkV (mkV "in") "een zak steken" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -1734,6 +1749,12 @@ lin beanbag_N = mkN "zitzak" masculine ; -- status=guess
 lin bear_N = mkN "beer" masculine ; -- status=guess
 lin bear_V = dragen_V ;
 lin bear_V2 = mkV2 bear_V ;
+lin bear_down_on_V2 = prepV2 (advV OP_bear_V OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin bear_on_V2 = prepV2 OP_bear_V OP_on_Prep ; -- guess-p-verb
+lin bear_out_V2 = prepV2 OP_bear_V OP_out_Prep ; -- guess-p-verb
+lin bear_up_V = advV OP_bear_V OP_up_Adv ; -- guess-p-verb
+lin bear_up_under_V2 = prepV2 (advV OP_bear_V OP_up_Adv ) OP_under_Prep ; -- guess-p-verb
+lin bear_with_V2 = prepV2 OP_bear_V OP_with_Prep ; -- guess-p-verb
 lin bearable_A = mkA "draaglijk" ; -- status=guess
 lin beard_N = mkN "baard" masculine ; -- status=guess
 lin bearer_N = mkN "koelie" masculine ; -- status=guess
@@ -1745,13 +1766,17 @@ lin beastly_Adv = adjAdv beastly_A ; -- derived
 lin beat_N = mkN "zweving" feminine ; -- status=guess
 lin beat_V = slaan_V | mkV "kloppen" ;
 lin beat_V2 = mkV2 beat_V ;
+lin beat_back_V = advV OP_beat_V OP_back_Adv ; -- guess-p-verb
+lin beat_down_V = advV OP_beat_V OP_down_Adv ; -- guess-p-verb
+lin beat_down_V2 = prepV2 OP_beat_V OP_down_Prep ; -- guess-p-verb
+lin beat_out_V2 = prepV2 OP_beat_V OP_out_Prep ; -- guess-p-verb
+lin beat_up_V2 = prepV2 OP_beat_V OP_up_Prep ; -- guess-p-verb
 lin beater_N = mkN "klopper" masculine ; -- status=guess
 lin beatitude_N = mkN "gelukzaligheid" ; -- status=guess
 lin beatrice_PN = mkPN "Beatrice" ; -- src=geonames status=guess
 lin beaumaris_PN = mkPN "Beaumaris" ; -- src=geonames status=guess
 lin beautician_N = mkN "schoonheidsspecialiste" feminine ; -- status=guess
 lin beautiful_A = L.beautiful_A ;
-lin beautifully_Adv = adjAdv beautiful_A ; -- -- derived
 lin beauty_N = mkN "schoonheid" | mkN "schone" feminine ; -- status=guess status=guess
 lin beaver_N = mkN "bever" masculine ; -- status=guess
 lin bebington_PN = mkPN "Bebington" ; -- src=geonames status=guess
@@ -1867,6 +1892,9 @@ lin benchmark_N = mkN "ijkpunt" neuter | mkN "maatstaf" ; -- status=guess status
 lin bend_N = mkN "bocht" masculine ; -- status=guess
 lin bend_V = mkV "bukken" ; -- status=guess, src=wikt
 lin bend_V2 = mkV2 (mkV "bukken") ; -- status=guess, src=wikt
+lin bend_down_V = advV OP_bend_V OP_down_Adv ; -- guess-p-verb
+lin bend_over_V = advV OP_bend_V OP_over_Adv ; -- guess-p-verb
+lin bend_over_backwards_V = variants {} ; -- guess-p-verb
 lin bender_N = mkN "buigtang" ; -- status=guess
 lin beneath_Adv = mkAdv "onder" | mkAdv "beneden" ; -- status=guess status=guess
 lin beneath_Prep = variants {} ; --
@@ -2069,7 +2097,6 @@ lin bite_N = mkN "bijten" neuter ; -- status=guess
 lin bite_V = mkV (mkV "te") "veel hooi op de vork nemen" ; -- status=guess, src=wikt
 lin bite_V2 = L.bite_V2 ;
 lin bitter_A = mkA "verbitterd" ; -- status=guess
-lin bitterly_Adv = adjAdv bitter_A ; -- -- derived
 lin bittern_N = mkN "roerdomp" masculine ; -- status=guess
 lin bittersweet_A = mkA "bitterzoet" ; -- status=guess
 lin bivouac_N = mkN "bivak" neuter ; -- status=guess
@@ -2155,6 +2182,10 @@ lin blithe_A = mkA "blij" ; -- status=guess
 lin bloated_A = mkA "gigantisch" | mkA "zeer vermogend" ; -- status=guess status=guess
 lin block_N = mkN "blok" neuter ; -- status=guess
 lin block_V2 = mkV2 (mkV "verhinderen") | mkV2 (mkV "tegenhouden") ; -- status=guess, src=wikt status=guess, src=wikt
+lin block_in_V2 = prepV2 (lin V OP_block_V2) OP_in_Prep ; -- guess-p-verb
+lin block_off_V2 = prepV2 (lin V OP_block_V2) OP_off_Prep ; -- guess-p-verb
+lin block_out_V2 = prepV2 (lin V OP_block_V2) OP_out_Prep ; -- guess-p-verb
+lin block_up_V2 = prepV2 (lin V OP_block_V2) OP_up_Prep ; -- guess-p-verb
 lin blockade_N = mkN "blokkade" feminine ; -- status=guess
 lin blockbuster_N = mkN "kaskraker" masculine ; -- status=guess
 lin blockhead_N = mkN "stomkop" masculine feminine | mkN "domkop" masculine feminine ; -- status=guess status=guess
@@ -2177,6 +2208,17 @@ lin blouse_N = mkN "blouse" | mkN "bloes" ; -- status=guess status=guess
 lin blow_N = mkN "slag" masculine ; -- status=guess
 lin blow_V = L.blow_V ;
 lin blow_V2 = mkV2 (mkV (mkV "stoom") "afblazen") ; -- status=guess, src=wikt
+lin blow_away_V = advV OP_blow_V OP_away_Adv ; -- guess-p-verb
+lin blow_away_V2 = mkV2 (advV OP_blow_V OP_away_Adv ) ; -- guess-p-verb
+lin blow_down_V2 = prepV2 OP_blow_V OP_down_Prep ; -- guess-p-verb
+lin blow_dry_V2 = variants {} ; -- guess-p-verb
+lin blow_in_V = advV OP_blow_V OP_in_Adv ; -- guess-p-verb
+lin blow_off_V = advV OP_blow_V OP_off_Adv ; -- guess-p-verb
+lin blow_off_V2 = prepV2 OP_blow_V OP_off_Prep ; -- guess-p-verb
+lin blow_out_V2 = prepV2 OP_blow_V OP_out_Prep ; -- guess-p-verb
+lin blow_over_V = advV OP_blow_V OP_over_Adv ; -- guess-p-verb
+lin blow_up_V = advV OP_blow_V OP_up_Adv ; -- guess-p-verb
+lin blow_up_V2 = prepV2 OP_blow_V OP_up_Prep ; -- guess-p-verb
 lin blowfish_N = mkN "kogelvis" masculine ; -- status=guess
 lin blowfly_N = mkN "bromvlieg" feminine | mkN "aasvlieg" feminine ; -- status=guess status=guess
 lin blowgun_N = mkN "blaasroer" neuter ; -- status=guess
@@ -2449,6 +2491,22 @@ lin breadwinner_N = mkN "kostwinner" masculine | mkN "broodwinner" masculine ; -
 lin break_N = mkN "inbraak" utrum ; -- status=guess
 lin break_V = lin v break_V2 ;
 lin break_V2 = L.break_V2 ;
+lin break_apart_V = advV OP_break_V OP_apart_Adv ; -- guess-p-verb
+lin break_away_V = advV OP_break_V OP_away_Adv ; -- guess-p-verb
+lin break_down_V = advV OP_break_V OP_down_Adv ; -- guess-p-verb
+lin break_down_V2 = prepV2 OP_break_V OP_down_Prep ; -- guess-p-verb
+lin break_in_V = advV OP_break_V OP_in_Adv ; -- guess-p-verb
+lin break_in_V2 = prepV2 OP_break_V OP_in_Prep ; -- guess-p-verb
+lin break_in_on_V2 = prepV2 (advV OP_break_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin break_into_V2 = prepV2 OP_break_V OP_into_Prep ; -- guess-p-verb
+lin break_off_V2 = prepV2 OP_break_V OP_off_Prep ; -- guess-p-verb
+lin break_out_V = advV OP_break_V OP_out_Adv ; -- guess-p-verb
+lin break_out_V2 = prepV2 OP_break_V OP_out_Prep ; -- guess-p-verb
+lin break_out_in_V2 = prepV2 (advV OP_break_V OP_out_Adv ) OP_in_Prep ; -- guess-p-verb
+lin break_out_of_V2 = prepV2 (advV OP_break_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin break_through_V2 = prepV2 OP_break_V OP_through_Prep ; -- guess-p-verb
+lin break_up_V = advV OP_break_V OP_up_Adv ; -- guess-p-verb
+lin break_up_V2 = prepV2 OP_break_V OP_up_Prep ; -- guess-p-verb
 lin breakdown_N = mkN "defect" neuter | mkN "mankement" neuter | mkN "panne" feminine | mkN "stilstand" masculine ; -- status=guess status=guess status=guess status=guess
 lin breakfast_N = mkN "ontbijt" neuter ; -- status=guess
 lin breakfast_V = mkV "ontbijten" ; -- status=guess, src=wikt
@@ -2514,7 +2572,6 @@ lin bridlington_PN = mkPN "Bridlington" ; -- src=geonames status=guess
 lin bridport_PN = mkPN "Bridport" ; -- src=geonames status=guess
 lin brief_A = mkA "kort" | mkA "bondig" | mkA "samengevat" ; -- status=guess status=guess status=guess
 lin briefcase_N = mkN "aktetas" ; -- status=guess
-lin briefly_Adv = adjAdv brief_A ; -- -- derived
 lin brig_N = mkN "cachot" neuter | mkN "leger-" ; -- status=guess status=guess
 lin brig_PN = mkPN "Brig" ; -- src=geonames status=guess
 lin brigade_N = variants {} ; --
@@ -2523,7 +2580,6 @@ lin brigantine_N = mkN "brigantijn" | mkN "brik or" masculine ; -- status=guess 
 lin brighouse_PN = mkPN "Brighouse" ; -- src=geonames status=guess
 lin bright_A = mkA "helder" ;
 lin brightlingsea_PN = mkPN "Brightlingsea" ; -- src=geonames status=guess
-lin brightly_Adv = adjAdv bright_A ; -- derived
 lin brightness_N = mkN "glans" masculine | mkN "helderheid" feminine ; -- status=guess status=guess
 lin brighton_PN = mkPN "Brighton" ; -- src=geonames status=guess
 lin brill_N = mkN "griet" masculine feminine ; -- status=guess
@@ -2532,6 +2588,24 @@ lin brimstone_N = mkN "zwavel" masculine ; -- status=guess
 lin brine_N = mkN "pekel" masculine ; -- status=guess
 lin bring_V2 = mkV2 (mkV "brengen") ;
 lin bring_V3 = mkV3 (mkV "brengen") ;
+lin bring_about_V2 = prepV2 (lin V OP_bring_V2) OP_about_Prep ; -- guess-p-verb
+lin bring_along_V2 = prepV2 (lin V OP_bring_V2) OP_along_Prep ; -- guess-p-verb
+lin bring_around_V2 = prepV2 (lin V OP_bring_V2) OP_around_Prep ; -- guess-p-verb
+lin bring_away_V2 = mkV2 (advV (lin V OP_bring_V2) OP_away_Adv ) ; -- guess-p-verb
+lin bring_back_V2 = mkV2 (advV (lin V OP_bring_V2) OP_back_Adv ) ; -- guess-p-verb
+lin bring_down_V2 = prepV2 (lin V OP_bring_V2) OP_down_Prep ; -- guess-p-verb
+lin bring_forth_V = advV (lin V OP_bring_V2) OP_forth_Adv ; -- guess-p-verb
+lin bring_forth_V2 = mkV2 (advV (lin V OP_bring_V2) OP_forth_Adv ) ; -- guess-p-verb
+lin bring_forward_V2 = mkV2 (advV (lin V OP_bring_V2) OP_forward_Adv ) ; -- guess-p-verb
+lin bring_in_V2 = prepV2 (lin V OP_bring_V2) OP_in_Prep ; -- guess-p-verb
+lin bring_off_V2 = prepV2 (lin V OP_bring_V2) OP_off_Prep ; -- guess-p-verb
+lin bring_on_V2 = prepV2 (lin V OP_bring_V2) OP_on_Prep ; -- guess-p-verb
+lin bring_out_V2 = prepV2 (lin V OP_bring_V2) OP_out_Prep ; -- guess-p-verb
+lin bring_out_in_V3 = variants {} ; -- guess-p-verb
+lin bring_over_V2 = prepV2 (lin V OP_bring_V2) OP_over_Prep ; -- guess-p-verb
+lin bring_round_V2 = prepV2 (lin V OP_bring_V2) OP_round_Prep ; -- guess-p-verb
+lin bring_to_V2 = prepV2 (lin V OP_bring_V2) OP_to_Prep ; -- guess-p-verb
+lin bring_up_V2 = prepV2 (lin V OP_bring_V2) OP_up_Prep ; -- guess-p-verb
 lin brink_N = mkN "rand" | mkN "steile rand" ; -- status=guess status=guess
 lin brioche_N = mkN "brioche" ; -- status=guess
 lin briquet_N = mkN "briket" ; -- status=guess
@@ -2554,7 +2628,6 @@ lin broadcast_V = mkV "omroepen" ; -- status=guess, src=wikt
 lin broadcast_V2 = mkV2 (mkV "omroepen") ; -- status=guess, src=wikt
 lin broaden_V = mkV "verbreden" | mkV "verruimen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin broaden_V2 = mkV2 (mkV "verbreden") | mkV2 (mkV "verruimen") ; -- status=guess, src=wikt status=guess, src=wikt
-lin broadly_Adv = adjAdv broad_A ; -- -- derived
 lin brocade_N = mkN "brokaat" neuter ; -- status=guess
 lin brochure_N = mkN "brochure" ; -- status=guess
 lin broke_A = mkA "blut" ; -- status=guess
@@ -2605,7 +2678,6 @@ lin brusque_A = mkA "bruusk" ; -- status=guess
 lin brussels_PN = mkPN "Brussel" ; -- src=geonames status=guess
 lin brutal_A = mkA "bruut" ; -- status=guess
 lin brutality_N = mkN "wreedheid" ; -- status=guess
-lin brutally_Adv = adjAdv brutal_A ; -- derived
 lin bryan_PN = mkPN "Bryan" ; -- src=geonames status=guess
 lin bst_PN = mkPN "BST" ; -- src=eng status=guess
 lin bt_PN = mkPN "BT" ; -- src=eng status=guess
@@ -2651,6 +2723,7 @@ lin bugle_N = mkN "bugel" masculine | mkN "flügelhorn" ; -- status=guess status
 lin build_N = mkN "bouw" ; -- status=guess
 lin build_V = mkV "bouwen" ;
 lin build_V2 = mkV2 (mkV "bouwen") ;
+lin build_up_V2 = prepV2 OP_build_V OP_up_Prep ; -- guess-p-verb
 lin builder_N = mkN "bouwer" ; -- status=guess
 lin building_N = mkN "gebouw" neuter | mkN "bouw" masculine ;
 lin bulb_N = variants {} ; --
@@ -2723,6 +2796,12 @@ lin burma_PN = mkPN "Burma" ; -- src=eng status=guess
 lin burn_N = mkN "brandwond" feminine | mkN "verbranding" feminine ; -- status=guess status=guess
 lin burn_V = L.burn_V ;
 lin burn_V2 = mkV2 (mkV "branden") | mkV2 (mkV "verbranden") | mkV2 (mkV "verteren") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin burn_down_V = advV OP_burn_V OP_down_Adv ; -- guess-p-verb
+lin burn_down_V2 = prepV2 OP_burn_V OP_down_Prep ; -- guess-p-verb
+lin burn_off_V2 = prepV2 OP_burn_V OP_off_Prep ; -- guess-p-verb
+lin burn_out_V = advV OP_burn_V OP_out_Adv ; -- guess-p-verb
+lin burn_up_V = advV OP_burn_V OP_up_Adv ; -- guess-p-verb
+lin burn_up_V2 = prepV2 OP_burn_V OP_up_Prep ; -- guess-p-verb
 lin burner_N = mkN "brander" masculine ; -- status=guess
 lin burnham_on_sea_PN = mkPN "Burnham-on-sea" ; -- src=eng status=guess
 lin burning_A = variants {} ; --
@@ -2741,6 +2820,7 @@ lin burscough_PN = mkPN "Burscough" ; -- src=eng status=guess
 lin burst_N = variants {} ; --
 lin burst_V = barsten_V ; -- status=guess, src=wikt
 lin burst_V2 = mkV2 (barsten_V) ; -- status=guess, src=wikt
+lin burst_into_V2 = prepV2 OP_burst_V OP_into_Prep ; -- guess-p-verb
 lin burton_upon_trent_PN = mkPN "Burton-upon-trent" ; -- src=eng status=guess
 lin burundi_PN = mkPN "Burundi" ; -- src=geonames status=guess
 lin bury_PN = mkPN "Bury" ; -- src=geonames status=guess
@@ -2789,6 +2869,12 @@ lin buxom_A = mkA "rondborstig" ; -- status=guess
 lin buxton_PN = mkPN "Buxton" ; -- src=geonames status=guess
 lin buy_V = kopen_V ;
 lin buy_V2 = L.buy_V2 ;
+lin buy_back_V2 = mkV2 (advV OP_buy_V OP_back_Adv ) ; -- guess-p-verb
+lin buy_in_V2 = prepV2 OP_buy_V OP_in_Prep ; -- guess-p-verb
+lin buy_into_V2 = prepV2 OP_buy_V OP_into_Prep ; -- guess-p-verb
+lin buy_off_V2 = prepV2 OP_buy_V OP_off_Prep ; -- guess-p-verb
+lin buy_out_V2 = prepV2 OP_buy_V OP_out_Prep ; -- guess-p-verb
+lin buy_up_V2 = prepV2 OP_buy_V OP_up_Prep ; -- guess-p-verb
 lin buyerMasc_N = mkN "koper" masculine | mkN "aankoper" masculine | mkN "inkoper" masculine | mkN "klant" masculine feminine ; -- status=guess status=guess status=guess status=guess
 lin buzz_N = mkN "opwinding" feminine | mkN "roes" masculine ; -- status=guess status=guess
 lin buzz_V = mkV "zoemen" ; -- status=guess, src=wikt
@@ -2865,6 +2951,20 @@ lin caliph_N = mkN "kalief" masculine ; -- status=guess
 lin call_N = mkN "telefoongesprek" neuter | mkN "belletje" neuter ;
 lin call_V = mkV "bellen" ; --- mkV "roepen" call for help, mkV "noemen" call me Erik
 lin call_V2 = mkV2 (mkV "roepen") ;
+lin call_after_V2 = prepV2 OP_call_V OP_after_Prep ; -- guess-p-verb
+lin call_around_V = advV OP_call_V OP_around_Adv ; -- guess-p-verb
+lin call_back_V2 = mkV2 (advV OP_call_V OP_back_Adv ) ; -- guess-p-verb
+lin call_for_V2V = variants {} ; -- guess-p-verb
+lin call_forth_V2 = mkV2 (advV OP_call_V OP_forth_Adv ) ; -- guess-p-verb
+lin call_in_V = advV OP_call_V OP_in_Adv ; -- guess-p-verb
+lin call_in_V2 = prepV2 OP_call_V OP_in_Prep ; -- guess-p-verb
+lin call_off_V2 = prepV2 OP_call_V OP_off_Prep ; -- guess-p-verb
+lin call_on_V = advV OP_call_V OP_on_Adv ; -- guess-p-verb
+lin call_on_V2 = prepV2 OP_call_V OP_on_Prep ; -- guess-p-verb
+lin call_out_V2 = prepV2 OP_call_V OP_out_Prep ; -- guess-p-verb
+lin call_over_V = advV OP_call_V OP_over_Adv ; -- guess-p-verb
+lin call_round_V = advV OP_call_V OP_round_Adv ; -- guess-p-verb
+lin call_up_V2 = prepV2 OP_call_V OP_up_Prep ; -- guess-p-verb
 lin caller_N = mkN "beller" ; -- status=guess
 lin calligraphy_N = mkN "kalligrafie" utrum ; -- status=guess
 lin calling_N = mkN "roepnaam" ; -- status=guess
@@ -3024,10 +3124,10 @@ lin cardiology_N = mkN "cardiologie" feminine ; -- status=guess
 lin cardoon_N = mkN "kardoen" masculine ; -- status=guess
 lin care_N = mkN "zorg" ;
 lin care_V = mkV "zorgen" ;
+lin care_for_V2 = prepV2 OP_care_V OP_for_Prep ; -- guess-p-verb
 lin career_N = mkN "carrière" feminine | mkN "loopbaan" ;
 lin carefree_A = mkA "onbekommerd" ; -- status=guess
 lin careful_A = mkA "voorzichtig" | mkA "behoedzaam" | mkA "omzichtig" | mkA "prudent" ; -- status=guess status=guess status=guess status=guess
-lin carefully_Adv = mkAdv "voorzichtig" | adjAdv careful_A ; -- derived
 lin careless_A = mkA "onverschillig" ; -- status=guess
 lin carelessness_N = mkN "onvoorzichtigheid" | mkN "onoplettendheid" | mkN "achteloosheid" feminine ; -- status=guess status=guess status=guess
 lin carer_N = mkN "verzorger" ; -- status=guess
@@ -3075,6 +3175,16 @@ lin carrot_N = mkN "wortel" masculine | mkN "peen" masculine ; -- status=guess s
 lin carry_N = mkN "greep" masculine ; -- status=guess
 lin carry_V = mkV "dragen" "droeg" "droegen" "gedragen" ;
 lin carry_V2 = mkV2 carry_V ;
+lin carry_forward_V2 = mkV2 (advV OP_carry_V OP_forward_Adv ) ; -- guess-p-verb
+lin carry_off_V2 = prepV2 OP_carry_V OP_off_Prep ; -- guess-p-verb
+lin carry_on_V = advV OP_carry_V OP_on_Adv ; -- guess-p-verb
+lin carry_on_V2 = prepV2 OP_carry_V OP_on_Prep ; -- guess-p-verb
+lin carry_on_about_V2 = prepV2 (advV OP_carry_V OP_on_Adv ) OP_about_Prep ; -- guess-p-verb
+lin carry_on_with_V2 = prepV2 (advV OP_carry_V OP_on_Adv ) OP_with_Prep ; -- guess-p-verb
+lin carry_out_V = advV OP_carry_V OP_out_Adv ; -- guess-p-verb
+lin carry_out_V2 = prepV2 OP_carry_V OP_out_Prep ; -- guess-p-verb
+lin carry_over_V2 = prepV2 OP_carry_V OP_over_Prep ; -- guess-p-verb
+lin carry_through_V2 = prepV2 OP_carry_V OP_through_Prep ; -- guess-p-verb
 lin carsick_A = mkA "wagenziek" ; -- status=guess
 lin carsickness_N = mkN "wagenziekte" feminine ; -- status=guess
 lin cart_N = variants {} ; --
@@ -3098,6 +3208,15 @@ lin cassowary_N = mkN "kasuaris" masculine ; -- status=guess
 lin cast_N = mkN "rolverdeling" feminine | mkN "casten" neuter | mkN "casting" feminine ; -- status=guess status=guess status=guess
 lin cast_V = mkV (mkV "met") "modder gooien naar" ; -- status=guess, src=wikt
 lin cast_V2 = mkV2 (mkV (mkV "met") "modder gooien naar") ; -- status=guess, src=wikt
+lin cast_about_for_V2 = prepV2 (advV OP_cast_V OP_about_Adv ) OP_for_Prep ; -- guess-p-verb
+lin cast_around_V = advV OP_cast_V OP_around_Adv ; -- guess-p-verb
+lin cast_around_for_V2 = prepV2 (advV OP_cast_V OP_around_Adv ) OP_for_Prep ; -- guess-p-verb
+lin cast_aside_V2 = mkV2 (advV OP_cast_V OP_aside_Adv ) ; -- guess-p-verb
+lin cast_off_V = advV OP_cast_V OP_off_Adv ; -- guess-p-verb
+lin cast_off_V2 = prepV2 OP_cast_V OP_off_Prep ; -- guess-p-verb
+lin cast_out_V2 = prepV2 OP_cast_V OP_out_Prep ; -- guess-p-verb
+lin cast_round_for_V2 = prepV2 (advV OP_cast_V OP_round_Adv ) OP_for_Prep ; -- guess-p-verb
+lin cast_up_V2 = prepV2 OP_cast_V OP_up_Prep ; -- guess-p-verb
 lin caste_N = mkN "kaste" masculine feminine ; -- status=guess
 lin casting_N = mkN "gieting" feminine ; -- status=guess
 lin castle_N = mkN "kasteel" neuter | mkN "fort" neuter | mkN "burcht" feminine | mkN "slot" neuter ; -- status=guess status=guess status=guess status=guess
@@ -3120,6 +3239,14 @@ lin cataract_N = mkN "stortvloed" ; -- status=guess
 lin catarrh_N = mkN "slijmvliesontsteking" feminine ; -- status=guess
 lin catch_N = mkN "haak" masculine ; -- status=guess
 lin catch_V2 = mkV2 vangen_V ;
+lin catch_at_V2 = prepV2 (lin V OP_catch_V2) OP_at_Prep ; -- guess-p-verb
+lin catch_on_V = advV (lin V OP_catch_V2) OP_on_Adv ; -- guess-p-verb
+lin catch_out_V2 = prepV2 (lin V OP_catch_V2) OP_out_Prep ; -- guess-p-verb
+lin catch_up_V = advV (lin V OP_catch_V2) OP_up_Adv ; -- guess-p-verb
+lin catch_up_V2 = prepV2 (lin V OP_catch_V2) OP_up_Prep ; -- guess-p-verb
+lin catch_up_in_V2 = prepV2 (advV (lin V OP_catch_V2) OP_up_Adv ) OP_in_Prep ; -- guess-p-verb
+lin catch_up_on_V2 = prepV2 (advV (lin V OP_catch_V2) OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin catch_up_with_V2 = prepV2 (advV (lin V OP_catch_V2) OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
 lin catcher_N = mkN "catcher" masculine feminine | mkN "achtervanger" masculine ; -- status=guess status=guess
 lin catchy_A = mkA "aanstekelijk" | mkA "pakkend" ; -- status=guess status=guess
 lin categorization_N = mkN "categoriseren" neuter ; -- status=guess
@@ -3205,9 +3332,6 @@ lin cent_N = mkN "cent" masculine ; -- status=guess
 lin centaur_N = mkN "paardmens" masculine | mkN "kentaur" masculine | mkN "centaur" masculine ; -- status=guess status=guess status=guess
 lin centenarian_N = mkN "honderdjarige" masculine feminine ; -- status=guess
 lin center_A = mkA "centraal" ; -- status=guess
-lin center_N = mkN "centrum" ; -- status=guess
-lin center_V = mkV "centreren" ; -- status=guess, src=wikt
-lin center_V2 = mkV2 (mkV "centreren") ; -- status=guess, src=wikt
 lin centerfold_N = mkN "pin-up" masculine feminine ; -- status=guess
 lin centimetre_N = mkN "centimeter" ; -- status=guess
 lin centipede_N = mkN "duizendpoot" masculine ; -- status=guess
@@ -3216,10 +3340,9 @@ lin central_N = mkN "centrale verwarming" feminine ; -- status=guess
 lin centralization_N = mkN "centralisatie" feminine ; -- status=guess
 lin centralize_V = mkV "centraliseren" ; -- status=guess, src=wikt
 lin centralize_V2 = mkV2 (mkV "centraliseren") ; -- status=guess, src=wikt
-lin centrally_Adv = adjAdv central_A ; -- derived
 lin centre_N = mkN "midden" neuter | mkN "centrum" neuter ; --- possible split, centrum is for locations
-lin centre_V = variants {} ; --
-lin centre_V2 = variants {} ; --
+lin centre_V = mkV "centreren" ; -- status=guess, src=wikt
+lin centre_V2 = mkV2 (mkV "centreren") ; -- status=guess, src=wikt
 lin century_N = mkN "eeuw" ;
 lin ceramic_N = mkN "keramiek" feminine ; -- status=guess
 lin cereal_N = variants {} ; --
@@ -3231,7 +3354,6 @@ lin cerium_N = mkN "cerium" neuter ; -- status=guess
 lin certain_1_A = mkA "zeker" ;
 lin certain_2_A = mkA "zeker" ;
 lin certain_A = mkA "zeker" ;
-lin certainly_Adv = mkAdv "beslist" | mkAdv "zeker" | adjAdv certain_2_A ; -- derived
 lin certainty_N = mkN "zekerheid" feminine ; -- status=guess
 lin certificate_N = mkN "certificaat" | mkN "attest" neuter ; -- status=guess status=guess
 lin certification_N = mkN "attestering" feminine ; -- status=guess
@@ -3282,6 +3404,7 @@ lin changchun_PN = mkPN "Changchun" ; -- src=geonames status=guess
 lin change_N = mkN "wisselgeld" | mkN "muntgeld" ; --- mkN "verandering" a change
 lin change_V = no_geV (mkV "veranderen") | reflV (mkV "aan" (mkV "passen")) ;
 lin change_V2 = mkV2 (no_geV (mkV "veranderen")) | mkV2 (mkV "aan" (mkV "passen")) ;
+lin change_over_V2 = prepV2 OP_change_V OP_over_Prep ; -- guess-p-verb
 lin changing_A = variants {} ; --
 lin changsha_PN = mkPN "Changsha" ; -- src=geonames status=guess
 lin channel_N = mkN "kanaal" neuter | mkN "zender" masculine ; -- status=guess status=guess
@@ -3307,6 +3430,9 @@ lin charge_2_N = mkN "aanklacht" ;
 lin charge_N = charge_1_N | charge_2_N ;
 lin charge_V = mkV "laden" ;
 lin charge_V2 = mkV2 (mkV "laden") ;
+lin charge_off_V = advV OP_charge_V OP_off_Adv ; -- guess-p-verb
+lin charge_up_V2 = prepV2 OP_charge_V OP_up_Prep ; -- guess-p-verb
+lin charge_with_V3 = variants {} ; -- guess-p-verb
 lin charger_N = mkN "oplader" masculine ; -- status=guess
 lin chariot_N = mkN "strijdwagen" masculine ; -- status=guess
 lin charioteer_N = mkN "wagenmenner" masculine ; -- status=guess
@@ -3322,7 +3448,6 @@ lin charm_N = mkN "charme" ; -- status=guess
 lin charm_V = mkV "betoveren" | mkV "bezweren" ; -- status=guess, src=wikt status=guess, src=wikt
 lin charm_V2 = mkV2 (mkV "betoveren") | mkV2 (mkV "bezweren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin charming_A = variants {} ; --
-lin charmingly_Adv = adjAdv charming_A ; -- derived
 lin chart_N = variants {} ; --
 lin charter_N = variants {} ; --
 lin charwoman_N = mkN "poetsvrouw" | mkN "schoonmaakster" feminine ; -- status=guess status=guess
@@ -3353,6 +3478,21 @@ lin cheat_V2 = mkV2 (mkV "vreemdgaan") ; -- status=guess, src=wikt
 lin check_N = mkN "rekening" feminine ; -- status=guess
 lin check_V = mkV "controleren" ;
 lin check_V2 = mkV2 check_V ;
+lin check_back_V = advV OP_check_V OP_back_Adv ; -- guess-p-verb
+lin check_by_V2 = prepV2 OP_check_V OP_by_Prep ; -- guess-p-verb
+lin check_for_V2 = prepV2 OP_check_V OP_for_Prep ; -- guess-p-verb
+lin check_in_V = advV OP_check_V OP_in_Adv ; -- guess-p-verb
+lin check_in_V2 = prepV2 OP_check_V OP_in_Prep ; -- guess-p-verb
+lin check_into_V2 = prepV2 OP_check_V OP_into_Prep ; -- guess-p-verb
+lin check_off_V2 = prepV2 OP_check_V OP_off_Prep ; -- guess-p-verb
+lin check_on_V2 = prepV2 OP_check_V OP_on_Prep ; -- guess-p-verb
+lin check_out_V = advV OP_check_V OP_out_Adv ; -- guess-p-verb
+lin check_out_V2 = prepV2 OP_check_V OP_out_Prep ; -- guess-p-verb
+lin check_out_of_V2 = prepV2 (advV OP_check_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin check_over_V2 = prepV2 OP_check_V OP_over_Prep ; -- guess-p-verb
+lin check_through_V2 = prepV2 OP_check_V OP_through_Prep ; -- guess-p-verb
+lin check_up_on_V2 = prepV2 (advV OP_check_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin check_with_V2 = prepV2 OP_check_V OP_with_Prep ; -- guess-p-verb
 lin checkmate_N = mkN "schaakmat" | mkN "mat" ; -- status=guess status=guess
 lin checkpoint_N = mkN "doorlaatpost" feminine ; -- status=guess
 lin checksum_N = mkN "controlecijfer" neuter | mkN "checksum" ; -- status=guess status=guess
@@ -3373,7 +3513,6 @@ lin cheltenham_PN = mkPN "Cheltenham" ; -- src=geonames status=guess
 lin chelyabinsk_PN = mkPN "Tsjeljabinsk" ; -- src=geonames status=guess
 lin chemical_A = mkA "chemisch" | mkA "scheikundig" ; -- status=guess status=guess
 lin chemical_N = mkN "verslavend middel" neuter ; -- status=guess
-lin chemically_Adv = adjAdv chemical_A ; -- derived
 lin chemistMasc_N = mkN "scheikundige" masculine feminine | mkN "chemicus" masculine ; -- status=guess status=guess
 lin chemistry_N = mkN "chemie" feminine | mkN "scheikunde" feminine ; -- status=guess status=guess
 lin chemotherapy_N = mkN "chemokuur" masculine feminine | mkN "chemotherapie" feminine ; -- status=guess status=guess
@@ -3410,7 +3549,6 @@ lin chickweed_N = mkN "hoornbloem" | mkN "muur" ; -- status=guess status=guess
 lin chicory_N = mkN "cichorei" utrum | mkN "witlof" neuter ; -- status=guess status=guess
 lin chief_A = mkA "hoofd" | mkA "chef" ;
 lin chief_N = mkN "oppergod" masculine ; -- status=guess
-lin chiefly_Adv = mkAdv "voornamelijk" | adjAdv chief_A ; -- status=guess -- derived
 lin chieftainMasc_N = mkN "stamhoofd" neuter | mkN "opperhoofd" neuter ; -- status=guess status=guess
 lin child_N = L.child_N ;
 lin childhood_N = mkN "kinderjaren" neuter | mkN "kindertijd" masculine ; -- status=guess status=guess
@@ -3445,6 +3583,8 @@ lin cholera_N = mkN "cholera" ; -- status=guess
 lin choleric_A = mkA "cholerisch" | mkA "kwaad" ; -- status=guess status=guess
 lin choose_V2 = mkV2 (kiezen_V) ;
 lin choose_VV = mkVV (kiezen_V) ;
+lin choose_up_V = advV (lin V OP_choose_V2) OP_up_Adv ; -- guess-p-verb
+lin choose_up_V2 = prepV2 (lin V OP_choose_V2) OP_up_Prep ; -- guess-p-verb
 lin choosy_A = mkA "kieskeurig" ; -- status=guess
 lin chop_N = mkN "karbonade" utrum ; -- status=guess
 lin chop_V = variants {} ; --
@@ -3475,7 +3615,6 @@ lin chromosome_N = mkN "chromosoom" neuter ; -- status=guess
 lin chronic_A = mkA "chronisch" ; -- status=guess
 lin chronicle_N = mkN "kroniek" feminine ; -- status=guess
 lin chronological_A = mkA "chronologisch" ; -- status=guess
-lin chronologically_Adv = adjAdv chronological_A ; -- derived
 lin chub_N = mkN "dikkerd" masculine | mkN "dikzak" masculine ; -- status=guess status=guess
 lin chubby_A = mkA "mollig" ; -- status=guess
 lin chuck_V2 = mkV2 (mkV "weggooien") ; -- status=guess, src=wikt
@@ -3591,15 +3730,25 @@ lin claystone_N = mkN "kleisteen" ; -- status=guess
 lin clean_A = L.clean_A ;
 lin clean_V = mkV "poetsen" | mkV "schoonmaken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin clean_V2 = mkV2 (mkV "poetsen") | mkV2 (mkV "schoonmaken") ; -- status=guess, src=wikt status=guess, src=wikt
+lin clean_out_V = advV OP_clean_V OP_out_Adv ; -- guess-p-verb
+lin clean_out_V2 = prepV2 OP_clean_V OP_out_Prep ; -- guess-p-verb
+lin clean_up_V = advV OP_clean_V OP_up_Adv ; -- guess-p-verb
+lin clean_up_V2 = prepV2 OP_clean_V OP_up_Prep ; -- guess-p-verb
 lin cleaner_N = variants {} ; --
 lin cleanse_V2 = mkV2 (mkV "reinigen") | mkV2 (mkV "schoonmaken") ; -- status=guess, src=wikt status=guess, src=wikt
 lin clear_A = mkA "helder" | mkA "klaar" ;
 lin clear_Adv = mkAdv "helemaal" ; -- status=guess
 lin clear_V = mkV "op" (mkV "klaren") ;
 lin clear_V2 = mkV2 clear_V ;
+lin clear_away_V = advV OP_clear_V OP_away_Adv ; -- guess-p-verb
+lin clear_away_V2 = mkV2 (advV OP_clear_V OP_away_Adv ) ; -- guess-p-verb
+lin clear_off_V = advV OP_clear_V OP_off_Adv ; -- guess-p-verb
+lin clear_out_V = advV OP_clear_V OP_out_Adv ; -- guess-p-verb
+lin clear_out_V2 = prepV2 OP_clear_V OP_out_Prep ; -- guess-p-verb
+lin clear_up_V = advV OP_clear_V OP_up_Adv ; -- guess-p-verb
+lin clear_up_V2 = prepV2 OP_clear_V OP_up_Prep ; -- guess-p-verb
 lin clearance_N = variants {} ; --
 lin clearing_N = variants {} ; --
-lin clearly_Adv = mkAdv "duidelijk" | adjAdv clear_A ; -- derived
 lin cleator_moor_PN = mkPN "Cleator moor" ; -- src=eng status=guess
 lin cleavable_A = mkA "splitsbare" ; -- status=guess
 lin cleavage_N = mkN "deling" feminine ; -- status=guess
@@ -3629,6 +3778,7 @@ lin climatology_N = mkN "klimatologie" feminine ; -- status=guess
 lin climb_N = variants {} ; --
 lin climb_V = klimmen_V ; -- status=guess, src=wikt
 lin climb_V2 = mkV2 (klimmen_V) ; -- status=guess, src=wikt
+lin climb_down_V = advV OP_climb_V OP_down_Adv ; -- guess-p-verb
 lin climber_N = mkN "klimmer" masculine | mkN "beklimmer" masculine ; -- status=guess status=guess
 lin cling_V = mkV "klampen" ; -- status=guess, src=wikt
 lin clinic_N = variants {} ; --
@@ -3655,8 +3805,17 @@ lin close_A = mkA "dichtbij" | mkA "nabij" ;
 lin close_Adv = mkAdv "dicht" | mkAdv "nader" ;
 lin close_V = sluiten_V ;
 lin close_V2 = L.close_V2 ;
+lin close_down_V = advV OP_close_V OP_down_Adv ; -- guess-p-verb
+lin close_down_V2 = prepV2 OP_close_V OP_down_Prep ; -- guess-p-verb
+lin close_in_V = advV OP_close_V OP_in_Adv ; -- guess-p-verb
+lin close_in_on_V2 = prepV2 (advV OP_close_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin close_in_upon_V2 = prepV2 (advV OP_close_V OP_in_Adv ) OP_upon_Prep ; -- guess-p-verb
+lin close_off_V2 = prepV2 OP_close_V OP_off_Prep ; -- guess-p-verb
+lin close_on_V2 = prepV2 OP_close_V OP_on_Prep ; -- guess-p-verb
+lin close_out_V2 = prepV2 OP_close_V OP_out_Prep ; -- guess-p-verb
+lin close_up_V = advV OP_close_V OP_up_Adv ; -- guess-p-verb
+lin close_up_V2 = prepV2 OP_close_V OP_up_Prep ; -- guess-p-verb
 lin closed_A = mkA "gesloten" ; -- status=guess
-lin closely_Adv = mkAdv "dichtbij" | adjAdv close_A ; -- status=guess -- derived
 lin closet_N = mkN "kast" masculine feminine ; -- status=guess
 lin closure_N = mkN "beëindiging" | mkN "afsluiting" | mkN "sluiting" ; -- status=guess status=guess status=guess
 lin clot_N = mkN "stommeling" | mkN "idioot" ; -- status=guess status=guess
@@ -3772,7 +3931,6 @@ lin coin_V2 = mkV2 (mkV "munten") | mkV2 (mkV "aanmunten") | mkV2 (mkV (mkV "mun
 lin coincide_V = mkV "samenvallen" | mkV "coïncideren" ; -- status=guess, src=wikt status=guess, src=wikt
 lin coincidence_N = variants {} ; --
 lin coincidental_A = mkA "samenvallend" ; -- status=guess
-lin coincidentally_Adv = adjAdv coincidental_A ; -- derived
 lin coinsurance_N = mkN "eigen risico" masculine ; -- status=guess
 lin coitus_N = mkN "coïtus" masculine ; -- status=guess
 lin col_PN = mkPN "Col" ; -- src=eng status=guess
@@ -3803,7 +3961,6 @@ lin collect_V2 = mkV2 (mkV "verzamelen") ;
 lin collection_N = mkN "collectie" feminine | mkN "verzameling" ;
 lin collective_A = mkA "collectief" ; -- status=guess
 lin collective_N = mkN "verzamelnaam" masculine | mkN "collectivum" neuter ; -- status=guess status=guess
-lin collectively_Adv = adjAdv collective_A ; -- derived
 lin collectivism_N = mkN "collectivisme" neuter ; -- status=guess
 lin collector_N = mkN "verzamelaar" masculine ; -- status=guess
 lin college_N = mkN "college" ;
@@ -3814,7 +3971,6 @@ lin collision_N = mkN "botsing" feminine ; -- status=guess
 lin collocate_V = mkV "samenzetten" | mkV "bijeenzetten" ; -- status=guess, src=wikt status=guess, src=wikt
 lin collocation_N = mkN "collocatie" feminine ; -- status=guess
 lin colloquial_A = mkA "gemeenzaam" | mkA "idiomatisch" | mkA "van de spreektaal" | mkA "informeel" ; -- status=guess status=guess status=guess status=guess
-lin colloquially_Adv = adjAdv colloquial_A ; -- derived
 lin collusion_N = mkN "collusie" feminine | mkN "samenzwering" feminine ; -- status=guess status=guess
 lin colne_PN = mkPN "Colne" ; -- src=geonames status=guess
 lin cologne_PN = mkPN "Cologne" ; -- src=geonames status=guess
@@ -3861,6 +4017,53 @@ lin combine_VV = mkVV (mkV "combineren") ; -- status=guess, src=wikt
 lin combined_A = variants {} ; --
 lin combustion_N = mkN "verbrandingsmotor" masculine ; -- status=guess
 lin come_V = L.come_V ;
+lin come_about_V = advV OP_come_V OP_about_Adv ; -- guess-p-verb
+lin come_across_V = advV OP_come_V OP_across_Adv ; -- guess-p-verb
+lin come_across_V2 = prepV2 OP_come_V OP_across_Prep ; -- guess-p-verb
+lin come_along_V = advV OP_come_V OP_along_Adv ; -- guess-p-verb
+lin come_along_with_V2 = prepV2 (advV OP_come_V OP_along_Adv ) OP_with_Prep ; -- guess-p-verb
+lin come_apart_V = advV OP_come_V OP_apart_Adv ; -- guess-p-verb
+lin come_around_V = advV OP_come_V OP_around_Adv ; -- guess-p-verb
+lin come_around_to_V2 = prepV2 (advV OP_come_V OP_around_Adv ) OP_to_Prep ; -- guess-p-verb
+lin come_away_V = advV OP_come_V OP_away_Adv ; -- guess-p-verb
+lin come_back_V = advV OP_come_V OP_back_Adv ; -- guess-p-verb
+lin come_before_V2 = prepV2 OP_come_V OP_before_Prep ; -- guess-p-verb
+lin come_by_V = advV OP_come_V OP_by_Adv ; -- guess-p-verb
+lin come_by_V2 = prepV2 OP_come_V OP_by_Prep ; -- guess-p-verb
+lin come_down_V = advV OP_come_V OP_down_Adv ; -- guess-p-verb
+lin come_down_on_V2 = prepV2 (advV OP_come_V OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin come_down_upon_V2 = prepV2 (advV OP_come_V OP_down_Adv ) OP_upon_Prep ; -- guess-p-verb
+lin come_down_with_V2 = prepV2 (advV OP_come_V OP_down_Adv ) OP_with_Prep ; -- guess-p-verb
+lin come_forth_V = advV OP_come_V OP_forth_Adv ; -- guess-p-verb
+lin come_forth_with_V2 = prepV2 (advV OP_come_V OP_forth_Adv ) OP_with_Prep ; -- guess-p-verb
+lin come_forward_V = advV OP_come_V OP_forward_Adv ; -- guess-p-verb
+lin come_from_V2 = prepV2 OP_come_V OP_from_Prep ; -- guess-p-verb
+lin come_in_V = advV OP_come_V OP_in_Adv ; -- guess-p-verb
+lin come_in_V2 = prepV2 OP_come_V OP_in_Prep ; -- guess-p-verb
+lin come_in_for_V2 = prepV2 (advV OP_come_V OP_in_Adv ) OP_for_Prep ; -- guess-p-verb
+lin come_into_V2 = prepV2 OP_come_V OP_into_Prep ; -- guess-p-verb
+lin come_into_use_V = variants {} ; -- guess-p-verb
+lin come_off_V = advV OP_come_V OP_off_Adv ; -- guess-p-verb
+lin come_off_V2 = prepV2 OP_come_V OP_off_Prep ; -- guess-p-verb
+lin come_off_it_V = variants {} ; -- guess-p-verb
+lin come_on_V = advV OP_come_V OP_on_Adv ; -- guess-p-verb
+lin come_out_V = advV OP_come_V OP_out_Adv ; -- guess-p-verb
+lin come_out_in_V2 = prepV2 (advV OP_come_V OP_out_Adv ) OP_in_Prep ; -- guess-p-verb
+lin come_out_of_V2 = prepV2 (advV OP_come_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin come_out_with_V2 = prepV2 (advV OP_come_V OP_out_Adv ) OP_with_Prep ; -- guess-p-verb
+lin come_over_V = advV OP_come_V OP_over_Adv ; -- guess-p-verb
+lin come_over_V2 = prepV2 OP_come_V OP_over_Prep ; -- guess-p-verb
+lin come_round_V = advV OP_come_V OP_round_Adv ; -- guess-p-verb
+lin come_through_V = advV OP_come_V OP_through_Adv ; -- guess-p-verb
+lin come_through_with_V2 = prepV2 (advV OP_come_V OP_through_Adv ) OP_with_Prep ; -- guess-p-verb
+lin come_to_V = advV OP_come_V OP_to_Adv ; -- guess-p-verb
+lin come_to_V2 = prepV2 OP_come_V OP_to_Prep ; -- guess-p-verb
+lin come_up_V = advV OP_come_V OP_up_Adv ; -- guess-p-verb
+lin come_up_against_V2 = prepV2 (advV OP_come_V OP_up_Adv ) OP_against_Prep ; -- guess-p-verb
+lin come_up_to_V2 = prepV2 (advV OP_come_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin come_up_with_V2 = prepV2 (advV OP_come_V OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
+lin come_upon_V2 = prepV2 OP_come_V OP_upon_Prep ; -- guess-p-verb
+lin come_with_V2 = prepV2 OP_come_V OP_with_Prep ; -- guess-p-verb
 lin comedian_N = mkN "komiek" masculine ; -- status=guess
 lin comedy_N = mkN "komedie" feminine | mkN "blijspel" neuter ; -- status=guess status=guess
 lin comely_A = mkA "bevallig" ; -- status=guess
@@ -3868,7 +4071,6 @@ lin comet_N = mkN "komeet" masculine | mkN "staartster" feminine ; -- status=gue
 lin comfort_N = mkN "troost" | mkN "gemak" neuter ; -- status=guess status=guess
 lin comfort_V2 = mkV2 (mkV (mkV "comfort") "verschaffen") | mkV2 (mkV (mkV "het") "gemakkelijk maken") ; -- status=guess, src=wikt status=guess, src=wikt
 lin comfortable_A = mkA "comfortabel" | mkA "gemakkelijk" ; -- status=guess status=guess
-lin comfortably_Adv = adjAdv comfortable_A ; -- -- derived
 lin comforting_A = mkA "geruststellend" | mkA "geruststellende" | mkA "troostend" | mkA "troostende" ; -- status=guess status=guess status=guess status=guess
 lin comic_A = mkA "grappig" | mkA "komisch" ; -- status=guess status=guess
 lin comic_N = mkN "strip" masculine | mkN "stripboek" neuter | mkN "stripverhaal" neuter ; -- status=guess status=guess status=guess
@@ -3895,7 +4097,6 @@ lin commentator_N = variants {} ; --
 lin commerce_N = mkN "handel" masculine | mkN "commercie" feminine ; -- status=guess status=guess
 lin commercial_A = mkA "commercieel" ;
 lin commercial_N = mkN "reclamespot" ; -- status=guess
-lin commercially_Adv = adjAdv commercial_A ; -- derived
 lin commiserate_V = reflMkV "identificeren met" ; -- status=guess, src=wikt
 lin commission_N = mkN "commissie" feminine ;
 lin commission_V2 = variants {} ; --
@@ -3910,7 +4111,6 @@ lin common_1_A = mkA "veelvoorkomend" ;
 lin common_2_A = mkA "gewoon" ;
 lin common_A = mkA "veelvoorkomend" ;
 lin common_N = mkN "gewone es" masculine ; -- status=guess
-lin commonly_Adv = adjAdv common_2_A ; -- -- derived
 lin commons_N = mkN "volksplaats" ; -- status=guess
 lin commonwealth_N = mkN "gemenebest" neuter ; -- status=guess
 lin communicate_V = mkV "communiceren" ; -- status=guess, src=wikt
@@ -3934,7 +4134,6 @@ lin company_2_N = mkN "gezelschap" ;
 lin comparable_A = mkA "vergelijkbaar" ; -- status=guess
 lin comparative_A = variants {} ; --
 lin comparative_N = mkN "vergrotende trap" masculine ; -- status=guess
-lin comparatively_Adv = mkAdv "relatief" | mkAdv "betrekkelijk" | adjAdv comparative_A ; -- status=guess status=guess -- derived
 lin compare_V = mkV "vergelijken" ;
 lin comparison_N = mkN "vergelijking" feminine ; -- status=guess
 lin compartment_N = variants {} ; --
@@ -3967,7 +4166,6 @@ lin complementary_A = variants {} ; --
 lin complete_A = mkA "volledig" | mkA "compleet" | mkA "allesomvattend" | mkA "algeheel" ;
 lin complete_V = mkV "af" (mkV "maken") | mkV "voltooien" ;
 lin complete_V2 = mkV2 complete_V ;
-lin completely_Adv = mkAdv "compleet" | mkAdv "volledig" | mkAdv "volkomen" | adjAdv complete_A ; -- derived
 lin completion_N = mkN "vervollediging" feminine | mkN "afronding" feminine | mkN "afwerking" feminine | mkN "voltooiing" feminine ; -- status=guess status=guess status=guess status=guess
 lin complex_A = mkA "complex" ;
 lin complex_N = mkN "complex" neuter ; -- status=guess
@@ -4039,7 +4237,6 @@ lin conceptual_A = mkA "conceptueel" ; -- status=guess
 lin concern_N = mkN "onderneming" feminine ; --- split mkN "zorg" | mkN "belangstelling" ; some concern on my part
 lin concern_V2 = mkV2 (mkV "betreffen") ;
 lin concerned_A = mkA "ongerust" ; --- split mkA "bewuste" | split mkA "in kwestie" ; the people concerned were punished...
-lin concernedly_Adv = adjAdv concerned_A ; -- derived
 lin concerning_Prep = variants {} ; --
 lin concert_N = mkN "concert" neuter ; -- status=guess
 lin concertina_N = mkN "concertina" feminine ; -- status=guess
@@ -4059,7 +4256,6 @@ lin concrete_N = mkN "beton" neuter ; -- status=guess
 lin concrete_V = mkV "betonneren" ; -- status=guess, src=wikt
 lin concrete_V2 = mkV2 (mkV "betonneren") ; -- status=guess, src=wikt
 lin concurrent_A = mkA "simultaan" ; -- status=guess
-lin concurrently_Adv = adjAdv concurrent_A ; -- derived
 lin concuss_V2 = mkV2 (mkV (mkV "een") "hersenschudding veroorzaken") | mkV2 (mkV (mkV "door") "elkaar schudden") ; -- status=guess, src=wikt status=guess, src=wikt
 lin condemn_V2 = mkV2 (mkV "veroordelen") ; -- status=guess, src=wikt
 lin condense_V = mkV "condenseren" | mkV "neerslaan" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -4118,7 +4314,6 @@ lin confront_V2 = mkV2 (mkV "confronteren") ; -- status=guess, src=wikt
 lin confrontation_N = mkN "confrontatie" feminine ; -- status=guess
 lin confuse_V2 = mkV2 (mkV "verwarren") | mkV2 (mkV (mkV "in") "de war brengen") | mkV2 (mkV "dooreenhalen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin confused_A = mkA "verward" ; -- status=guess
-lin confusedly_Adv = adjAdv confused_A ; -- derived
 lin confusing_A = mkA "verwarrend" | mkA "niet duidelijk" | mkA "chaotisch" ; -- status=guess status=guess status=guess
 lin confusion_N = mkN "verwarring" ; -- status=guess
 lin congeal_V = mkV "stollen" | mkV "coaguleren" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -4162,7 +4357,6 @@ lin cons_PN = mkPN "Cons" ; -- src=eng status=guess
 lin consanguinity_N = mkN "bloedverwantschap" ; -- status=guess
 lin conscience_N = mkN "geweten" neuter ; -- status=guess
 lin conscious_A = mkA "bij bewustzijn" | mkA "alert" | mkA "wakker" ; -- status=guess status=guess status=guess
-lin consciously_Adv = adjAdv conscious_A ; -- derived
 lin consciousness_N = mkN "bewustzijn" neuter ; -- status=guess
 lin conscript_N = mkN "dienstplichtige" ; -- status=guess
 lin conscription_N = mkN "dienstplicht " masculine ; -- status=guess
@@ -4174,11 +4368,10 @@ lin consent_V = mkV "toestemmen" | mkV "instemmen" ; -- status=guess, src=wikt s
 lin consent_V2V = mkV2V (mkV "toestemmen") | mkV2V (mkV "instemmen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin consequence_N = mkN "gevolg" neuter | mkN "consequentie" ;
 lin consequent_A = mkA "met als gevolg" ; -- status=guess
-lin consequently_Adv = mkAdv "bijgevolg" | adjAdv consequent_A ; -- status=guess -- derived
 lin conservation_N = mkN "natuurbescherming" ; -- status=guess
-lin conservative_A = variants {} ; --
 lin conservative_1_N = variants {} ; --
 lin conservative_2_N = variants {} ; --
+lin conservative_A = variants {} ; --
 lin conservatoire_N = mkN "conservatorium" neuter ; -- status=guess
 lin conservator_N = mkN "conservator" masculine | mkN "bewaarder" masculine ; -- status=guess status=guess
 lin conservatory_N = mkN "conservatorium" neuter ; -- status=guess
@@ -4191,7 +4384,6 @@ lin consider_V3 = mkV3 consider_V ;
 lin consider_VS = mkVS consider_V ;
 lin consider_VV = mkVV consider_V ;
 lin considerable_A = mkA "aanzienlijk" ;
-lin considerably_Adv = mkAdv "aanzienlijk" | adjAdv considerable_A ; -- status=guess -- derived
 lin considerate_A = mkA "zorgzaam" | mkA "voorkomend" ; -- status=guess status=guess
 lin consideration_N = mkN "overweging" ; ---- 'thanks for your consideration' can not really be translated
 lin considering_Prep = variants {} ; --
@@ -4200,7 +4392,6 @@ lin consist_V = mkV (mkV "bestaan") "uit" ; -- status=guess, src=wikt
 lin consistence_N = mkN "consistentie" ; -- status=guess
 lin consistency_N = mkN "samenhang" masculine ; -- status=guess
 lin consistent_A = mkA "consequent" | mkA "consistent" ; -- status=guess status=guess
-lin consistently_Adv = adjAdv consistent_A ; -- -- derived
 lin consolation_N = mkN "vertroosting" feminine ; -- status=guess
 lin console_V2 = mkV2 (mkV "troosten") | mkV2 (mkV "vertroosten") ; -- status=guess, src=wikt status=guess, src=wikt
 lin consolidate_V = variants {} ; --
@@ -4218,7 +4409,6 @@ lin constable_N = variants {} ; --
 lin constabulary_N = mkN "politiemacht" feminine ; -- status=guess
 lin constance_PN = mkPN "Constance" ; -- src=eng status=guess
 lin constant_A = mkA "constant" ; -- status=guess
-lin constantly_Adv = adjAdv constant_A ; -- -- derived
 lin constellation_N = mkN "sterrenhemel" masculine | mkN "gesternte" neuter | mkN "constellatie" feminine ; -- status=guess status=guess status=guess
 lin constipation_N = mkN "constipatie" feminine ; -- status=guess
 lin constituency_N = mkN "kiesdistrict" ; -- status=guess
@@ -4279,17 +4469,16 @@ lin continental_A = variants {} ; --
 lin contingency_N = mkN "contingentie" feminine ; -- status=guess
 lin contingent_A = mkA "contingent" ; -- status=guess
 lin continual_A = variants {} ;
-lin continually_Adv = adjAdv continual_A ; -- -- derived
 lin continuance_N = mkN "verdaging" feminine ; -- status=guess
 lin continuation_N = mkN "voortzetting" feminine ; -- status=guess
 lin continue_V = mkV "door" go_V | mkV "verder" go_V | mkV "voort" (mkV "zetten") ;
 lin continue_V2 = mkV2 continue_V ;
 lin continue_VV = mkVV continue_V ;
+lin continue_on_V = advV OP_continue_V OP_on_Adv ; -- guess-p-verb
 lin continued_A = variants {} ; --
 lin continuing_A = variants {} ; --
 lin continuity_N = mkN "continuïteit" feminine ; -- status=guess
 lin continuous_A = mkA "continu" ; -- status=guess
-lin continuously_Adv = mkAdv "continu" | adjAdv continuous_A ; -- status=guess -- derived
 lin continuum_N = mkN "continuüm" neuter ; -- status=guess
 lin contortion_N = mkN "verwringing" neuter | mkN "verrekking" neuter | mkN "kronkeling" neuter | mkN "bochtenwerk" neuter ; -- status=guess status=guess status=guess status=guess
 lin contortionist_N = mkN "slangenmens " neuter | mkN "contorsionist" masculine | mkN "contorsioniste" feminine ; -- status=guess status=guess status=guess
@@ -4324,7 +4513,6 @@ lin controllable_A = mkA "beheersbaar" ; -- status=guess
 lin controlled_A = variants {} ; --
 lin controller_N = variants {} ; --
 lin controversial_A = mkA "omstreden" ; -- status=guess
-lin controversially_Adv = adjAdv controversial_A ; -- derived
 lin controversy_N = mkN "controverse" ; -- status=guess
 lin contumely_N = mkN "spot" masculine | mkN "hoon" masculine | mkN "belediging" feminine | mkN "grove taal" feminine ; -- status=guess status=guess status=guess status=guess
 lin contusion_N = mkN "bloeding" ; -- status=guess
@@ -4335,16 +4523,13 @@ lin convene_V = mkV "samenroepen" ; -- status=guess, src=wikt
 lin convene_V2 = mkV2 (mkV "samenroepen") ; -- status=guess, src=wikt
 lin convenience_N = variants {} ; --
 lin convenient_A = variants {} ; --
-lin conveniently_Adv = adjAdv convenient_A ; -- derived
 lin convention_N = mkN "conventie" feminine | mkN "overeenkomst" ; -- status=guess status=guess
 lin conventional_A = variants {} ; --
-lin conventionally_Adv = adjAdv conventional_A ; -- derived
 lin converge_V = mkV "samenkomen" ; -- status=guess, src=wikt
 lin conversation_N = mkN "gesprek" neuter | mkN "conversatie" ;
 lin converse_A = variants {} ;
 lin converse_N = mkN "tegenovergestelde" ; -- status=guess
 lin converse_V = mkV "converseren" ; -- status=guess, src=wikt
-lin conversely_Adv = adjAdv converse_A ; -- -- derived
 lin conversion_N = mkN "omzetting" feminine ; -- status=guess
 lin convert_V = mkV "bekeren" ; -- status=guess, src=wikt
 lin convert_V2 = mkV2 (mkV "bekeren") ; -- status=guess, src=wikt
@@ -4438,7 +4623,6 @@ lin correct_V = mkV "corrigeren" | mkV "verbeteren" ; -- status=guess, src=wikt 
 lin correct_V2 = mkV2 (mkV "corrigeren") | mkV2 (mkV "verbeteren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin correct_VS = mkVS (mkV "corrigeren") | mkVS (mkV "verbeteren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin correction_N = mkN "verbetering" feminine | mkN "correctie" feminine ; -- status=guess status=guess
-lin correctly_Adv = mkAdv "correct" | mkAdv "juist" | mkAdv "goed" | adjAdv correct_A ; -- status=guess status=guess status=guess -- derived
 lin correctness_N = mkN "correctheid" feminine | mkN "juistheid" feminine ; -- status=guess status=guess
 lin correlation_N = mkN "correlatie" feminine ; -- status=guess
 lin correspond_V = mkV "corresponderen" ; -- status=guess, src=wikt
@@ -4446,7 +4630,6 @@ lin correspond_V2 = variants {} ; -- mkV "corresponderen" ; -- status=guess, src
 lin correspondence_N = mkN "correspondentie" feminine ; -- status=guess
 lin correspondent_N = mkN "correspondent" masculine ; -- status=guess
 lin corresponding_A = mkA "corresponderend" | mkA "overeenkomstig" ; -- status=guess status=guess
-lin correspondingly_Adv = adjAdv corresponding_A ; -- derived
 lin corridor_N = mkN "luchtweg" | mkN "corridor" ; -- status=guess status=guess
 lin corroborate_V2 = mkV2 (mkV "onderbouwen") ; -- status=guess, src=wikt
 lin corroboration_N = mkN "bekrachtiging" ; -- status=guess
@@ -4471,6 +4654,7 @@ lin cosmos_N = mkN "heelal" neuter | mkN "kosmos" masculine ; -- status=guess st
 lin cost_N = mkN "prijs" | mkN "kosten" ; -- kosten is plural, but cost_N is always translated with the plural
 lin cost_V = mkV "kosten" ;
 lin cost_V2 = mkV2 (mkV "kosten") ;
+lin cost_up_V2 = prepV2 OP_cost_V OP_up_Prep ; -- guess-p-verb
 lin costa_rica_PN = mkPN "Costa rica" ; -- src=eng status=guess
 lin costly_A = variants {} ; --
 lin costume_N = mkN "kostuum" neuter | mkN "vermomming" ; -- status=guess status=guess
@@ -4492,6 +4676,17 @@ lin counsellor_N = variants {} ; --
 lin count_N = mkN "aftelling" feminine ; -- status=guess
 lin count_V = mkV "tellen" ; -- status=guess, src=wikt
 lin count_V2 = L.count_V2 ;
+lin count_against_V2 = prepV2 OP_count_V OP_against_Prep ; -- guess-p-verb
+lin count_among_V2 = prepV2 OP_count_V OP_among_Prep ; -- guess-p-verb
+lin count_down_V2 = prepV2 OP_count_V OP_down_Prep ; -- guess-p-verb
+lin count_for_V2 = prepV2 OP_count_V OP_for_Prep ; -- guess-p-verb
+lin count_in_V2 = prepV2 OP_count_V OP_in_Prep ; -- guess-p-verb
+lin count_off_V2 = prepV2 OP_count_V OP_off_Prep ; -- guess-p-verb
+lin count_on_V2 = prepV2 OP_count_V OP_on_Prep ; -- guess-p-verb
+lin count_out_V2 = prepV2 OP_count_V OP_out_Prep ; -- guess-p-verb
+lin count_towards_V2 = prepV2 OP_count_V OP_towards_Prep ; -- guess-p-verb
+lin count_up_V2 = prepV2 OP_count_V OP_up_Prep ; -- guess-p-verb
+lin count_upon_V2 = prepV2 OP_count_V OP_upon_Prep ; -- guess-p-verb
 lin countable_A = mkA "telbaar" | mkA "telbare" ; -- status=guess status=guess
 lin countdown_N = mkN "aftelling" feminine | mkN "aftellen" neuter ; -- status=guess status=guess
 lin countenance_N = mkN "gelaatsuitdrukking" | mkN "verschijning" ; -- status=guess status=guess
@@ -4540,6 +4735,8 @@ lin covenant_N = variants {} ; --
 lin coventry_PN = mkPN "Coventry" ; -- src=geonames status=guess
 lin cover_N = mkN "entree" | mkN "inkom" ; -- status=guess status=guess
 lin cover_V2 = mkV2 (fixprefixV "be" (mkV "dekken")) | mkV2 (mkV "dekken") ;
+lin cover_for_V2 = prepV2 (lin V OP_cover_V2) OP_for_Prep ; -- guess-p-verb
+lin cover_up_V2 = prepV2 (lin V OP_cover_V2) OP_up_Prep ; -- guess-p-verb
 lin coverage_N = mkN "dekking" feminine ; -- status=guess
 lin covet_V2 = mkV2 (mkV "lusten") | mkV2 (mkV "smachten") ; -- status=guess, src=wikt status=guess, src=wikt
 lin cow_N = L.cow_N ;
@@ -4578,6 +4775,10 @@ lin crap_N = mkN "poep" ; -- status=guess
 lin crapshoot_N = mkN "dobbelspel" ; -- status=guess
 lin crash_N = mkN "crash" masculine | mkN "computercrash" masculine ; -- status=guess status=guess
 lin crash_V = mkV "vastlopen" ; -- status=guess, src=wikt
+lin crash_dive_V = variants {} ; -- guess-p-verb
+lin crash_land_V = variants {} ; -- guess-p-verb
+lin crash_land_V2 = variants {} ; -- guess-p-verb
+lin crash_out_V = advV OP_crash_V OP_out_Adv ; -- guess-p-verb
 lin crass_A = mkA "grof" | mkA "ruw" | mkA "ongevoelig" | mkA "insensibel" ; -- status=guess status=guess status=guess status=guess
 lin crater_N = mkN "krater" masculine ; -- status=guess
 lin crave_V = mkV (mkV "een") "sterk verlangen hebben" ; -- status=guess, src=wikt
@@ -4634,7 +4835,6 @@ lin critic_N = mkN "criticus" masculine ; -- status=guess
 lin critical_1_A = variants {} ; --
 lin critical_2_A = variants {} ; --
 lin critical_A = mkA "kritiek" ; -- status=guess
-lin critically_Adv = mkAdv "kritiek" | adjAdv critical_2_A ; -- status=guess -- derived
 lin criticism_N = mkN "kritiek" ; -- status=guess
 lin criticize_V = variants {} ; --
 lin criticize_V2 = variants {} ; --
@@ -4663,6 +4863,13 @@ lin cross_A = mkA "geërgerd" | mkA "geërgerde" ; -- status=guess status=guess
 lin cross_N = mkN "kruis" neuter ; -- status=guess
 lin cross_V = mkV "door" (mkV "kruisen") ; --- split mkV "over" steken_V ; to cross a street or river
 lin cross_V2 = mkV2 cross_V ;
+lin cross_examine_V2 = variants {} ; -- guess-p-verb
+lin cross_fertilize_V2 = variants {} ; -- guess-p-verb
+lin cross_index_V2 = variants {} ; -- guess-p-verb
+lin cross_off_V2 = prepV2 OP_cross_V OP_off_Prep ; -- guess-p-verb
+lin cross_out_V2 = prepV2 OP_cross_V OP_out_Prep ; -- guess-p-verb
+lin cross_question_V2 = variants {} ; -- guess-p-verb
+lin cross_up_V2 = prepV2 OP_cross_V OP_up_Prep ; -- guess-p-verb
 lin crossbar_N = mkN "doellat" ; -- status=guess
 lin crossbow_N = mkN "kruisboog" masculine ; -- status=guess
 lin crosseyed_A = mkA "scheel" ; -- status=guess
@@ -4715,6 +4922,8 @@ lin crux_N = mkN "kruispunt" neuter ; -- status=guess
 lin cry_N = variants {} ; --
 lin cry_V = mkV "huilen" | mkV "schreeuwen" | mkV "gillen" | mkV "krijsen" ;
 lin cry_V2 = mkV2 cry_V ;
+lin cry_off_V2 = prepV2 OP_cry_V OP_off_Prep ; -- guess-p-verb
+lin cry_out_V = advV OP_cry_V OP_out_Adv ; -- guess-p-verb
 lin crybaby_N = mkN "huilbaby" masculine ; -- status=guess
 lin crypt_N = mkN "krocht" feminine ; -- status=guess
 lin cryptography_N = mkN "cryptografie" neuter | mkN "geheimschrift" feminine ; -- status=guess status=guess
@@ -4752,7 +4961,6 @@ lin cult_N = variants {} ; --
 lin cultivate_V2 = mkV2 (mkV "telen") | mkV2 (mkV "verbouwen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin cultivation_N = mkN "teelt" utrum ; -- status=guess
 lin cultural_A = mkA "cultureel" ;
-lin culturally_Adv = adjAdv cultural_A ; -- derived
 lin culture_N = mkN "cultuur" feminine ;
 lin culverin_N = mkN "veldslang" feminine | mkN "culverin" feminine ; -- status=guess status=guess
 lin culvert_N = mkN "duiker" masculine | mkN "grondzijl" feminine | mkN "verlaat" neuter | mkN "zinker" masculine ; -- status=guess status=guess status=guess status=guess
@@ -4790,7 +4998,6 @@ lin curfew_N = mkN "avondklok" feminine | mkN "uitgangsverbod" neuter ; -- statu
 lin curio_N = mkN "curiosum" | mkN "curiositeit" ; -- status=guess status=guess
 lin curiosity_N = mkN "nieuwsgierigheid" ; -- status=guess
 lin curious_A = mkA "nieuwsgierig" ; -- status=guess
-lin curiously_Adv = adjAdv curious_A ; -- -- derived
 lin curitiba_PN = mkPN "Curitiba" ; -- src=geonames status=guess
 lin curium_N = mkN "curium" neuter ; -- status=guess
 lin curl_N = mkN "rotatie" ; -- status=guess
@@ -4801,7 +5008,6 @@ lin currant_N = mkN "aalbes" feminine ; -- status=guess
 lin currency_N = mkN "munteenheid" feminine | mkN "valuta" ; -- status=guess status=guess
 lin current_A = mkA "huidig" | mkA "actueel" ;
 lin current_N = mkN "zichtrekening" feminine | mkN "lopende rekening" ; -- status=guess status=guess
-lin currently_Adv = mkAdv "momenteel" | adjAdv current_A ; -- derived
 lin curriculum_N = mkN "curriculum" neuter | mkN "levensloop" masculine ; -- status=guess status=guess
 lin currie_PN = mkPN "Currie" ; -- src=geonames status=guess
 lin curry_N = mkN "kerrieschotel" | mkN "curryschotel" ; -- status=guess status=guess
@@ -4831,6 +5037,23 @@ lin customs_N = mkN "douanerechten {p}" ; -- status=guess
 lin cut_N = mkN "snit" ; -- status=guess
 lin cut_V = snijden_V ;
 lin cut_V2 = L.cut_V2 ;
+lin cut_across_V2 = prepV2 OP_cut_V OP_across_Prep ; -- guess-p-verb
+lin cut_back_V2 = mkV2 (advV OP_cut_V OP_back_Adv ) ; -- guess-p-verb
+lin cut_back_on_V2 = prepV2 (advV OP_cut_V OP_back_Adv ) OP_on_Prep ; -- guess-p-verb
+lin cut_down_V = advV OP_cut_V OP_down_Adv ; -- guess-p-verb
+lin cut_down_V2 = prepV2 OP_cut_V OP_down_Prep ; -- guess-p-verb
+lin cut_down_on_V2 = prepV2 (advV OP_cut_V OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin cut_in_V = advV OP_cut_V OP_in_Adv ; -- guess-p-verb
+lin cut_in_V2 = prepV2 OP_cut_V OP_in_Prep ; -- guess-p-verb
+lin cut_in_on_V2 = prepV2 (advV OP_cut_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin cut_it_out_V2 = variants {} ; -- guess-p-verb
+lin cut_off_V = advV OP_cut_V OP_off_Adv ; -- guess-p-verb
+lin cut_off_V2 = prepV2 OP_cut_V OP_off_Prep ; -- guess-p-verb
+lin cut_out_V = advV OP_cut_V OP_out_Adv ; -- guess-p-verb
+lin cut_out_V2 = prepV2 OP_cut_V OP_out_Prep ; -- guess-p-verb
+lin cut_out_on_V2 = prepV2 (advV OP_cut_V OP_out_Adv ) OP_on_Prep ; -- guess-p-verb
+lin cut_up_V = advV OP_cut_V OP_up_Adv ; -- guess-p-verb
+lin cut_up_V2 = prepV2 OP_cut_V OP_up_Prep ; -- guess-p-verb
 lin cute_A = mkA "leuk" | mkA "geestig" | mkA "guitig" | mkA "olijk" ; -- status=guess status=guess status=guess status=guess
 lin cutlass_N = mkN "hartsvanger" ; -- status=guess
 lin cutlery_N = mkN "bestek" neuter | mkN "couvert" ; -- status=guess status=guess
@@ -4919,7 +5142,6 @@ lin dandelion_N = mkN "paardenbloem" ; -- status=guess
 lin dandruff_N = mkN "roos" | mkN "hoofdroos" | mkN "pellekes" ; -- status=guess status=guess status=guess
 lin danger_N = mkN "gevaar" neuter ;
 lin dangerous_A = mkA "gevaarlijk" | mkA "gevaarlijke" ; -- status=guess status=guess
-lin dangerously_Adv = adjAdv dangerous_A ; -- derived
 lin dangle_V = mkV "bengelen" | mkV "bungelen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin dangle_V2 = mkV2 (mkV "bengelen") | mkV2 (mkV "bungelen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin daniel_PN = mkPN "Daniel" ; -- src=eng status=guess
@@ -5048,8 +5270,9 @@ lin decide_V = no_geV (mkV "beslissen") | no_geV (mkV "besluiten") ;
 lin decide_V2 = mkV2 decide_V ;
 lin decide_VS = mkVS decide_V ;
 lin decide_VV = mkVV decide_V ; ---- subcat
+lin decide_on_V2 = prepV2 OP_decide_V OP_on_Prep ; -- guess-p-verb
+lin decide_upon_V2 = prepV2 OP_decide_V OP_upon_Prep ; -- guess-p-verb
 lin decided_A = variants {} ;
-lin decidedly_Adv = adjAdv decided_A ; -- derived
 lin deciduous_A = mkA "loof-" ; -- status=guess
 lin decimal_A = mkA "decimaal" | mkA "decimale" | mkA "tientallig" | mkA "tientallige" ; -- status=guess status=guess status=guess status=guess
 lin decimal_N = mkN "decimaal" masculine ; -- status=guess
@@ -5058,7 +5281,6 @@ lin decipher_V2 = mkV2 (mkV "ontcijferen") ; -- status=guess, src=wikt
 lin decision_N = mkN "beslissing" feminine | mkN "besluit" neuter ;
 lin decision_making_N = variants {} ; --
 lin decisive_A = mkA "beslissend" | mkA "afdoend" | mkA "doorslaggevend" ; -- status=guess status=guess status=guess
-lin decisively_Adv = adjAdv decisive_A ; -- derived
 lin deck_N = mkN "dek" neuter ; -- status=guess
 lin declaim_V = mkV "declameren" ; -- status=guess, src=wikt
 lin declaim_V2 = mkV2 (mkV "declameren") ; -- status=guess, src=wikt
@@ -5097,7 +5319,6 @@ lin deem_V2V = mkV2V (mkV "beschouwen") ; -- status=guess, src=wikt
 lin deep_A = mkA "diep" ;
 lin deep_Adv = variants {} ; --
 lin deep_N = mkN "dieptrekken" neuter ; -- status=guess
-lin deeply_Adv = adjAdv deep_A ; -- -- derived
 lin deer_N = mkN "hert" neuter ; -- status=guess
 lin deface_V2 = mkV2 (schenden_V) ; -- status=guess, src=wikt
 lin defamation_N = mkN "belastering" ; -- status=guess
@@ -5130,7 +5351,6 @@ lin defile_N = mkN "engte" feminine ; -- status=guess
 lin define_V = mkV "definiëren" ;
 lin define_V2 = mkV2 (mkV "definiëren") ;
 lin definite_A = variants {} ; --
-lin definitely_Adv = mkAdv "zeker" | mkAdv "zeker weten" | mkAdv "zonder twijfel" | adjAdv definite_A ; -- status=guess status=guess status=guess -- derived
 lin definition_N = mkN "definitie" ;
 lin deflation_N = mkN "deflatie" ; -- status=guess
 lin defloration_N = mkN "ontmaagding" feminine ; -- status=guess
@@ -5164,7 +5384,6 @@ lin delhi_PN = mkPN "Delhi" ; -- src=geonames status=guess
 lin deliberate_A = mkA "doordacht" | mkA "doordachte" | mkA "weloverwogen" ; -- status=guess status=guess status=guess
 lin deliberate_V = mkV "beraadslagen" | mkV "overwegen" | mkV "doordenken" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin deliberate_V2 = mkV2 (mkV "beraadslagen") | mkV2 (mkV "overwegen") | mkV2 (mkV "doordenken") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
-lin deliberately_Adv = mkAdv "bewust" | mkAdv "expres" | mkAdv "opzettelijk" | mkAdv "met opzet" | adjAdv deliberate_A ; -- status=guess status=guess status=guess status=guess -- derived
 lin delicacy_N = mkN "lekkernij" feminine ; -- status=guess
 lin delicate_A = variants {} ; --
 lin delicious_A = mkA "heerlijk" | mkA "lekker" | mkA "smakelijk" ; -- status=guess status=guess status=guess
@@ -5172,7 +5391,6 @@ lin delight_N = mkN "vreugde" feminine | mkN "plezier" neuter ; -- status=guess 
 lin delight_V = mkV "bevallen" | mkV "behagen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin delight_V2 = mkV2 (mkV "bevallen") | mkV2 (mkV "behagen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin delighted_A = variants {} ; --
-lin delightedly_Adv = adjAdv delighted_A ; -- derived
 lin delightful_A = variants {} ; --
 lin delineate_V2 = mkV2 (mkV "afbakenen") ; -- status=guess, src=wikt
 lin delineation_N = mkN "omlijning" | mkN "schets" | mkN "afbakening" ; -- status=guess status=guess status=guess
@@ -5229,7 +5447,6 @@ lin denominator_N = mkN "noemer" masculine ; -- status=guess
 lin denote_V2 = mkV2 (mkV "aangeven") ; -- status=guess, src=wikt
 lin denounce_V2 = mkV2 (mkV "opzeggen") ; -- status=guess, src=wikt
 lin dense_A = variants {} ; --
-lin densely_Adv = adjAdv dense_A ; -- derived
 lin density_N = mkN "dichtheid" feminine ; -- status=guess
 lin dent_N = mkN "deuk" masculine | mkN "bluts" masculine | mkN "buts" utrum ; -- status=guess status=guess status=guess
 lin dent_V = mkV (mkV "deuken") "krijgen" ; -- status=guess, src=wikt
@@ -5330,7 +5547,6 @@ lin desmond_PN = mkPN "Desmond" ; -- src=eng status=guess
 lin despair_N = variants {} ; --
 lin despair_V = mkV "wanhopen" ; -- status=guess, src=wikt
 lin desperate_A = mkA "wanhopig" | mkA "vertwijfeld" | mkA "radeloos" | mkA "hopeloos" | mkA "desperaat" ; -- status=guess status=guess status=guess status=guess status=guess
-lin desperately_Adv = mkAdv "wanhopig" | adjAdv desperate_A ; -- status=guess -- derived
 lin despicable_A = mkA "verachtelijk" | mkA "verfoeilijk" | mkA "afschuwelijk" ; -- status=guess status=guess status=guess
 lin despise_V2 = mkV2 (mkV "verachten") ; -- status=guess, src=wikt
 lin despite_Prep = mkPrep "ondanks" ;
@@ -5366,7 +5582,6 @@ lin determine_V2V = mkV2V determine_V ; ---- subcat
 lin determine_VS = mkVS determine_V ;
 lin determine_VV = mkVV determine_V ;
 lin determined_A = variants {} ; --
-lin determinedly_Adv = adjAdv determined_A ; -- derived
 lin determiner_N = mkN "determinator" masculine ; -- status=guess
 lin determinism_N = mkN "determinisme" neuter ; -- status=guess
 lin deterrence_N = mkN "afschrikking" feminine ; -- status=guess
@@ -5407,7 +5622,6 @@ lin devolution_N = mkN "neergang" ; -- status=guess
 lin devon_PN = mkPN "Devon" ; -- src=geonames status=guess
 lin devote_V2 = mkV2 (mkV "wijden") | mkV2 (mkV "toewijden") ; -- status=guess, src=wikt status=guess, src=wikt
 lin devoted_A = variants {} ; --
-lin devotedly_Adv = adjAdv devoted_A ; -- derived
 lin devour_V2 = mkV2 (mkV "verslinden") | mkV2 (mkV "schransen") | mkV2 (vreten_V) ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin dew_N = mkN "dauw" masculine ; -- status=guess
 lin dewsbury_PN = mkPN "Dewsbury" ; -- src=geonames status=guess
@@ -5422,7 +5636,6 @@ lin diagnosis_N = mkN "diagnose" feminine ; -- status=guess
 lin diagnostic_A = mkA "diagnostisch" ; -- status=guess
 lin diagonal_A = mkA "diagonaal" ; -- status=guess
 lin diagonal_N = mkN "diagonaal" ; -- status=guess
-lin diagonally_Adv = adjAdv diagonal_A ; -- derived
 lin diagram_N = mkN "diagram" neuter ; -- status=guess
 lin dialect_N = mkN "dialect" neuter ; -- status=guess
 lin dialectology_N = mkN "dialectologie" feminine ; -- status=guess
@@ -5457,6 +5670,12 @@ lin dictionary_N = mkN "woordenboek" neuter ; -- status=guess
 lin didcot_PN = mkPN "Didcot" ; -- src=geonames status=guess
 lin die_N = mkN "voet" masculine | mkN "plint" feminine ; -- status=guess status=guess
 lin die_V = L.die_V ;
+lin die_away_V = advV OP_die_V OP_away_Adv ; -- guess-p-verb
+lin die_back_V = advV OP_die_V OP_back_Adv ; -- guess-p-verb
+lin die_down_V = advV OP_die_V OP_down_Adv ; -- guess-p-verb
+lin die_for_V2 = prepV2 OP_die_V OP_for_Prep ; -- guess-p-verb
+lin die_off_V = advV OP_die_V OP_off_Adv ; -- guess-p-verb
+lin die_out_V = advV OP_die_V OP_out_Adv ; -- guess-p-verb
 lin diesel_N = mkN "diesel" masculine ; -- status=guess
 lin diet_N = mkN "dieet" neuter ; -- status=guess
 lin differ_V = mkV "verschillen" | mkV "afwijken" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -5467,7 +5686,6 @@ lin differential_N = mkN "differentiaalrekening" feminine ; -- status=guess
 lin differentiate_V = mkV "differentiëren" ; -- status=guess, src=wikt
 lin differentiate_V2 = mkV2 (mkV "differentiëren") ; -- status=guess, src=wikt
 lin differentiation_N = variants {} ; --
-lin differently_Adv = adjAdv different_A ; -- -- derived
 lin difficult_A = mkA "lastig" | mkA "moeilijk" ;
 lin difficulty_N = mkN "moeilijkheid" ; --- split mkN "obstakel" neuter | mkN "hindernis" ; an obstacle that hinders achievement of a goal
 lin diffidence_N = mkN "Verlegenheid" | mkN "terughoudendheid" | mkN "bescheidenheid" ; -- status=guess status=guess status=guess
@@ -5475,6 +5693,10 @@ lin diffraction_N = mkN "tralie" feminine ; -- status=guess
 lin dig_N = mkN "opgraving" feminine ; -- status=guess
 lin dig_V = L.dig_V ;
 lin dig_V2 = mkV2 (graven_V) | mkV2 (mkV "delven") ; -- status=guess, src=wikt status=guess, src=wikt
+lin dig_in_V = advV OP_dig_V OP_in_Adv ; -- guess-p-verb
+lin dig_into_V2 = prepV2 OP_dig_V OP_into_Prep ; -- guess-p-verb
+lin dig_out_V2 = prepV2 OP_dig_V OP_out_Prep ; -- guess-p-verb
+lin dig_up_V2 = prepV2 OP_dig_V OP_up_Prep ; -- guess-p-verb
 lin digest_N = mkN "compendium" neuter | mkN "overzicht" neuter ; -- status=guess status=guess
 lin digest_V = mkV "ordenen" ; -- status=guess, src=wikt
 lin digest_V2 = mkV2 (mkV "ordenen") ; -- status=guess, src=wikt
@@ -5484,7 +5706,6 @@ lin digestive_N = mkN "maag-darmstelsel" neuter ; -- status=guess
 lin digger_N = mkN "graafmachine" ; -- status=guess
 lin digit_N = mkN "vinger" masculine | mkN "teen" masculine ; -- status=guess status=guess
 lin digital_A = mkA "vinger-" ; -- status=guess
-lin digitally_Adv = adjAdv digital_A ; -- derived
 lin dignify_V2 = mkV2 (mkV "vereren") ; -- status=guess, src=wikt
 lin dignitary_N = mkN "hoogwaardigheidsbekleder" masculine | mkN "hoogwaardigheidsbekleedster" feminine ; -- status=guess status=guess
 lin dignity_N = mkN "plechtigheid" utrum ; -- status=guess
@@ -5544,7 +5765,6 @@ lin direct_V = variants {} ; --
 lin direct_V2 = variants {} ; --
 lin direction_N = mkN "richting" ;
 lin directive_N = mkN "richtlijn" feminine ; -- status=guess
-lin directly_Adv = mkAdv "direct" | mkAdv "rechtstreeks" | adjAdv direct_A ; -- derived
 lin director_N = mkN "directeur" masculine feminine | mkN "regisseur" masculine ;
 lin directory_N = mkN "gids" masculine | mkN "repertorium" neuter | mkN "telefoongids" | mkN "Gouden gids" | mkN "Witte gids" ; -- status=guess status=guess status=guess status=guess status=guess
 lin dirge_N = mkN "lijkzang" masculine | mkN "treurzang" masculine ; -- status=guess status=guess
@@ -5718,7 +5938,6 @@ lin distillery_N = mkN "distilleerderij" ; -- status=guess
 lin distinct_A = variants {} ; --
 lin distinction_N = variants {} ; --
 lin distinctive_A = variants {} ; --
-lin distinctly_Adv = adjAdv distinct_A ; -- -- derived
 lin distinguish_V = mkV "onderscheiden" ; -- status=guess, src=wikt
 lin distinguish_V2 = mkV2 (mkV "onderscheiden") ; -- status=guess, src=wikt
 lin distinguished_A = variants {} ; --
@@ -5737,7 +5956,6 @@ lin district_N = mkN "wijk" | mkN "district" neuter ;
 lin disturb_V2 = mkV2 (mkV "storen") | mkV2 (mkV "verstoren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin disturbance_N = mkN "storing" feminine | mkN "verstoring" feminine ; -- status=guess status=guess
 lin disturbing_A = variants {} ;
-lin disturbingly_Adv = adjAdv disturbing_A ; -- derived
 lin disuse_N = mkN "onbruik" neuter ; -- status=guess
 lin ditch_N = mkN "sloot" | mkN "greppel" ; -- status=guess status=guess
 lin ditto_N = mkN "herhalingsteken" neuter ; -- status=guess
@@ -5753,6 +5971,7 @@ lin divert_V = variants {} ; --
 lin dives_PN = mkPN "Dives" ; -- src=eng status=guess
 lin divide_V = mkV (mkV "divide") "et impera" | mkV (mkV "deel") "en heers" | mkV (mkV "verdeel") "en heers" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin divide_V2 = mkV2 (mkV (mkV "divide") "et impera") | mkV2 (mkV (mkV "deel") "en heers") | mkV2 (mkV (mkV "verdeel") "en heers") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin divide_up_V2 = prepV2 OP_divide_V OP_up_Prep ; -- guess-p-verb
 lin dividend_N = mkN "deeltal" neuter ; -- status=guess
 lin divine_A = variants {} ; --
 lin diving_N = mkN "duikerklok" ; -- status=guess
@@ -5864,6 +6083,15 @@ lin double_A = variants {} ; --
 lin double_N = mkN "koeterwaals" neuter | mkN "wartaal" ; -- status=guess status=guess
 lin double_V = mkV "dubbelklikken" ; -- status=guess, src=wikt
 lin double_V2 = mkV2 (mkV "dubbelklikken") ; -- status=guess, src=wikt
+lin double_as_V2 = prepV2 OP_double_V OP_as_Prep ; -- guess-p-verb
+lin double_back_V = advV OP_double_V OP_back_Adv ; -- guess-p-verb
+lin double_check_V2 = variants {} ; -- guess-p-verb
+lin double_cross_V2 = variants {} ; -- guess-p-verb
+lin double_over_V = advV OP_double_V OP_over_Adv ; -- guess-p-verb
+lin double_park_V = variants {} ; -- guess-p-verb
+lin double_park_V2 = variants {} ; -- guess-p-verb
+lin double_up_V = advV OP_double_V OP_up_Adv ; -- guess-p-verb
+lin double_up_as_V2 = prepV2 (advV OP_double_V OP_up_Adv ) OP_as_Prep ; -- guess-p-verb
 lin doubt_N = mkN "twijfel" feminine ;
 lin doubt_V2 = mkV2 (mkV "twijfelen") | mkV2 (mkV "betwijfelen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin doubt_VS = mkVS (mkV "twijfelen") | mkVS (mkV "betwijfelen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -5909,6 +6137,9 @@ lin draftee_N = mkN "dienstplichtige" ; -- status=guess
 lin drag_N = mkN "fundering" feminine ; -- status=guess
 lin drag_V = mkV "slepen" ; -- status=guess, src=wikt
 lin drag_V2 = mkV2 (mkV "slepen") ; -- status=guess, src=wikt
+lin drag_down_V = advV OP_drag_V OP_down_Adv ; -- guess-p-verb
+lin drag_in_V = advV OP_drag_V OP_in_Adv ; -- guess-p-verb
+lin drag_on_V = advV OP_drag_V OP_on_Adv ; -- guess-p-verb
 lin dragnet_N = mkN "sleepnet" ; -- status=guess
 lin dragon_N = mkN "drakenboot" ; -- status=guess
 lin dragonfly_N = mkN "libel" feminine ; -- status=guess
@@ -5931,6 +6162,17 @@ lin draw_2_V2 = mkV2 nemen_V ;
 lin draw_N = mkN "trekking" feminine ; -- status=guess
 lin draw_V = mkV (mkV "opzien") "baren" | mkV (mkV "aandacht") "trekken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin draw_V2 = mkV2 (mkV (mkV "opzien") "baren") | mkV2 (mkV (mkV "aandacht") "trekken") ; -- status=guess, src=wikt status=guess, src=wikt
+lin draw_back_V2 = mkV2 (advV OP_draw_V OP_back_Adv ) ; -- guess-p-verb
+lin draw_down_V2 = prepV2 OP_draw_V OP_down_Prep ; -- guess-p-verb
+lin draw_even_V = advV OP_draw_V OP_even_Adv ; -- guess-p-verb
+lin draw_in_V = advV OP_draw_V OP_in_Adv ; -- guess-p-verb
+lin draw_into_V2 = prepV2 OP_draw_V OP_into_Prep ; -- guess-p-verb
+lin draw_off_V = advV OP_draw_V OP_off_Adv ; -- guess-p-verb
+lin draw_on_V = advV OP_draw_V OP_on_Adv ; -- guess-p-verb
+lin draw_on_V2 = prepV2 OP_draw_V OP_on_Prep ; -- guess-p-verb
+lin draw_out_V2 = prepV2 OP_draw_V OP_out_Prep ; -- guess-p-verb
+lin draw_up_V = advV OP_draw_V OP_up_Adv ; -- guess-p-verb
+lin draw_up_V2 = prepV2 OP_draw_V OP_up_Prep ; -- guess-p-verb
 lin drawbridge_N = mkN "ophaalbrug" feminine | mkN "valbrug" ; -- status=guess status=guess
 lin drawer_N = mkN "tekenaar" masculine | mkN "tekenares" feminine ; -- status=guess status=guess
 lin drawers_N = mkN "onderbroek" ; -- status=guess
@@ -5943,11 +6185,17 @@ lin dreadful_A = mkA "vervaarlijk" ; -- status=guess
 lin dream_N = mkN "droom" masculine | mkN "hoop" neuter ; -- status=guess status=guess
 lin dream_V = mkV "dromen" ; -- status=guess, src=wikt
 lin dream_V2 = mkV2 (mkV "dromen") ; -- status=guess, src=wikt
+lin dream_of_V2 = prepV2 OP_dream_V OP_of_Prep ; -- guess-p-verb
+lin dream_up_V2 = prepV2 OP_dream_V OP_up_Prep ; -- guess-p-verb
 lin dreary_A = mkA "bleek" | mkA "lusteloos" ; -- status=guess status=guess
 lin dresden_PN = mkPN "Dresden" ; -- src=geonames status=guess
 lin dress_N = mkN "kledij" feminine | mkN "kleding" feminine ; -- status=guess status=guess
 lin dress_V = mkV "kleden" | mkV "aankleden" ; -- status=guess, src=wikt status=guess, src=wikt
 lin dress_V2 = mkV2 (mkV "kleden") | mkV2 (mkV "aankleden") ; -- status=guess, src=wikt status=guess, src=wikt
+lin dress_down_V = advV OP_dress_V OP_down_Adv ; -- guess-p-verb
+lin dress_down_V2 = prepV2 OP_dress_V OP_down_Prep ; -- guess-p-verb
+lin dress_up_V = advV OP_dress_V OP_up_Adv ; -- guess-p-verb
+lin dress_up_V2 = prepV2 OP_dress_V OP_up_Prep ; -- guess-p-verb
 lin dressing_N = variants {} ; --
 lin dribble_N = mkN "druppel" masculine ; -- status=guess
 lin dribble_V = mkV "dribbelen" ; -- status=guess, src=wikt
@@ -5964,12 +6212,21 @@ lin drilling_N = mkN "boring" feminine ; -- status=guess
 lin drink_N = mkN "drinken" neuter | mkN "drankje" neuter ;
 lin drink_V = drinken_V ;
 lin drink_V2 = L.drink_V2 ;
+lin drink_up_V2 = prepV2 OP_drink_V OP_up_Prep ; -- guess-p-verb
 lin drinkable_A = mkA "drinkbaar" ; -- status=guess
 lin drinking_N = mkN "drinkhoorn" masculine ; -- status=guess
 lin drive_N = variants {} ; --
 lin drive_V = rijden_V ; --- split mkV "aan" drijven_V to drive machinery
 lin drive_V2 = mkV2 drive_V ;
 lin drive_V2V = mkV2V drive_V ;
+lin drive_away_V2 = mkV2 (advV OP_drive_V OP_away_Adv ) ; -- guess-p-verb
+lin drive_back_V2 = mkV2 (advV OP_drive_V OP_back_Adv ) ; -- guess-p-verb
+lin drive_by_V = advV OP_drive_V OP_by_Adv ; -- guess-p-verb
+lin drive_down_V = advV OP_drive_V OP_down_Adv ; -- guess-p-verb
+lin drive_off_V = advV OP_drive_V OP_off_Adv ; -- guess-p-verb
+lin drive_out_V2 = prepV2 OP_drive_V OP_out_Prep ; -- guess-p-verb
+lin drive_up_V = advV OP_drive_V OP_up_Adv ; -- guess-p-verb
+lin drive_up_V2 = prepV2 OP_drive_V OP_up_Prep ; -- guess-p-verb
 lin drivel_N = mkN "kwijl" neuter | mkN "speeksel" neuter ; -- status=guess status=guess
 lin drivel_V = mkV "kwijlen" ; -- status=guess, src=wikt
 lin driverMasc_N = mkN "bestuurder" masculine | mkN "chauffeur" masculine ;
@@ -5984,6 +6241,22 @@ lin dronfield_PN = mkPN "Dronfield" ; -- src=geonames status=guess
 lin drop_N = mkN "val" masculine ; -- status=guess
 lin drop_V = mkV "laten" vallen_V ; ---- let fall
 lin drop_V2 = mkV2 drop_V ;
+lin drop_around_V = advV OP_drop_V OP_around_Adv ; -- guess-p-verb
+lin drop_around_V2 = prepV2 OP_drop_V OP_around_Prep ; -- guess-p-verb
+lin drop_away_V = advV OP_drop_V OP_away_Adv ; -- guess-p-verb
+lin drop_back_V = advV OP_drop_V OP_back_Adv ; -- guess-p-verb
+lin drop_by_V = advV OP_drop_V OP_by_Adv ; -- guess-p-verb
+lin drop_in_V = advV OP_drop_V OP_in_Adv ; -- guess-p-verb
+lin drop_in_on_V2 = prepV2 (advV OP_drop_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin drop_off_V = advV OP_drop_V OP_off_Adv ; -- guess-p-verb
+lin drop_off_V2 = prepV2 OP_drop_V OP_off_Prep ; -- guess-p-verb
+lin drop_out_V = advV OP_drop_V OP_out_Adv ; -- guess-p-verb
+lin drop_out_of_V2 = prepV2 (advV OP_drop_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin drop_over_V = advV OP_drop_V OP_over_Adv ; -- guess-p-verb
+lin drop_round_V = advV OP_drop_V OP_round_Adv ; -- guess-p-verb
+lin drop_round_V2 = prepV2 OP_drop_V OP_round_Prep ; -- guess-p-verb
+lin drop_someone_in_it_V2 = variants {} ; -- guess-p-verb
+lin drop_through_V = advV OP_drop_V OP_through_Adv ; -- guess-p-verb
 lin droplet_N = mkN "druppeltje" neuter ; -- status=guess
 lin drought_N = mkN "droogte" feminine ; -- status=guess
 lin drown_V = mkV "overstemmen" ; -- status=guess, src=wikt
@@ -6005,6 +6278,12 @@ lin drunkenness_N = mkN "dronkenschap" feminine ; -- status=guess
 lin dry_A = L.dry_A ;
 lin dry_V = mkV (mkV "droog") "worden" ; -- status=guess, src=wikt
 lin dry_V2 = mkV2 (mkV (mkV "droog") "worden") ; -- status=guess, src=wikt
+lin dry_clean_V2 = mkV2 (advV OP_dry_V OP_clean_Adv ) ; -- guess-p-verb
+lin dry_off_V2 = prepV2 OP_dry_V OP_off_Prep ; -- guess-p-verb
+lin dry_out_V = advV OP_dry_V OP_out_Adv ; -- guess-p-verb
+lin dry_out_V2 = prepV2 OP_dry_V OP_out_Prep ; -- guess-p-verb
+lin dry_up_V = advV OP_dry_V OP_up_Adv ; -- guess-p-verb
+lin dry_up_V2 = prepV2 OP_dry_V OP_up_Prep ; -- guess-p-verb
 lin dryer_N = mkN "droger" ; -- status=guess
 lin dual_A = mkA "dubbel-" ; -- status=guess
 lin dualism_N = mkN "dualisme" neuter ; -- status=guess
@@ -6110,7 +6389,6 @@ lin dysthymia_N = mkN "dysthymie" feminine ; -- status=guess
 lin dystopia_N = mkN "dystopie" feminine ; -- status=guess
 lin each_Det = mkDet "elk" | mkDet "ieder" ;
 lin eager_A = mkA "begerig" ; -- status=guess
-lin eagerly_Adv = mkAdv "gretig" | adjAdv eager_A ; -- status=guess -- derived
 lin eagle_N = mkN "arend" | mkN "adelaar" ; -- status=guess status=guess
 lin eaglescliffe_PN = mkPN "Eaglescliffe" ; -- src=geonames status=guess
 lin ealing_PN = mkPN "Ealing" ; -- src=geonames status=guess
@@ -6137,9 +6415,10 @@ lin earwig_N = mkN "oorworm" masculine ; -- status=guess
 lin ease_N = variants {} ; --
 lin ease_V = variants {} ; --
 lin ease_V2 = variants {} ; --
+lin ease_off_V2 = prepV2 OP_ease_V OP_off_Prep ; -- guess-p-verb
+lin ease_up_V = advV OP_ease_V OP_up_Adv ; -- guess-p-verb
 lin easel_N = mkN "schildersezel" masculine | mkN "ezel" masculine ; -- status=guess status=guess
 lin easement_N = mkN "servituut" | mkN "gebruiksrecht" neuter ; -- status=guess status=guess
-lin easily_Adv = mkAdv "makkelijk" | adjAdv easy_A ; -- derived
 lin easiness_N = mkN "gemakkelijkheid" feminine ; -- status=guess
 lin easington_PN = mkPN "Easington" ; -- src=geonames status=guess
 lin east_A = mkA "oosters" ; -- status=guess
@@ -6160,6 +6439,12 @@ lin easy_A2V = L.easy_A2V ;
 lin easy_Adv = variants {} ; --
 lin eat_V = eten_V | vreten_V | mkV "op" vreten_V ;
 lin eat_V2 = L.eat_V2 ;
+lin eat_away_V = advV OP_eat_V OP_away_Adv ; -- guess-p-verb
+lin eat_away_V2 = mkV2 (advV OP_eat_V OP_away_Adv ) ; -- guess-p-verb
+lin eat_in_V = advV OP_eat_V OP_in_Adv ; -- guess-p-verb
+lin eat_into_V2 = prepV2 OP_eat_V OP_into_Prep ; -- guess-p-verb
+lin eat_out_V = advV OP_eat_V OP_out_Adv ; -- guess-p-verb
+lin eat_up_V2 = prepV2 OP_eat_V OP_up_Prep ; -- guess-p-verb
 lin eater_N = mkN "eter" ; -- status=guess
 lin eating_N = mkN "eetstoornis" feminine ; -- status=guess
 lin eavesdrop_V = mkV "afluisteren" ; -- status=guess, src=wikt
@@ -6193,7 +6478,6 @@ lin ecology_N = mkN "ecologie" feminine ; -- status=guess
 lin econometrics_N = mkN "econometrie" feminine ; -- status=guess
 lin economic_A = mkA "economisch" ;
 lin economical_A = mkA "spaarzaam" | mkA "zuinig" ; -- status=guess status=guess
-lin economically_Adv = adjAdv economical_A ; -- -- derived
 lin economics_N = mkN "economie" feminine ; -- status=guess
 lin economist_N = mkN "econoom" utrum ; -- status=guess
 lin economy_1_N = mkN "economie" feminine ;
@@ -6233,7 +6517,6 @@ lin efface_V2 = mkV2 (reflMkV "wegcijferen") ; -- status=guess, src=wikt
 lin effect_N = mkN "effect" neuter ;
 lin effect_V2 = mkV2 (mkV "bewerkstelligen") ; -- status=guess, src=wikt
 lin effective_A = mkA "efficiënt" | mkA "werkzaam" ;
-lin effectively_Adv = adjAdv effective_A ; -- -- derived
 lin effectiveness_N = mkN "effectiviteit" feminine ; -- status=guess
 lin effeminate_A = mkA "verwijfd" ; -- status=guess
 lin efferent_A = mkA "afvoerend" | mkA "efferent" ; -- status=guess status=guess
@@ -6241,7 +6524,6 @@ lin effervescent_A = mkA "bruisend" | mkA "bruisende" ; -- status=guess status=g
 lin efficacy_N = mkN "doeltreffendheid" ; -- status=guess
 lin efficiency_N = mkN "rendement" neuter ; -- status=guess
 lin efficient_A = mkA "efficiënt" ; -- status=guess
-lin efficiently_Adv = adjAdv efficient_A ; -- -- derived
 lin effort_N = mkN "inspanning" ;
 lin effortless_A = mkA "moeiteloos" ; -- status=guess
 lin effusion_N = mkN "uitstorting" ; -- status=guess
@@ -6297,7 +6579,6 @@ lin electorate_N = mkN "keurvorstendom" neuter ; -- status=guess
 lin electric_A = variants {} ; --
 lin electric_N = mkN "lading" ; -- status=guess
 lin electrical_A = variants {} ; --
-lin electrically_Adv = adjAdv electrical_A ; -- derived
 lin electricity_N = mkN "elektriciteit" feminine | mkN "stroom" masculine ; -- status=guess status=guess
 lin electroencephalogram_N = mkN "elektro-encefalogram" neuter ; -- status=guess
 lin electrolytic_N = mkN "elektrolytische condensator" masculine | mkN "elco" masculine ; -- status=guess status=guess
@@ -6395,7 +6676,6 @@ lin emma_PN = mkPN "Emma" ; -- src=eng status=guess
 lin emmer_N = mkN "emmertarwe" ; -- status=guess
 lin emotion_N = mkN "emotie" feminine ; -- status=guess
 lin emotional_A = variants {} ; --
-lin emotionally_Adv = adjAdv emotional_A ; -- derived
 lin emotionless_A = mkA "emotieloos" ;
 lin emperor_N = mkN "keizer" masculine ; -- status=guess
 lin emphasis_N = mkN "klemtoon" masculine | mkN "beklemtoning" ; -- status=guess status=guess
@@ -6448,6 +6728,10 @@ lin end_2_N = mkN "kant" ;
 lin end_N = mkN "einde" neuter ;
 lin end_V = mkV "beëindigen" | mkV "eindigen" | mkV "afsluiten" ;
 lin end_V2 = mkV2 end_V ;
+lin end_in_V2 = prepV2 OP_end_V OP_in_Prep ; -- guess-p-verb
+lin end_tail_V2 = variants {} ; -- guess-p-verb
+lin end_up_V2 = prepV2 OP_end_V OP_up_Prep ; -- guess-p-verb
+lin end_up_with_V2 = prepV2 (advV OP_end_V OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
 lin endeavour_N = mkN "inspanning" | mkN "moeite" | mkN "streven" neuter ; -- status=guess status=guess status=guess
 lin endeavour_V = reflMkV "beijveren" | mkV "proberen" | mkV "nastreven" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin endemic_A = mkA "inheems" | mkA "endemisch" ; -- status=guess status=guess
@@ -6464,7 +6748,6 @@ lin endurance_N = mkN "uithoudingsvermogen" neuter ; -- status=guess
 lin endure_V = mkV "voortduren" ; -- status=guess, src=wikt
 lin endure_V2 = mkV2 (mkV "voortduren") ; -- status=guess, src=wikt
 lin enduring_A = variants {} ;
-lin enduringly_Adv = adjAdv enduring_A ; -- derived
 lin enema_N = mkN "klysma" neuter | mkN "lavement" neuter ; -- status=guess status=guess
 lin enemy_N = L.enemy_N ;
 lin energy_N = mkN "energie" feminine ;
@@ -6498,8 +6781,6 @@ lin enmity_N = mkN "vijandschap" ; -- status=guess
 lin ennui_N = mkN "lusteloosheid" | mkN "verveling" ; -- status=guess status=guess
 lin enoch_PN = mkPN "Enoch" ; -- src=geonames status=guess
 lin enormous_A = mkA "enorm" | mkA "gigantisch" ; -- status=guess status=guess
-lin enormously_Adv = adjAdv enormous_A ; -- -- derived
-lin enough_Adv = mkAdv "genoeg" ;
 lin enough_Predet = mkPredet "genoeg" | mkPredet "voldoende" ;
 lin enquire_V = variants {} ; --
 lin enquire_V2 = variants {} ; --
@@ -6518,6 +6799,8 @@ lin entangle_V2 = mkV2 (mkV "verstrikken") | mkV2 (mkV "verwikkelen") ; -- statu
 lin entelechy_N = mkN "entelechie" feminine ; -- status=guess
 lin enter_V = mkV "binnen" gaan_V ;
 lin enter_V2 = mkV2 enter_V ;
+lin enter_for_V2 = prepV2 OP_enter_V OP_for_Prep ; -- guess-p-verb
+lin enter_into_V2 = prepV2 OP_enter_V OP_into_Prep ; -- guess-p-verb
 lin enteritis_N = mkN "enteritis" ; -- status=guess
 lin enterprise_N = mkN "onderneming" feminine ; -- status=guess
 lin entertain_V2 = mkV2 (mkV "vermaken") | mkV2 (mkV "amuseren") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -6528,7 +6811,6 @@ lin enthusiast_N = variants {} ; --
 lin enthusiastic_A = mkA "enthousiast" ; -- status=guess
 lin entice_V2 = mkV2 (mkV "aantrekken") ; -- status=guess, src=wikt
 lin entire_A = variants {} ; --
-lin entirely_Adv = mkAdv "geheel" | mkAdv "volledig" | adjAdv entire_A ; -- derived
 lin entitle_V2V = variants {} ; --
 lin entitle_VS = variants {} ; --
 lin entitlement_N = mkN "uitkering" ; -- status=guess
@@ -6552,7 +6834,6 @@ lin envelope_N = mkN "omslag" masculine ; -- status=guess
 lin envious_A = mkA "jaloers" | mkA "nijdig" ; -- status=guess status=guess
 lin environment_N = mkN "omgeving" utrum ; --- split mkN "milieu" ;
 lin environmental_A = mkA "milieu" ;
-lin environmentally_Adv = adjAdv environmental_A ; -- derived
 lin envisage_V2 = variants {} ; --
 lin envoy_N = mkN "gezant" masculine ; -- status=guess
 lin envy_N = mkN "afgunst" feminine | mkN "nĳd" masculine ; -- status=guess status=guess
@@ -6598,7 +6879,6 @@ lin equal_A = mkA "gelijk" |mkA "identiek" ;
 lin equal_N = mkN "gelijke" masculine feminine ; -- status=guess
 lin equal_V2 = mkV2 (mkV (mkV "gelijk") "zijn aan") ; -- status=guess, src=wikt
 lin equality_N = mkN "gelijkberechtiging" ; -- status=guess
-lin equally_Adv = mkAdv "gelijk" | mkAdv "even" | mkAdv "gelijkwaardig" ;
 lin equanimity_N = mkN "gelatenheid" | mkN "berusting" | mkN "kalmte" ; -- status=guess status=guess status=guess
 lin equation_N = mkN "vergelijking" ; -- status=guess
 lin equator_N = mkN "evenaar" masculine | mkN "equator" masculine ; -- status=guess status=guess
@@ -6643,7 +6923,6 @@ lin err_V = mkV (mkV "een") "fout maken" | mkV (mkV "een") "vergissing maken" | 
 lin errant_A = mkA "dolend" ; -- status=guess
 lin erratic_A = mkA "onregelmatig" ; -- status=guess
 lin erroneous_A = variants {} ;
-lin erroneously_Adv = adjAdv erroneous_A ; -- derived
 lin error_N = mkN "fout" | mkN "afwijking" ; -- status=guess status=guess
 lin ersatz_N = mkN "ersatz" | mkN "surrogaat" ; -- status=guess status=guess
 lin erstwhile_A = mkA "voormalig" | mkA "vroeger" | mkA "toenmalig" ; -- status=guess status=guess status=guess
@@ -6664,7 +6943,6 @@ lin escutcheon_N = mkN "wapenschild" neuter ; -- status=guess
 lin esfahan_PN = mkPN "Esfahan" ; -- src=eng status=guess
 lin esoteric_A = mkA "esoterisch" ; -- status=guess
 lin especial_A = variants {} ;
-lin especially_Adv = mkAdv "vooral" | adjAdv especial_A ; -- derived
 lin espionage_N = mkN "spionage" ; -- status=guess
 lin espouse_V2 = mkV2 (mkV "verdedigen") | mkV2 (mkV "aannemen") | mkV2 (mkV "ondersteunen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin esq_PN = mkPN "Esq" ; -- src=eng status=guess
@@ -6673,7 +6951,6 @@ lin essen_PN = mkPN "Essen" ; -- src=geonames status=guess
 lin essence_N = mkN "essence" | mkN "aftreksel" ; -- status=guess status=guess
 lin essential_A = mkA "essentieel" | mkA "wezenlijk" | mkA "echt" ;
 lin essential_N = mkN "essentiële" neuter ; -- status=guess
-lin essentially_Adv = mkAdv "essentieel" | adjAdv essential_A ; -- status=guess -- derived
 lin essex_PN = mkPN "Essex" ; -- src=geonames status=guess
 lin establish_V2 = mkV2 (mkV "op" "richten") | mkV2 (mkV "stichten") ;
 lin established_A = variants {} ; --
@@ -6745,10 +7022,8 @@ lin even_Adv = mkAdv "nog" ; ---- mkAdv "zelfs" even he can do that
 lin even_N = mkN "avondstond" masculine ; -- status=guess
 lin even_V2 = mkV2 (mkV "evenen") | mkV2 (mkV "gelijkmaken") | mkV2 (mkV "platmaken") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin evening_N = mkN "avond" ;
-lin evenly_Adv = adjAdv even_A ; -- derived
 lin event_N = mkN "gebeurtenis" | mkN "evenement" neuter ;
 lin eventual_A = mkA "uiteindelijk" ; -- status=guess
-lin eventually_Adv = mkAdv "uiteindelijk" | adjAdv eventual_A ; -- derived
 lin ever_Adv = mkAdv "ooit" | mkAdv "altijd" ;
 lin evergreen_A = mkA "groenblijvend" ; -- status=guess
 lin everlasting_A = mkA "eindeloos" ; -- status=guess
@@ -6764,7 +7039,6 @@ lin evidence_1_N = mkN "bewijs" neuter ;
 lin evidence_2_N = mkN "bewijs" neuter ;
 lin evidence_N = mkN "bewijs" neuter ;
 lin evident_A = variants {} ; --
-lin evidently_Adv = mkAdv "duidelijk" | mkAdv "klaarblijkelijk" | adjAdv evident_A ; -- status=guess status=guess -- derived
 lin evil_A = mkA "kwaadaardig" | mkA "boosaardig" | mkA "kwaad" | mkA "slecht" | mkA "euvel" ; -- status=guess status=guess status=guess status=guess status=guess
 lin evil_N = mkN "kwade" neuter | mkN "kwaad" neuter | mkN "slechte" neuter | mkN "euvel" neuter ; -- status=guess status=guess status=guess status=guess
 lin evince_V2 = mkV2 (mkV "aantonen") | mkV2 (mkV "bewijzen") | mkV2 (mkV "vertonen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -6780,7 +7054,6 @@ lin ewell_PN = mkPN "Ewell" ; -- src=geonames status=guess
 lin exacerbate_V2 = mkV2 (mkV "irriteren") ; -- status=guess, src=wikt
 lin exact_A = mkA "exact" | mkA "precies" ; -- status=guess status=guess
 lin exacting_A = mkA "veeleisend" ; -- status=guess
-lin exactly_Adv = mkAdv "precies" | mkAdv "exact" | adjAdv exact_A ; -- derived
 lin exaggerate_V = mkV "overdrijven" ; -- status=guess, src=wikt
 lin exaggerate_V2 = mkV2 (mkV "overdrijven") ; -- status=guess, src=wikt
 lin exam_N = variants {} ; --
@@ -6794,7 +7067,6 @@ lin excavation_N = mkN "afgraving" feminine ; -- status=guess
 lin excavator_N = mkN "curette" feminine ; -- status=guess
 lin exceed_V2 = mkV2 (mkV "overstijgen") | mkV2 (mkV "overtreffen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin exceeding_A = variants {} ;
-lin exceedingly_Adv = adjAdv exceeding_A ; -- derived
 lin excel_V = mkV "uitblinken" ; -- status=guess, src=wikt
 lin excel_V2 = mkV2 (mkV "uitblinken") ; -- status=guess, src=wikt
 lin excellent_A = mkA "uitstekend" | mkA "uitmuntend" | mkA "excellent" | mkA "voortreffelijk" ;
@@ -6803,18 +7075,15 @@ lin except_Prep = S.except_Prep ;
 lin except_V2 = mkV2 (mkV "uitsluiten") | mkV2 (mkV "uitzonderen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin exception_N = mkN "uitzondering" ; -- status=guess
 lin exceptional_A = variants {} ; --
-lin exceptionally_Adv = adjAdv exceptional_A ; -- -- derived
 lin excerpt_N = mkN "fragment" | mkN "passage" ; -- status=guess status=guess
 lin excess_A = variants {} ; --
 lin excess_N = mkN "overtreffen" ; -- status=guess
 lin excessive_A = mkA "overmatig" ; -- status=guess
-lin excessively_Adv = mkAdv "excessief" | adjAdv excessive_A ; -- status=guess -- derived
 lin exchange_N = mkN "uitwisseling" ;
 lin exchange_V2 = mkV2 (mkV "ruilen") | mkV2 (mkV "omruilen") | mkV2 (mkV "wisselen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin excise_N = mkN "accijns" masculine ; -- status=guess
 lin excite_V2 = mkV2 (mkV "stimuleren") | mkV2 (mkV "prikkelen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin excited_A = mkA "opgewonden" ; -- status=guess
-lin excitedly_Adv = adjAdv excited_A ; -- derived
 lin excitement_N = variants {} ; --
 lin exciting_A = mkA "spannend" ; -- status=guess
 lin excl_PN = mkPN "Excl" ; -- src=eng status=guess
@@ -6824,7 +7093,6 @@ lin exclude_V2 = variants {} ; --
 lin exclusion_N = variants {} ; --
 lin exclusive_A = variants {} ; --
 lin exclusive_N = mkN "exclusief" neuter ; -- status=guess
-lin exclusively_Adv = mkAdv "uitsluitend" | mkAdv "exclusief" | adjAdv exclusive_A ; -- status=guess status=guess -- derived
 lin excommunication_N = mkN "excommunicatie" ; -- status=guess
 lin excoriate_V2 = mkV2 (mkV "schrammen") ; -- status=guess, src=wikt
 lin excoriation_N = mkN "geseling" ; -- status=guess
@@ -6925,10 +7193,10 @@ lin expire_V2 = mkV2 (mkV "aflopen") | mkV2 (mkV "vervallen") | mkV2 (mkV "verst
 lin expire_VS = mkVS (mkV "aflopen") | mkVS (mkV "vervallen") | mkVS (mkV "verstrijken") | mkVS (mkV "verlopen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin explain_V2 = mkV2 (mkV "verklaren") | mkV2 (mkV "uit" "leggen") ;
 lin explain_VS = mkVS (mkV "verklaren") ;
+lin explain_away_V = advV (lin V OP_explain_V2) OP_away_Adv ; -- guess-p-verb
 lin explanation_N = mkN "uitleg" masculine ;
 lin expletive_N = mkN "krachtterm" | mkN "verwensing" | mkN "vloek" ; -- status=guess status=guess status=guess
 lin explicit_A = mkA "expliciet" ; -- status=guess
-lin explicitly_Adv = adjAdv explicit_A ; -- -- derived
 lin explode_V = mkV "opblazen" ; -- status=guess, src=wikt
 lin exploit_N = mkN "wapenfeit" feminine ; -- status=guess
 lin exploit_V2 = mkV2 (mkV "exploiteren") | mkV2 (mkV "uitbuiten") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -6954,7 +7222,6 @@ lin expression_N = mkN "uitdrukking" feminine | mkN "spreekwijze" feminine ;
 lin expressionism_N = mkN "expressionisme" neuter ; -- status=guess
 lin expressionist_A = mkA "expressionistisch" ; -- status=guess
 lin expressiveness_N = mkN "zeggingskracht" utrum ; -- status=guess
-lin expressly_Adv = mkAdv "uitdrukkelijk" | adjAdv express_A ; -- status=guess -- derived
 lin expressway_N = mkN "expressweg" | mkN "snelweg" ; -- status=guess status=guess
 lin expulsion_N = mkN "uitwijzing" ; -- status=guess
 lin expunge_V2 = mkV2 (mkV "verwijderen") ; -- status=guess, src=wikt
@@ -6968,14 +7235,12 @@ lin extend_V2 = mkV2 extend_V ;
 lin extended_A = variants {} ; --
 lin extension_N = mkN "uitbreiding" feminine ; -- status=guess
 lin extensive_A = mkA "uitgebreid" ; -- status=guess
-lin extensively_Adv = mkAdv "uitvoerig" | mkAdv "uitgebreid" | adjAdv extensive_A ; -- status=guess status=guess -- derived
 lin extent_N = mkN "mate" masculine feminine | mkN "bereik" neuter ;
 lin extenuate_V2 = mkV2 (mkV "verminderen") ; -- status=guess, src=wikt
 lin exterior_A = mkA "uitwendig" | mkA "buitenlands" ; -- status=guess status=guess
 lin exterior_N = mkN "buitenland" neuter ; -- status=guess
 lin exterminate_V2 = mkV2 (mkV "afmaken") | mkV2 (mkV "beëindigen") | mkV2 (mkV "uitroeien") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin external_A = mkA "uiterlijk" | mkA "uitwendig" ; -- status=guess status=guess
-lin externally_Adv = adjAdv external_A ; -- derived
 lin extinct_A = mkA "uit" | mkA "uitgedoofd" ; -- status=guess status=guess
 lin extinction_N = mkN "uitsterven" ; -- status=guess
 lin extinguish_V2 = mkV2 (mkV "vernietigen") ; -- status=guess, src=wikt
@@ -6990,7 +7255,6 @@ lin extract_V2 = variants {} ; --
 lin extradite_V2 = mkV2 (mkV "uitleveren") ; -- status=guess, src=wikt
 lin extradition_N = mkN "uitlevering" feminine ; -- status=guess
 lin extramarital_A = mkA "buitenechtelijk" ; -- status=guess
-lin extraordinarily_Adv = adjAdv extraordinary_A ; -- derived
 lin extraordinary_A = mkA "buitengewoon" ; -- status=guess
 lin extrapolation_N = mkN "extrapolatie" feminine ; -- status=guess
 lin extraterrestrial_A = mkA "buitenaards" ; -- status=guess
@@ -6998,7 +7262,6 @@ lin extravagance_N = mkN "buitensporigheid" feminine ; -- status=guess
 lin extravagant_A = mkA "extravagant" ; -- status=guess
 lin extreme_A = mkA "ultiem" | mkA "ultieme" ; -- status=guess status=guess
 lin extreme_N = mkN "uiterste" neuter ; -- status=guess
-lin extremely_Adv = mkAdv "uitermate" | adjAdv extreme_A ; -- derived
 lin extremist_A = mkA "extremistisch" ; -- status=guess
 lin extremity_N = mkN "uiterste" neuter | mkN "extremiteit" feminine | mkN "uiteinde" neuter ; -- status=guess status=guess status=guess
 lin extricate_V2 = mkV2 (mkV "bevrijden") | mkV2 (mkV "ontwarren") | mkV2 (mkV "verlossen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -7020,6 +7283,8 @@ lin facade_N = variants {} ; --
 lin face_N = mkN "gezicht" neuter ;
 lin face_V = mkV "tegemoet" gaan_V ;
 lin face_V2 = mkV2 face_V ;
+lin face_off_V2 = prepV2 OP_face_V OP_off_Prep ; -- guess-p-verb
+lin face_up_to_V2 = prepV2 (advV OP_face_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin facetious_A = mkA "spottend" | mkA "spotterig" ; -- status=guess status=guess
 lin facial_N = mkN "gezichtsuitdrukking" feminine ; -- status=guess
 lin facilitate_V2 = variants {} ; --
@@ -7053,7 +7318,6 @@ lin fairway_N = mkN "vrije baan tussen tee en green" ; -- status=guess
 lin fairy_N = mkN "fee" feminine ; -- status=guess
 lin faith_N = mkN "vertrouwen" neuter | mkN "geloof" neuter ; -- status=guess status=guess
 lin faithful_A = mkA "getrouw" ; -- status=guess
-lin faithfully_Adv = adjAdv faithful_A ; -- derived
 lin faithfulness_N = mkN "trouw" masculine feminine ; -- status=guess
 lin fake_V2 = mkV2 (mkV "voorwenden") ; -- status=guess, src=wikt
 lin falafel_N = mkN "falafel" ; -- status=guess
@@ -7066,6 +7330,22 @@ lin fall_1_N = variants {} ; --
 lin fall_2_N = variants {} ; --
 lin fall_N = mkN "val" masculine ; -- status=guess
 lin fall_V = mkV "vallen" "viel" "gevallen" | mkV "in" (mkV "storten") ; -- instorten means falling down
+lin fall_about_V = advV OP_fall_V OP_about_Adv ; -- guess-p-verb
+lin fall_apart_V = advV OP_fall_V OP_apart_Adv ; -- guess-p-verb
+lin fall_back_V = advV OP_fall_V OP_back_Adv ; -- guess-p-verb
+lin fall_back_on_V2 = prepV2 (advV OP_fall_V OP_back_Adv ) OP_on_Prep ; -- guess-p-verb
+lin fall_behind_V = advV OP_fall_V OP_behind_Adv ; -- guess-p-verb
+lin fall_behind_in_V2 = prepV2 (advV OP_fall_V OP_behind_Adv ) OP_in_Prep ; -- guess-p-verb
+lin fall_down_V = advV OP_fall_V OP_down_Adv ; -- guess-p-verb
+lin fall_for_V2 = prepV2 OP_fall_V OP_for_Prep ; -- guess-p-verb
+lin fall_in_V = advV OP_fall_V OP_in_Adv ; -- guess-p-verb
+lin fall_into_V2 = prepV2 OP_fall_V OP_into_Prep ; -- guess-p-verb
+lin fall_off_V = advV OP_fall_V OP_off_Adv ; -- guess-p-verb
+lin fall_out_V = advV OP_fall_V OP_out_Adv ; -- guess-p-verb
+lin fall_out_with_V2 = prepV2 (advV OP_fall_V OP_out_Adv ) OP_with_Prep ; -- guess-p-verb
+lin fall_over_V = advV OP_fall_V OP_over_Adv ; -- guess-p-verb
+lin fall_through_V = advV OP_fall_V OP_through_Adv ; -- guess-p-verb
+lin fall_under_V2 = prepV2 OP_fall_V OP_under_Prep ; -- guess-p-verb
 lin fallacious_A = mkA "bedrieglijk" ; -- status=guess
 lin fallacy_N = mkN "drogreden" ; -- status=guess
 lin fallibility_N = mkN "feilbaarheid" ; -- status=guess
@@ -7074,14 +7354,12 @@ lin fallow_N = mkN "dries" masculine | mkN "valg" feminine | mkN "braakland" neu
 lin falmouth_PN = mkPN "Falmouth" ; -- src=geonames status=guess
 lin false_A = mkA "vals" | mkA "onecht" ; -- status=guess status=guess
 lin falsehood_N = mkN "onwaarheid" feminine ; -- status=guess
-lin falsely_Adv = mkAdv "valselijk" | adjAdv false_A ; -- status=guess -- derived
 lin fame_N = mkN "bekendheid" feminine ; -- status=guess
 lin familiar_A = mkA "vertrouwd" ; -- status=guess
 lin familiar_N = mkN "geleidegeest" masculine | mkN "geleidedier" neuter ; -- status=guess status=guess
 lin family_N = mkN "familie" feminine ; --- mkN "gezin" neuter family one lives with
 lin famine_N = mkN "hongersnood" masculine ; -- status=guess
 lin famous_A = mkA "beroemd" | mkA "bekend" ;
-lin famously_Adv = adjAdv famous_A ; -- derived
 lin fan_1_N = variants {} ; --
 lin fan_2_N = variants {} ; --
 lin fan_3_N = variants {} ; --
@@ -7095,7 +7373,6 @@ lin fanny_PN = mkPN "Fanny" ; -- src=eng status=guess
 lin fantastic_A = mkA "fantastisch" | mkA "grandioos" ; -- status=guess status=guess
 lin fantasy_N = mkN "fantasie" ; -- status=guess
 lin far_A = mkA "ver" ;
-lin far_Adv = L.far_Adv ;
 lin farad_N = mkN "farad" masculine ; -- status=guess
 lin farandole_N = mkN "farandole" ; -- status=guess
 lin faraway_A = mkA "afgelegen" | mkA "ver weg" ; -- status=guess status=guess
@@ -7121,7 +7398,6 @@ lin fascist_A = mkA "fascistisch" ; -- status=guess
 lin fashion_N = mkN "mode" ; -- status=guess
 lin fashionable_A = mkA "modieus" ; -- status=guess
 lin fast_A = mkA "snel" | mkA "vlug" | mkA "rap" | mkA "kwiek" | mkA "gezwind" ; -- status=guess status=guess status=guess status=guess status=guess
-lin fast_Adv = mkAdv "snel" | mkAdv "vlug" ; -- status=guess status=guess
 lin fast_N = mkN "snelvoedsel" feminine | mkN "snelle hap" masculine | mkN "haastkost" masculine | mkN "flitskost" masculine | mkN "gemakvoedsel" feminine ; -- status=guess status=guess status=guess status=guess status=guess
 lin fast_V = mkV "vasten" ; -- status=guess, src=wikt
 lin fasten_V = mkV "vastmaken" ; -- status=guess, src=wikt
@@ -7132,7 +7408,6 @@ lin fat_N = L.fat_N ;
 lin fat_V2 = mkV2 (mkV "vetmesten") ; -- status=guess, src=wikt
 lin fatal_A = mkA "fataal" | mkA "fatale" ; -- status=guess status=guess
 lin fatalism_N = mkN "fatalisme" neuter ; -- status=guess
-lin fatally_Adv = adjAdv fatal_A ; -- derived
 lin fate_N = mkN "vertrouwen" neuter ; -- status=guess
 lin fateful_A = mkA "noodlottig" ; -- status=guess
 lin fathead_N = mkN "Amerikaanse dikkop-elrits" ; -- status=guess
@@ -7183,13 +7458,15 @@ lin feckless_A = mkA "doelloos" ; -- status=guess
 lin fecundity_N = mkN "vruchtbaarheid" feminine ; -- status=guess
 lin federal_A = variants {} ; --
 lin federalization_N = mkN "federalisering" feminine ; -- status=guess
-lin federally_Adv = adjAdv federal_A ; -- derived
 lin federation_N = mkN "federatie" feminine | mkN "bondstaat" masculine ; -- status=guess status=guess
 lin fee_N = mkN "prijs" masculine | mkN "honorarium" neuter ; -- status=guess status=guess
 lin feeble_A = mkA "zwak" ; -- status=guess
 lin feed_N = mkN "festijn" neuter ; -- status=guess
 lin feed_V = reflMkV "voeden met" ; -- status=guess, src=wikt
 lin feed_V2 = mkV2 (reflMkV "voeden met") ; -- status=guess, src=wikt
+lin feed_off_V2 = prepV2 OP_feed_V OP_off_Prep ; -- guess-p-verb
+lin feed_on_V2 = prepV2 OP_feed_V OP_on_Prep ; -- guess-p-verb
+lin feed_up_V2 = prepV2 OP_feed_V OP_up_Prep ; -- guess-p-verb
 lin feedback_N = variants {} ; --
 lin feeding_N = mkN "zuigfles " masculine ; -- status=guess
 lin feel_N = variants {} ; --
@@ -7197,6 +7474,9 @@ lin feel_V = mkV "voelen" ;
 lin feel_V2 = mkV2 (mkV "voelen") ;
 lin feel_VA = mkVA (reflV (mkV "voelen")) ;
 lin feel_VS = mkVS (mkV "voelen") ;
+lin feel_out_V = advV OP_feel_V OP_out_Adv ; -- guess-p-verb
+lin feel_up_V2 = prepV2 OP_feel_V OP_up_Prep ; -- guess-p-verb
+lin feel_up_to_V2 = prepV2 (advV OP_feel_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin feeler_N = mkN "proefballon" masculine ; -- status=guess
 lin feeling_N = mkN "gevoel" neuter | mkN "emotie" feminine ;
 lin feign_V2 = mkV2 (mkV "verbergen") | mkV2 (mkV "verzwijgen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -7290,12 +7570,15 @@ lin field_3_N = mkN "veld" neuter ;
 lin field_4_N = mkN "vak" neuter ;
 lin field_N = field_1_N | field_4_N ;
 lin fierce_A = variants {} ; --
-lin fiercely_Adv = adjAdv fierce_A ; -- -- derived
 lin fife_PN = mkPN "Fife" ; -- src=geonames status=guess
 lin fig_N = mkN "vijg" feminine ; -- status=guess
 lin fight_N = mkN "gevecht" neuter | mkN "strijd" masculine ; -- status=guess status=guess
 lin fight_V = vechten_V ;
 lin fight_V2 = L.fight_V2 ;
+lin fight_back_V = advV OP_fight_V OP_back_Adv ; -- guess-p-verb
+lin fight_back_V2 = mkV2 (advV OP_fight_V OP_back_Adv ) ; -- guess-p-verb
+lin fight_it_out_V2 = variants {} ; -- guess-p-verb
+lin fight_off_V2 = prepV2 OP_fight_V OP_off_Prep ; -- guess-p-verb
 lin fighter_N = mkN "gevechtsvliegtuig" neuter | mkN "straaljager" ; -- status=guess status=guess
 lin fighting_N = mkN "Siamese kempvis" masculine ; -- status=guess
 lin figure_1_N = mkN "figuur" neuter ;
@@ -7303,15 +7586,27 @@ lin figure_2_N = mkN "cijfer" ; -- as in, the convincing number
 lin figure_N = mkN "figuur" neuter | mkN "cijfer" ; --- split mkN "afbeelding" look at figure A
 lin figure_V = mkV "uitvogelen" | mkV (mkV "er") "achter komen" | mkV "ontcijferen" | mkV "doorhebben" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin figure_VS = mkVS (mkV "uitvogelen") | mkVS (mkV (mkV "er") "achter komen") | mkVS (mkV "ontcijferen") | mkVS (mkV "doorhebben") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin figure_on_V2 = prepV2 OP_figure_V OP_on_Prep ; -- guess-p-verb
+lin figure_out_V2 = prepV2 OP_figure_V OP_out_Prep ; -- guess-p-verb
+lin figure_up_V2 = prepV2 OP_figure_V OP_up_Prep ; -- guess-p-verb
 lin figurehead_N = mkN "boegbeeld" neuter ; -- status=guess
 lin fiji_PN = mkPN "Fiji" ; -- src=geonames status=guess
 lin file_N = mkN "bestand" ;
 lin file_V = mkV "archiveren" ; -- status=guess, src=wikt
 lin file_V2 = mkV2 (mkV "archiveren") ; -- status=guess, src=wikt
+lin file_away_V2 = mkV2 (advV OP_file_V OP_away_Adv ) ; -- guess-p-verb
+lin file_for_V2 = prepV2 OP_file_V OP_for_Prep ; -- guess-p-verb
 lin filing_N = mkN "archivering" feminine ; -- status=guess
 lin fill_N = mkN "lading" feminine ; -- status=guess
 lin fill_V = mkV "op" (mkV "vullen") | mkV "aan" (mkV "vullen") ;
 lin fill_V2 = mkV2 fill_V ;
+lin fill_in_V = advV OP_fill_V OP_in_Adv ; -- guess-p-verb
+lin fill_in_V2 = prepV2 OP_fill_V OP_in_Prep ; -- guess-p-verb
+lin fill_in_for_V2 = prepV2 (advV OP_fill_V OP_in_Adv ) OP_for_Prep ; -- guess-p-verb
+lin fill_in_on_V3 = variants {} ; -- guess-p-verb
+lin fill_out_V = advV OP_fill_V OP_out_Adv ; -- guess-p-verb
+lin fill_out_V2 = prepV2 OP_fill_V OP_out_Prep ; -- guess-p-verb
+lin fill_up_V2 = prepV2 OP_fill_V OP_up_Prep ; -- guess-p-verb
 lin fillip_N = mkN "knip" | mkN "vingerknip" ; -- status=guess status=guess
 lin filly_N = mkN "merrieveulen" neuter ; -- status=guess
 lin film_1_N = mkN "film" ;
@@ -7332,18 +7627,18 @@ lin finally_Adv = mkAdv "eindelijk" | mkAdv "uiteindelijk" | adjAdv final_A ; --
 lin finance_N = mkN "financiering" feminine ; -- status=guess
 lin finance_V2 = mkV2 (mkV "financieren") ; -- status=guess, src=wikt
 lin financial_A = mkA "financieel" ;
-lin financially_Adv = adjAdv financial_A ; -- -- derived
 lin finch_N = mkN "vink" masculine ; -- status=guess
 lin find_N = mkN "vondst" feminine ; -- status=guess
 lin find_V = vinden_V ;
 lin find_V2 = L.find_V2 ;
 lin find_V2A = mkV2A (vinden_V) ;
 lin find_VS = mkVS (vinden_V) ; ---- split senses 'to be of opinion of' and 'to locate'. V2V is only applicable with the first sense, and there is a synonym for the first one (van mening zijn dat).
+lin find_out_V = advV OP_find_V OP_out_Adv ; -- guess-p-verb
+lin find_out_V2 = prepV2 OP_find_V OP_out_Prep ; -- guess-p-verb
 lin finding_N = mkN "vinding" feminine ; -- status=guess
 lin fine_A = mkA "goed" | mkA "prima" ;
 lin fine_N = mkN "boete" ; -- status=guess
 lin fine_V2 = mkV2 (mkV "beboeten") ; -- status=guess, src=wikt
-lin finely_Adv = adjAdv fine_A ; -- derived
 lin finger_N = mkN "vinger" masculine ;
 lin finger_V2 = mkV2 (mkV "aanwijzen") ; -- status=guess, src=wikt
 lin fingerboard_N = mkN "toets" masculine ; -- status=guess
@@ -7352,6 +7647,10 @@ lin fingerprint_N = mkN "vingerafdruk" masculine ; -- status=guess
 lin finish_N = mkN "eindstreep" feminine | mkN "finish" feminine | mkN "meet" feminine ; -- status=guess status=guess status=guess
 lin finish_V = mkV "eindigen" | mkV "op" houden_V ;
 lin finish_V2 = mkV2 finish_V ;
+lin finish_off_V2 = prepV2 OP_finish_V OP_off_Prep ; -- guess-p-verb
+lin finish_up_V = advV OP_finish_V OP_up_Adv ; -- guess-p-verb
+lin finish_up_with_V2 = prepV2 (advV OP_finish_V OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
+lin finish_with_V2 = prepV2 OP_finish_V OP_with_Prep ; -- guess-p-verb
 lin finished_A = variants {} ; --
 lin finite_A = mkA "eindig" ; -- status=guess
 lin finland_PN = mkPN "Finland" ; -- src=geonames status=guess
@@ -7362,6 +7661,11 @@ lin fire_2_N = mkN "vuur" neuter ; ---- hold you fire
 lin fire_N = L.fire_N ;
 lin fire_V = mkV "vuren" | schieten_V ; -- status=guess, src=wikt status=guess, src=wikt
 lin fire_V2 = mkV2 (mkV "vuren") | mkV2 (schieten_V) ; -- status=guess, src=wikt status=guess, src=wikt
+lin fire_away_V = advV OP_fire_V OP_away_Adv ; -- guess-p-verb
+lin fire_back_V = advV OP_fire_V OP_back_Adv ; -- guess-p-verb
+lin fire_off_V2 = prepV2 OP_fire_V OP_off_Prep ; -- guess-p-verb
+lin fire_up_V = advV OP_fire_V OP_up_Adv ; -- guess-p-verb
+lin fire_up_V2 = prepV2 OP_fire_V OP_up_Prep ; -- guess-p-verb
 lin firearm_N = mkN "vuurwapen" neuter ; -- status=guess
 lin fireball_N = mkN "vuurbol" masculine ; -- status=guess
 lin firedamp_N = mkN "mijngas" neuter ; -- status=guess
@@ -7375,7 +7679,6 @@ lin firing_N = mkN "vuurpeloton" neuter ; -- status=guess
 lin firm_A = variants {} ; --
 lin firm_N = mkN "bedrijf" neuter ;
 lin firmament_N = mkN "hemelgewelf" neuter ; -- status=guess
-lin firmly_Adv = mkAdv "stevig" | adjAdv firm_A ; -- status=guess -- derived
 lin first_A = mkA "eerst" ; -- status=guess
 lin firstborn_N = mkN "eerstgeborene" masculine ; -- status=guess
 lin firstly_Adv = variants {} ; --
@@ -7401,14 +7704,21 @@ lin fit_A = mkA "fit" ; -- status=guess
 lin fit_N = variants {} ; --
 lin fit_V = mkV "passen" ;
 lin fit_V2 = mkV2 (mkV "passen") ;
+lin fit_in_V = advV OP_fit_V OP_in_Adv ; -- guess-p-verb
+lin fit_in_V2 = prepV2 OP_fit_V OP_in_Prep ; -- guess-p-verb
+lin fit_in_with_V2 = prepV2 (advV OP_fit_V OP_in_Adv ) OP_with_Prep ; -- guess-p-verb
+lin fit_into_V2 = prepV2 OP_fit_V OP_into_Prep ; -- guess-p-verb
+lin fit_out_V2 = prepV2 OP_fit_V OP_out_Prep ; -- guess-p-verb
+lin fit_out_with_V2 = prepV2 (advV OP_fit_V OP_out_Adv ) OP_with_Prep ; -- guess-p-verb
+lin fit_up_V2 = prepV2 OP_fit_V OP_up_Prep ; -- guess-p-verb
 lin fitness_N = variants {} ; --
 lin fitting_N = variants {} ; --
 lin fivefold_A = mkA "vijfvoudig" ; -- status=guess
 lin fix_N = mkN "repareren" ; -- status=guess
 lin fix_V = variants {} ; --
 lin fix_V2 = variants {} ; --
+lin fix_up_V2 = prepV2 OP_fix_V OP_up_Prep ; -- guess-p-verb
 lin fixed_A = variants {} ; --
-lin fixedly_Adv = adjAdv fixed_A ; -- derived
 lin fixture_N = variants {} ; --
 lin fizz_N = mkN "gebruis" | mkN "geborrel" ; -- status=guess status=guess
 lin fizz_V = mkV "bruisen" ; -- status=guess, src=wikt
@@ -7540,6 +7850,13 @@ lin flux_N = mkN "flux" masculine | mkN "vloeimiddel" neuter ; -- status=guess s
 lin fly_N = mkN "vlucht" ; -- status=guess
 lin fly_V = L.fly_V ;
 lin fly_V2 = mkV2 (mkV "besturen") | mkV2 vliegen_V ;
+lin fly_about_V = advV OP_fly_V OP_about_Adv ; -- guess-p-verb
+lin fly_around_V = advV OP_fly_V OP_around_Adv ; -- guess-p-verb
+lin fly_at_V2 = prepV2 OP_fly_V OP_at_Prep ; -- guess-p-verb
+lin fly_by_V = advV OP_fly_V OP_by_Adv ; -- guess-p-verb
+lin fly_fish_V = variants {} ; -- guess-p-verb
+lin fly_into_V2 = prepV2 OP_fly_V OP_into_Prep ; -- guess-p-verb
+lin fly_out_V = advV OP_fly_V OP_out_Adv ; -- guess-p-verb
 lin flyleaf_N = mkN "schutblad" neuter ; -- status=guess
 lin flyover_N = mkN "fly-over" masculine ; -- status=guess
 lin foal_N = mkN "veulen" neuter ; -- status=guess
@@ -7548,6 +7865,7 @@ lin foam_V = mkV "schuimen" ; -- status=guess, src=wikt
 lin focus_N = mkN "focus" masculine ; -- status=guess
 lin focus_V = variants {} ; --
 lin focus_V2 = variants {} ; --
+lin focus_on_V2 = prepV2 OP_focus_V OP_on_Prep ; -- guess-p-verb
 lin fodder_N = mkN "veevoeder" neuter | mkN "veevoer" | mkN "kanonnenvoer" ; -- status=guess status=guess status=guess
 lin fog_N = L.fog_N ;
 lin fogey_N = mkN "oude zeur" | mkN "sok" | mkN "ouderwets iemand" ; -- status=guess status=guess status=guess
@@ -7567,6 +7885,10 @@ lin follicle_N = mkN "follikel" masculine ; -- status=guess
 lin follow_V = mkV "volgen" ;
 lin follow_V2 = mkV2 (mkV "volgen") ;
 lin follow_VS = mkVS (mkV "volgen") ; ---- subcat
+lin follow_on_V = advV OP_follow_V OP_on_Adv ; -- guess-p-verb
+lin follow_on_from_V2 = prepV2 (advV OP_follow_V OP_on_Adv ) OP_from_Prep ; -- guess-p-verb
+lin follow_through_V = advV OP_follow_V OP_through_Adv ; -- guess-p-verb
+lin follow_up_V2 = prepV2 OP_follow_V OP_up_Prep ; -- guess-p-verb
 lin follower_N = mkN "imitator" masculine | mkN "navolger" masculine ; -- status=guess status=guess
 lin following_A = mkA "volgende" ;
 lin following_Prep = variants {} ; --
@@ -7607,8 +7929,11 @@ lin force_V = dwingen_V | mkV "verplichten" | mkV "af" dwingen_V | mkV "forceren
 lin force_V2 = mkV2 force_V ; --- split mkV2 (mkV "verkrachten") ; to force yourself upon someone, to rape
 lin force_V2V = mkV2V force_V ;
 lin force_VS = mkVS (mkV "af" dwingen_V) ;
+lin force_feed_V2 = variants {} ; -- guess-p-verb
+lin force_land_V = variants {} ; -- guess-p-verb
+lin force_land_V2 = variants {} ; -- guess-p-verb
+lin force_out_V = advV OP_force_V OP_out_Adv ; -- guess-p-verb
 lin forcible_A = mkA "gedwongen" ; -- status=guess
-lin forcibly_Adv = adjAdv forcible_A ; -- derived
 lin ford_N = mkN "voorde" utrum | mkN "doorwaardbare plaats" utrum ; -- status=guess status=guess
 lin fore_A = mkA "eerste" | mkA "eerdere" ; -- status=guess status=guess
 lin fore_N = mkN "voorkant" masculine ; -- status=guess
@@ -7679,12 +8004,10 @@ lin form_V2 = mkV2 (mkV "vormen") | mkV2 (mkV "vorm" geven_V) ;
 lin formal_A = mkA "formeel" ;
 lin formaldehyde_N = mkN "formaldehyde" ; -- status=guess
 lin formality_N = mkN "formaliteit" feminine ; -- status=guess
-lin formally_Adv = mkAdv "formeel" | adjAdv formal_A ; -- status=guess -- derived
 lin format_N = mkN "bestandstype" neuter | mkN "bestandsformaat" neuter ; -- status=guess status=guess
 lin formation_N = mkN "rotsformatie" feminine ; -- status=guess
 lin formby_PN = mkPN "Formby" ; -- src=geonames status=guess
 lin former_A = mkA "deze" | mkA "eerstgenoemde" ; -- status=guess status=guess
-lin formerly_Adv = adjAdv former_A ; -- -- derived
 lin formidable_A = mkA "ontzagwekkend" ; -- status=guess
 lin formless_A = mkA "vormloos" ; -- status=guess
 lin formosa_PN = mkPN "Formosa" ; -- src=geonames status=guess
@@ -7777,11 +8100,11 @@ lin free_A = mkA "vrij" | mkA "los" ;
 lin free_N = mkN "vrije trap" masculine | mkN "vrije schop" masculine | mkN "vrijschop" masculine ; -- status=guess status=guess status=guess
 lin free_V2 = mkV2 (mkV "bevrijden") | mkV2 (mkV "loslaten") | mkV2 (mkV (mkV "laten") "gaan") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin free_V2V = mkV2V (mkV "bevrijden") | mkV2V (mkV "loslaten") | mkV2V (mkV (mkV "laten") "gaan") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin free_up_V2 = prepV2 (lin V OP_free_V2) OP_up_Prep ; -- guess-p-verb
 lin freebooter_N = mkN "vrijbuiter" masculine ; -- status=guess
 lin freedom_N = mkN "vrijheid" feminine ;
 lin freelancer_N = mkN "freelancer" masculine ; -- status=guess
 lin freeloader_N = mkN "klaploper" ; -- status=guess
-lin freely_Adv = variants {} ; --
 lin freeway_N = mkN "snelweg" masculine | mkN "autosnelweg" masculine ; -- status=guess status=guess
 lin freeze_N = mkN "loonstop" | mkN "salarisstop" ; -- status=guess status=guess
 lin freeze_V = L.freeze_V ;
@@ -7796,7 +8119,6 @@ lin frenetic_A = mkA "frenetiek" | mkA "bezeten" ; -- status=guess status=guess
 lin frenzy_N = mkN "razernij" feminine ; -- status=guess
 lin frequency_N = mkN "frequentiemodulatie" ; -- status=guess
 lin frequent_A = mkA "veelvuldig" | mkA "frequent" ; -- status=guess status=guess
-lin frequently_Adv = adjAdv frequent_A ; -- -- derived
 lin fresco_N = mkN "fresco" ; -- status=guess
 lin fresh_A = mkA "vers" | mkA "nieuw" ;
 lin freshman_N = mkN "feut" masculine ; -- status=guess
@@ -7818,6 +8140,8 @@ lin friendly_N = mkN "eigen vuur" ; -- status=guess
 lin friendship_N = mkN "vriendschap" feminine ; -- status=guess
 lin frigate_N = mkN "fregat" neuter ; -- status=guess
 lin frighten_V2 = mkV2 (mkV (mkV "bang") "maken") | mkV2 (mkV "beangstigen") ; -- status=guess, src=wikt status=guess, src=wikt
+lin frighten_away_V2 = mkV2 (advV (lin V OP_frighten_V2) OP_away_Adv ) ; -- guess-p-verb
+lin frighten_off_V2 = prepV2 (lin V OP_frighten_V2) OP_off_Prep ; -- guess-p-verb
 lin frightened_A = variants {} ; --
 lin frightening_A = mkA "afschuwelijk" ; -- status=guess
 lin fringe_N = mkN "franje" masculine feminine ; -- status=guess
@@ -7890,7 +8214,6 @@ lin fund_V2 = mkV2 (mkV "financieren") ; -- status=guess, src=wikt
 lin fundamental_A = mkA "fundamenteel" ; -- status=guess
 lin fundamental_N = mkN "fundamentele natuurkracht" masculine ; -- status=guess
 lin fundamentalism_N = mkN "fundamentalisme" neuter ; -- status=guess
-lin fundamentally_Adv = adjAdv fundamental_A ; -- -- derived
 lin funding_N = mkN "financiering" ; -- status=guess
 lin funeral_N = mkN "begrafenis" feminine ; -- status=guess
 lin fungus_N = mkN "zwam" masculine ; -- status=guess
@@ -7940,6 +8263,7 @@ lin gaggle_N = mkN "troep" neuter ; -- status=guess
 lin gain_N = mkN "winst" feminine ; -- status=guess
 lin gain_V = fixprefixV "ver" krijgen_V | winnen_V | mkV "bekomen" ;
 lin gain_V2 = mkV2 gain_V ;
+lin gain_back_V = advV OP_gain_V OP_back_Adv ; -- guess-p-verb
 lin gainsay_V2 = mkV2 (mkV "tegenspreken") | mkV2 (mkV "weerleggen") | mkV2 (mkV "loochenen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin gainsborough_PN = mkPN "Gainsborough" ; -- src=geonames status=guess
 lin gait_N = mkN "gang" masculine ; -- status=guess
@@ -8095,7 +8419,6 @@ lin gentleness_N = mkN "minzaamheid" ; -- status=guess
 lin gently_Adv = mkAdv "zachtjes" | mkAdv "voorzichtig" | mkAdv "zachtaardig" ; -- status=guess status=guess status=guess
 lin gentrification_N = mkN "verbetering" ; -- status=guess
 lin genuine_A = mkA "echt" | mkA "authentiek" | mkA "origineel" ; -- status=guess status=guess status=guess
-lin genuinely_Adv = adjAdv genuine_A ; -- -- derived
 lin genus_N = mkN "soort" feminine ; -- status=guess
 lin geodesy_N = mkN "landmeetkunde" feminine ; -- status=guess
 lin geoff_PN = mkPN "Geoff" ; -- src=eng status=guess
@@ -8103,7 +8426,6 @@ lin geoffrey_PN = mkPN "Geoffrey" ; -- src=eng status=guess
 lin geographer_N = mkN "geograaf" | mkN "aardrijkskundige" masculine feminine ; -- status=guess status=guess
 lin geographic_A = mkA "geografisch" ; -- status=guess
 lin geographical_A = variants {} ; --
-lin geographically_Adv = mkAdv "geografisch" | adjAdv geographical_A ; -- status=guess -- derived
 lin geography_N = mkN "geografie" feminine | mkN "aardrijkskunde" feminine ; -- status=guess status=guess
 lin geologic_A = mkA "geologisch" ; -- status=guess
 lin geological_A = variants {} ; --
@@ -8130,8 +8452,87 @@ lin gertrude_PN = mkPN "Gertrude" ; -- src=eng status=guess
 lin gerund_N = mkN "gerundium" neuter ; -- status=guess
 lin gesture_N = mkN "gebaar" neuter ; -- status=guess
 lin gesture_V = mkV "gebaren" ; -- status=guess, src=wikt
+lin get_V2 = mkV2 krijgen_V ;
 lin get_V2V = mkV2V (mkV "op" schieten_V) | mkV2V (mkV "overeen" LexiconDut.come_V) ;
 lin get_VV = mkVV (mkV "hebben") ; ---- subcat, tocheck all of get_
+lin get_about_V = advV (lin V OP_get_V2) OP_about_Adv ; -- guess-p-verb
+lin get_above_V2 = prepV2 (lin V OP_get_V2) OP_above_Prep ; -- guess-p-verb
+lin get_across_V = advV (lin V OP_get_V2) OP_across_Adv ; -- guess-p-verb
+lin get_across_V2 = prepV2 (lin V OP_get_V2) OP_across_Prep ; -- guess-p-verb
+lin get_across_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_across_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_after_V2 = prepV2 (lin V OP_get_V2) OP_after_Prep ; -- guess-p-verb
+lin get_ahead_V = advV (lin V OP_get_V2) OP_ahead_Adv ; -- guess-p-verb
+lin get_ahead_of_V2 = prepV2 (advV (lin V OP_get_V2) OP_ahead_Adv ) OP_of_Prep ; -- guess-p-verb
+lin get_along_V = advV (lin V OP_get_V2) OP_along_Adv ; -- guess-p-verb
+lin get_along_in_V2 = prepV2 (advV (lin V OP_get_V2) OP_along_Adv ) OP_in_Prep ; -- guess-p-verb
+lin get_along_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_along_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_around_V = advV (lin V OP_get_V2) OP_around_Adv ; -- guess-p-verb
+lin get_around_V2 = prepV2 (lin V OP_get_V2) OP_around_Prep ; -- guess-p-verb
+lin get_around_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_around_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_at_V2 = prepV2 (lin V OP_get_V2) OP_at_Prep ; -- guess-p-verb
+lin get_away_V = advV (lin V OP_get_V2) OP_away_Adv ; -- guess-p-verb
+lin get_away_from_V2 = prepV2 (advV (lin V OP_get_V2) OP_away_Adv ) OP_from_Prep ; -- guess-p-verb
+lin get_away_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_away_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_back_V = advV (lin V OP_get_V2) OP_back_Adv ; -- guess-p-verb
+lin get_back_V2 = mkV2 (advV (lin V OP_get_V2) OP_back_Adv ) ; -- guess-p-verb
+lin get_back_at_V2 = prepV2 (advV (lin V OP_get_V2) OP_back_Adv ) OP_at_Prep ; -- guess-p-verb
+lin get_back_into_V2 = prepV2 (advV (lin V OP_get_V2) OP_back_Adv ) OP_into_Prep ; -- guess-p-verb
+lin get_back_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_back_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_back_together_V = variants {} ; -- guess-p-verb
+lin get_behind_V2 = prepV2 (lin V OP_get_V2) OP_behind_Prep ; -- guess-p-verb
+lin get_behind_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_behind_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_by_V = advV (lin V OP_get_V2) OP_by_Adv ; -- guess-p-verb
+lin get_by_V2 = prepV2 (lin V OP_get_V2) OP_by_Prep ; -- guess-p-verb
+lin get_by_on_V2 = prepV2 (advV (lin V OP_get_V2) OP_by_Adv ) OP_on_Prep ; -- guess-p-verb
+lin get_by_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_by_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_down_V = advV (lin V OP_get_V2) OP_down_Adv ; -- guess-p-verb
+lin get_down_V2 = prepV2 (lin V OP_get_V2) OP_down_Prep ; -- guess-p-verb
+lin get_down_on_V2 = prepV2 (advV (lin V OP_get_V2) OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin get_down_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_down_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_even_V = advV (lin V OP_get_V2) OP_even_Adv ; -- guess-p-verb
+lin get_in_V = advV (lin V OP_get_V2) OP_in_Adv ; -- guess-p-verb
+lin get_in_V2 = prepV2 (lin V OP_get_V2) OP_in_Prep ; -- guess-p-verb
+lin get_in_on_V2 = prepV2 (advV (lin V OP_get_V2) OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin get_in_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_in_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_into_V2 = prepV2 (lin V OP_get_V2) OP_into_Prep ; -- guess-p-verb
+lin get_it_V = variants {} ; -- guess-p-verb
+lin get_it_off_V = variants {} ; -- guess-p-verb
+lin get_it_off_with_V2 = variants {} ; -- guess-p-verb
+lin get_it_on_V = variants {} ; -- guess-p-verb
+lin get_it_on_with_V2 = variants {} ; -- guess-p-verb
+lin get_it_together_V = variants {} ; -- guess-p-verb
+lin get_it_up_V = variants {} ; -- guess-p-verb
+lin get_off_V = advV (lin V OP_get_V2) OP_off_Adv ; -- guess-p-verb
+lin get_off_V2 = prepV2 (lin V OP_get_V2) OP_off_Prep ; -- guess-p-verb
+lin get_off_it_V2 = variants {} ; -- guess-p-verb
+lin get_off_on_V2 = prepV2 (advV (lin V OP_get_V2) OP_off_Adv ) OP_on_Prep ; -- guess-p-verb
+lin get_off_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_off_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_on_1_V2 = variants {} ; -- guess-p-verb
+lin get_on_2_V2 = variants {} ; -- guess-p-verb
+lin get_on_V = advV (lin V OP_get_V2) OP_on_Adv ; -- guess-p-verb
+lin get_on_at_V2 = prepV2 (advV (lin V OP_get_V2) OP_on_Adv ) OP_at_Prep ; -- guess-p-verb
+lin get_on_for_V2 = prepV2 (advV (lin V OP_get_V2) OP_on_Adv ) OP_for_Prep ; -- guess-p-verb
+lin get_on_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_on_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_on_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_on_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_onto_V2 = prepV2 (lin V OP_get_V2) OP_onto_Prep ; -- guess-p-verb
+lin get_out_V = advV (lin V OP_get_V2) OP_out_Adv ; -- guess-p-verb
+lin get_out_V2 = prepV2 (lin V OP_get_V2) OP_out_Prep ; -- guess-p-verb
+lin get_out_of_V2 = prepV2 (advV (lin V OP_get_V2) OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin get_over_V = advV (lin V OP_get_V2) OP_over_Adv ; -- guess-p-verb
+lin get_over_V2 = prepV2 (lin V OP_get_V2) OP_over_Prep ; -- guess-p-verb
+lin get_over_with_V2 = prepV2 (advV (lin V OP_get_V2) OP_over_Adv ) OP_with_Prep ; -- guess-p-verb
+lin get_round_V = advV (lin V OP_get_V2) OP_round_Adv ; -- guess-p-verb
+lin get_round_V2 = prepV2 (lin V OP_get_V2) OP_round_Prep ; -- guess-p-verb
+lin get_round_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_round_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_through_V = advV (lin V OP_get_V2) OP_through_Adv ; -- guess-p-verb
+lin get_through_V2 = prepV2 (lin V OP_get_V2) OP_through_Prep ; -- guess-p-verb
+lin get_through_V3 = variants {} ; -- guess-p-verb
+lin get_through_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_through_Adv ) OP_to_Prep ; -- guess-p-verb
+lin get_to_V2 = prepV2 (lin V OP_get_V2) OP_to_Prep ; -- guess-p-verb
+lin get_together_V = advV (lin V OP_get_V2) OP_together_Adv ; -- guess-p-verb
+lin get_up_V = advV (lin V OP_get_V2) OP_up_Adv ; -- guess-p-verb
+lin get_up_V2 = prepV2 (lin V OP_get_V2) OP_up_Prep ; -- guess-p-verb
+lin get_up_to_V2 = prepV2 (advV (lin V OP_get_V2) OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin geyser_N = mkN "geiser" masculine | mkN "geizer" masculine ; -- status=guess status=guess
 lin ghana_PN = mkPN "Ghana" ; -- src=geonames status=guess
 lin ghastly_A = mkA "afgrijselijk" | mkA "afschuwelijk" | mkA "verschrikkelijk" | mkA "abominabel" ; -- status=guess status=guess status=guess status=guess
@@ -8179,6 +8580,32 @@ lin give_N = mkN "weggeefwinkel" ; -- status=guess
 lin give_V = geven_V ;
 lin give_V2 = mkV2 (geven_V) | mkV2 (no_geV (mkV "overhandigen")) ;
 lin give_V3 = L.give_V3 ;
+lin give_away_V = advV OP_give_V OP_away_Adv ; -- guess-p-verb
+lin give_away_V2 = mkV2 (advV OP_give_V OP_away_Adv ) ; -- guess-p-verb
+lin give_back_V2 = mkV2 (advV OP_give_V OP_back_Adv ) ; -- guess-p-verb
+lin give_in_V = advV OP_give_V OP_in_Adv ; -- guess-p-verb
+lin give_in_V2 = prepV2 OP_give_V OP_in_Prep ; -- guess-p-verb
+lin give_in_to_V2 = prepV2 (advV OP_give_V OP_in_Adv ) OP_to_Prep ; -- guess-p-verb
+lin give_it_to_V2 = variants {} ; -- guess-p-verb
+lin give_it_up_for_V2 = variants {} ; -- guess-p-verb
+lin give_it_up_to_V2 = variants {} ; -- guess-p-verb
+lin give_of_V2 = prepV2 OP_give_V OP_of_Prep ; -- guess-p-verb
+lin give_off_V = advV OP_give_V OP_off_Adv ; -- guess-p-verb
+lin give_off_V2 = prepV2 OP_give_V OP_off_Prep ; -- guess-p-verb
+lin give_onto_V2 = prepV2 OP_give_V OP_onto_Prep ; -- guess-p-verb
+lin give_out_V = advV OP_give_V OP_out_Adv ; -- guess-p-verb
+lin give_out_V2 = prepV2 OP_give_V OP_out_Prep ; -- guess-p-verb
+lin give_over_V = advV OP_give_V OP_over_Adv ; -- guess-p-verb
+lin give_over_V2 = prepV2 OP_give_V OP_over_Prep ; -- guess-p-verb
+lin give_over_to_V3 = variants {} ; -- guess-p-verb
+lin give_up_V = advV OP_give_V OP_up_Adv ; -- guess-p-verb
+lin give_up_V2 = prepV2 OP_give_V OP_up_Prep ; -- guess-p-verb
+lin give_up_on_V2 = prepV2 (advV OP_give_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin give_up_to_V2 = prepV2 (advV OP_give_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin give_way_V = advV OP_give_V OP_way_Adv ; -- guess-p-verb
+lin give_way_to_V2 = prepV2 (advV OP_give_V OP_way_Adv ) OP_to_Prep ; -- guess-p-verb
+lin give_yourself_up_V = variants {} ; -- guess-p-verb
+lin give_yourself_up_to_V2 = variants {} ; -- guess-p-verb
 lin given_A = variants {} ; --
 lin given_N = mkN "voornaam" masculine | mkN "roepnaam" masculine ; -- status=guess status=guess
 lin glacier_N = mkN "gletsjer" masculine ; -- status=guess
@@ -8219,7 +8646,6 @@ lin glitter_V = mkV "schitteren" ; -- status=guess, src=wikt
 lin gloat_V = mkV (mkV "met") "wellust bekijken" | mkV (mkV "met") "duivels vermaak bekijken" | mkV "verlustigen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin gloat_VS = mkVS (mkV (mkV "met") "wellust bekijken") | mkVS (mkV (mkV "met") "duivels vermaak bekijken") | mkVS (mkV "verlustigen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin global_A = mkA "globaal" | mkA "wereldwijd" | mkA "wereld-" | mkA "mondiaal" ; -- status=guess status=guess status=guess status=guess
-lin globally_Adv = adjAdv global_A ; -- derived
 lin globe_N = mkN "wereldbol" masculine ; -- status=guess
 lin glockenspiel_N = mkN "klokkenspel" neuter | mkN "beiaard" ; -- status=guess status=guess
 lin gloom_N = mkN "duisternis" feminine ; -- status=guess
@@ -8262,6 +8688,70 @@ lin go_N = mkN "go" neuter ; -- status=guess
 lin go_V = L.go_V ;
 lin go_VA = mkVA (L.go_V) ; -- only in expressions?
 lin go_VV = mkVV (L.go_V) ;
+lin go_about_V = advV OP_go_V OP_about_Adv ; -- guess-p-verb
+lin go_about_V2 = prepV2 OP_go_V OP_about_Prep ; -- guess-p-verb
+lin go_across_V = advV OP_go_V OP_across_Adv ; -- guess-p-verb
+lin go_after_V2 = prepV2 OP_go_V OP_after_Prep ; -- guess-p-verb
+lin go_against_V2 = prepV2 OP_go_V OP_against_Prep ; -- guess-p-verb
+lin go_ahead_V = advV OP_go_V OP_ahead_Adv ; -- guess-p-verb
+lin go_ahead_with_V2 = prepV2 (advV OP_go_V OP_ahead_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_along_V = advV OP_go_V OP_along_Adv ; -- guess-p-verb
+lin go_along_with_V2 = prepV2 (advV OP_go_V OP_along_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_around_V = advV OP_go_V OP_around_Adv ; -- guess-p-verb
+lin go_at_V2 = prepV2 OP_go_V OP_at_Prep ; -- guess-p-verb
+lin go_away_V = advV OP_go_V OP_away_Adv ; -- guess-p-verb
+lin go_back_V = advV OP_go_V OP_back_Adv ; -- guess-p-verb
+lin go_back_V2 = mkV2 (advV OP_go_V OP_back_Adv ) ; -- guess-p-verb
+lin go_back_on_V2 = prepV2 (advV OP_go_V OP_back_Adv ) OP_on_Prep ; -- guess-p-verb
+lin go_before_V = advV OP_go_V OP_before_Adv ; -- guess-p-verb
+lin go_below_V = advV OP_go_V OP_below_Adv ; -- guess-p-verb
+lin go_by_V = advV OP_go_V OP_by_Adv ; -- guess-p-verb
+lin go_by_V2 = prepV2 OP_go_V OP_by_Prep ; -- guess-p-verb
+lin go_down_V = advV OP_go_V OP_down_Adv ; -- guess-p-verb
+lin go_down_on_V2 = prepV2 (advV OP_go_V OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin go_down_to_V2 = prepV2 (advV OP_go_V OP_down_Adv ) OP_to_Prep ; -- guess-p-verb
+lin go_down_with_V2 = prepV2 (advV OP_go_V OP_down_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_for_V = advV OP_go_V OP_for_Adv ; -- guess-p-verb
+lin go_for_V2 = prepV2 OP_go_V OP_for_Prep ; -- guess-p-verb
+lin go_for_it_V = variants {} ; -- guess-p-verb
+lin go_forth_V = advV OP_go_V OP_forth_Adv ; -- guess-p-verb
+lin go_forward_V = advV OP_go_V OP_forward_Adv ; -- guess-p-verb
+lin go_in_V = advV OP_go_V OP_in_Adv ; -- guess-p-verb
+lin go_in_for_V2 = prepV2 (advV OP_go_V OP_in_Adv ) OP_for_Prep ; -- guess-p-verb
+lin go_in_with_V2 = prepV2 (advV OP_go_V OP_in_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_into_V2 = prepV2 OP_go_V OP_into_Prep ; -- guess-p-verb
+lin go_it_V = variants {} ; -- guess-p-verb
+lin go_it_alone_V = variants {} ; -- guess-p-verb
+lin go_off_V = advV OP_go_V OP_off_Adv ; -- guess-p-verb
+lin go_off_V2 = prepV2 OP_go_V OP_off_Prep ; -- guess-p-verb
+lin go_off_with_V2 = prepV2 (advV OP_go_V OP_off_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_on_V = advV OP_go_V OP_on_Adv ; -- guess-p-verb
+lin go_on_V2 = prepV2 OP_go_V OP_on_Prep ; -- guess-p-verb
+lin go_on_about_V2 = prepV2 (advV OP_go_V OP_on_Adv ) OP_about_Prep ; -- guess-p-verb
+lin go_on_at_V2 = prepV2 (advV OP_go_V OP_on_Adv ) OP_at_Prep ; -- guess-p-verb
+lin go_on_to_V2 = prepV2 (advV OP_go_V OP_on_Adv ) OP_to_Prep ; -- guess-p-verb
+lin go_on_with_V2 = prepV2 (advV OP_go_V OP_on_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_one_V = variants {} ; -- guess-p-verb
+lin go_out_V = advV OP_go_V OP_out_Adv ; -- guess-p-verb
+lin go_out_for_V2 = prepV2 (advV OP_go_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin go_out_to_V2 = prepV2 (advV OP_go_V OP_out_Adv ) OP_to_Prep ; -- guess-p-verb
+lin go_out_with_V2 = prepV2 (advV OP_go_V OP_out_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_over_V = advV OP_go_V OP_over_Adv ; -- guess-p-verb
+lin go_over_V2 = prepV2 OP_go_V OP_over_Prep ; -- guess-p-verb
+lin go_over_to_V2 = prepV2 (advV OP_go_V OP_over_Adv ) OP_to_Prep ; -- guess-p-verb
+lin go_past_V2 = prepV2 OP_go_V OP_past_Prep ; -- guess-p-verb
+lin go_round_V = advV OP_go_V OP_round_Adv ; -- guess-p-verb
+lin go_through_V = advV OP_go_V OP_through_Adv ; -- guess-p-verb
+lin go_through_V2 = prepV2 OP_go_V OP_through_Prep ; -- guess-p-verb
+lin go_through_with_V2 = prepV2 (advV OP_go_V OP_through_Adv ) OP_with_Prep ; -- guess-p-verb
+lin go_to_V2 = prepV2 OP_go_V OP_to_Prep ; -- guess-p-verb
+lin go_together_V = advV OP_go_V OP_together_Adv ; -- guess-p-verb
+lin go_towards_V2 = prepV2 OP_go_V OP_towards_Prep ; -- guess-p-verb
+lin go_under_V = advV OP_go_V OP_under_Adv ; -- guess-p-verb
+lin go_up_V = advV OP_go_V OP_up_Adv ; -- guess-p-verb
+lin go_up_to_V2 = prepV2 (advV OP_go_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin go_with_V2 = prepV2 OP_go_V OP_with_Prep ; -- guess-p-verb
+lin go_without_V2 = prepV2 OP_go_V OP_without_Prep ; -- guess-p-verb
 lin goad_V2 = mkV2 (mkV "aanmoedigen") | mkV2 (mkV "stimuleren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin goal_N = mkN "doel" neuter | mkN "goal" ;
 lin goalkeeper_N = mkN "keeper" masculine feminine | mkN "doelwachter" masculine | mkN "doelwachtster" feminine | mkN "doelman" masculine ; -- status=guess status=guess status=guess status=guess
@@ -8351,7 +8841,6 @@ lin gradation_N = mkN "gradatie" feminine ; -- status=guess
 lin grade_N = variants {} ; --
 lin gradient_N = mkN "gradiënt" masculine ; -- status=guess
 lin gradual_A = mkA "geleidelijk" ; -- status=guess
-lin gradually_Adv = mkAdv "geleidelijk" | mkAdv "allengs" | mkAdv "gaandeweg" | adjAdv gradual_A ; -- status=guess status=guess status=guess -- derived
 lin graduate_N = mkN "abituriënt" masculine ; -- status=guess
 lin graduate_V = mkV "promoveren" | mkV "afstuderen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin graduate_V2 = mkV2 (mkV "promoveren") | mkV2 (mkV "afstuderen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -8518,6 +9007,20 @@ lin grovel_V = kruipen_V ; -- status=guess, src=wikt
 lin grow_V = mkV "groeien" | spruiten_V ;
 lin grow_V2 = mkV2 (mkV "groeien") | mkV2 (spruiten_V) ;
 lin grow_VA = mkVA (mkV "groeien") | mkVA (spruiten_V) ;
+lin grow_apart_V = advV OP_grow_V OP_apart_Adv ; -- guess-p-verb
+lin grow_away_from_V2 = prepV2 (advV OP_grow_V OP_away_Adv ) OP_from_Prep ; -- guess-p-verb
+lin grow_back_V = advV OP_grow_V OP_back_Adv ; -- guess-p-verb
+lin grow_from_V2 = prepV2 OP_grow_V OP_from_Prep ; -- guess-p-verb
+lin grow_into_V2 = prepV2 OP_grow_V OP_into_Prep ; -- guess-p-verb
+lin grow_on_V2 = prepV2 OP_grow_V OP_on_Prep ; -- guess-p-verb
+lin grow_out_V = advV OP_grow_V OP_out_Adv ; -- guess-p-verb
+lin grow_out_of_V2 = prepV2 (advV OP_grow_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin grow_to_V = advV OP_grow_V OP_to_Adv ; -- guess-p-verb
+lin grow_together_V = advV OP_grow_V OP_together_Adv ; -- guess-p-verb
+lin grow_under_V = advV OP_grow_V OP_under_Adv ; -- guess-p-verb
+lin grow_up_V = advV OP_grow_V OP_up_Adv ; -- guess-p-verb
+lin grow_up_on_V2 = prepV2 (advV OP_grow_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin grow_upon_V2 = prepV2 OP_grow_V OP_upon_Prep ; -- guess-p-verb
 lin growing_A = mkA "groeiend" ; -- status=guess
 lin growl_N = mkN "grom" masculine | mkN "gegrom" ; -- status=guess status=guess
 lin growl_V = mkV "grommen" | mkV "grauwen" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -8706,6 +9209,13 @@ lin hampshire_PN = mkPN "Hampshire" ; -- src=geonames status=guess
 lin hamster_N = mkN "hamster" masculine ; -- status=guess
 lin hand_N = L.hand_N ;
 lin hand_V2 = mkV2 (mkV "overleveren") ; -- status=guess, src=wikt
+lin hand_back_V2 = mkV2 (advV (lin V OP_hand_V2) OP_back_Adv ) ; -- guess-p-verb
+lin hand_carry_V2 = variants {} ; -- guess-p-verb
+lin hand_down_V2 = prepV2 (lin V OP_hand_V2) OP_down_Prep ; -- guess-p-verb
+lin hand_in_V2 = prepV2 (lin V OP_hand_V2) OP_in_Prep ; -- guess-p-verb
+lin hand_on_V2 = prepV2 (lin V OP_hand_V2) OP_on_Prep ; -- guess-p-verb
+lin hand_out_V2 = prepV2 (lin V OP_hand_V2) OP_out_Prep ; -- guess-p-verb
+lin hand_over_V2 = prepV2 (lin V OP_hand_V2) OP_over_Prep ; -- guess-p-verb
 lin handbag_N = mkN "handtas" masculine feminine ; -- status=guess
 lin handball_N = mkN "handbal" masculine ; -- status=guess
 lin handbook_N = mkN "handboek" neuter ; -- status=guess
@@ -8734,6 +9244,24 @@ lin handy_A = mkA "handig" ; -- status=guess
 lin handyman_N = mkN "manusje-van-alles" | mkN "handige jongen" masculine ; -- status=guess status=guess
 lin hang_V = hangen_V ;
 lin hang_V2 = mkV2 hangen_V ;
+lin hang_about_V = advV OP_hang_V OP_about_Adv ; -- guess-p-verb
+lin hang_around_V = advV OP_hang_V OP_around_Adv ; -- guess-p-verb
+lin hang_around_V2 = prepV2 OP_hang_V OP_around_Prep ; -- guess-p-verb
+lin hang_back_V = advV OP_hang_V OP_back_Adv ; -- guess-p-verb
+lin hang_back_from_V2 = prepV2 (advV OP_hang_V OP_back_Adv ) OP_from_Prep ; -- guess-p-verb
+lin hang_in_there_V = variants {} ; -- guess-p-verb
+lin hang_it_up_V = variants {} ; -- guess-p-verb
+lin hang_on_V = advV OP_hang_V OP_on_Adv ; -- guess-p-verb
+lin hang_onto_V2 = prepV2 OP_hang_V OP_onto_Prep ; -- guess-p-verb
+lin hang_out_V = advV OP_hang_V OP_out_Adv ; -- guess-p-verb
+lin hang_out_V2 = prepV2 OP_hang_V OP_out_Prep ; -- guess-p-verb
+lin hang_out_for_V2 = prepV2 (advV OP_hang_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin hang_over_V2 = prepV2 OP_hang_V OP_over_Prep ; -- guess-p-verb
+lin hang_together_V = advV OP_hang_V OP_together_Adv ; -- guess-p-verb
+lin hang_up_V = advV OP_hang_V OP_up_Adv ; -- guess-p-verb
+lin hang_up_V2 = prepV2 OP_hang_V OP_up_Prep ; -- guess-p-verb
+lin hang_up_on_V2 = prepV2 (advV OP_hang_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin hang_with_V2 = prepV2 OP_hang_V OP_with_Prep ; -- guess-p-verb
 lin hangchon_PN = mkPN "Hangchon" ; -- src=eng status=guess
 lin hanging_N = mkN "behang" neuter ; -- status=guess
 lin hangman_N = mkN "beul" masculine feminine ; -- status=guess
@@ -8745,7 +9273,6 @@ lin haphazard_A = mkA "ongeordend" | mkA "chaotisch" | mkA "willekeurig" ; -- st
 lin hapless_A = mkA "ongelukkig" | mkA "onfortuinlijk" ; -- status=guess status=guess
 lin happen_V = mkV "gebeuren" ;
 lin happen_VV = mkVV (mkV "gebeuren") ;
-lin happily_Adv = mkAdv "en ze leefden nog lang en gelukkig" | adjAdv happy_A ; -- status=guess -- derived
 lin happiness_N = mkN "blijheid" feminine | mkN "blijdschap" | mkN "geluk" neuter ; -- status=guess status=guess status=guess
 lin happy_A = mkA "gelukkig" | mkA "blij" ;
 lin haptic_A = mkA "haptisch" ; -- status=guess
@@ -8755,10 +9282,10 @@ lin harbinger_N = mkN "voorbode" masculine ; -- status=guess
 lin harbour_N = L.harbour_N ;
 lin hard_1_A = mkA "hard" ;
 lin hard_2_A = mkA "lastig" ;
-lin hardly_AdV = lin AdV {s = "hard"} | lin AdV {s = "lastig"} ;
 lin harden_V = mkV (mkV "hard") "worden" | mkV "verharden" | mkV "verstijven" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin harden_V2 = mkV2 (mkV (mkV "hard") "worden") | mkV2 (mkV "verharden") | mkV2 (mkV "verstijven") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin hardheaded_A = mkA "pragmatisch" ; -- status=guess
+lin hardly_AdV = lin AdV {s = "hard"} | lin AdV {s = "lastig"} ;
 lin hardness_N = mkN "hardheid" feminine ; -- status=guess
 lin hardship_N = mkN "ellende" feminine ; -- status=guess
 lin hardware_N = mkN "ijzerwinkel" masculine | mkN "ijzerwarenwinkel" masculine ; -- status=guess status=guess
@@ -8799,7 +9326,6 @@ lin harrow_PN = mkPN "Harrow" ; -- src=geonames status=guess
 lin harrow_V2 = mkV2 (mkV "eggen") ; -- status=guess, src=wikt
 lin harry_PN = mkPN "Harry" ; -- src=eng status=guess
 lin harsh_A = mkA "ruw" | mkA "grof" ; -- status=guess status=guess
-lin harshly_Adv = adjAdv harsh_A ; -- derived
 lin hart_N = mkN "hertenbok" masculine | mkN "hert" neuter masculine | mkN "reebok" masculine ; -- status=guess status=guess status=guess
 lin hartebeest_N = mkN "hartenbeest" neuter ; -- status=guess
 lin hartlepool_PN = mkPN "Hartlepool" ; -- src=geonames status=guess
@@ -8818,7 +9344,6 @@ lin haslingden_PN = mkPN "Haslingden" ; -- src=geonames status=guess
 lin hassium_N = mkN "hassium" neuter ; -- status=guess
 lin hasten_V = mkV "vervroegen" ; -- status=guess, src=wikt
 lin hasten_V2 = mkV2 (mkV "vervroegen") ; -- status=guess, src=wikt
-lin hastily_Adv = adjAdv hasty_A ; -- -- derived
 lin hastings_PN = mkPN "Hastings" ; -- src=geonames status=guess
 lin hasty_A = mkA "haastig" ; -- status=guess
 lin hat_N = L.hat_N ;
@@ -8829,6 +9354,7 @@ lin hatch_V2 = mkV2 (mkV (mkV "het") "openbreken van een ei") ; -- status=guess,
 lin hatchet_N = mkN "bijl" | mkN "handbijl" ; -- status=guess status=guess
 lin hate_V2 = L.hate_V2 ;
 lin hate_VV = mkVV (mkV "haten") ; -- status=guess, src=wikt
+lin hate_on_V2 = prepV2 (lin V OP_hate_V2) OP_on_Prep ; -- guess-p-verb
 lin hateful_A = mkA "hatelijk" ; -- status=guess
 lin hatfield_PN = mkPN "Hatfield" ; -- src=geonames status=guess
 lin hatred_N = mkN "haat" masculine ; -- status=guess
@@ -8842,6 +9368,20 @@ lin havana_PN = mkPN "Havana" ; -- src=geonames status=guess
 lin have_V = mkV "hebben" ;
 lin have_V2 = S.have_V2 ;
 lin have_VV = mkVV (mkV "hebben") ; ---- subcat
+lin have_against_V2 = prepV2 OP_have_V OP_against_Prep ; -- guess-p-verb
+lin have_around_V2 = prepV2 OP_have_V OP_around_Prep ; -- guess-p-verb
+lin have_down_as_V3 = variants {} ; -- guess-p-verb
+lin have_in_V2 = prepV2 OP_have_V OP_in_Prep ; -- guess-p-verb
+lin have_it_away_V = variants {} ; -- guess-p-verb
+lin have_it_in_for_V2 = variants {} ; -- guess-p-verb
+lin have_it_off_V = variants {} ; -- guess-p-verb
+lin have_it_out_with_V2 = variants {} ; -- guess-p-verb
+lin have_off_V2 = prepV2 OP_have_V OP_off_Prep ; -- guess-p-verb
+lin have_on_V = advV OP_have_V OP_on_Adv ; -- guess-p-verb
+lin have_on_V2 = prepV2 OP_have_V OP_on_Prep ; -- guess-p-verb
+lin have_over_V2 = prepV2 OP_have_V OP_over_Prep ; -- guess-p-verb
+lin have_round_V2 = prepV2 OP_have_V OP_round_Prep ; -- guess-p-verb
+lin have_up_V2 = prepV2 OP_have_V OP_up_Prep ; -- guess-p-verb
 lin haven_N = mkN "haven" feminine ; -- status=guess
 lin haverfordwest_PN = mkPN "Haverfordwest" ; -- src=geonames status=guess
 lin haverhill_PN = mkPN "Haverhill" ; -- src=geonames status=guess
@@ -8871,6 +9411,11 @@ lin head_A = variants {} ; --
 lin head_N = L.head_N ;
 lin head_V = mkV "leiden" | mkV "koppen" ;
 lin head_V2 = mkV2 head_V ;
+lin head_for_V2 = prepV2 OP_head_V OP_for_Prep ; -- guess-p-verb
+lin head_off_V = advV OP_head_V OP_off_Adv ; -- guess-p-verb
+lin head_off_V2 = prepV2 OP_head_V OP_off_Prep ; -- guess-p-verb
+lin head_out_V = advV OP_head_V OP_out_Adv ; -- guess-p-verb
+lin head_up_V2 = prepV2 OP_head_V OP_up_Prep ; -- guess-p-verb
 lin headache_N = mkN "hoofdbreker" masculine | mkN "kopzorg" ; -- status=guess status=guess
 lin header_N = mkN "kopbal" masculine ; -- status=guess
 lin heading_N = variants {} ; --
@@ -8891,6 +9436,11 @@ lin hear_V = mkV "horen" ;
 lin hear_V2 = L.hear_V2 ;
 lin hear_V2V = mkV2V (mkV "horen") ;
 lin hear_VS = mkVS (mkV "horen") ;
+lin hear_about_V2 = prepV2 OP_hear_V OP_about_Prep ; -- guess-p-verb
+lin hear_from_V2 = prepV2 OP_hear_V OP_from_Prep ; -- guess-p-verb
+lin hear_of_V2 = prepV2 OP_hear_V OP_of_Prep ; -- guess-p-verb
+lin hear_of_V3 = variants {} ; -- guess-p-verb
+lin hear_out_V2 = prepV2 OP_hear_V OP_out_Prep ; -- guess-p-verb
 lin hearing_N = variants {} ; --
 lin hearse_N = mkN "lijkwagen" masculine | mkN "rouwkoets" masculine feminine ; -- status=guess status=guess
 lin heart_N = L.heart_N ;
@@ -8961,6 +9511,8 @@ lin help_N = mkN "hulp" ;
 lin help_V = helpen_V ;
 lin help_V2 = mkV2 (helpen_V) ;
 lin help_V2V = mkV2V (helpen_V) ;
+lin help_out_V2 = prepV2 OP_help_V OP_out_Prep ; -- guess-p-verb
+lin help_to_VV = variants {} ; -- guess-p-verb
 lin helpful_A = mkA "behulpzaam" ; -- status=guess
 lin helpless_A = mkA "hulpeloos" ; -- status=guess
 lin helsinki_PN = mkPN "Helsinki" ; -- src=geonames status=guess
@@ -9064,6 +9616,9 @@ lin hidden_A = mkA "verborgen" ; -- status=guess
 lin hide_N = mkN "huid" feminine | mkN "vel" neuter | mkN "vacht" feminine | mkN "leer" neuter ; -- status=guess status=guess status=guess status=guess
 lin hide_V = reflMkV "verbergen" | reflMkV "verstoppen" | reflMkV "wegstoppen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin hide_V2 = mkV2 (reflMkV "verbergen") | mkV2 (reflMkV "verstoppen") | mkV2 (reflMkV "wegstoppen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin hide_away_V = advV OP_hide_V OP_away_Adv ; -- guess-p-verb
+lin hide_away_V2 = mkV2 (advV OP_hide_V OP_away_Adv ) ; -- guess-p-verb
+lin hide_out_V = advV OP_hide_V OP_out_Adv ; -- guess-p-verb
 lin hideous_A = mkA "afzichtelijk" ; -- status=guess
 lin hierarchy_N = mkN "hiërarchie" feminine ; -- status=guess
 lin high_A = mkA "hoog" ;
@@ -9111,12 +9666,22 @@ lin hirsute_A = mkA "harig" | mkA "behaard" ; -- status=guess status=guess
 lin historian_N = mkN "historicus" masculine | mkN "geschiedkundige" masculine feminine ; -- status=guess status=guess
 lin historic_A = mkA "historisch" ; -- status=guess
 lin historical_A = mkA "geschiedkundig" | mkA "historisch" ; -- status=guess status=guess
-lin historically_Adv = adjAdv historical_A ; -- -- derived
 lin history_N = mkN "geschiedenis" feminine | mkN "verleden" neuter ; ---- the latter means 'past'
 lin histrionic_A = mkA "theatraal" | mkA "pathetisch" ; -- status=guess status=guess
 lin hit_N = mkN "aanslag" masculine ; -- status=guess
 lin hit_V = lin V L.hit_V2 ;
 lin hit_V2 = L.hit_V2 ;
+lin hit_back_V2 = mkV2 (advV OP_hit_V OP_back_Adv ) ; -- guess-p-verb
+lin hit_for_V3 = variants {} ; -- guess-p-verb
+lin hit_it_off_V = variants {} ; -- guess-p-verb
+lin hit_it_off_with_V2 = variants {} ; -- guess-p-verb
+lin hit_on_V2 = prepV2 OP_hit_V OP_on_Prep ; -- guess-p-verb
+lin hit_out_at_V2 = prepV2 (advV OP_hit_V OP_out_Adv ) OP_at_Prep ; -- guess-p-verb
+lin hit_up_V = advV OP_hit_V OP_up_Adv ; -- guess-p-verb
+lin hit_up_V2 = prepV2 OP_hit_V OP_up_Prep ; -- guess-p-verb
+lin hit_up_on_V2 = prepV2 (advV OP_hit_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin hit_upon_V2 = prepV2 OP_hit_V OP_upon_Prep ; -- guess-p-verb
+lin hit_with_V3 = variants {} ; -- guess-p-verb
 lin hitchhike_V = mkV "liften" | mkV (mkV "autostop") "doen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin hitchhiker_N = mkN "lifter" masculine | mkN "liftster" feminine ; -- status=guess status=guess
 lin hitchin_PN = mkPN "Hitchin" ; -- src=geonames status=guess
@@ -9151,6 +9716,28 @@ lin hold_N = mkN "ruim" neuter | mkN "scheepsruim" neuter ; -- status=guess stat
 lin hold_V = mkV "houden" "hield" "hielden" "gehouden" ;
 lin hold_V2 = L.hold_V2 ;
 lin hold_VS = mkVS (hold_V) ;
+lin hold_against_V3 = variants {} ; -- guess-p-verb
+lin hold_back_V = advV OP_hold_V OP_back_Adv ; -- guess-p-verb
+lin hold_back_V2 = mkV2 (advV OP_hold_V OP_back_Adv ) ; -- guess-p-verb
+lin hold_back_from_V2 = prepV2 (advV OP_hold_V OP_back_Adv ) OP_from_Prep ; -- guess-p-verb
+lin hold_down_V2 = prepV2 OP_hold_V OP_down_Prep ; -- guess-p-verb
+lin hold_forth_V = advV OP_hold_V OP_forth_Adv ; -- guess-p-verb
+lin hold_off_V = advV OP_hold_V OP_off_Adv ; -- guess-p-verb
+lin hold_off_V2 = prepV2 OP_hold_V OP_off_Prep ; -- guess-p-verb
+lin hold_off_on_V2 = prepV2 (advV OP_hold_V OP_off_Adv ) OP_on_Prep ; -- guess-p-verb
+lin hold_on_V = advV OP_hold_V OP_on_Adv ; -- guess-p-verb
+lin hold_on_to_V2 = prepV2 (advV OP_hold_V OP_on_Adv ) OP_to_Prep ; -- guess-p-verb
+lin hold_onto_V = variants {} ; -- guess-p-verb
+lin hold_onto_V2 = prepV2 OP_hold_V OP_onto_Prep ; -- guess-p-verb
+lin hold_out_V = advV OP_hold_V OP_out_Adv ; -- guess-p-verb
+lin hold_out_V2 = prepV2 OP_hold_V OP_out_Prep ; -- guess-p-verb
+lin hold_out_against_V2 = prepV2 (advV OP_hold_V OP_out_Adv ) OP_against_Prep ; -- guess-p-verb
+lin hold_out_for_V2 = prepV2 (advV OP_hold_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin hold_out_on_V2 = prepV2 (advV OP_hold_V OP_out_Adv ) OP_on_Prep ; -- guess-p-verb
+lin hold_over_V2 = prepV2 OP_hold_V OP_over_Prep ; -- guess-p-verb
+lin hold_together_V = advV OP_hold_V OP_together_Adv ; -- guess-p-verb
+lin hold_up_V2 = prepV2 OP_hold_V OP_up_Prep ; -- guess-p-verb
+lin hold_with_V2 = prepV2 OP_hold_V OP_with_Prep ; -- guess-p-verb
 lin holdall_N = mkN "sporttas" utrum ; -- status=guess
 lin holder_N = mkN "houder" masculine ; -- status=guess
 lin holding_N = variants {} ; --
@@ -9199,7 +9786,6 @@ lin hon_PN = mkPN "Hon" ; -- src=eng status=guess
 lin honduras_PN = mkPN "Honduras" ; -- src=geonames status=guess
 lin hone_V2 = mkV2 (mkV "verfijnen") ; -- status=guess, src=wikt
 lin honest_A = mkA "eerlijk" ; -- status=guess
-lin honestly_Adv = adjAdv honest_A ; -- -- derived
 lin honesty_N = mkN "eerlijkheid" feminine ; -- status=guess
 lin honey_N = mkN "honingdas" masculine ; -- status=guess
 lin honeymoon_N = mkN "wittebroodsweken {p}" ; -- status=guess
@@ -9228,14 +9814,12 @@ lin hope_V = mkV "hopen" ;
 lin hope_VS = L.hope_VS ;
 lin hope_VV = mkVV (mkV "hopen") ;
 lin hopeful_A = mkA "hoopvol" | mkA "hoopgevend" ; -- status=guess status=guess
-lin hopefully_Adv = mkAdv "hoopvol" | adjAdv hopeful_A ; -- status=guess -- derived
 lin hopeless_A = mkA "hopeloos" | mkA "uitzichtloos" | mkA "kansloos" ; -- status=guess status=guess status=guess
 lin hopscotch_N = mkN "hinkelen" neuter ; -- status=guess
 lin horace_PN = mkPN "Horace" ; -- src=geonames status=guess
 lin horde_N = mkN "horde" ; -- status=guess
 lin horizon_N = mkN "horizon" masculine | mkN "horizont" masculine ; -- status=guess status=guess
 lin horizontal_A = mkA "horizontaal" ; -- status=guess
-lin horizontally_Adv = adjAdv horizontal_A ; -- derived
 lin horley_PN = mkPN "Horley" ; -- src=geonames status=guess
 lin hormonal_A = mkA "hormonaal" ; -- status=guess
 lin hormone_N = mkN "hormoon" neuter ; -- status=guess
@@ -9493,7 +10077,6 @@ lin ill_A = mkA "misselijk" ; -- status=guess
 lin ill_Adv = variants {} ; --
 lin illegal_A = mkA "strafbaar" | mkA "illegaal" | mkA "onwettig" ; -- status=guess status=guess status=guess
 lin illegal_N = mkN "illegaal" masculine feminine ; -- status=guess
-lin illegally_Adv = adjAdv illegal_A ; -- derived
 lin illegible_A = mkA "onleesbaar" ; -- status=guess
 lin illegitimate_A = mkA "illegaal" | mkA "onrechtmatig" ; -- status=guess status=guess
 lin illinois_PN = mkPN "Illinois" ; -- src=eng status=guess
@@ -9527,9 +10110,7 @@ lin immaculate_A = mkA "vlekkeloos" ; -- status=guess
 lin immanence_N = mkN "immanentie" feminine ; -- status=guess
 lin immeasurable_A = mkA "onmeetbaar" ; -- status=guess
 lin immediate_A = mkA "direct" | mkA "onmiddellijk" ; -- status=guess status=guess
-lin immediately_Adv = mkAdv "meteen" | mkAdv "direct" | mkAdv "onmiddellijk" | adjAdv immediate_A ; -- derived
 lin immense_A = mkA "immens" ; -- status=guess
-lin immensely_Adv = adjAdv immense_A ; -- derived
 lin immerse_V2 = mkV2 (mkV "onderdompelen") ; -- status=guess, src=wikt
 lin immersion_N = mkN "onderdompeling" ; -- status=guess
 lin immigrant_N = mkN "inwijkeling" masculine | mkN "ingewekene" | mkN "immigrant" masculine ; -- status=guess status=guess status=guess
@@ -9584,7 +10165,6 @@ lin implementation_N = mkN "implementatie" feminine ; -- status=guess
 lin implicate_V2 = mkV2 (mkV "impliceren") ; -- status=guess, src=wikt
 lin implication_N = mkN "implicatie" ; -- status=guess
 lin implicit_A = mkA "impliciet" ; -- status=guess
-lin implicitly_Adv = adjAdv implicit_A ; -- derived
 lin imply_V = mkV "impliceren" | mkV "inhouden" ; -- status=guess, src=wikt status=guess, src=wikt
 lin imply_V2 = mkV2 (mkV "impliceren") | mkV2 (mkV "inhouden") ; -- status=guess, src=wikt status=guess, src=wikt
 lin imply_VS = mkVS (mkV "impliceren") | mkVS (mkV "inhouden") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -9592,7 +10172,6 @@ lin import_N = mkN "invoervergunning" ; -- status=guess
 lin import_V2 = mkV2 (mkV "invoeren") | mkV2 (mkV "importeren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin importance_N = mkN "belang" neuter | mkN "belangrijkheid" feminine ;
 lin important_A = L.important_A ;
-lin importantly_Adv = adjAdv important_A ; -- -- derived
 lin impose_V = mkV "op" (mkV "leggen") ;
 lin impose_V2 = mkV2 impose_V ;
 lin impossibility_N = mkN "onmogelijkheid" feminine ; -- status=guess
@@ -9643,7 +10222,6 @@ lin inaccuracy_N = mkN "fout" | mkN "onnauwkeurigheid" feminine | mkN "onjuisthe
 lin inactivity_N = mkN "inactiviteit" ; -- status=guess
 lin inadequate_A = mkA "onvoldoende" ; -- status=guess
 lin inadvertent_A = variants {} ;
-lin inadvertently_Adv = mkAdv "onopzettelijk" | mkAdv "" | adjAdv inadvertent_A ; -- status=guess status=guess -- derived
 lin inalienable_A = mkA "onvervreemdbaar" ; -- status=guess
 lin inane_A = mkA "zinloos" | mkA "inhoudsloos" | mkA "stom" | mkA "flauw" ; -- status=guess status=guess status=guess status=guess
 lin inanity_N = mkN "inhoudsloosheid" feminine | mkN "stupiditeit" feminine | mkN "leegheid" feminine | mkN "zinloosheid" feminine ; -- status=guess status=guess status=guess status=guess
@@ -9668,7 +10246,6 @@ lin incidence_N = variants {} ; --
 lin incident_A = mkA "inherent" ; -- status=guess
 lin incident_N = mkN "incident" neuter | mkN "voorval" neuter ; -- status=guess status=guess
 lin incidental_A = variants {} ;
-lin incidentally_Adv = adjAdv incidental_A ; -- -- derived
 lin incinerate_V2 = mkV2 (mkV "verbranden") ; -- status=guess, src=wikt
 lin incipient_A = mkA "beginnend" ; -- status=guess
 lin incite_V2 = mkV2 (mkV "aanzetten") | mkV2 (mkV "ophitsen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -9703,7 +10280,6 @@ lin inconvenience_N = mkN "ongemak" neuter | mkN "verstoring" feminine ; -- stat
 lin inconvenient_A = mkA "ongemakkelijk" | mkA "storend" | mkA "ongelegen" | mkA "niet van pas komend" ; -- status=guess status=guess status=guess status=guess
 lin incorporate_V2 = mkV2 (mkV "inbouwen") | mkV2 (mkV "inlijven") ; -- status=guess, src=wikt status=guess, src=wikt
 lin incorrect_A = variants {} ;
-lin incorrectly_Adv = adjAdv incorrect_A ; -- derived
 lin incorrigible_A = mkA "onverbeterbaar" | mkA "onherstelbaar" ; -- status=guess status=guess
 lin increase_N = mkN "toename" ;
 lin increase_V = mkV "toe" (mkV "take_V") ;
@@ -9712,7 +10288,6 @@ lin increased_A = variants {} ; --
 lin increasing_A = variants {} ; --
 lin increasingly_Adv = mkAdv "toenemend" | mkAdv "groeiend" ;
 lin incredible_A = mkA "ongelofelijk" ; -- status=guess
-lin incredibly_Adv = adjAdv incredible_A ; -- -- derived
 lin incredulity_N = mkN "ongelovigheid" ; -- status=guess
 lin incubus_N = mkN "nachtmerrie" ; -- status=guess
 lin inculcate_V2 = mkV2 (mkV "inprenten") ; -- status=guess, src=wikt
@@ -9726,7 +10301,6 @@ lin indecisive_A = mkA "onbeslist" ; -- status=guess
 lin indeed_Adv = mkAdv "inderdaad" | mkAdv "daadwerkelijk" ;
 lin indefatigable_A = mkA "onvermoeibaar" | mkA "onvermoeid" ; -- status=guess status=guess
 lin indefinite_A = variants {} ;
-lin indefinitely_Adv = mkAdv "altijd" | adjAdv indefinite_A ; -- status=guess -- derived
 lin indelible_A = mkA "onuitwisbaar" ; -- status=guess
 lin indemnify_V2 = mkV2 (mkV "vergoeden") ; -- status=guess, src=wikt
 lin indent_V = mkV "inspringen" ; -- status=guess, src=wikt
@@ -9735,7 +10309,6 @@ lin independence_N = mkN "zelfstandigheid" feminine | mkN "onafhankelijkheid" fe
 lin independent_1_A = mkA "onafhankelijk" ;
 lin independent_2_A = mkA "onafhankelijk" ;
 lin independent_A = mkA "onafhankelijk" ;
-lin independently_Adv = mkAdv "onafhankelijk" | adjAdv independent_2_A ; -- status=guess -- derived
 lin index_N = mkN "inhoud" masculine | mkN "index" masculine | mkN "register" neuter ; -- status=guess status=guess status=guess
 lin index_V2 = mkV2 (mkV "indexeren") ; -- status=guess, src=wikt
 lin india_PN = mkPN "India" ; -- src=geonames status=guess
@@ -9759,7 +10332,6 @@ lin indignation_N = mkN "verontwaardiging" feminine ; -- status=guess
 lin indigo_A = mkA "indigo" | mkA "indigoblauw" | mkA "indigoblauwe" ; -- status=guess status=guess status=guess
 lin indigo_N = mkN "indigo" neuter ; -- status=guess
 lin indirect_A = mkA "onrechtstreeks" | mkA "indirect" ; -- status=guess status=guess
-lin indirectly_Adv = mkAdv "onrechtstreeks" | adjAdv indirect_A ; -- status=guess -- derived
 lin indiscreet_A = mkA "indiscreet" ; -- status=guess
 lin indiscretion_N = mkN "indescretie" ; -- status=guess
 lin indispensable_A = mkA "onontbeerlijk" ; -- status=guess
@@ -9768,7 +10340,6 @@ lin indissoluble_A = mkA "onlosmakelijk" ; -- status=guess
 lin indium_N = mkN "indium" neuter ; -- status=guess
 lin individual_A = mkA "individueel" | mkA "afzonderlijk" ;
 lin individual_N = mkN "individu" neuter | mkN "enkeling" masculine ;
-lin individually_Adv = adjAdv individual_A ; -- -- derived
 lin indonesia_PN = mkPN "Indonesië" ; -- src=geonames status=guess
 lin indoor_A = variants {} ; --
 lin indore_PN = mkPN "Indore" ; -- src=geonames status=guess
@@ -9790,7 +10361,6 @@ lin inequality_N = mkN "ongelijkheid" ; -- status=guess
 lin inertia_N = mkN "inertie" | mkN "traagheid" ; -- status=guess status=guess
 lin inescapable_A = mkA "onontkoombaar" | mkA "onvermijdelijk" ; -- status=guess status=guess
 lin inevitable_A = mkA "onvermijdelijk" | mkA "onafwendbaar" ; -- status=guess status=guess
-lin inevitably_Adv = adjAdv inevitable_A ; -- -- derived
 lin inexorable_A = mkA "onvermijdelijk" ; -- status=guess
 lin inexpensive_A = mkA "goedkoop" | mkA "goedkope" ; -- status=guess status=guess
 lin inexperience_N = mkN "onervarenheid" feminine ; -- status=guess
@@ -9819,7 +10389,6 @@ lin infertility_N = mkN "onvruchtbaarheid" ; -- status=guess
 lin infidel_N = mkN "ongelovige" masculine feminine ; -- status=guess
 lin infidelity_N = mkN "ontrouw" utrum ; -- status=guess
 lin infinite_A = mkA "oneindig" | mkA "eindeloos" ; -- status=guess status=guess
-lin infinitely_Adv = adjAdv infinite_A ; -- derived
 lin infinitesimal_A = mkA "infinitesimaal" | mkA "oneindig klein" ; -- status=guess status=guess
 lin infinitesimal_N = mkN "infinitesimaalrekening" feminine ; -- status=guess
 lin infinitive_N = mkN "infinitief" masculine | mkN "onbepaalde wijs" masculine ; -- status=guess status=guess
@@ -9836,7 +10405,6 @@ lin influx_N = mkN "toevloed" masculine ; -- status=guess
 lin inform_V = mkV "verklikken" ; -- status=guess, src=wikt
 lin inform_V2 = mkV2 (mkV "verklikken") ; -- status=guess, src=wikt
 lin informal_A = variants {} ; --
-lin informally_Adv = mkAdv "informeel" | adjAdv informal_A ; -- status=guess -- derived
 lin information_N = mkN "informatie" ;
 lin infrared_A = mkA "infrarood" ; -- status=guess
 lin infrastructure_N = variants {} ; --
@@ -9855,7 +10423,6 @@ lin inhale_V = mkV "inademen" ; -- status=guess, src=wikt
 lin inhale_V2 = mkV2 (mkV "inademen") ; -- status=guess, src=wikt
 lin inhaler_N = mkN "inhalator" ; -- status=guess
 lin inherent_A = mkA "inherent" | mkA "samengaand" ; -- status=guess status=guess
-lin inherently_Adv = adjAdv inherent_A ; -- derived
 lin inherit_V = mkV "erven" ; -- status=guess, src=wikt
 lin inherit_V2 = mkV2 (mkV "erven") ; -- status=guess, src=wikt
 lin inheritance_N = mkN "erfbelasting" utrum ; -- status=guess
@@ -9868,7 +10435,6 @@ lin iniquity_N = mkN "godslastering" feminine | mkN "godsloochening" feminine ; 
 lin initial_A = mkA "initieel" | mkA "aanvankelijk" | mkA "begin-" | mkA "vroeg" ; -- status=guess status=guess status=guess status=guess
 lin initial_N = mkN "beginletter" | mkN "initiaal" | mkN "voorletter" ; -- status=guess status=guess status=guess
 lin initial_V2 = mkV2 (mkV "paraferen") ; -- status=guess, src=wikt
-lin initially_Adv = adjAdv initial_A ; -- -- derived
 lin initiate_N = mkN "beginner" masculine ; -- status=guess
 lin initiate_V2 = mkV2 (beginnen_V) | mkV2 (mkV "starten") | mkV2 (mkV "aanvangen") | mkV2 (mkV "initiëren") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin initiative_N = mkN "initiatief" ; -- status=guess
@@ -9949,7 +10515,6 @@ lin installment_N = mkN "installatie" ; -- status=guess
 lin instance_N = mkN "voorbeeld" neuter | mkN "instantie" ;
 lin instant_A = mkA "onmiddelijk" | mkA "ogenblikkelijk" ; -- status=guess status=guess
 lin instant_N = mkN "koffiepoeder" masculine ; -- status=guess
-lin instantly_Adv = adjAdv instant_A ; -- -- derived
 lin instead_Adv = mkAdv "in plaats van" ;
 lin instep_N = mkN "wreef" feminine ; -- status=guess
 lin instigate_V2 = mkV2 (mkV "aanstichten") ; -- status=guess, src=wikt
@@ -10002,7 +10567,6 @@ lin intelligentsia_N = mkN "intelligentsia" ; -- status=guess
 lin intelligible_A = mkA "verstaanbaar" | mkA "begrijpelijk" ; -- status=guess status=guess
 lin intend_VV = mkVV (zijnV (mkV "van plan")) | mkVV (mkV "bedoelen") | mkVV (mkV "menen") ; ---- no exact translation
 lin intense_A = variants {} ; --
-lin intensely_Adv = adjAdv intense_A ; -- derived
 lin intensify_V = mkV "intensiveren" ; -- status=guess, src=wikt
 lin intensify_V2 = mkV2 (mkV "intensiveren") ; -- status=guess, src=wikt
 lin intensity_N = variants {} ; --
@@ -10011,7 +10575,6 @@ lin intent_A = variants {} ; --
 lin intent_N = variants {} ; --
 lin intention_N = mkN "opzet" neuter | mkN "voornemen" neuter ;
 lin intentional_A = variants {} ;
-lin intentionally_Adv = adjAdv intentional_A ; -- derived
 lin inter_V2 = mkV2 (mkV "begraven") ; -- status=guess, src=wikt
 lin interact_V = mkV "interageren" | mkV (mkV "elkaar") "beïnvloeden" | mkV (mkV "in") "wisselwerking zijn met" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin interaction_N = mkN "interactie" feminine ; -- status=guess
@@ -10020,7 +10583,6 @@ lin interbreed_V = mkV "inteelten" ; -- status=guess, src=wikt
 lin interbreed_V2 = mkV2 (mkV "inteelten") ; -- status=guess, src=wikt
 lin intercept_V2 = mkV2 (mkV "onderscheppen") ; -- status=guess, src=wikt
 lin interchangeable_A = variants {} ;
-lin interchangeably_Adv = adjAdv interchangeable_A ; -- derived
 lin intercourse_N = mkN "betrekkingen {p}" ; -- status=guess
 lin interdependent_A = mkA "wederzijds afhankelijk" ; -- status=guess
 lin interdict_N = mkN "interdictie" ; -- status=guess
@@ -10033,7 +10595,6 @@ lin interest_V = mkV "interesseren" ; -- status=guess, src=wikt
 lin interest_V2 = mkV2 (mkV "interesseren") ; -- status=guess, src=wikt
 lin interested_A = mkA "geïnteresseerd" ;
 lin interesting_A = mkA "interessant" | mkA "belangwekkend" ;
-lin interestingly_Adv = adjAdv interesting_A ; -- derived
 lin interface_N = mkN "interface" masculine ; -- status=guess
 lin interfere_V = mkV "hinderen" | mkV (mkV "moeilijk") "maken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin interference_N = mkN "bemoeien" ; -- status=guess
@@ -10052,10 +10613,8 @@ lin intern_N = mkN "intern" masculine ; -- status=guess
 lin intern_V2 = mkV2 (mkV "interneren") ; -- status=guess, src=wikt
 lin internal_A = mkA "intern" | mkA "inwendig" ;
 lin internal_N = mkN "interne verbrandingsmotor" masculine ; -- status=guess
-lin internally_Adv = adjAdv internal_A ; -- derived
 lin international_A = mkA "internationaal" ;
 lin international_N = mkN "volkenrecht" neuter | mkN "internationaal recht" neuter ; -- status=guess status=guess
-lin internationally_Adv = adjAdv international_A ; -- derived
 lin internecine_A = mkA "verwoestend" ; -- status=guess
 lin internship_N = mkN "stage" masculine feminine ; -- status=guess
 lin interpol_PN = mkPN "Interpol" ; -- src=eng status=guess
@@ -10121,7 +10680,6 @@ lin invader_N = mkN "indringer" masculine | mkN "indringster" feminine | mkN "in
 lin invalid_A = mkA "ongeldig" ; -- status=guess
 lin invaluable_A = variants {} ; --
 lin invariable_A = mkA "onveranderlijk" ; -- status=guess
-lin invariably_Adv = mkAdv "onveranderlijk steevast" | adjAdv invariable_A ; -- status=guess -- derived
 lin invasion_N = variants {} ; --
 lin inveigh_V = mkV (mkV "krachtig") "protesteren" | schelden_V | mkV "tieren" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin invent_V = mkV "uitdenken" | mkV "uitvinden" | mkV "bedenken" | mkV "verzinnen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -10155,6 +10713,7 @@ lin invisible_A = mkA "onzichtbaar" | mkA "onzichtbare" ; -- status=guess status
 lin invitation_N = mkN "uitnodiging" feminine ; -- status=guess
 lin invite_V2 = mkV2 (mkV "uit" (mkV "nodigen")) ;
 lin invite_V2V = mkV2V (mkV "uit" (mkV "nodigen")) ;
+lin invite_in_V = advV (lin V OP_invite_V2) OP_in_Adv ; -- guess-p-verb
 lin invoice_N = mkN "factuur" feminine | mkN "rekening" feminine ; -- status=guess status=guess
 lin invoice_V2 = mkV2 (mkV "factureren") | mkV2 (mkV (mkV "in") "rekening brengen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin invoke_V2 = mkV2 (mkV "inroepen") ; -- status=guess, src=wikt
@@ -10187,7 +10746,6 @@ lin iron_V = strijken_V ; -- status=guess, src=wikt
 lin iron_V2 = mkV2 (strijken_V) ; -- status=guess, src=wikt
 lin ironic_A = mkA "ironisch" ; -- status=guess
 lin ironical_A = variants {} ;
-lin ironically_Adv = mkAdv "ironisch" | adjAdv ironical_A ; -- status=guess -- derived
 lin ironing_N = mkN "strijken" neuter ; -- status=guess
 lin ironmonger_N = mkN "ijzerhandelaar" masculine ; -- status=guess
 lin irony_N = mkN "ironie" feminine | mkN "het ironische" neuter ; -- status=guess status=guess
@@ -10231,6 +10789,7 @@ lin issue_2_N = mkN "uitgave" ;
 lin issue_N = mkN "probleem" neuter ;
 lin issue_V = mkV "uit" geven_V ; --- split mkV "af" (mkV "kondigen") ; to issue a new law
 lin issue_V2 = mkV2 issue_V ;
+lin issue_forth_V = advV OP_issue_V OP_forth_Adv ; -- guess-p-verb
 lin istanbul_PN = mkPN "Istanbul" ; -- src=eng status=guess
 lin isthmus_N = mkN "landengte" | mkN "istmus" masculine ; -- status=guess status=guess
 lin it_Pron = S.it_Pron ;
@@ -10376,11 +10935,11 @@ lin johnstone_PN = mkPN "Johnstone" ; -- src=geonames status=guess
 lin join_N = mkN "verbinding" ; -- status=guess
 lin join_V = mkV "lid" worden_V ;
 lin join_V2 = mkV2 join_V ;
+lin join_up_V = advV OP_join_V OP_up_Adv ; -- guess-p-verb
 lin joiner_N = mkN "timmerman" ; -- status=guess
 lin joint_A = mkA "gezamenlijk" ;
 lin joint_N = mkN "zaak" ; -- status=guess
 lin jointer_N = mkN "dagge" | mkN "dagijzer" neuter | mkN "voegijzer" neuter ; -- status=guess status=guess status=guess
-lin jointly_Adv = mkAdv "gezamenlijk" | adjAdv joint_A ; -- status=guess -- derived
 lin joke_N = mkN "mop" masculine | mkN "grap" feminine | mkN "grol" feminine ; -- status=guess status=guess status=guess
 lin joke_V = mkV "grappen" | mkV "grappenmaken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin jolt_N = mkN "schok" | mkN "verrassing" | mkN "ontnuchtering" ; -- status=guess status=guess status=guess
@@ -10445,6 +11004,10 @@ lin jumble_N = mkN "mengelmoes" ; -- status=guess
 lin jump_N = mkN "sprong" masculine ; -- status=guess
 lin jump_V = L.jump_V ;
 lin jump_V2 = mkV2 (springen_V) ; -- status=guess, src=wikt
+lin jump_at_V2 = prepV2 OP_jump_V OP_at_Prep ; -- guess-p-verb
+lin jump_in_V = advV OP_jump_V OP_in_Adv ; -- guess-p-verb
+lin jump_on_V2 = prepV2 OP_jump_V OP_on_Prep ; -- guess-p-verb
+lin jump_to_V2 = prepV2 OP_jump_V OP_to_Prep ; -- guess-p-verb
 lin jumpy_A = mkA "nerveus" | mkA "nerveuze" | mkA "zenuwachtig" | mkA "zenuwachtige" ; -- status=guess status=guess status=guess status=guess
 lin jun_PN = mkPN "Jun" ; -- src=geonames status=guess
 lin junction_N = mkN "knooppunt verbindingspunt" neuter | mkN "aansluiting" feminine | mkN "samenkomst" feminine ; -- status=guess status=guess status=guess
@@ -10508,6 +11071,27 @@ lin keep_V = mkV "houden" ;
 lin keep_V2 = mkV2 (mkV "houden") ;
 lin keep_V2A = mkV2A (mkV "houden") ;
 lin keep_VV = mkVV (mkV "blijven") ;
+lin keep_around_V2 = prepV2 OP_keep_V OP_around_Prep ; -- guess-p-verb
+lin keep_at_V2 = prepV2 OP_keep_V OP_at_Prep ; -- guess-p-verb
+lin keep_away_V2 = mkV2 (advV OP_keep_V OP_away_Adv ) ; -- guess-p-verb
+lin keep_back_V = advV OP_keep_V OP_back_Adv ; -- guess-p-verb
+lin keep_back_V2 = mkV2 (advV OP_keep_V OP_back_Adv ) ; -- guess-p-verb
+lin keep_down_V2 = prepV2 OP_keep_V OP_down_Prep ; -- guess-p-verb
+lin keep_from_V2 = prepV2 OP_keep_V OP_from_Prep ; -- guess-p-verb
+lin keep_in_V2 = prepV2 OP_keep_V OP_in_Prep ; -- guess-p-verb
+lin keep_ing_V2V = variants {} ; -- guess-p-verb
+lin keep_off_V2 = prepV2 OP_keep_V OP_off_Prep ; -- guess-p-verb
+lin keep_on_V = advV OP_keep_V OP_on_Adv ; -- guess-p-verb
+lin keep_on_V2 = prepV2 OP_keep_V OP_on_Prep ; -- guess-p-verb
+lin keep_out_V = advV OP_keep_V OP_out_Adv ; -- guess-p-verb
+lin keep_out_V2 = prepV2 OP_keep_V OP_out_Prep ; -- guess-p-verb
+lin keep_over_V2 = prepV2 OP_keep_V OP_over_Prep ; -- guess-p-verb
+lin keep_to_V2 = prepV2 OP_keep_V OP_to_Prep ; -- guess-p-verb
+lin keep_to_V2V = variants {} ; -- guess-p-verb
+lin keep_up_V = advV OP_keep_V OP_up_Adv ; -- guess-p-verb
+lin keep_up_V2 = prepV2 OP_keep_V OP_up_Prep ; -- guess-p-verb
+lin keep_up_at_V2 = prepV2 (advV OP_keep_V OP_up_Adv ) OP_at_Prep ; -- guess-p-verb
+lin keep_up_with_V2 = prepV2 (advV OP_keep_V OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
 lin keeper_N = mkN "bewaker" masculine | mkN "conservator" masculine ; -- status=guess status=guess
 lin keepsake_N = mkN "herinnering" | mkN "aandenken" ; -- status=guess status=guess
 lin keg_N = mkN "vat" neuter | mkN "fust" neuter ; -- status=guess status=guess
@@ -10559,6 +11143,19 @@ lin kibitzer_N = mkN "bazig persoon" neuter ; -- status=guess
 lin kick_N = mkN "schop" | mkN "stamp" masculine ; -- status=guess status=guess
 lin kick_V = mkV "schoppen" | mkV "stampen" | mkV "trappen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin kick_V2 = mkV2 (mkV "schoppen") | mkV2 (mkV "stampen") | mkV2 (mkV "trappen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin kick_about_V2 = prepV2 OP_kick_V OP_about_Prep ; -- guess-p-verb
+lin kick_around_V2 = prepV2 OP_kick_V OP_around_Prep ; -- guess-p-verb
+lin kick_around_with_V2 = prepV2 (advV OP_kick_V OP_around_Adv ) OP_with_Prep ; -- guess-p-verb
+lin kick_back_V = advV OP_kick_V OP_back_Adv ; -- guess-p-verb
+lin kick_back_V2 = mkV2 (advV OP_kick_V OP_back_Adv ) ; -- guess-p-verb
+lin kick_down_V2 = prepV2 OP_kick_V OP_down_Prep ; -- guess-p-verb
+lin kick_in_V = advV OP_kick_V OP_in_Adv ; -- guess-p-verb
+lin kick_in_V2 = prepV2 OP_kick_V OP_in_Prep ; -- guess-p-verb
+lin kick_off_V = advV OP_kick_V OP_off_Adv ; -- guess-p-verb
+lin kick_off_V2 = prepV2 OP_kick_V OP_off_Prep ; -- guess-p-verb
+lin kick_out_V2 = prepV2 OP_kick_V OP_out_Prep ; -- guess-p-verb
+lin kick_through_V = advV OP_kick_V OP_through_Adv ; -- guess-p-verb
+lin kick_up_V = advV OP_kick_V OP_up_Adv ; -- guess-p-verb
 lin kid_N = variants {} ; --
 lin kidderminster_PN = mkPN "Kidderminster" ; -- src=geonames status=guess
 lin kidlington_PN = mkPN "Kidlington" ; -- src=geonames status=guess
@@ -10575,6 +11172,7 @@ lin kilkenny_PN = mkPN "Kilkenny" ; -- src=geonames status=guess
 lin kill_N = mkN "moorden" | mkN "vermoorden" ; -- status=guess status=guess
 lin kill_V = mkV "doden" | mkV "vermoorden" ;
 lin kill_V2 = L.kill_V2 ;
+lin kill_off_V2 = prepV2 OP_kill_V OP_off_Prep ; -- guess-p-verb
 lin killarney_PN = mkPN "Killarney" ; -- src=geonames status=guess
 lin killer_N = mkN "doder" masculine | mkN "moordenaar" masculine ; -- status=guess status=guess
 lin killing_N = variants {} ; --
@@ -10594,7 +11192,6 @@ lin kindle_V = mkV "aansteken" ; -- status=guess, src=wikt
 lin kindle_V2 = mkV2 (mkV "aansteken") ; -- status=guess, src=wikt
 lin kindling_N = mkN "aanmaakhout" ; -- status=guess
 lin kindly_A = mkA "vriendelijk" ; -- status=guess
-lin kindly_Adv = mkAdv "vriendelijk" | mkAdv "beminnelijk" | adjAdv kindly_A ; -- status=guess status=guess -- derived
 lin kindness_N = mkN "vriendelijkheid" feminine | mkN "aardigheid" feminine ; -- status=guess status=guess
 lin kindred_A = mkA "gelijkaardig" ; -- status=guess
 lin kindred_N = mkN "soortgenoten" ; -- status=guess
@@ -10629,6 +11226,9 @@ lin kirkwall_PN = mkPN "Kirkwall" ; -- src=geonames status=guess
 lin kismet_N = mkN "lotbestemming" ; -- status=guess
 lin kiss_N = mkN "kus" | mkN "zoen" ; -- status=guess status=guess
 lin kiss_V2 = mkV2 (mkV (mkV "elkaar") "kussen") | mkV2 (mkV (mkV "elkaar") "zoenen") ; -- status=guess, src=wikt status=guess, src=wikt
+lin kiss_off_V = advV (lin V OP_kiss_V2) OP_off_Adv ; -- guess-p-verb
+lin kiss_off_V2 = prepV2 (lin V OP_kiss_V2) OP_off_Prep ; -- guess-p-verb
+lin kiss_up_to_V2 = prepV2 (advV (lin V OP_kiss_V2) OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin kit_N = mkN "set" ; -- status=guess
 lin kitakyushu_PN = mkPN "Kitakyushu" ; -- src=eng status=guess
 lin kitchen_N = mkN "keuken" ;
@@ -10658,6 +11258,19 @@ lin knitting_N = variants {} ; --
 lin knock_N = mkN "kloppen" neuter | mkN "aankloppen" neuter ; -- status=guess status=guess
 lin knock_V = mkV "rondzwerven" ; -- status=guess, src=wikt
 lin knock_V2 = mkV2 (mkV "rondzwerven") ; -- status=guess, src=wikt
+lin knock_about_V2 = prepV2 OP_knock_V OP_about_Prep ; -- guess-p-verb
+lin knock_around_V2 = prepV2 OP_knock_V OP_around_Prep ; -- guess-p-verb
+lin knock_back_V2 = mkV2 (advV OP_knock_V OP_back_Adv ) ; -- guess-p-verb
+lin knock_down_V2 = prepV2 OP_knock_V OP_down_Prep ; -- guess-p-verb
+lin knock_it_off_V2 = variants {} ; -- guess-p-verb
+lin knock_off_V = advV OP_knock_V OP_off_Adv ; -- guess-p-verb
+lin knock_off_V2 = prepV2 OP_knock_V OP_off_Prep ; -- guess-p-verb
+lin knock_out_V = advV OP_knock_V OP_out_Adv ; -- guess-p-verb
+lin knock_out_V2 = prepV2 OP_knock_V OP_out_Prep ; -- guess-p-verb
+lin knock_over_V = advV OP_knock_V OP_over_Adv ; -- guess-p-verb
+lin knock_together_V2 = mkV2 (advV OP_knock_V OP_together_Adv ) ; -- guess-p-verb
+lin knock_up_V = advV OP_knock_V OP_up_Adv ; -- guess-p-verb
+lin knock_up_V2 = prepV2 OP_knock_V OP_up_Prep ; -- guess-p-verb
 lin knockout_N = mkN "knock-out" ; -- status=guess
 lin knot_N = mkN "de knoop" masculine | mkN "knoei" ; -- status=guess status=guess
 lin knot_V = mkV "knopen" | mkV "aaneenknopen" | mkV "dichtknopen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -10774,6 +11387,9 @@ lin lancing_PN = mkPN "Lancing" ; -- src=geonames status=guess
 lin land_N = mkN "land" neuter ;
 lin land_V = mkV (mkV "doen") "landen" | mkV (mkV "aan") "de grond zetten" ; -- status=guess, src=wikt status=guess, src=wikt
 lin land_V2 = mkV2 (mkV (mkV "doen") "landen") | mkV2 (mkV (mkV "aan") "de grond zetten") ; -- status=guess, src=wikt status=guess, src=wikt
+lin land_in_V2 = prepV2 OP_land_V OP_in_Prep ; -- guess-p-verb
+lin land_up_in_V2 = prepV2 (advV OP_land_V OP_up_Adv ) OP_in_Prep ; -- guess-p-verb
+lin land_with_V3 = variants {} ; -- guess-p-verb
 lin landgrave_N = mkN "landgraaf" masculine ; -- status=guess
 lin landing_N = mkN "steiger" masculine | mkN "aanlegplaats" feminine ; -- status=guess status=guess
 lin landlady_N = mkN "hospita" feminine ; -- status=guess
@@ -10805,7 +11421,6 @@ lin lard_V2 = mkV2 (mkV "larderen") ; -- status=guess, src=wikt
 lin large_A = mkA "groot" ;
 lin large_N = mkN "dikke darm" masculine ; -- status=guess
 lin large_scale_A = variants {} ; --
-lin largely_Adv = mkAdv "grotendeels" | adjAdv writ_large_A ; -- derived
 lin largess_N = mkN "gulheid" feminine ; -- status=guess
 lin largs_PN = mkPN "Largs" ; -- src=geonames status=guess
 lin lark_N = mkN "leeuwerik" masculine ; -- status=guess
@@ -10823,7 +11438,6 @@ lin laser_N = mkN "laser" ; -- status=guess
 lin last_1_A = mkA "laatste" ;
 lin last_2_A = mkA "vorige" ;
 lin last_A = mkA "laatste" ;
-lin last_Adv = mkAdv "laatst maar niet het minst" ; -- status=guess
 lin last_N = mkN "last" masculine ; -- status=guess
 lin last_V = mkV "duren" ; -- status=guess, src=wikt
 lin latch_N = mkN "kruisboog" ; -- status=guess
@@ -10845,6 +11459,8 @@ lin laugh_N = mkN "lach" masculine ; -- status=guess
 lin laugh_V = L.laugh_V ;
 lin laugh_V2 = mkV2 laugh_V ;
 lin laugh_VS = mkVS laugh_V ;
+lin laugh_at_V2 = prepV2 OP_laugh_V OP_at_Prep ; -- guess-p-verb
+lin laugh_off_V2 = prepV2 OP_laugh_V OP_off_Prep ; -- guess-p-verb
 lin laughable_A = mkA "belachelijk" ; -- status=guess
 lin laughter_N = mkN "gelach" neuter | mkN "lachen" neuter ; -- status=guess status=guess
 lin launch_N = mkN "worp" masculine | mkN "lancering" feminine ; -- status=guess status=guess
@@ -10875,6 +11491,14 @@ lin lay_A = mkA "leken-" | mkA "wereldlijk" ; -- status=guess status=guess
 lin lay_N = mkN "ligging" feminine ; -- status=guess
 lin lay_V = mkV "leggen" ;
 lin lay_V2 = mkV2 (mkV "leggen") ;
+lin lay_away_V2 = mkV2 (advV OP_lay_V OP_away_Adv ) ; -- guess-p-verb
+lin lay_down_V = advV OP_lay_V OP_down_Adv ; -- guess-p-verb
+lin lay_down_V2 = prepV2 OP_lay_V OP_down_Prep ; -- guess-p-verb
+lin lay_in_on_V2 = prepV2 (advV OP_lay_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin lay_into_V2 = prepV2 OP_lay_V OP_into_Prep ; -- guess-p-verb
+lin lay_off_V2 = prepV2 OP_lay_V OP_off_Prep ; -- guess-p-verb
+lin lay_on_V2 = prepV2 OP_lay_V OP_on_Prep ; -- guess-p-verb
+lin lay_out_V2 = prepV2 OP_lay_V OP_out_Prep ; -- guess-p-verb
 lin layabout_N = mkN "luiaard" masculine ; -- status=guess
 lin layer_N = mkN "laag" feminine ; -- status=guess
 lin layman_N = mkN "leek" masculine ; -- status=guess
@@ -10890,6 +11514,9 @@ lin lead_N = mkN "leiding" feminine | mkN "begeleiding" feminine ;
 lin lead_V = mkV "leiden" ;
 lin lead_V2 = mkV2 (mkV "leiden") ;
 lin lead_V2V = mkV2V (mkV "leiden") ;
+lin lead_on_V2 = prepV2 OP_lead_V OP_on_Prep ; -- guess-p-verb
+lin lead_to_V2 = prepV2 OP_lead_V OP_to_Prep ; -- guess-p-verb
+lin lead_up_V = advV OP_lead_V OP_up_Adv ; -- guess-p-verb
 lin leader_N = mkN "leider" masculine | mkN "leidster" feminine | mkN "aanvoerder" masculine | mkN "aanvoerster" feminine ;
 lin leadership_N = mkN "voorzitterschap" neuter ; -- status=guess
 lin leading_A = variants {} ; --
@@ -10907,6 +11534,7 @@ lin leamington_spa_PN = mkPN "Leamington spa" ; -- src=eng status=guess
 lin lean_A = mkA "mager" | mkA "tenger" ; -- status=guess status=guess
 lin lean_V = mkV "leunen" ; -- status=guess, src=wikt
 lin lean_V2 = mkV2 (mkV "leunen") ; -- status=guess, src=wikt
+lin lean_on_V2 = prepV2 OP_lean_V OP_on_Prep ; -- guess-p-verb
 lin leap_N = mkN "sprong" masculine ; -- status=guess
 lin leap_V = springen_V | mkV "wippen" | mkV "huppen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin leap_V2 = mkV2 (springen_V) | mkV2 (mkV "wippen") | mkV2 (mkV "huppen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -10928,6 +11556,12 @@ lin leave_N = mkN "verlof" ; -- status=guess
 lin leave_V = mkV "verlaten" "verliet" "verlieten" "verlaten" ;
 lin leave_V2 = L.leave_V2 ;
 lin leave_V2V = mkV2V (mkV "laten") ;
+lin leave_behind_V = advV OP_leave_V OP_behind_Adv ; -- guess-p-verb
+lin leave_off_V = advV OP_leave_V OP_off_Adv ; -- guess-p-verb
+lin leave_on_V2 = prepV2 OP_leave_V OP_on_Prep ; -- guess-p-verb
+lin leave_open_V = advV OP_leave_V OP_open_Adv ; -- guess-p-verb
+lin leave_out_V2 = prepV2 OP_leave_V OP_out_Prep ; -- guess-p-verb
+lin leave_over_V = advV OP_leave_V OP_over_Adv ; -- guess-p-verb
 lin lebanon_PN = mkPN "Libanon" ; -- src=geonames status=guess
 lin lecithin_N = mkN "lecithine" masculine feminine ; -- status=guess
 lin lecture_N = mkN "lezing" feminine | mkN "college" ; -- status=guess status=guess
@@ -10948,7 +11582,6 @@ lin leg_N = L.leg_N ;
 lin legacy_N = mkN "erfgoed" | mkN "erfenis" ; -- status=guess status=guess
 lin legal_A = mkA "wettelijk" | mkA "legaal" | mkA "wettig" ;
 lin legality_N = mkN "wettigheid" ; -- status=guess
-lin legally_Adv = adjAdv legal_A ; -- -- derived
 lin legation_N = mkN "gezantschap" neuter ; -- status=guess
 lin legato_Adv = mkAdv "gebonden" | mkAdv "legato" ; -- status=guess status=guess
 lin legend_N = mkN "legende" feminine ; -- status=guess
@@ -11088,6 +11721,11 @@ lin lie_2_V = liegen_V ;
 lin lie_N = mkN "ligging" feminine | mkN "terreinligging" feminine ; -- status=guess status=guess
 lin lie_V = L.lie_V ;
 lin lie_VS = mkVS lie_2_V ;
+lin lie_around_V = advV OP_lie_V OP_around_Adv ; -- guess-p-verb
+lin lie_back_V = advV OP_lie_V OP_back_Adv ; -- guess-p-verb
+lin lie_down_V = advV OP_lie_V OP_down_Adv ; -- guess-p-verb
+lin lie_down_on_V2 = prepV2 (advV OP_lie_V OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin lie_with_V2 = prepV2 OP_lie_V OP_with_Prep ; -- guess-p-verb
 lin liechtenstein_PN = mkPN "Liechtenstein" ; -- src=geonames status=guess
 lin liege_N = mkN "leenheer" masculine | mkN "soeverein" masculine ; -- status=guess status=guess
 lin liege_PN = mkPN "Liege" ; -- src=eng status=guess
@@ -11100,18 +11738,21 @@ lin lifetime_N = variants {} ; --
 lin lift_N = mkN "lift" masculine ; -- status=guess
 lin lift_V = mkV "op" (mkV "tillen") | mkV "op" (mkV "heffen") ;
 lin lift_V2 = mkV2 lift_V ;
+lin lift_off_V = advV OP_lift_V OP_off_Adv ; -- guess-p-verb
 lin ligature_N = mkN "ligatuur" | mkN "verbinding" ; -- status=guess status=guess
 lin liger_N = mkN "lijger" masculine ; -- status=guess
 lin light_A = mkA "licht" ;
 lin light_N = mkN "licht" neuter ;
 lin light_V = mkV "lichten" | mkV "bijlichten" ; -- status=guess, src=wikt status=guess, src=wikt
 lin light_V2 = mkV2 (mkV "lichten") | mkV2 (mkV "bijlichten") ; -- status=guess, src=wikt status=guess, src=wikt
+lin light_out_V = advV OP_light_V OP_out_Adv ; -- guess-p-verb
+lin light_up_V = advV OP_light_V OP_up_Adv ; -- guess-p-verb
+lin light_up_V2 = prepV2 OP_light_V OP_up_Prep ; -- guess-p-verb
 lin lighten_V = mkV "verlichten" ; -- status=guess, src=wikt
 lin lighten_V2 = mkV2 (mkV "verlichten") ; -- status=guess, src=wikt
 lin lighter_N = mkN "aansteker" masculine ; -- status=guess
 lin lighthouse_N = mkN "vuurtoren" masculine ; -- status=guess
 lin lighting_N = variants {} ; --
-lin lightly_Adv = adjAdv light_A ; -- -- derived
 lin lightning_N = mkN "bliksem" masculine | mkN "weerlicht" neuter ; -- status=guess status=guess
 lin lightsaber_N = mkN "lichtzwaard" neuter | mkN "lichtsabel" masculine ; -- status=guess status=guess
 lin lightweight_A = mkA "lichtgewicht" ; -- status=guess
@@ -11148,7 +11789,6 @@ lin limit_V2 = mkV2 (mkV "beperken") | mkV2 (mkV "begrenzen") ;
 lin limit_V2V = mkV2V (mkV "beperken") | mkV2V (mkV "begrenzen") ;
 lin limitation_N = mkN "grens" | mkN "beperking" ; -- status=guess status=guess
 lin limited_A = variants {} ; --
-lin limitedly_Adv = adjAdv limited_A ; -- derived
 lin limitless_A = mkA "grenzeloos" | mkA "onbegrensd" ; -- status=guess status=guess
 lin limoges_PN = mkPN "Limoges" ; -- src=geonames status=guess
 lin limp_V = mkV "hinken" ; -- status=guess, src=wikt
@@ -11174,6 +11814,8 @@ lin linguistics_N = mkN "linguïstiek" feminine | mkN "taalkunde" feminine | mkN
 lin link_N = mkN "verbinding" feminine | mkN "link" ;
 lin link_V = fixprefixV "ver" binden_V | mkV "linken" ;
 lin link_V2 = mkV2 (fixprefixV "ver" binden_V) | mkV2 (mkV "linken") ;
+lin link_up_V2 = prepV2 OP_link_V OP_up_Prep ; -- guess-p-verb
+lin link_up_with_V2 = prepV2 (advV OP_link_V OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
 lin links_N = mkN "golfbaan" utrum ; -- status=guess
 lin linlithgow_PN = mkPN "Linlithgow" ; -- src=geonames status=guess
 lin linseed_N = mkN "vlaszaad" neuter | mkN "lijnzaad" neuter ; -- status=guess status=guess
@@ -11201,6 +11843,9 @@ lin list_V2 = variants {} ; --
 lin list_V2V = variants {} ; --
 lin listen_V = mkV "luisteren" ;
 lin listen_V2 = L.listen_V2 ;
+lin listen_in_V = advV OP_listen_V OP_in_Adv ; -- guess-p-verb
+lin listen_out_for_V2 = prepV2 (advV OP_listen_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin listen_up_V = advV OP_listen_V OP_up_Adv ; -- guess-p-verb
 lin listenerMasc_N = mkN "luisteraar" masculine ; -- status=guess
 lin listening_N = mkN "luisteren" neuter ; -- status=guess
 lin listless_A = mkA "lusteloos" ; -- status=guess
@@ -11209,7 +11854,6 @@ lin litany_N = mkN "litanie" masculine feminine ; -- status=guess
 lin literacy_N = mkN "alfabetisering" | mkN "alfabetisme" ; -- status=guess status=guess
 lin literal_A = mkA "letter-" ; -- status=guess
 lin literal_N = mkN "literaal" masculine ; -- status=guess
-lin literally_Adv = mkAdv "letterlijk" | adjAdv literal_A ; -- status=guess -- derived
 lin literary_A = mkA "literair" ; -- status=guess
 lin literature_N = mkN "literatuur" ; -- status=guess
 lin lithe_A = mkA "soepel" ; -- status=guess
@@ -11223,7 +11867,6 @@ lin litter_N = mkN "worp" masculine ; -- status=guess
 lin litter_V = mkV "sluikstorten" ; -- status=guess, src=wikt
 lin litter_V2 = mkV2 (mkV "sluikstorten") ; -- status=guess, src=wikt
 lin little_A = mkA "klein" ;
-lin little_Adv = mkAdv "weinig" ;
 lin little_Det = mkDet "weinig" ;
 lin little_N = mkN "broertje" neuter ; -- status=guess
 lin littlehampton_PN = mkPN "Littlehampton" ; -- src=geonames status=guess
@@ -11233,6 +11876,21 @@ lin livable_A = mkA "leefbaar" ; -- status=guess
 lin live_A = mkA "scherp" | mkA "scherpe" ; -- status=guess status=guess
 lin live_Adv = mkAdv "rechtstreeks" ; -- status=guess
 lin live_V = L.live_V ;
+lin live_by_V2 = prepV2 OP_live_V OP_by_Prep ; -- guess-p-verb
+lin live_down_V2 = prepV2 OP_live_V OP_down_Prep ; -- guess-p-verb
+lin live_for_V2 = prepV2 OP_live_V OP_for_Prep ; -- guess-p-verb
+lin live_in_V = advV OP_live_V OP_in_Adv ; -- guess-p-verb
+lin live_it_up_V2 = variants {} ; -- guess-p-verb
+lin live_off_V2 = prepV2 OP_live_V OP_off_Prep ; -- guess-p-verb
+lin live_on_V = advV OP_live_V OP_on_Adv ; -- guess-p-verb
+lin live_on_V2 = prepV2 OP_live_V OP_on_Prep ; -- guess-p-verb
+lin live_out_V = advV OP_live_V OP_out_Adv ; -- guess-p-verb
+lin live_out_V2 = prepV2 OP_live_V OP_out_Prep ; -- guess-p-verb
+lin live_through_V2 = prepV2 OP_live_V OP_through_Prep ; -- guess-p-verb
+lin live_together_V = advV OP_live_V OP_together_Adv ; -- guess-p-verb
+lin live_up_V = advV OP_live_V OP_up_Adv ; -- guess-p-verb
+lin live_up_to_V2 = prepV2 (advV OP_live_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin live_with_V2 = prepV2 OP_live_V OP_with_Prep ; -- guess-p-verb
 lin livelihood_N = mkN "levensonderhoud" ; -- status=guess
 lin liveliness_N = mkN "levendigheid" ; -- status=guess
 lin lively_A = mkA "levendig" ; -- status=guess
@@ -11284,7 +11942,6 @@ lin local_N = mkN "stamcafé" neuter | mkN "stamkroeg" masculine feminine ; -- s
 lin locale_N = mkN "taalregio" | mkN "locale" feminine ; -- status=guess status=guess
 lin locality_N = variants {} ; --
 lin localization_N = mkN "lokalisatie" feminine ; -- status=guess
-lin locally_Adv = adjAdv local_A ; -- -- derived
 lin locate_V = variants {} ; --
 lin locate_V2 = variants {} ; --
 lin location_N = mkN "plaats" feminine | mkN "locatie" feminine ; -- status=guess status=guess
@@ -11293,6 +11950,13 @@ lin lochia_N = mkN "lochia" | mkN "kraamvloed" ; -- status=guess status=guess
 lin lock_N = mkN "haan" masculine ; -- status=guess
 lin lock_V = mkV "blokkeren" | mkV "vastlopen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin lock_V2 = mkV2 (mkV "blokkeren") | mkV2 (mkV "vastlopen") ; -- status=guess, src=wikt status=guess, src=wikt
+lin lock_away_V2 = mkV2 (advV OP_lock_V OP_away_Adv ) ; -- guess-p-verb
+lin lock_down_V2 = prepV2 OP_lock_V OP_down_Prep ; -- guess-p-verb
+lin lock_in_V2 = prepV2 OP_lock_V OP_in_Prep ; -- guess-p-verb
+lin lock_onto_V2 = prepV2 OP_lock_V OP_onto_Prep ; -- guess-p-verb
+lin lock_out_V2 = prepV2 OP_lock_V OP_out_Prep ; -- guess-p-verb
+lin lock_up_V2 = prepV2 OP_lock_V OP_up_Prep ; -- guess-p-verb
+lin lock_yourself_away_V = variants {} ; -- guess-p-verb
 lin locket_N = mkN "medaillon" neuter ; -- status=guess
 lin locomotion_N = mkN "voortbeweging" ; -- status=guess
 lin locomotive_N = mkN "locomotief" | mkN "lokomotief" ; -- status=guess status=guess
@@ -11316,7 +11980,6 @@ lin logarithm_N = mkN "logaritme" neuter ; -- status=guess
 lin logbook_N = mkN "logboek" neuter ; -- status=guess
 lin logic_N = mkN "logica" feminine ; -- status=guess
 lin logical_A = mkA "logisch" ; -- status=guess
-lin logically_Adv = adjAdv logical_A ; -- derived
 lin logician_N = mkN "logicus" masculine ; -- status=guess
 lin logistic_A = mkA "logistisch" ; -- status=guess
 lin logistics_N = mkN "logistiek" ; -- status=guess
@@ -11336,7 +11999,6 @@ lin loneliness_N = mkN "eenzaamheid" feminine ; -- status=guess
 lin lonely_A = mkA "eenzaam" ; -- status=guess
 lin loner_N = mkN "eenzaat" masculine ; -- status=guess
 lin long_A = L.long_A ;
-lin long_Adv = mkAdv "lang" ;
 lin long_N = mkN "lange arm der wet" ; -- status=guess
 lin long_V = mkV "verlangen" ; -- status=guess, src=wikt
 lin long_eaton_PN = mkPN "Long eaton" ; -- src=eng status=guess
@@ -11350,6 +12012,34 @@ lin look_N = mkN "blik" masculine ;
 lin look_V = mkV "kijken" "keek" "keken" "gekeken" ;
 lin look_V2 = mkV2 look_V ; ---- subcat
 lin look_VA = mkVA look_V ;
+lin look_after_V2 = prepV2 OP_look_V OP_after_Prep ; -- guess-p-verb
+lin look_ahead_to_V2 = prepV2 (advV OP_look_V OP_ahead_Adv ) OP_to_Prep ; -- guess-p-verb
+lin look_around_V = advV OP_look_V OP_around_Adv ; -- guess-p-verb
+lin look_around_at_V2 = prepV2 (advV OP_look_V OP_around_Adv ) OP_at_Prep ; -- guess-p-verb
+lin look_at_V2 = prepV2 OP_look_V OP_at_Prep ; -- guess-p-verb
+lin look_back_V = advV OP_look_V OP_back_Adv ; -- guess-p-verb
+lin look_back_on_V2 = prepV2 (advV OP_look_V OP_back_Adv ) OP_on_Prep ; -- guess-p-verb
+lin look_down_V = advV OP_look_V OP_down_Adv ; -- guess-p-verb
+lin look_down_on_V2 = prepV2 (advV OP_look_V OP_down_Adv ) OP_on_Prep ; -- guess-p-verb
+lin look_for_V2 = prepV2 OP_look_V OP_for_Prep ; -- guess-p-verb
+lin look_forward_V = advV OP_look_V OP_forward_Adv ; -- guess-p-verb
+lin look_forward_to_V2 = prepV2 (advV OP_look_V OP_forward_Adv ) OP_to_Prep ; -- guess-p-verb
+lin look_in_V2 = prepV2 OP_look_V OP_in_Prep ; -- guess-p-verb
+lin look_in_on_V2 = prepV2 (advV OP_look_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin look_into_V2 = prepV2 OP_look_V OP_into_Prep ; -- guess-p-verb
+lin look_on_V = advV OP_look_V OP_on_Adv ; -- guess-p-verb
+lin look_on_as_V3 = variants {} ; -- guess-p-verb
+lin look_out_V = advV OP_look_V OP_out_Adv ; -- guess-p-verb
+lin look_out_for_V2 = prepV2 (advV OP_look_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin look_over_V2 = prepV2 OP_look_V OP_over_Prep ; -- guess-p-verb
+lin look_round_V2 = prepV2 OP_look_V OP_round_Prep ; -- guess-p-verb
+lin look_through_V2 = prepV2 OP_look_V OP_through_Prep ; -- guess-p-verb
+lin look_to_V2 = prepV2 OP_look_V OP_to_Prep ; -- guess-p-verb
+lin look_toward_V2 = prepV2 OP_look_V OP_toward_Prep ; -- guess-p-verb
+lin look_up_V = advV OP_look_V OP_up_Adv ; -- guess-p-verb
+lin look_up_V2 = prepV2 OP_look_V OP_up_Prep ; -- guess-p-verb
+lin look_up_to_V2 = prepV2 (advV OP_look_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin look_upon_as_V3 = variants {} ; -- guess-p-verb
 lin looker_N = mkN "schoonheid" ; -- status=guess
 lin loom_N = mkN "weefgetouw" neuter ; -- status=guess
 lin loom_V = mkV "opdoemen" ; -- status=guess, src=wikt
@@ -11359,7 +12049,6 @@ lin loophole_N = mkN "achterdeur" ; -- status=guess
 lin loopy_A = mkA "vol bochten" ; -- status=guess
 lin loose_A = mkA "los" | mkA "mul" ; -- status=guess status=guess
 lin loose_V2 = mkV2 (mkV "lossen") ; -- status=guess, src=wikt
-lin loosely_Adv = mkAdv "ruim" | adjAdv loose_A ; -- status=guess -- derived
 lin loosen_V = mkV "losmaken" ; -- status=guess, src=wikt
 lin loosen_V2 = mkV2 (mkV "losmaken") ; -- status=guess, src=wikt
 lin lopsided_A = mkA "onevenwichtig" | mkA "scheef" ; -- status=guess status=guess
@@ -11372,6 +12061,10 @@ lin lorry_N = variants {} ; --
 lin los_angeles_PN = mkPN "Los Angeles" ; -- src=geonames status=guess
 lin lose_V = verliezen_V ;
 lin lose_V2 = L.lose_V2 ;
+lin lose_out_V = advV OP_lose_V OP_out_Adv ; -- guess-p-verb
+lin lose_out_on_V2 = prepV2 (advV OP_lose_V OP_out_Adv ) OP_on_Prep ; -- guess-p-verb
+lin lose_out_to_V2 = prepV2 (advV OP_lose_V OP_out_Adv ) OP_to_Prep ; -- guess-p-verb
+lin lose_up_V = advV OP_lose_V OP_up_Adv ; -- guess-p-verb
 lin loss_N = mkN "verlies" neuter ;
 lin lossiemouth_PN = mkPN "Lossiemouth" ; -- src=geonames status=guess
 lin lost_A = mkA "verloren" | mkA "verdwaald" ; -- status=guess status=guess
@@ -11380,7 +12073,6 @@ lin lothian_PN = mkPN "Lothian" ; -- src=eng status=guess
 lin lottery_N = mkN "loterij" ; -- status=guess
 lin loud_A = mkA "luidruchtig" | mkA "luidruchtige" ; -- status=guess status=guess
 lin loud_Adv = variants {} ; --
-lin loudly_Adv = adjAdv loud_A ; -- -- derived
 lin loughborough_PN = mkPN "Loughborough" ; -- src=geonames status=guess
 lin louis_PN = mkPN "Louis" ; -- src=eng status=guess
 lin louise_PN = mkPN "Louise" ; -- src=eng status=guess
@@ -11584,7 +12276,27 @@ lin make_V = mkV "maken" | mkV "doen" ;
 lin make_V2 = mkV2 (mkV "maken") ;
 lin make_V2A = mkV2A (mkV "maken") ;
 lin make_V2V = mkV2V (mkV "dwingen") to_Prep ; ---- subcat to make someone do something, unusual translation
+lin make_after_V = advV OP_make_V OP_after_Adv ; -- guess-p-verb
+lin make_away_with_V2 = prepV2 (advV OP_make_V OP_away_Adv ) OP_with_Prep ; -- guess-p-verb
+lin make_do_with_V2 = variants {} ; -- guess-p-verb
+lin make_for_V2 = prepV2 OP_make_V OP_for_Prep ; -- guess-p-verb
+lin make_into_V2 = prepV2 OP_make_V OP_into_Prep ; -- guess-p-verb
+lin make_it_V = variants {} ; -- guess-p-verb
+lin make_it_up_to_V2 = variants {} ; -- guess-p-verb
+lin make_of_V3 = variants {} ; -- guess-p-verb
+lin make_off_V = advV OP_make_V OP_off_Adv ; -- guess-p-verb
+lin make_off_with_V2 = prepV2 (advV OP_make_V OP_off_Adv ) OP_with_Prep ; -- guess-p-verb
+lin make_out_V = advV OP_make_V OP_out_Adv ; -- guess-p-verb
+lin make_out_V2 = prepV2 OP_make_V OP_out_Prep ; -- guess-p-verb
+lin make_out_with_V2 = prepV2 (advV OP_make_V OP_out_Adv ) OP_with_Prep ; -- guess-p-verb
+lin make_over_V2 = prepV2 OP_make_V OP_over_Prep ; -- guess-p-verb
+lin make_towards_V2 = prepV2 OP_make_V OP_towards_Prep ; -- guess-p-verb
 lin make_up_N = variants {} ; --
+lin make_up_V = advV OP_make_V OP_up_Adv ; -- guess-p-verb
+lin make_up_V2 = prepV2 OP_make_V OP_up_Prep ; -- guess-p-verb
+lin make_up_for_V2 = prepV2 (advV OP_make_V OP_up_Adv ) OP_for_Prep ; -- guess-p-verb
+lin make_up_to_V2 = prepV2 (advV OP_make_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin make_with_V2 = prepV2 OP_make_V OP_with_Prep ; -- guess-p-verb
 lin maker_N = mkN "maker" masculine ; -- status=guess
 lin makeshift_A = mkA "provisorisch" ; -- status=guess
 lin makeshift_N = mkN "provisorisch" | mkN "noodoplossing" ; -- status=guess status=guess
@@ -11689,7 +12401,6 @@ lin mantelpiece_N = mkN "schoorsteenmantel" masculine | mkN "schouwmantel" mascu
 lin mantle_N = mkN "aardmantel" | mkN "mantel" ; -- status=guess status=guess
 lin manual_A = mkA "handmatig" | mkA "met de hand" | mkA "manueel" ; -- status=guess status=guess status=guess
 lin manual_N = mkN "handleiding" feminine | mkN "handboek" neuter ; -- status=guess status=guess
-lin manually_Adv = mkAdv "manueel" | mkAdv "met de hand" | mkAdv "handmatig" | adjAdv manual_A ; -- status=guess status=guess status=guess -- derived
 lin manufacture_N = variants {} ; --
 lin manufacture_V2 = mkV2 (mkV "vervaardigen") ; -- status=guess, src=wikt
 lin manufacturer_N = mkN "fabrikant" ; -- status=guess
@@ -11745,8 +12456,14 @@ lin mark_N = mkN "punt" neuter | mkN "score" feminine ; -- status=guess status=g
 lin mark_PN = mkPN "Mark" ; -- src=eng status=guess
 lin mark_V2 = mkV2 (mkV "aan" geven_V) ;
 lin mark_V3 = mkV3 (mkV "markeren") ;
+lin mark_down_V2 = prepV2 (lin V OP_mark_V2) OP_down_Prep ; -- guess-p-verb
+lin mark_down_as_V3 = variants {} ; -- guess-p-verb
+lin mark_off_V2 = prepV2 (lin V OP_mark_V2) OP_off_Prep ; -- guess-p-verb
+lin mark_out_V2 = prepV2 (lin V OP_mark_V2) OP_out_Prep ; -- guess-p-verb
+lin mark_out_for_V3 = variants {} ; -- guess-p-verb
+lin mark_out_from_V3 = variants {} ; -- guess-p-verb
+lin mark_up_V2 = prepV2 (lin V OP_mark_V2) OP_up_Prep ; -- guess-p-verb
 lin marked_A = variants {} ; --
-lin markedly_Adv = adjAdv marked_A ; -- derived
 lin marker_N = mkN "fiche" masculine ; -- status=guess
 lin market_1_N = mkN "markt" ;
 lin market_2_N = mkN "beurs" ; -- as in 'stock market', this comprises the complete word however, not a proper translation
@@ -11772,6 +12489,8 @@ lin married_A2 = L.married_A2 ;
 lin marrow_N = mkN "courgette" ; -- status=guess
 lin marry_V = mkV "trouwen" | mkV "huwen" | reflMkV "in de echt verbinden" ;
 lin marry_V2 = mkV2 (mkV "trouwen") | mkV2 (mkV "huwen") | mkV2 (reflMkV "in de echt verbinden") ;
+lin marry_in_V = advV OP_marry_V OP_in_Adv ; -- guess-p-verb
+lin marry_out_V = advV OP_marry_V OP_out_Adv ; -- guess-p-verb
 lin mars_PN = mkPN "Mars" ; -- src=geonames status=guess
 lin marseilles_PN = mkPN "Marseilles" ; -- src=geonames status=guess
 lin marsh_N = mkN "moeras" neuter ; -- status=guess
@@ -11809,7 +12528,6 @@ lin massage_N = mkN "massage" feminine ; -- status=guess
 lin massage_V2 = mkV2 (mkV "vervalsen") ; -- status=guess, src=wikt
 lin massif_N = mkN "massief" neuter ; -- status=guess
 lin massive_A = mkA "massief" ; -- status=guess
-lin massively_Adv = adjAdv massive_A ; -- derived
 lin mast_N = mkN "mast" masculine ; -- status=guess
 lin master_1_N = mkN "meester" ;
 lin master_2_N = mkN "meester" ;
@@ -11831,6 +12549,7 @@ lin match_2_N = mkN "lucifer" ;
 lin match_3_N = mkN "match" | mkN "overeenstemming" | mkN "gelijke" ;
 lin match_N = match_1_N | match_2_N | match_3_N ;
 lin match_V2 = mkV2 (mkV "evenaren") ; -- status=guess, src=wikt
+lin match_up_V = advV (lin V OP_match_V2) OP_up_Adv ; -- guess-p-verb
 lin matchbox_N = mkN "luciferdoosje" neuter ; -- status=guess
 lin mate_1_N = variants {} ; --
 lin mate_2_N = variants {} ; --
@@ -11843,7 +12562,6 @@ lin maternal_A = mkA "moederlijk" ; -- status=guess
 lin maternity_N = mkN "materniteit" feminine | mkN "moederschap" neuter ; -- status=guess status=guess
 lin math_N = mkN "wiskunde" ; -- status=guess
 lin mathematical_A = mkA "wiskundig" ; -- status=guess
-lin mathematically_Adv = adjAdv mathematical_A ; -- derived
 lin mathematicianMasc_N = mkN "wiskundige" masculine | mkN "mathematicus" masculine ; -- status=guess status=guess
 lin mathematics_N = mkN "wiskunde" feminine ; -- status=guess
 lin maths_N = mkN "wiskunde" feminine ; -- status=guess
@@ -11921,13 +12639,18 @@ lin measurable_A = mkA "meetbaar" ; -- status=guess
 lin measure_N = mkN "maat" ;
 lin measure_V = meten_V ;
 lin measure_V2 = mkV2 (meten_V) ;
+lin measure_against_V3 = variants {} ; -- guess-p-verb
+lin measure_off_V2 = prepV2 OP_measure_V OP_off_Prep ; -- guess-p-verb
+lin measure_out_V2 = prepV2 OP_measure_V OP_out_Prep ; -- guess-p-verb
+lin measure_up_V = advV OP_measure_V OP_up_Adv ; -- guess-p-verb
+lin measure_up_V2 = prepV2 OP_measure_V OP_up_Prep ; -- guess-p-verb
+lin measure_up_to_V2 = prepV2 (advV OP_measure_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin measurement_N = variants {} ; --
 lin meat_N = L.meat_N ;
 lin meath_PN = mkPN "Meath" ; -- src=eng status=guess
 lin mecca_PN = mkPN "Mekka" ; -- src=geonames status=guess
 lin mechanic_N = mkN "mecanicien" masculine | mkN "werktuigkunde" masculine ; -- status=guess status=guess
 lin mechanical_A = mkA "mechanisch" ; -- status=guess
-lin mechanically_Adv = adjAdv mechanical_A ; -- derived
 lin mechanics_N = mkN "mechanica" ; -- status=guess
 lin mechanism_N = mkN "mechanisme" neuter ; -- status=guess
 lin medal_N = mkN "medaille" masculine feminine | mkN "erepenning" feminine ; -- status=guess status=guess
@@ -11958,6 +12681,8 @@ lin meek_A = mkA "gedwee" | mkA "zachtmoedig" ; -- status=guess status=guess
 lin meerkat_N = mkN "stokstaartje" neuter ; -- status=guess
 lin meet_V = mkV "ontmoeten" | mkV (mkV "leren") "kennen" ;
 lin meet_V2 = mkV2 (mkV "ontmoeten") | mkV2 (mkV (mkV "leren") "kennen") ; ---- subcat
+lin meet_up_V = advV OP_meet_V OP_up_Adv ; -- guess-p-verb
+lin meet_with_V2 = prepV2 OP_meet_V OP_with_Prep ; -- guess-p-verb
 lin meeting_N = mkN "afspraak" ;
 lin meg_PN = mkPN "Meg" ; -- src=eng status=guess
 lin megalomania_N = mkN "grootheidswaanzin" masculine | mkN "megalomanie" feminine ; -- status=guess status=guess
@@ -12006,7 +12731,6 @@ lin menorah_N = mkN "menora" ; -- status=guess
 lin menstruation_N = mkN "menstruatie" ; -- status=guess
 lin mental_A = mkA "geestelijk" | mkA "mentaal" ; -- status=guess status=guess
 lin mentality_N = mkN "mentaliteit" feminine ; -- status=guess
-lin mentally_Adv = adjAdv mental_A ; -- -- derived
 lin mention_N = mkN "vermelding" feminine ; -- status=guess
 lin mention_V = mkV "noemen" | mkV "vermelden" ;
 lin mention_V2 = mkV2 mention_V ;
@@ -12028,7 +12752,6 @@ lin mercury_N = mkN "kwik" neuter ; -- status=guess
 lin mercury_PN = mkPN "Mercury" ; -- src=geonames status=guess
 lin mercy_N = mkN "genade" feminine | mkN "erbarmen" neuter | mkN "vergeving" feminine | mkN "vergiffenis" feminine ; -- status=guess status=guess status=guess status=guess
 lin mere_A = mkA "schamel" | mkA "luttel" ; -- status=guess status=guess
-lin merely_Adv = mkAdv "louter" | mkAdv "alleen" | adjAdv mere_A ; -- derived
 lin meretricious_A = mkA "schoonschijnend" | mkA "wansmakelijk" ; -- status=guess status=guess
 lin merganser_N = mkN "zaagbek" ; -- status=guess
 lin merge_V = mkV "samenkomen" | mkV "samenvloeien" | mkV "fusioneren" | mkV "samengaan" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -12134,7 +12857,6 @@ lin milano_PN = mkPN "Milaan" ; -- src=geonames status=guess
 lin mild_A = mkA "mild" | mkA "zacht" ; -- status=guess status=guess
 lin mildenhall_PN = mkPN "Mildenhall" ; -- src=geonames status=guess
 lin mildew_N = mkN "schimmel" masculine ; -- status=guess
-lin mildly_Adv = adjAdv mild_A ; -- derived
 lin mildred_PN = mkPN "Mildred" ; -- src=eng status=guess
 lin mile_N = mkN "mijl" masculine ;
 lin miles_PN = mkPN "Miles" ; -- src=eng status=guess
@@ -12254,6 +12976,9 @@ lin misplace_V2 = mkV2 (mkV "misleggen") ; -- status=guess, src=wikt
 lin miss_N = mkN "misser" masculine ; -- status=guess
 lin miss_V = mkV "missen" ;
 lin miss_V2 = mkV2 miss_V ;
+lin miss_out_V = advV OP_miss_V OP_out_Adv ; -- guess-p-verb
+lin miss_out_V2 = prepV2 OP_miss_V OP_out_Prep ; -- guess-p-verb
+lin miss_out_on_V2 = prepV2 (advV OP_miss_V OP_out_Adv ) OP_on_Prep ; -- guess-p-verb
 lin missile_N = mkN "raket" ; -- status=guess
 lin missing_A = variants {} ; --
 lin mission_N = mkN "missie" feminine | mkN "zending" feminine ; -- status=guess status=guess
@@ -12267,7 +12992,6 @@ lin mistake_N = mkN "fout" feminine | mkN "misverstand" neuter | mkN "blunder" m
 lin mistake_V = mkV (mkV "een") "fout maken" | mkV (mkV "in") "de fout gaan" ; -- status=guess, src=wikt status=guess, src=wikt
 lin mistake_V2 = mkV2 (mkV (mkV "een") "fout maken") | mkV2 (mkV (mkV "in") "de fout gaan") ; -- status=guess, src=wikt status=guess, src=wikt
 lin mistaken_A = variants {} ;
-lin mistakenly_Adv = adjAdv mistaken_A ; -- derived
 lin mister_N = mkN "meneer" ; -- status=guess
 lin mistletoe_N = mkN "maretak" masculine | mkN "vogellijm" masculine | mkN "mistel" masculine ; -- status=guess status=guess status=guess
 lin mistreat_V2 = mkV2 (mkV "mishandelen") ; -- status=guess, src=wikt
@@ -12284,6 +13008,7 @@ lin mitten_N = mkN "want" feminine ; -- status=guess
 lin mix_N = variants {} ; --
 lin mix_V = mkV "vermengen" ; -- status=guess, src=wikt
 lin mix_V2 = mkV2 (mkV "vermengen") ; -- status=guess, src=wikt
+lin mix_up_V2 = prepV2 OP_mix_V OP_up_Prep ; -- guess-p-verb
 lin mixed_A = mkA "gemengdbloedig" | mkA "onzuiver" ; -- status=guess status=guess
 lin mixer_N = mkN "mengar" neuter ; -- status=guess
 lin mixture_N = mkN "mengsel" ; -- status=guess
@@ -12318,7 +13043,6 @@ lin moderate_A = mkA "gematigd" ; -- status=guess
 lin moderate_N = mkN "gematigde" masculine ; -- status=guess
 lin moderate_V = mkV "modereren" | mkV "bemiddelen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin moderate_V2 = mkV2 (mkV "modereren") | mkV2 (mkV "bemiddelen") ; -- status=guess, src=wikt status=guess, src=wikt
-lin moderately_Adv = adjAdv moderate_A ; -- derived
 lin modern_A = mkA "modern" ;
 lin modernization_N = mkN "modernisering" feminine ; -- status=guess
 lin modernize_V2 = mkV2 (mkV "moderniseren") ; -- status=guess, src=wikt
@@ -12431,7 +13155,6 @@ lin morale_N = variants {} ; --
 lin morality_N = mkN "ethiek" ; -- status=guess
 lin moralize_V = mkV "moraliseren" ; -- status=guess, src=wikt
 lin moralize_V2 = mkV2 (mkV "moraliseren") ; -- status=guess, src=wikt
-lin morally_Adv = adjAdv moral_A ; -- derived
 lin morass_N = mkN "moeras" masculine ; -- status=guess
 lin morbid_A = mkA "morbide" | mkA "akelig" | mkA "gruwelijk" | mkA "macaber" ; -- status=guess status=guess status=guess status=guess
 lin morbidity_N = mkN "morbiditeit" | mkN "ziekte" | mkN "ziekelijkheid" ; -- status=guess status=guess status=guess
@@ -12456,7 +13179,6 @@ lin morsel_N = mkN "brok" | mkN "hap" | mkN "stuk" ; -- status=guess status=gues
 lin mortal_A = mkA "dodelijk" ; -- status=guess
 lin mortal_N = mkN "sterveling" masculine ; -- status=guess
 lin mortality_N = mkN "sterfelijkheid" feminine | mkN "mortaliteit" feminine ; -- status=guess status=guess
-lin mortally_Adv = adjAdv mortal_A ; -- derived
 lin mortar_N = mkN "specie" feminine | mkN "mortel" masculine ; -- status=guess status=guess
 lin mortgage_N = mkN "hypotheek" masculine ; -- status=guess
 lin mortgage_V2 = mkV2 (mkV "hypothekeren") | mkV2 (mkV (mkV "lijfrente") "afsluiten") | mkV2 (mkV "verpanden") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -12506,6 +13228,7 @@ lin mound_N = mkN "terp" masculine ; -- status=guess
 lin mount_N = mkN "rijpaard" neuter ; -- status=guess
 lin mount_V = mkV "monteren" | mkV "bevestigen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin mount_V2 = mkV2 (mkV "monteren") | mkV2 (mkV "bevestigen") ; -- status=guess, src=wikt status=guess, src=wikt
+lin mount_up_V = advV OP_mount_V OP_up_Adv ; -- guess-p-verb
 lin mountain_N = L.mountain_N ;
 lin mountain_ash_PN = mkPN "Mountain ash" ; -- src=eng status=guess
 lin mountainous_A = mkA "bergachtig" ; -- status=guess
@@ -12522,10 +13245,24 @@ lin move_2_V = mkV "verhuizen" ;
 lin move_N = mkN "stap" masculine | mkN "beweging" ;
 lin move_V = mkV "bewegen" "bewoog" "bewogen" "bewogen" | mkV "verplaatsen" ;
 lin move_V2 = mkV2 (mkV "bewegen" "bewoog" "bewogen" "bewogen" | mkV "verplaatsen") ;
+lin move_ahead_V = advV OP_move_V OP_ahead_Adv ; -- guess-p-verb
+lin move_along_V = advV OP_move_V OP_along_Adv ; -- guess-p-verb
+lin move_away_V = advV OP_move_V OP_away_Adv ; -- guess-p-verb
+lin move_away_from_V2 = prepV2 (advV OP_move_V OP_away_Adv ) OP_from_Prep ; -- guess-p-verb
+lin move_down_V2 = prepV2 OP_move_V OP_down_Prep ; -- guess-p-verb
+lin move_in_V = advV OP_move_V OP_in_Adv ; -- guess-p-verb
+lin move_in_on_V2 = prepV2 (advV OP_move_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin move_into_V2 = prepV2 OP_move_V OP_into_Prep ; -- guess-p-verb
+lin move_on_V = advV OP_move_V OP_on_Adv ; -- guess-p-verb
+lin move_on_V2 = prepV2 OP_move_V OP_on_Prep ; -- guess-p-verb
+lin move_out_V = advV OP_move_V OP_out_Adv ; -- guess-p-verb
+lin move_out_V2 = prepV2 OP_move_V OP_out_Prep ; -- guess-p-verb
+lin move_towards_V2 = prepV2 OP_move_V OP_towards_Prep ; -- guess-p-verb
+lin move_up_V = advV OP_move_V OP_up_Adv ; -- guess-p-verb
+lin move_up_V2 = prepV2 OP_move_V OP_up_Prep ; -- guess-p-verb
 lin movement_N = mkN "beweging" feminine ;
 lin movie_N = mkN "film" masculine ; -- status=guess
 lin moving_A = mkA "ontroerend" | mkA "ontroerende" ; -- status=guess status=guess
-lin movingly_Adv = adjAdv moving_A ; -- derived
 lin mow_V = mkV "maaien" ; -- status=guess, src=wikt
 lin mow_V2 = mkV2 (mkV "maaien") ; -- status=guess, src=wikt
 lin mozambique_PN = mkPN "Mozambique" ; -- src=geonames status=guess
@@ -12616,7 +13353,6 @@ lin mushroom_N = mkN "paddenstoel" masculine | mkN "zwam" masculine ; -- status=
 lin music_N = L.music_N ;
 lin musical_A = mkA "muzikaal" ; -- status=guess
 lin musical_N = mkN "musical" masculine ; -- status=guess
-lin musically_Adv = adjAdv musical_A ; -- derived
 lin musicianMasc_N = mkN "muzikant" masculine | mkN "muzikante" feminine | mkN "musicus" masculine feminine ; -- status=guess status=guess status=guess
 lin musicologist_N = mkN "musicoloog" masculine ; -- status=guess
 lin musk_N = mkN "muskusos" masculine ; -- status=guess
@@ -12642,7 +13378,6 @@ lin mutter_V = mkV "mompelen" ; -- status=guess, src=wikt
 lin mutter_V2 = mkV2 (mkV "mompelen") ; -- status=guess, src=wikt
 lin mutton_N = mkN "van achteren lyceum" | mkN "van voren museum" ; -- status=guess status=guess
 lin mutual_A = mkA "wederzijds" ; -- status=guess
-lin mutually_Adv = adjAdv mutual_A ; -- derived
 lin muzzle_N = mkN "muilband" ; -- status=guess
 lin muzzle_V2 = mkV2 (mkV "muilkorven") ; -- status=guess, src=wikt
 lin mycologist_N = mkN "mycoloog" masculine ; -- status=guess
@@ -12653,7 +13388,6 @@ lin myra_PN = mkPN "Myra" ; -- src=geonames status=guess
 lin myriad_N = mkN "myriade" feminine ; -- status=guess
 lin myrrh_N = mkN "mirre" masculine ; -- status=guess
 lin mysterious_A = mkA "geheimzinnig" ; -- status=guess
-lin mysteriously_Adv = adjAdv mysterious_A ; -- derived
 lin mystery_N = mkN "mysterie" neuter ; -- status=guess
 lin mystic_A = mkA "mysterieus" | mkA "enigmatisch" | mkA "raadselachtig" | mkA "geheimzinnig" | mkA "duister" ; -- status=guess status=guess status=guess status=guess status=guess
 lin myth_N = mkN "mythe " masculine ; -- status=guess
@@ -12710,7 +13444,6 @@ lin narrator_N = mkN "verteller" masculine | mkN "vertelster" feminine ; -- stat
 lin narrow_A = L.narrow_A ;
 lin narrow_V = variants {} ; --
 lin narrow_V2 = variants {} ; --
-lin narrowly_Adv = mkAdv "nipt" | adjAdv narrow_A ; -- status=guess -- derived
 lin narwhal_N = mkN "narwal" masculine ; -- status=guess
 lin nasa_PN = mkPN "NASA" ; -- src=eng status=guess
 lin nasal_A = mkA "nasaal" ; -- status=guess
@@ -12725,14 +13458,12 @@ lin national_N = mkN "volkslied" neuter ; -- status=guess
 lin nationalism_N = mkN "nationalisme" ; -- status=guess
 lin nationalist_N = mkN "nationalist" masculine feminine ; -- status=guess
 lin nationality_N = mkN "nationaliteit" feminine | mkN "staatsburgerschap" neuter ; -- status=guess status=guess
-lin nationally_Adv = adjAdv national_A ; -- -- derived
 lin native_A = mkA "moeder-" | mkA "geboorte-" | mkA "aangeboren" ; -- status=guess status=guess status=guess
 lin native_N = mkN "inlandse taal" ; -- status=guess
 lin nato_PN = mkPN "Nato" ; -- src=geonames status=guess
 lin natural_A = mkA "normaal" | mkA "natuurlijk" ;
 lin natural_N = mkN "natuurtalent" neuter ; -- status=guess
 lin naturalism_N = mkN "naturalisme" masculine ; -- status=guess
-lin naturally_Adv = mkAdv "natuurlijk" | adjAdv natural_A ; -- status=guess -- derived
 lin nature_N = mkN "natuur" feminine ;
 lin naughty_A = mkA "stout" | mkA "ondeugend" ; -- status=guess status=guess
 lin nauru_PN = mkPN "Nauru" ; -- src=geonames status=guess
@@ -12758,10 +13489,8 @@ lin nearby_Adv = mkAdv "dichtbij" | mkAdv "nabij" ; -- status=guess status=guess
 lin nearly_Adv = mkAdv "bijna" | adjAdv near_A ; -- derived
 lin neat_A = mkA "net" | mkA "puur" ; -- status=guess status=guess
 lin neath_PN = mkPN "Neath" ; -- src=geonames status=guess
-lin neatly_Adv = adjAdv neat_A ; -- -- derived
 lin nebraska_PN = mkPN "Nebraska" ; -- src=eng status=guess
 lin nebula_N = mkN "nevelvlek" feminine ; -- status=guess
-lin necessarily_Adv = mkAdv "nodig" | mkAdv "noodzakelijk" | mkAdv "noodzakelijkerwijs" | adjAdv necessary_A ; -- status=guess status=guess status=guess -- derived
 lin necessary_A = mkA "nodig" | mkA "noodzakelijk" ;
 lin necessity_N = variants {} ; --
 lin neck_N = L.neck_N ;
@@ -12787,7 +13516,6 @@ lin needless_A = mkA "nodeloos" ; -- status=guess
 lin nefarious_A = mkA "berucht" | mkA "schandelijk" | mkA "misdadig" ; -- status=guess status=guess status=guess
 lin negative_A = mkA "negatief" | mkA "min" ; -- status=guess status=guess
 lin negative_N = mkN "ontkennende zin" masculine ; -- status=guess
-lin negatively_Adv = adjAdv negative_A ; -- derived
 lin neglect_N = mkN "verwaarlozing" feminine | mkN "nalatigheid" | mkN "onzorgvuldigheid" ; -- status=guess status=guess status=guess
 lin neglect_V2 = mkV2 (mkV "verwaarlozen") | mkV2 (mkV "negeren") | mkV2 (mkV (mkV "uit") "het oog verliezen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin negligence_N = mkN "nalatigheid" feminine | mkN "achteloosheid" feminine ; -- status=guess status=guess
@@ -12885,7 +13613,6 @@ lin newfangled_A = mkA "nieuwerwets" | mkA "nieuwbakken" ; -- status=guess statu
 lin newfoundland_PN = mkPN "Newfoundland" ; -- src=eng status=guess
 lin newham_PN = mkPN "Newham" ; -- src=eng status=guess
 lin newhaven_PN = mkPN "Newhaven" ; -- src=geonames status=guess
-lin newly_Adv = adjAdv new_A ; -- -- derived
 lin newlywed_N = mkN "pas getrouwd stel" ; -- status=guess
 lin newmains_PN = mkPN "Newmains" ; -- src=geonames status=guess
 lin newmarket_PN = mkPN "Newmarket" ; -- src=geonames status=guess
@@ -12903,7 +13630,6 @@ lin newton_le_willows_PN = mkPN "Newton-le-willows" ; -- src=eng status=guess
 lin newton_mearns_PN = mkPN "Newton mearns" ; -- src=eng status=guess
 lin newtown_PN = mkPN "Newtown" ; -- src=geonames status=guess
 lin next_A = mkA "naast" | mkA "dichtst" ; -- status=guess status=guess
-lin next_Adv = mkAdv "volgend" | mkAdv "nabij" | mkAdv "bij" | mkAdv "vlakbij" ;
 lin next_N = mkN "de volgende" masculine ; -- status=guess
 lin nexus_N = mkN "band" masculine | mkN "verbinding" feminine ; -- status=guess status=guess
 lin nibble_N = mkN "nibble" ; -- status=guess
@@ -12912,7 +13638,6 @@ lin nibble_V2 = mkV2 (mkV "knabbelen") ; -- status=guess, src=wikt
 lin nicaragua_PN = mkPN "Nicaragua" ; -- src=geonames status=guess
 lin nice_A = mkA "leuk" | mkA "aardig" | mkA "vriendelijk" ;
 lin nice_PN = mkPN "Nice" ; -- src=geonames status=guess
-lin nicely_Adv = adjAdv nice_A ; -- -- derived
 lin niche_N = mkN "nis" ; -- status=guess
 lin nicholas_PN = mkPN "Nicholas" ; -- src=eng status=guess
 lin nick_PN = mkPN "Nick" ; -- src=eng status=guess
@@ -12976,6 +13701,8 @@ lin nobody_NP = S.nobody_NP ;
 lin nocturnal_A = mkA "nachtelijk" | mkA "nacht-" ; -- status=guess status=guess
 lin nod_N = mkN "knik" ; -- status=guess
 lin nod_V = mkV "knikkebollen" ; -- status=guess, src=wikt
+lin nod_off_V = advV OP_nod_V OP_off_Adv ; -- guess-p-verb
+lin nod_through_V2 = prepV2 OP_nod_V OP_through_Prep ; -- guess-p-verb
 lin node_N = variants {} ; --
 lin noel_PN = mkPN "Noel" ; -- src=geonames status=guess
 lin noggin_N = mkN "kop" masculine ; -- status=guess
@@ -12984,7 +13711,6 @@ lin noisome_A = mkA "schadelijk" ; -- status=guess
 lin noisy_A = mkA "lawaaierig" ; -- status=guess
 lin nomad_N = mkN "nomade" masculine feminine ; -- status=guess
 lin nominal_A = variants {} ; --
-lin nominally_Adv = adjAdv nominal_A ; -- derived
 lin nominate_V2 = variants {} ; --
 lin nomination_N = mkN "nominatie" feminine ; -- status=guess
 lin nominative_A = mkA "nominatief" ;
@@ -13008,7 +13734,6 @@ lin norm_N = variants {} ; --
 lin normal_A = mkA "normaal" ;
 lin normal_N = mkN "normaalverdeling" | mkN "normale verdeling" | mkN "gaussverdeling" ; -- status=guess status=guess status=guess
 lin normalize_V2 = mkV2 (mkV "normaliseren") ; -- status=guess, src=wikt
-lin normally_Adv = mkAdv "normaal" | mkAdv "gewoonlijk" | mkAdv "normaal" | adjAdv normal_A ; -- derived
 lin norman_PN = mkPN "Norman" ; -- src=geonames status=guess
 lin normanton_PN = mkPN "Normanton" ; -- src=geonames status=guess
 lin normantown_PN = mkPN "Normantown" ; -- src=eng status=guess
@@ -13041,7 +13766,6 @@ lin nosy_A = mkA "nieuwsgierig" ; -- status=guess
 lin not_Predet = S.not_Predet ;
 lin notable_A = mkA "waarneembaar" ; -- status=guess
 lin notable_N = mkN "notabele" masculine ; -- status=guess
-lin notably_Adv = adjAdv notable_A ; -- -- derived
 lin notary_N = mkN "notaris" masculine ; -- status=guess
 lin notation_N = mkN "notatie" feminine ; -- status=guess
 lin notch_N = mkN "kerf" ; -- status=guess
@@ -13053,6 +13777,7 @@ lin note_N = note_1_N | note_2_N | note_3_N ;
 lin note_V = mkV "noteren" | mkV "op" (mkV "merken") ;
 lin note_V2 = mkV2 note_V ;
 lin note_VS = mkVS note_V ;
+lin note_down_V2 = prepV2 OP_note_V OP_down_Prep ; -- guess-p-verb
 lin notebook_N = mkN "schrift" neuter | mkN "cahier" neuter ; -- status=guess status=guess
 lin notepad_N = mkN "blocnote" ; -- status=guess
 lin nothing_NP = S.nothing_NP ;
@@ -13060,11 +13785,9 @@ lin notice_N = variants {} ; --
 lin notice_V2 = mkV2 (mkV "op" (mkV "merken")) ;
 lin notice_VS = mkVS (mkV "op" (mkV "merken")) ;
 lin noticeable_A = mkA "opmerkenswaardig" | mkA "opmerkelijk" ; -- status=guess status=guess
-lin noticeably_Adv = adjAdv noticeable_A ; -- derived
 lin notify_V2 = mkV2 (mkV "mededelen") | mkV2 (mkV "waarschuwen") | mkV2 (mkV "notificeren") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin notion_N = mkN "notie" feminine | mkN "besef" ; -- status=guess status=guess
 lin notorious_A = mkA "berucht" | mkA "beruchte" | mkA "notoir" ; -- status=guess status=guess status=guess
-lin notoriously_Adv = adjAdv notorious_A ; -- derived
 lin nottingham_PN = mkPN "Nottingham" ; -- src=geonames status=guess
 lin nottinghamshire_PN = mkPN "Nottinghamshire" ; -- src=eng status=guess
 lin notwithstanding_Adv = mkAdv "desondanks" ; -- status=guess
@@ -13114,7 +13837,6 @@ lin numbness_N = mkN "gevoelloosheid" ; -- status=guess
 lin numeral_N = mkN "telwoord" neuter ; -- status=guess
 lin numerator_N = mkN "teller" masculine ; -- status=guess
 lin numerical_A = variants {} ;
-lin numerically_Adv = adjAdv numerical_A ; -- derived
 lin numerous_A = mkA "talrijk" | mkA "ontelbaar" | mkA "numereus" ; -- status=guess status=guess status=guess
 lin numismatics_N = mkN "muntkunde" | mkN "numismatiek" ; -- status=guess status=guess
 lin nun_N = mkN "noen" ; -- status=guess
@@ -13200,12 +13922,10 @@ lin obtuse_A = mkA "bot" ; -- status=guess
 lin obviate_V2 = mkV2 (mkV (mkV "overbodig") "maken") | mkV2 (mkV "omzeilen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin obviation_N = mkN "omzeiling" feminine ; -- status=guess
 lin obvious_A = mkA "overduidelijk" ;
-lin obviously_Adv = mkAdv "overduidelijk" | mkAdv "vanzelfsprekend" | adjAdv obvious_A ; -- derived
 lin ocarina_N = mkN "ocarina" feminine | mkN "ocarina" masculine ; -- status=guess status=guess
 lin occasion_N = mkN "gelegenheid" feminine ;
 lin occasion_V2 = mkV2 (mkV "veroorzaken") ; -- status=guess, src=wikt
 lin occasional_A = mkA "toevallig" | mkA "nu en dan" | mkA "af en toe" ; -- status=guess status=guess status=guess
-lin occasionally_Adv = mkAdv "af en toe" | mkAdv "wel eens" | mkAdv "nu en dan" | mkAdv "soms" | adjAdv occasional_A ; -- status=guess status=guess status=guess status=guess -- derived
 lin occident_PN = mkPN "Occident" ; -- src=eng status=guess
 lin occiput_N = mkN "achterhoofd" neuter ; -- status=guess
 lin occult_A = mkA "occult" ; -- status=guess
@@ -13217,6 +13937,7 @@ lin occupier_N = mkN "bezetter" masculine ; -- status=guess
 lin occupy_V = mkV "bezetten" ; -- status=guess, src=wikt
 lin occupy_V2 = mkV2 (mkV "bezetten") ; -- status=guess, src=wikt
 lin occur_V = mkV "voor" L.come_V | mkV "plaats" vinden_V ;
+lin occur_to_V2 = prepV2 OP_occur_V OP_to_Prep ; -- guess-p-verb
 lin occurrence_N = mkN "voorval" masculine ; -- status=guess
 lin ocean_N = mkN "oceaan" masculine | mkN "wereldzee" feminine ; -- status=guess status=guess
 lin oceanography_N = mkN "zeekunde" feminine ; -- status=guess
@@ -13236,7 +13957,6 @@ lin odalisque_N = mkN "odalisk" ; -- status=guess
 lin odd_A = mkA "bij benadering" | mkA "ongeveer" ; -- status=guess status=guess
 lin odd_N = variants {} ; --
 lin oddity_N = mkN "rariteit" ; -- status=guess
-lin oddly_Adv = adjAdv odd_A ; -- derived
 lin odds_N = mkN "de kansen" ; -- status=guess
 lin odessa_PN = mkPN "Odessa" ; -- src=geonames status=guess
 lin odious_A = mkA "hatelijk" | mkA "hatelijke" ; -- status=guess status=guess
@@ -13260,6 +13980,7 @@ lin offensive_N = mkN "offensief" neuter | mkN "aanval" masculine | mkN "inval" 
 lin offer_N = mkN "bod" neuter | mkN "aanbod" neuter ;
 lin offer_V2 = mkV2 (mkV "aan" I.bieden_V) ;
 lin offer_VV = mkVV (mkV "aan" I.bieden_V) ;
+lin offer_up_V = advV (lin V OP_offer_V2) OP_up_Adv ; -- guess-p-verb
 lin offering_N = variants {} ; --
 lin offertory_N = mkN "collecte" ; -- status=guess
 lin office_N = mkN "kantoor" neuter | mkN "bureau" neuter | mkN "dienst" masculine | mkN "overheidsdienst" masculine ;
@@ -13269,7 +13990,6 @@ lin officer_3_N = mkN "officier" masculine ;
 lin officer_N = officer_1_N ;
 lin officialMasc_N = mkN "beambte" masculine | mkN "functionaris" masculine ;
 lin official_A = mkA "officieel" | mkA "ambtelijk" ;
-lin officially_Adv = mkAdv "officieel" | adjAdv official_A ; -- status=guess -- derived
 lin offline_A = mkA "ontkoppeld" | mkA "offline" ; -- status=guess status=guess
 lin offset_N = mkN "compensatie" ; -- status=guess
 lin offset_V2 = variants {} ; --
@@ -13364,11 +14084,13 @@ lin open_Adv = variants {} ; --
 lin open_N = mkN "open zee" feminine | mkN "volle zee" feminine ; -- status=guess status=guess
 lin open_V = mkV "open" (mkV "gaan") ;
 lin open_V2 = L.open_V2 ;
+lin open_up_V = advV OP_open_V OP_up_Adv ; -- guess-p-verb
+lin open_up_V2 = prepV2 OP_open_V OP_up_Prep ; -- guess-p-verb
 lin opening_N = mkN "openingsceremonie" ; -- status=guess
-lin openly_Adv = adjAdv open_A ; -- -- derived
 lin opera_N = mkN "opera" masculine ; -- status=guess
 lin operate_V = mkV "aan" drijven_V | mkV "opereren" ;
 lin operate_V2 = mkV2 operate_V ;
+lin operate_on_V2 = prepV2 OP_operate_V OP_on_Prep ; -- guess-p-verb
 lin operating_N = mkN "operatiekamer" utrum ; -- status=guess
 lin operation_N = mkN "operatie" feminine ;
 lin operational_A = variants {} ; --
@@ -13430,7 +14152,6 @@ lin order_V2 = mkV2 order_V ;
 lin order_V2V = mkV2V order_V ;
 lin order_VS = mkVS order_V ;
 lin ordinal_N = mkN "rangtelwoord" neuter ; -- status=guess
-lin ordinarily_Adv = mkAdv "gewoon" | adjAdv ordinary_A ; -- status=guess -- derived
 lin ordinary_A = mkA "gewoon" ;
 lin ordnance_N = mkN "Geschut" ; -- status=guess
 lin ordure_N = mkN "uitwerpselen {p}" | mkN "afval" neuter ; -- status=guess status=guess
@@ -13457,7 +14178,6 @@ lin origami_N = mkN "origami" ; -- status=guess
 lin origin_N = mkN "oorsprong" masculine | mkN "afkomst" feminine | mkN "herkomst" feminine ; -- status=guess status=guess status=guess
 lin original_A = mkA "origineel" | mkA "oorspronkelijk" ;
 lin original_N = mkN "origineel" neuter ; -- status=guess
-lin originally_Adv = mkAdv "indertijd" | adjAdv original_A ; -- status=guess -- derived
 lin originate_V = mkV "voortkomen" ; -- status=guess, src=wikt
 lin originate_V2 = mkV2 (mkV "voortkomen") ; -- status=guess, src=wikt
 lin orison_N = mkN "gebed" neuter ; -- status=guess
@@ -13489,7 +14209,6 @@ lin osprey_N = mkN "visarend" masculine ; -- status=guess
 lin ossett_PN = mkPN "Ossett" ; -- src=geonames status=guess
 lin ossuary_N = mkN "ossuarium" neuter | mkN "knekelhuis" neuter ; -- status=guess status=guess
 lin ostensible_A = mkA "schijnbaar" ; -- status=guess
-lin ostensibly_Adv = mkAdv "ogenschijnlijk" | mkAdv "op het eerste gezicht" | mkAdv "schijnbaar" | adjAdv ostensible_A ; -- status=guess status=guess status=guess -- derived
 lin osteoblast_N = mkN "osteoblast" ; -- status=guess
 lin osteocyte_N = mkN "osteocyt " masculine ; -- status=guess
 lin osteoporosis_N = mkN "botontkalking" | mkN "osteoporose" ; -- status=guess status=guess
@@ -13601,7 +14320,6 @@ lin overt_A = mkA "openlijk" | mkA "onverholen" ; -- status=guess status=guess
 lin overtake_V2 = mkV2 (mkV "inhalen") ; -- status=guess, src=wikt
 lin overthrow_N = mkN "ondergang" masculine ; -- status=guess
 lin overthrow_V2 = mkV2 (mkV "omverwerpen") ; -- status=guess, src=wikt
-lin overtly_Adv = mkAdv "openlijk" | mkAdv "onverholen" | adjAdv overt_A ; -- status=guess status=guess -- derived
 lin overture_N = mkN "voorstel" neuter ; -- status=guess
 lin overturn_V = mkV "omverwerpen" ; -- status=guess, src=wikt
 lin overturn_V2 = mkV2 (mkV "omverwerpen") ; -- status=guess, src=wikt
@@ -13610,7 +14328,6 @@ lin overweening_A = mkA "zelfverzekerd" | mkA "arrogant" ; -- status=guess statu
 lin overweight_A = mkA "te zwaar" ; -- status=guess
 lin overwhelm_V2 = mkV2 (mkV "overweldigen") ; -- status=guess, src=wikt
 lin overwhelming_A = mkA "overweldigend" ; -- status=guess
-lin overwhelmingly_Adv = adjAdv overwhelming_A ; -- derived
 lin oviduct_N = mkN "eileider" masculine ; -- status=guess
 lin oviedo_PN = mkPN "Oviedo" ; -- src=geonames status=guess
 lin oviparous_A = mkA "eierleggend" ; -- status=guess
@@ -13620,6 +14337,7 @@ lin owl_N = mkN "uil" masculine ; -- status=guess
 lin owlet_N = mkN "uilskuiken" neuter ; -- status=guess
 lin own_A = mkA "eigen" ; -- status=guess
 lin own_V2 = mkV2 (fixprefixV "be" zitten_V) ;
+lin own_up_V = advV (lin V OP_own_V2) OP_up_Adv ; -- guess-p-verb
 lin owner_N = mkN "eigenaar" masculine | mkN "eigenares" feminine | mkN "bezitter" masculine | mkN "bezitster" feminine ;
 lin ownership_N = variants {} ; --
 lin ox_N = mkN "os" masculine ; -- status=guess
@@ -13645,6 +14363,14 @@ lin pacifier_N = mkN "fopspeen" | mkN "speen" ; -- status=guess status=guess
 lin pack_N = variants {} ; --
 lin pack_V = variants {} ; --
 lin pack_V2 = variants {} ; --
+lin pack_away_V2 = mkV2 (advV OP_pack_V OP_away_Adv ) ; -- guess-p-verb
+lin pack_in_V = advV OP_pack_V OP_in_Adv ; -- guess-p-verb
+lin pack_in_V2 = prepV2 OP_pack_V OP_in_Prep ; -- guess-p-verb
+lin pack_it_in_V = variants {} ; -- guess-p-verb
+lin pack_off_V2 = prepV2 OP_pack_V OP_off_Prep ; -- guess-p-verb
+lin pack_out_V2 = prepV2 OP_pack_V OP_out_Prep ; -- guess-p-verb
+lin pack_up_V = advV OP_pack_V OP_up_Adv ; -- guess-p-verb
+lin pack_up_V2 = prepV2 OP_pack_V OP_up_Prep ; -- guess-p-verb
 lin package_N = mkN "verpakking" | mkN "pakketje" neuter ;
 lin package_V2 = variants {} ; --
 lin packer_N = mkN "verpakker" masculine | mkN "pakker" masculine ; -- status=guess status=guess
@@ -13809,7 +14535,6 @@ lin partake_V = mkV "deelnemen" ; -- status=guess, src=wikt
 lin partake_V2 = mkV2 (mkV "deelnemen") ; -- status=guess, src=wikt
 lin partial_A = mkA "partijdig" ; -- status=guess
 lin partiality_N = mkN "partijdigheid" ; -- status=guess
-lin partially_Adv = mkAdv "gedeeltelijk" | mkAdv "deels" | adjAdv partial_A ; -- status=guess status=guess -- derived
 lin participant_N = mkN "deelnemer" masculine ; -- status=guess
 lin participate_V = mkV "meedoen" | mkV "deelnemen" | mkV "participeren" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin participate_V2 = mkV2 (mkV "meedoen") | mkV2 (mkV "deelnemen") | mkV2 (mkV "participeren") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -13819,7 +14544,6 @@ lin participle_N = mkN "deelwoord" neuter ; -- status=guess
 lin particle_N = mkN "deeltjesversneller" masculine ; -- status=guess
 lin particular_A = mkA "specifiek" | mkA "bepaald" | mkA "nauwkeurig" | mkA "nauwgezet" | mkA "precies" ;
 lin particular_N = variants {} ; --
-lin particularly_Adv = mkAdv "specifiek" | adjAdv particular_A ; -- derived
 lin parting_N = mkN "adieu" | mkN "afscheid" ; -- status=guess status=guess
 lin partisan_N = mkN "aanhanger" masculine ; -- status=guess
 lin partition_N = mkN "opdeling" | mkN "partitie" | mkN "splitsing" | mkN "verdeling" ; -- status=guess status=guess status=guess status=guess
@@ -13836,6 +14560,27 @@ lin parvenu_N = mkN "parvenu" ; -- status=guess
 lin pasha_N = mkN "pasja" masculine ; -- status=guess
 lin pass_N = mkN "passage" feminine ; -- status=guess
 lin pass_V = mkV "over" gaan_V ; --- split mkV "over" slaan_V to skip on something
+lin pass_around_V2 = prepV2 OP_pass_V OP_around_Prep ; -- guess-p-verb
+lin pass_as_V2 = prepV2 OP_pass_V OP_as_Prep ; -- guess-p-verb
+lin pass_away_V = advV OP_pass_V OP_away_Adv ; -- guess-p-verb
+lin pass_back_V2 = mkV2 (advV OP_pass_V OP_back_Adv ) ; -- guess-p-verb
+lin pass_by_V = advV OP_pass_V OP_by_Adv ; -- guess-p-verb
+lin pass_by_V2 = prepV2 OP_pass_V OP_by_Prep ; -- guess-p-verb
+lin pass_down_V2 = prepV2 OP_pass_V OP_down_Prep ; -- guess-p-verb
+lin pass_for_V2 = prepV2 OP_pass_V OP_for_Prep ; -- guess-p-verb
+lin pass_off_V = advV OP_pass_V OP_off_Adv ; -- guess-p-verb
+lin pass_off_V2 = prepV2 OP_pass_V OP_off_Prep ; -- guess-p-verb
+lin pass_on_V = advV OP_pass_V OP_on_Adv ; -- guess-p-verb
+lin pass_on_V2 = prepV2 OP_pass_V OP_on_Prep ; -- guess-p-verb
+lin pass_on_to_V2 = prepV2 (advV OP_pass_V OP_on_Adv ) OP_to_Prep ; -- guess-p-verb
+lin pass_out_V = advV OP_pass_V OP_out_Adv ; -- guess-p-verb
+lin pass_out_V2 = prepV2 OP_pass_V OP_out_Prep ; -- guess-p-verb
+lin pass_over_V = advV OP_pass_V OP_over_Adv ; -- guess-p-verb
+lin pass_over_V2 = prepV2 OP_pass_V OP_over_Prep ; -- guess-p-verb
+lin pass_round_V2 = prepV2 OP_pass_V OP_round_Prep ; -- guess-p-verb
+lin pass_through_V2 = prepV2 OP_pass_V OP_through_Prep ; -- guess-p-verb
+lin pass_to_V2 = prepV2 OP_pass_V OP_to_Prep ; -- guess-p-verb
+lin pass_up_V2 = prepV2 OP_pass_V OP_up_Prep ; -- guess-p-verb
 lin passage_N = variants {} ; --
 lin passageway_N = mkN "doorgang" masculine ; -- status=guess
 lin passenger_N = mkN "passagier" masculine feminine ; -- status=guess
@@ -13914,6 +14659,15 @@ lin pay_V = mkV "betalen" ;
 lin pay_V2 = mkV2 (mkV "betalen") ;
 lin pay_V2V = mkV2V (mkV "betalen") ; ---- subcat
 lin pay_V3 = mkV3 (mkV "betalen") ;
+lin pay_back_V = advV OP_pay_V OP_back_Adv ; -- guess-p-verb
+lin pay_back_V2 = mkV2 (advV OP_pay_V OP_back_Adv ) ; -- guess-p-verb
+lin pay_down_V2 = prepV2 OP_pay_V OP_down_Prep ; -- guess-p-verb
+lin pay_for_V3 = variants {} ; -- guess-p-verb
+lin pay_into_V3 = variants {} ; -- guess-p-verb
+lin pay_off_V = advV OP_pay_V OP_off_Adv ; -- guess-p-verb
+lin pay_off_V2 = prepV2 OP_pay_V OP_off_Prep ; -- guess-p-verb
+lin pay_out_V = advV OP_pay_V OP_out_Adv ; -- guess-p-verb
+lin pay_up_V = advV OP_pay_V OP_up_Adv ; -- guess-p-verb
 lin payable_A = variants {} ; --
 lin paye_PN = mkPN "Paye" ; -- src=eng status=guess
 lin payment_N = mkN "uitbetaling" feminine | mkN "betaling" feminine ;
@@ -13923,7 +14677,6 @@ lin pc_PN = mkPN "Pc" ; -- src=eng status=guess
 lin pea_N = mkN "erwt" feminine ; -- status=guess
 lin peace_N = L.peace_N ;
 lin peaceful_A = mkA "vredig" | mkA "vreedzaam" ; -- status=guess status=guess
-lin peacefully_Adv = adjAdv peaceful_A ; -- derived
 lin peacehaven_PN = mkPN "Peacehaven" ; -- src=geonames status=guess
 lin peach_N = mkN "perzik" masculine ; -- status=guess
 lin peacock_N = mkN "pauw" masculine ; -- status=guess
@@ -14051,7 +14804,6 @@ lin perfect_A = mkA "perfect" | mkA "perfecte" ; -- status=guess status=guess
 lin perfect_V2 = mkV2 (mkV "perfectioneren") ; -- status=guess, src=wikt
 lin perfection_N = mkN "perfectie" feminine ; -- status=guess
 lin perfectionism_N = mkN "perfectionisme" neuter ; -- status=guess
-lin perfectly_Adv = mkAdv "perfect" | adjAdv perfect_A ; -- status=guess -- derived
 lin perfidious_A = mkA "verraderlijk" | mkA "perfide" | mkA "doortrapt" ; -- status=guess status=guess status=guess
 lin perform_V = mkV "op" (mkV "voeren") | mkV "uit" (mkV "voeren") ;
 lin perform_V2 = mkV2 perform_V ;
@@ -14075,7 +14827,6 @@ lin period_2_N = mkN "punt" | mkN "komma" ; ---- things lost in translation
 lin period_3_N = mkN "periode" ;
 lin period_N = mkN "periode" feminine ;
 lin periodical_A = variants {} ;
-lin periodically_Adv = mkAdv "periodiek" | adjAdv periodical_A ; -- status=guess -- derived
 lin peripheral_A = mkA "perifeer" ; -- status=guess
 lin periphery_N = mkN "periferie" | mkN "buitenkant" ; -- status=guess status=guess
 lin periphrastic_A = mkA "perifrastisch" | mkA "uitvoerig" | mkA "omschrijvend" ; -- status=guess status=guess status=guess
@@ -14089,7 +14840,6 @@ lin perjury_N = mkN "meineed" masculine ; -- status=guess
 lin perky_A = mkA "levendig" | mkA "enthousiast" ; -- status=guess status=guess
 lin perm_PN = mkPN "Perm" ; -- src=geonames status=guess
 lin permanent_A = mkA "bestendig" | mkA "voorgoed" | mkA "eeuwig" | mkA "permanent" ; -- status=guess status=guess status=guess status=guess
-lin permanently_Adv = adjAdv permanent_A ; -- -- derived
 lin permeability_N = mkN "permeabiliteit" | mkN "doorlaatbaarheid" ; -- status=guess status=guess
 lin permission_N = mkN "toestemming" feminine | mkN "toelating" feminine ; -- status=guess status=guess
 lin permissive_A = mkA "duldzaam" ; -- status=guess
@@ -14118,7 +14868,6 @@ lin personage_N = mkN "personage" ; -- status=guess
 lin personal_A = mkA "persoonlijk" ;
 lin personal_N = mkN "lichaamshygiëne" | mkN "lichaamsverzorging" ; -- status=guess status=guess
 lin personality_N = mkN "persoonlijkheid" feminine ; -- status=guess
-lin personally_Adv = mkAdv "eigenhandig" | adjAdv personal_A ; -- status=guess -- derived
 lin personification_N = mkN "personificatie" feminine ; -- status=guess
 lin personnel_N = mkN "personeel" | mkN "medewerkers" ; -- status=guess status=guess
 lin perspective_N = mkN "perspectief" neuter | mkN "dieptezicht" ; -- status=guess status=guess
@@ -14237,7 +14986,6 @@ lin phylactery_N = mkN "fylakterion" neuter ; -- status=guess
 lin phyllis_PN = mkPN "Phyllis" ; -- src=eng status=guess
 lin phylum_N = mkN "stam" ; -- status=guess
 lin physical_A = mkA "fysisch" | mkA "fysiek" ;
-lin physically_Adv = mkAdv "lichamelijk" | adjAdv physical_A ; -- status=guess -- derived
 lin physician_N = mkN "dokter" masculine ; -- status=guess
 lin physicist_N = mkN "natuurkundige" masculine | mkN "fysicus" masculine ; -- status=guess status=guess
 lin physics_N = mkN "natuurkunde" feminine | mkN "fysica" feminine ; -- status=guess status=guess
@@ -14252,6 +15000,17 @@ lin piano_N = mkN "piano" masculine ; -- status=guess
 lin piccolo_N = mkN "piccolo" ; -- status=guess
 lin pick_V = kiezen_V ; ---- subcat?
 lin pick_V2 = mkV2 (kiezen_V) ;
+lin pick_at_V2 = prepV2 OP_pick_V OP_at_Prep ; -- guess-p-verb
+lin pick_away_V = advV OP_pick_V OP_away_Adv ; -- guess-p-verb
+lin pick_off_V2 = prepV2 OP_pick_V OP_off_Prep ; -- guess-p-verb
+lin pick_on_V2 = prepV2 OP_pick_V OP_on_Prep ; -- guess-p-verb
+lin pick_out_V2 = prepV2 OP_pick_V OP_out_Prep ; -- guess-p-verb
+lin pick_through_V2 = prepV2 OP_pick_V OP_through_Prep ; -- guess-p-verb
+lin pick_up_V = advV OP_pick_V OP_up_Adv ; -- guess-p-verb
+lin pick_up_V2 = prepV2 OP_pick_V OP_up_Prep ; -- guess-p-verb
+lin pick_up_after_V2 = prepV2 (advV OP_pick_V OP_up_Adv ) OP_after_Prep ; -- guess-p-verb
+lin pick_up_on_V2 = prepV2 (advV OP_pick_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin pick_yourself_up_V = variants {} ; -- guess-p-verb
 lin pickaxe_N = mkN "pikhouweel" neuter ; -- status=guess
 lin pickle_N = mkN "zoetje" neuter ; -- status=guess
 lin pickle_V2 = mkV2 (mkV "inmaken") | mkV2 (mkV "pekelen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -14384,6 +15143,7 @@ lin planner_N = variants {} ; --
 lin planning_N = mkN ("planning") ;
 lin plant_N = mkN "plant" masculine ;
 lin plant_V2 = mkV2 (mkV "planten") | mkV2 (mkV "poten") ; -- status=guess, src=wikt status=guess, src=wikt
+lin plant_out_V2 = prepV2 (lin V OP_plant_V2) OP_out_Prep ; -- guess-p-verb
 lin plantain_N = mkN "bakbanaan" ; -- status=guess
 lin plantation_N = mkN "aanplanting" feminine | mkN "plantage" feminine ; -- status=guess status=guess
 lin plash_V = mkV "pletsen" ; -- status=guess, src=wikt
@@ -14413,6 +15173,23 @@ lin play_3_V2 = mkV2 (mkV "spelen") ;
 lin play_N = mkN "spel" neuter ;
 lin play_V = L.play_V ;
 lin play_V2 = L.play_V2 ;
+lin play_along_V = advV OP_play_V OP_along_Adv ; -- guess-p-verb
+lin play_around_V = advV OP_play_V OP_around_Adv ; -- guess-p-verb
+lin play_at_V2 = prepV2 OP_play_V OP_at_Prep ; -- guess-p-verb
+lin play_away_V = advV OP_play_V OP_away_Adv ; -- guess-p-verb
+lin play_back_V2 = mkV2 (advV OP_play_V OP_back_Adv ) ; -- guess-p-verb
+lin play_down_V2 = prepV2 OP_play_V OP_down_Prep ; -- guess-p-verb
+lin play_off_V = advV OP_play_V OP_off_Adv ; -- guess-p-verb
+lin play_off_V2 = prepV2 OP_play_V OP_off_Prep ; -- guess-p-verb
+lin play_on_V = advV OP_play_V OP_on_Adv ; -- guess-p-verb
+lin play_on_V2 = prepV2 OP_play_V OP_on_Prep ; -- guess-p-verb
+lin play_out_V = advV OP_play_V OP_out_Adv ; -- guess-p-verb
+lin play_out_V2 = prepV2 OP_play_V OP_out_Prep ; -- guess-p-verb
+lin play_up_V = advV OP_play_V OP_up_Adv ; -- guess-p-verb
+lin play_up_V2 = prepV2 OP_play_V OP_up_Prep ; -- guess-p-verb
+lin play_up_to_V2 = prepV2 (advV OP_play_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
+lin play_upon_V2 = prepV2 OP_play_V OP_upon_Prep ; -- guess-p-verb
+lin play_with_V2 = prepV2 OP_play_V OP_with_Prep ; -- guess-p-verb
 lin playable_A = mkA "speelbaar" ; -- status=guess
 lin playboy_N = mkN "casanova" | mkN "don juan" ; -- status=guess status=guess
 lin player_N = mkN "speler" masculine ;
@@ -14519,6 +15296,9 @@ lin point_2_N = mkN "punt" ;
 lin point_N = mkN "punt" neuter ;
 lin point_V = wijzen_V ;
 lin point_V2 = mkV2 (wijzen_V) ; --- mkV2 (mkV "richten") ; ---- to point a gun, would be bitransitive
+lin point_out_V2 = prepV2 OP_point_V OP_out_Prep ; -- guess-p-verb
+lin point_out_VS = variants {} ; -- guess-p-verb
+lin point_up_V = advV OP_point_V OP_up_Adv ; -- guess-p-verb
 lin pointer_N = mkN "pointer" ; -- status=guess
 lin pointless_A = mkA "zinloos" ; -- status=guess
 lin poison_N = mkN "gif" neuter | mkN "vergif" neuter | mkN "vergift" neuter ; -- status=guess status=guess status=guess
@@ -14542,7 +15322,6 @@ lin polish_V2 = mkV2 (mkV "polijsten") | mkV2 (mkV "poetsen") | mkV2 (mkV "oppoe
 lin polite_A = mkA "beleefd" ; -- status=guess
 lin politeness_N = mkN "beleefdheid" feminine ; -- status=guess
 lin political_A = mkA "politiek" ;
-lin politically_Adv = mkAdv "staatkundig" | adjAdv political_A ; -- status=guess -- derived
 lin politician_N = mkN "politicus" masculine | mkN "politica" feminine ; -- status=guess status=guess
 lin politics_N = mkN "politiek" feminine ;
 lin polity_N = mkN "bestuursvorm" | mkN "staatsbestel" | mkN "leden van een gemeenschap" ; -- status=guess status=guess status=guess
@@ -14598,7 +15377,6 @@ lin poor_2_A = mkA "arm" ;
 lin poor_3_A = mkA "slecht" ;
 lin poor_A = poor_1_A | poor_2_A | poor_3_A ;
 lin poorly_A = variants {} ;
-lin poorly_Adv = adjAdv poorly_A ; -- -- derived
 lin pop_N = mkN "pap" ; -- status=guess
 lin pop_V2 = mkV2 (mkV "uithuwelijken") | mkV2 (mkV (mkV "om") "iemands hand vragen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin popcorn_N = mkN "gepofte maïs" masculine | mkN "pof-maïs" masculine | mkN "popcorn" masculine ; -- status=guess status=guess status=guess
@@ -14610,7 +15388,6 @@ lin poppy_N = mkN "klaproos" feminine ; -- status=guess
 lin poppycock_N = mkN "onzin" | mkN "nonsens" ; -- status=guess status=guess
 lin popular_A = mkA "populair" | mkA "geliefd" | mkA "gewild" | mkA "in trek" ;
 lin popularity_N = variants {} ; --
-lin popularly_Adv = adjAdv popular_A ; -- derived
 lin populate_V2 = mkV2 (mkV "bevolken") ; -- status=guess, src=wikt
 lin population_N = mkN "bevolking" feminine | mkN "populatie" ;
 lin porbeagle_N = mkN "haringhaai" masculine ; -- status=guess
@@ -14654,7 +15431,6 @@ lin position_N = mkN "positie" feminine | mkN "plek" ;
 lin position_V2 = variants {} ; --
 lin positive_A = mkA "positief" ;
 lin positive_N = mkN "stellende trap" masculine ; -- status=guess
-lin positively_Adv = adjAdv positive_A ; -- -- derived
 lin positivism_N = mkN "positivisme" neuter ; -- status=guess
 lin positron_N = mkN "positron" ; -- status=guess
 lin posology_N = mkN "posologie" feminine ; -- status=guess
@@ -14666,7 +15442,6 @@ lin possessor_N = mkN "bezitter" masculine ; -- status=guess
 lin possibility_N = mkN "mogelijkheid" feminine ;
 lin possible_A = mkA "mogelijk" ;
 lin possible_N = mkN "mogelijkheid" ; -- status=guess
-lin possibly_Adv = mkAdv "mogelijk" | adjAdv possible_A ; -- derived
 lin post_N = mkN "post" | mkN "posterij" feminine ; --- split mkN "post" ; he is at his post
 lin post_V = variants {} ; --
 lin post_V2 = variants {} ; --
@@ -14678,7 +15453,6 @@ lin posterior_N = mkN "Achterste" | mkN "achterwerk" ; -- status=guess status=gu
 lin posterity_N = mkN "nageslacht" neuter ; -- status=guess
 lin postern_N = mkN "achterdeur" | mkN "achterpoort" | mkN "zijingang" | mkN "zijdeur" ; -- status=guess status=guess status=guess status=guess
 lin posthumous_A = mkA "posthuum" | mkA "postuum" ; -- status=guess status=guess
-lin posthumously_Adv = adjAdv posthumous_A ; -- derived
 lin postmodernism_N = mkN "postmodernisme" ; -- status=guess
 lin postpone_V2 = mkV2 (mkV "uitstellen") | mkV2 (mkV "verschuiven") | mkV2 (mkV "achterstellen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin postposition_N = mkN "achterzetsel" neuter | mkN "achtergeplaatst voorzetsel" neuter ; -- status=guess status=guess
@@ -14695,7 +15469,6 @@ lin potbellied_A = mkA "dikbuikig" ; -- status=guess
 lin potbelly_N = mkN "bierbuik" masculine | mkN "spekbuik" masculine | mkN "buikje" neuter | mkN "pens" feminine ; -- status=guess status=guess status=guess status=guess
 lin potential_A = mkA "potentieel" | mkA "mogelijk" ;
 lin potential_N = variants {} ; --
-lin potentially_Adv = mkAdv "potentieel" | adjAdv potential_A ; -- status=guess -- derived
 lin pothole_N = mkN "kuil" masculine ; -- status=guess
 lin potion_N = mkN "drankje" neuter | mkN "toverdrankje" | mkN "tinctuur" ; -- status=guess status=guess status=guess
 lin potpourri_N = mkN "potpourri" masculine ; -- status=guess
@@ -14711,6 +15484,10 @@ lin pound_V = mkV "beuken" ; -- status=guess, src=wikt
 lin pound_V2 = mkV2 (mkV "beuken") ; -- status=guess, src=wikt
 lin pour_V = gieten_V | mkV "uitstorten" ; -- status=guess, src=wikt status=guess, src=wikt
 lin pour_V2 = mkV2 (gieten_V) | mkV2 (mkV "uitstorten") ; -- status=guess, src=wikt status=guess, src=wikt
+lin pour_down_V = advV OP_pour_V OP_down_Adv ; -- guess-p-verb
+lin pour_forth_V = advV OP_pour_V OP_forth_Adv ; -- guess-p-verb
+lin pour_in_V2 = prepV2 OP_pour_V OP_in_Prep ; -- guess-p-verb
+lin pour_out_V = advV OP_pour_V OP_out_Adv ; -- guess-p-verb
 lin pout_N = mkN "pruilmondje" neuter | mkN "tuit" masculine feminine | mkN "tuitmondje" neuter ; -- status=guess status=guess status=guess
 lin pout_V = mkV "pruilen" | mkV (mkV "de") "lippen tuiten" ; -- status=guess, src=wikt status=guess, src=wikt
 lin pout_V2 = mkV2 (mkV "pruilen") | mkV2 (mkV (mkV "de") "lippen tuiten") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -14727,7 +15504,6 @@ lin poynton_PN = mkPN "Poynton" ; -- src=geonames status=guess
 lin poznan_PN = mkPN "Poznan" ; -- src=eng status=guess
 lin practicable_A = mkA "bruikbaar" | mkA "hanteerbaar" | mkA "toegankelijk" | mkA "werkbaar" ; -- status=guess status=guess status=guess status=guess
 lin practical_A = mkA "praktisch" ;
-lin practically_Adv = adjAdv practical_A ; -- -- derived
 lin practice_N = mkN "oefening" ;
 lin practice_V = mkV "beoefen" ; -- status=guess, src=wikt
 lin practice_V2 = mkV2 (mkV "beoefen") ; -- status=guess, src=wikt
@@ -14769,7 +15545,6 @@ lin precious_A = mkA "kostbaar" | mkA "waardevol" ; -- status=guess status=guess
 lin precipice_N = mkN "afgrond" masculine ; -- status=guess
 lin precipitation_N = mkN "neerslag" masculine ; -- status=guess
 lin precise_A = mkA "nauwkeurig" | mkA "precies" ; -- status=guess status=guess
-lin precisely_Adv = mkAdv "precies" | adjAdv precise_A ; -- status=guess -- derived
 lin precision_N = variants {} ; --
 lin preclude_V2 = mkV2 (mkV "uitsluiten") | mkV2 (mkV "precluderen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin precursor_N = mkN "precursor" masculine ; -- status=guess
@@ -14786,12 +15561,10 @@ lin predictable_A = mkA "voorspelbaar" ; -- status=guess
 lin prediction_N = mkN "voorspelling" feminine ; -- status=guess
 lin predilection_N = mkN "neiging" feminine | mkN "voorkeur" feminine | mkN "voorliefde" feminine ; -- status=guess status=guess status=guess
 lin predominant_A = variants {} ;
-lin predominantly_Adv = adjAdv predominant_A ; -- -- derived
 lin preemptive_A = mkA "preventief" ; -- status=guess
 lin prefer_V2 = mkV2 (mkV "voorkeur" geven_V) | mkV2 (mkV "voorkeur" hebben_V) ;
 lin prefer_VV = mkVV (mkV "voorkeur" geven_V) | mkVV (mkV "voorkeur" hebben_V) ;
 lin preferable_A = variants {} ;
-lin preferably_Adv = adjAdv preferable_A ; -- derived
 lin preference_N = variants {} ; --
 lin preferred_A = variants {} ; --
 lin prefix_N = mkN "voorvoegsel" neuter | mkN "prefix" neuter ; -- status=guess status=guess
@@ -14805,7 +15578,6 @@ lin prejudice_N = mkN "bevooroordelen" ; -- status=guess
 lin prelate_N = mkN "kerkvorst" masculine | mkN "prelaat" masculine ; -- status=guess status=guess
 lin preliminary_A = mkA "voorbereidend" ; -- status=guess
 lin premature_A = variants {} ; --
-lin prematurely_Adv = adjAdv premature_A ; -- derived
 lin premier_A = variants {} ; --
 lin premiership_N = mkN "premierschap" neuter ; -- status=guess
 lin premise_N = mkN "voorwaarde" feminine ; -- status=guess
@@ -14832,7 +15604,6 @@ lin present_A = mkA "present" | mkA "aanwezig" | mkA "tegenwoordig" ;
 lin present_N = mkN "heden" neuter | mkN "huidige tijd" utrum ;
 lin present_V2 = mkV2 (mkV "presenteren") ;
 lin presentation_N = mkN "presentatie" feminine | mkN "or less accurately voorstelling" feminine | mkN "voordracht" ; -- status=guess status=guess status=guess
-lin presently_Adv = mkAdv "aldra" | adjAdv present_A ; -- status=guess -- derived
 lin preservation_N = variants {} ; --
 lin preservative_N = mkN "conserveermiddel" neuter ; -- status=guess
 lin preserve_V2 = mkV2 (mkV "bewaren") | mkV2 (mkV (mkV "in") "stand houden") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -14844,6 +15615,12 @@ lin press_N = mkN "pers" ; --- split mkN "drukmachine" ; something that presses 
 lin press_V = mkV "drukken" ;
 lin press_V2 = mkV2 press_V ;
 lin press_V2V = mkV2V press_V ;
+lin press_ahead_V = advV OP_press_V OP_ahead_Adv ; -- guess-p-verb
+lin press_for_V2 = prepV2 OP_press_V OP_for_Prep ; -- guess-p-verb
+lin press_forward_with_V2 = prepV2 (advV OP_press_V OP_forward_Adv ) OP_with_Prep ; -- guess-p-verb
+lin press_into_V2 = prepV2 OP_press_V OP_into_Prep ; -- guess-p-verb
+lin press_on_V = advV OP_press_V OP_on_Adv ; -- guess-p-verb
+lin press_upon_V2 = prepV2 OP_press_V OP_upon_Prep ; -- guess-p-verb
 lin pressure_N = mkN "druk" ;
 lin prestatyn_PN = mkPN "Prestatyn" ; -- src=geonames status=guess
 lin prestige_N = mkN "aanzien" neuter | mkN "prestige" neuter ; -- status=guess status=guess
@@ -14870,7 +15647,6 @@ lin preterite_N = mkN "verleden tijd" | mkN "preteritum" neuter ; -- status=gues
 lin preternatural_A = mkA "uitzonderlijk" | mkA "buitennatuurlijk" | mkA "bovennatuurlijk" ; -- status=guess status=guess status=guess
 lin pretoria_PN = mkPN "Pretoria" ; -- src=geonames status=guess
 lin pretty_A = mkA "mooi" ; -- status=guess
-lin pretty_Adv = mkAdv "tamelijk" | mkAdv "nogal" | mkAdv "aardig" ; -- status=guess status=guess status=guess
 lin prevail_V = mkV "overheersen" ; -- status=guess, src=wikt
 lin prevalence_N = variants {} ; --
 lin prevalent_A = mkA "heersend" ; -- status=guess
@@ -14880,7 +15656,6 @@ lin prevent_V2 = mkV2 (mkV "verhinderen") ;
 lin prevention_N = variants {} ; --
 lin preview_N = mkN "voorproefje" neuter ; -- status=guess
 lin previous_A = mkA "vorig" | mkA "eerder" ;
-lin previously_Adv = mkAdv "eerder" | mkAdv "tevoren" | mkAdv "vroeger" | adjAdv previous_A ; -- derived
 lin prey_N = mkN "prooi" ; -- status=guess
 lin priapism_N = mkN "priapisme" ; -- status=guess
 lin price_N = mkN "prijs" masculine ;
@@ -14898,7 +15673,6 @@ lin priestess_N = mkN "priesteres" feminine ; -- status=guess
 lin priggish_A = mkA "preuts" | mkA "puriteins" ; -- status=guess status=guess
 lin prim_A = mkA "preuts" ; -- status=guess
 lin primacy_N = mkN "primaatschap" neuter ; -- status=guess
-lin primarily_Adv = adjAdv primary_A ; -- -- derived
 lin primary_A = mkA "voornaamst" | mkA "primair" ;
 lin primary_N = mkN "basisschool" utrum | mkN "lagere school" utrum ; -- status=guess status=guess
 lin primate_N = mkN "primaat" masculine ; -- status=guess
@@ -14916,11 +15690,11 @@ lin princess_N = mkN "prinses" feminine ; -- status=guess
 lin principal_A = mkA "voornaamste" ; -- status=guess
 lin principal_N = mkN "schoolhoofd" | mkN "rector" ; -- status=guess status=guess
 lin principality_N = mkN "vorstendom" neuter ; -- status=guess
-lin principally_Adv = adjAdv principal_A ; -- -- derived
 lin principle_N = mkN "principe" neuter | mkN "beginsel" neuter ;
 lin print_N = mkN "afdruk" ; -- status=guess
 lin print_V = mkV "drukken" | mkV "afdrukken" | mkV "printen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin print_V2 = mkV2 (mkV "drukken") | mkV2 (mkV "afdrukken") | mkV2 (mkV "printen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin print_out_V2 = prepV2 OP_print_V OP_out_Prep ; -- guess-p-verb
 lin printable_A = mkA "drukbaar" ; -- status=guess
 lin printed_A = variants {} ; --
 lin printer_N = mkN "printer" ; -- status=guess
@@ -14935,7 +15709,6 @@ lin pristine_A = mkA "ongerept" | mkA "oorspronkelijk" | mkA "onaangeroerd" ; --
 lin privacy_N = mkN "afzondering" feminine | mkN "privacy" feminine ; -- status=guess status=guess
 lin private_A = mkA "persoonlijk" | mkA "privé" ;
 lin privateer_N = mkN "kaper" masculine ; -- status=guess
-lin privately_Adv = adjAdv private_A ; -- -- derived
 lin privatisation_N = variants {} ; --
 lin privatization_N = mkN "privatisering" feminine ; -- status=guess
 lin privatize_V2 = mkV2 (mkV "privatiseren") ; -- status=guess, src=wikt
@@ -14949,7 +15722,6 @@ lin proactive_A = mkA "proactief" ; -- status=guess
 lin probability_N = mkN "waarschijnlijkheid" feminine ; -- status=guess
 lin probable_A = mkA "waarschijnlijk" ; -- status=guess
 lin probable_AS = L.probable_AS ;
-lin probably_Adv = mkAdv "waarschijnlijk" | adjAdv probable_A ; -- derived
 lin probe_N = mkN "sonde" masculine feminine ; -- status=guess
 lin probe_V = variants {} ; --
 lin probe_V2 = variants {} ; --
@@ -14994,7 +15766,6 @@ lin prof_PN = mkPN "Prof" ; -- src=eng status=guess
 lin profession_N = mkN "beroep" neuter ; -- status=guess
 lin professional_A = mkA "deskundig" ;
 lin professional_N = mkN "deskundige" | mkN "expert" masculine ; -- status=guess status=guess
-lin professionally_Adv = adjAdv professional_A ; -- derived
 lin professor_N = mkN "hoogleraar" masculine | mkN "professor" masculine feminine | mkN "prof" masculine feminine ; -- status=guess status=guess status=guess
 lin proffer_N = mkN "poging" feminine ; -- status=guess
 lin proffer_V2 = mkV2 (mkV "aanbieden") ; -- status=guess, src=wikt
@@ -15008,7 +15779,6 @@ lin profitability_N = variants {} ; --
 lin profitable_A = mkA "winstgevend" ; -- status=guess
 lin profligacy_N = mkN "verspilling" | mkN "roekeloosheid" ; -- status=guess status=guess
 lin profound_A = mkA "diepgaand" ; -- status=guess
-lin profoundly_Adv = mkAdv "grondig" | adjAdv profound_A ; -- status=guess -- derived
 lin profundity_N = mkN "diepgang" masculine ; -- status=guess
 lin progenitor_N = mkN "voorloper" masculine | mkN "voorafbeelding" masculine ; -- status=guess status=guess
 lin program_N = mkN "programmablad" neuter | mkN "programmagids" masculine ; -- status=guess status=guess
@@ -15020,7 +15790,6 @@ lin progress_N = mkN "vordering" feminine | mkN "voortgang" masculine | mkN "voo
 lin progress_V = variants {} ; --
 lin progress_V2 = variants {} ; --
 lin progressive_A = mkA "progressief" ; -- status=guess
-lin progressively_Adv = adjAdv progressive_A ; -- derived
 lin prohibit_V = mkV "verbieden" ; -- status=guess, src=wikt
 lin prohibit_V2 = mkV2 (mkV "verbieden") ; -- status=guess, src=wikt
 lin prohibition_N = mkN "prohibitie" feminine ; -- status=guess
@@ -15041,7 +15810,6 @@ lin prolong_V2 = mkV2 (mkV "bestendigen") ; -- status=guess, src=wikt
 lin prolonged_A = variants {} ; --
 lin promethium_N = mkN "promethium" neuter ; -- status=guess
 lin prominent_A = mkA "prominent" | mkA "vooraanstaand" ; -- status=guess status=guess
-lin prominently_Adv = adjAdv prominent_A ; -- derived
 lin promise_N = mkN "belofte" feminine ; -- status=guess
 lin promise_V = mkV "beloven" | mkV "toe" zeggen_V ;
 lin promise_V2 = mkV2 promise_V ;
@@ -15054,7 +15822,6 @@ lin promotion_N = mkN "promotie" feminine | mkN "bevordering" feminine ; -- stat
 lin prompt_A = variants {} ;
 lin prompt_V2 = mkV2 (mkV "aansporen") | mkV2 (mkV "aanmoedigen") | mkV2 (mkV "aanzetten") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin prompt_V2V = mkV2V (mkV "aansporen") | mkV2V (mkV "aanmoedigen") | mkV2V (mkV "aanzetten") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
-lin promptly_Adv = adjAdv prompt_A ; -- -- derived
 lin promulgate_V2 = mkV2 (mkV "uitvaardigen") ; -- status=guess, src=wikt
 lin prone_A = variants {} ; --
 lin prong_N = mkN "arm" masculine ; -- status=guess
@@ -15073,7 +15840,6 @@ lin propane_N = mkN "propaan" neuter ; -- status=guess
 lin propeller_N = mkN "schroef" | mkN "propeller" ; -- status=guess status=guess
 lin propensity_N = mkN "neiging" | mkN "beheptheid" ; -- status=guess status=guess
 lin proper_A = mkA "eigen" | mkA "proper" ; ---- strange
-lin properly_Adv = adjAdv proper_A ; -- -- derived
 lin property_1_N = mkN "kenmerk" neuter | mkN "karakteristiek" | mkN "eigenschap" ;
 lin property_2_N = mkN "eigendom" ;
 lin property_N = property_1_N | property_2_N ;
@@ -15137,7 +15903,6 @@ lin protrude_V = mkV "uitsteken" ; -- status=guess, src=wikt
 lin protrude_V2 = mkV2 (mkV "uitsteken") ; -- status=guess, src=wikt
 lin protrusion_N = mkN "uitsteeksel" ; -- status=guess
 lin proud_A = mkA "trots" | mkA "fier" ; -- status=guess status=guess
-lin proudly_Adv = adjAdv proud_A ; -- derived
 lin prove_V = fixprefixV "be" wijzen_V | mkV "aan" (mkV "tonen") ;
 lin prove_V2 = mkV2 prove_V ;
 lin prove_VA = mkVA prove_V ;
@@ -15198,7 +15963,6 @@ lin public_A = mkA "openbaar" | mkA "publiek" ;
 lin public_N = mkN "publiek" neuter ;
 lin publication_N = mkN "publicatie" ; -- status=guess
 lin publicity_N = mkN "publiciteit" ; -- status=guess
-lin publicly_Adv = adjAdv public_A ; -- -- derived
 lin publish_V = mkV "publiceren" | mkV "uit" geven_V ;
 lin publish_V2 = mkV2 publish_V ;
 lin publisher_N = mkN "uitgever" masculine | mkN "uitgeverij" ; -- status=guess status=guess
@@ -15215,6 +15979,28 @@ lin puissant_A = mkA "vermogend" | mkA "puissant" ; -- status=guess status=guess
 lin pulchritude_N = mkN "schoonheid" ; -- status=guess
 lin pull_V = trekken_V ;
 lin pull_V2 = L.pull_V2 ;
+lin pull_ahead_V = advV OP_pull_V OP_ahead_Adv ; -- guess-p-verb
+lin pull_apart_V2 = mkV2 (advV OP_pull_V OP_apart_Adv ) ; -- guess-p-verb
+lin pull_away_V = advV OP_pull_V OP_away_Adv ; -- guess-p-verb
+lin pull_back_V = advV OP_pull_V OP_back_Adv ; -- guess-p-verb
+lin pull_back_V2 = mkV2 (advV OP_pull_V OP_back_Adv ) ; -- guess-p-verb
+lin pull_down_V = advV OP_pull_V OP_down_Adv ; -- guess-p-verb
+lin pull_down_V2 = prepV2 OP_pull_V OP_down_Prep ; -- guess-p-verb
+lin pull_for_V2 = prepV2 OP_pull_V OP_for_Prep ; -- guess-p-verb
+lin pull_in_V = advV OP_pull_V OP_in_Adv ; -- guess-p-verb
+lin pull_in_V2 = prepV2 OP_pull_V OP_in_Prep ; -- guess-p-verb
+lin pull_off_V = advV OP_pull_V OP_off_Adv ; -- guess-p-verb
+lin pull_off_V2 = prepV2 OP_pull_V OP_off_Prep ; -- guess-p-verb
+lin pull_on_V2 = prepV2 OP_pull_V OP_on_Prep ; -- guess-p-verb
+lin pull_out_V = advV OP_pull_V OP_out_Adv ; -- guess-p-verb
+lin pull_out_V2 = prepV2 OP_pull_V OP_out_Prep ; -- guess-p-verb
+lin pull_over_V2 = prepV2 OP_pull_V OP_over_Prep ; -- guess-p-verb
+lin pull_through_V = advV OP_pull_V OP_through_Adv ; -- guess-p-verb
+lin pull_to_V2 = prepV2 OP_pull_V OP_to_Prep ; -- guess-p-verb
+lin pull_together_V = advV OP_pull_V OP_together_Adv ; -- guess-p-verb
+lin pull_up_V = advV OP_pull_V OP_up_Adv ; -- guess-p-verb
+lin pull_up_V2 = prepV2 OP_pull_V OP_up_Prep ; -- guess-p-verb
+lin pull_yourself_together_V = variants {} ; -- guess-p-verb
 lin pulley_N = mkN "katrol" ; -- status=guess
 lin pullulate_V = mkV "kiemen" | reflMkV "ontwikkelen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin pulpit_N = mkN "kansel" masculine | mkN "preekstoel" masculine ; -- status=guess status=guess
@@ -15255,7 +16041,6 @@ lin purchase_N = mkN "verwerving" masculine | mkN "aanschaf" masculine ; -- stat
 lin purchase_V2 = mkV2 (kopen_V) | mkV2 (mkV (mkV "waard") "zijn") ; -- status=guess, src=wikt status=guess, src=wikt
 lin purchaser_N = mkN "koper" ; -- status=guess
 lin pure_A = mkA "puur" | mkA "rein" ; -- status=guess status=guess
-lin purely_Adv = adjAdv pure_A ; -- -- derived
 lin purgatory_N = mkN "vagevuur" ; -- status=guess
 lin purge_N = mkN "zuivering" feminine ; -- status=guess
 lin purify_V2 = mkV2 (mkV "reinigen") ; -- status=guess, src=wikt
@@ -15288,9 +16073,45 @@ lin push_V = lin V L.push_V2 ;
 lin push_V2 = L.push_V2 ;
 lin push_V2V = mkV2V push_V ;
 lin push_VS = mkVS push_V ;
+lin push_ahead_V = advV OP_push_V OP_ahead_Adv ; -- guess-p-verb
+lin push_around_V = advV OP_push_V OP_around_Adv ; -- guess-p-verb
+lin push_back_V = advV OP_push_V OP_back_Adv ; -- guess-p-verb
+lin push_in_V2 = prepV2 OP_push_V OP_in_Prep ; -- guess-p-verb
+lin push_through_V = advV OP_push_V OP_through_Adv ; -- guess-p-verb
+lin push_up_V2 = prepV2 OP_push_V OP_up_Prep ; -- guess-p-verb
 lin pussy_N = mkN "poes" feminine ; -- status=guess
 lin pussyfoot_V = mkV "treuzelen" ; -- status=guess, src=wikt
 lin put_V2 = L.put_V2 ;
+lin put_across_V = advV (lin V OP_put_V2) OP_across_Adv ; -- guess-p-verb
+lin put_across_V2 = prepV2 (lin V OP_put_V2) OP_across_Prep ; -- guess-p-verb
+lin put_aside_V = advV (lin V OP_put_V2) OP_aside_Adv ; -- guess-p-verb
+lin put_away_V = advV (lin V OP_put_V2) OP_away_Adv ; -- guess-p-verb
+lin put_away_V2 = mkV2 (advV (lin V OP_put_V2) OP_away_Adv ) ; -- guess-p-verb
+lin put_back_V2 = mkV2 (advV (lin V OP_put_V2) OP_back_Adv ) ; -- guess-p-verb
+lin put_by_V2 = prepV2 (lin V OP_put_V2) OP_by_Prep ; -- guess-p-verb
+lin put_down_V = advV (lin V OP_put_V2) OP_down_Adv ; -- guess-p-verb
+lin put_down_V2 = prepV2 (lin V OP_put_V2) OP_down_Prep ; -- guess-p-verb
+lin put_down_for_V3 = variants {} ; -- guess-p-verb
+lin put_down_to_V3 = variants {} ; -- guess-p-verb
+lin put_forth_V = advV (lin V OP_put_V2) OP_forth_Adv ; -- guess-p-verb
+lin put_in_V = advV (lin V OP_put_V2) OP_in_Adv ; -- guess-p-verb
+lin put_in_V2 = prepV2 (lin V OP_put_V2) OP_in_Prep ; -- guess-p-verb
+lin put_in_for_V2 = prepV2 (advV (lin V OP_put_V2) OP_in_Adv ) OP_for_Prep ; -- guess-p-verb
+lin put_off_V = advV (lin V OP_put_V2) OP_off_Adv ; -- guess-p-verb
+lin put_off_V2 = prepV2 (lin V OP_put_V2) OP_off_Prep ; -- guess-p-verb
+lin put_on_V = advV (lin V OP_put_V2) OP_on_Adv ; -- guess-p-verb
+lin put_on_V2 = prepV2 (lin V OP_put_V2) OP_on_Prep ; -- guess-p-verb
+lin put_out_V = advV (lin V OP_put_V2) OP_out_Adv ; -- guess-p-verb
+lin put_out_V2 = prepV2 (lin V OP_put_V2) OP_out_Prep ; -- guess-p-verb
+lin put_over_V2 = prepV2 (lin V OP_put_V2) OP_over_Prep ; -- guess-p-verb
+lin put_through_V2 = prepV2 (lin V OP_put_V2) OP_through_Prep ; -- guess-p-verb
+lin put_together_V2 = mkV2 (advV (lin V OP_put_V2) OP_together_Adv ) ; -- guess-p-verb
+lin put_towards_V2 = prepV2 (lin V OP_put_V2) OP_towards_Prep ; -- guess-p-verb
+lin put_up_V = advV (lin V OP_put_V2) OP_up_Adv ; -- guess-p-verb
+lin put_up_V2 = prepV2 (lin V OP_put_V2) OP_up_Prep ; -- guess-p-verb
+lin put_up_V2V = variants {} ; -- guess-p-verb
+lin put_up_with_V2 = prepV2 (advV (lin V OP_put_V2) OP_up_Adv ) OP_with_Prep ; -- guess-p-verb
+lin put_upon_V = variants {} ; -- guess-p-verb
 lin putative_A = mkA "zogenaamd" | mkA "vermoedelijk" | mkA "vermeend" ; -- status=guess status=guess status=guess
 lin putrid_A = mkA "verderfelijk" | mkA "rottend" ; -- status=guess status=guess
 lin puzzle_N = mkN "mysterie" neuter | mkN "raadsel" neuter ; -- status=guess status=guess
@@ -15389,7 +16210,6 @@ lin quick_Adv = variants {} ; --
 lin quick_N = mkN "levend vlees" ; -- status=guess
 lin quickie_N = mkN "vluggertje" neuter ; -- status=guess
 lin quicklime_N = mkN "ongebluste kalk" masculine ; -- status=guess
-lin quickly_Adv = mkAdv "snel" | mkAdv "vlug" | mkAdv "gauw" | mkAdv "spoedig" | mkAdv "rap" | mkAdv "gezwind" | adjAdv quick_A ; -- derived
 lin quicksand_N = mkN "drijfzand" neuter ; -- status=guess
 lin quicksilver_N = mkN "kwikzilver" neuter ; -- status=guess
 lin quid_N = variants {} ; --
@@ -15436,9 +16256,9 @@ lin race_V = mkV "razen" ; -- status=guess, src=wikt
 lin race_V2 = mkV2 (mkV "razen") ; -- status=guess, src=wikt
 lin race_V2V = mkV2V (mkV "razen") ; -- status=guess, src=wikt
 lin race_VV = mkVV (mkV "razen") ; -- status=guess, src=wikt
+lin race_off_V = advV OP_race_V OP_off_Adv ; -- guess-p-verb
 lin rachel_PN = mkPN "Rachel" ; -- src=eng status=guess
 lin racial_A = variants {} ; --
-lin racially_Adv = adjAdv racial_A ; -- derived
 lin racism_N = mkN "racisme" neuter ; -- status=guess
 lin racist_A = mkA "racistisch" ; -- status=guess
 lin rack_N = mkN "rek" ; -- status=guess
@@ -15451,7 +16271,6 @@ lin radian_N = mkN "radiaal" masculine ; -- status=guess
 lin radiation_N = mkN "straling" feminine ; -- status=guess
 lin radical_A = mkA "3] radicaal" ; -- status=guess status=guess
 lin radical_N = variants {} ; --
-lin radically_Adv = adjAdv radical_A ; -- derived
 lin radio_N = L.radio_N ;
 lin radioactive_A = mkA "radioactief" ; -- status=guess
 lin radioactivity_N = mkN "radioactiviteit" feminine ; -- status=guess
@@ -15511,7 +16330,6 @@ lin ramshackle_A = mkA "bouwvallig" | mkA "gammel" ; -- status=guess status=gues
 lin ranch_N = mkN "veefokkerij" feminine ; -- status=guess
 lin randolph_PN = mkPN "Randolph" ; -- src=geonames status=guess
 lin random_A = mkA "willekeurig" | mkA "toevallig" | mkA "lukraak" ; -- status=guess status=guess status=guess
-lin randomly_Adv = adjAdv random_A ; -- derived
 lin randy_A = mkA "grof" | mkA "rauw" ; -- status=guess status=guess
 lin range_N = mkN "afstand" ; ---split mkN "terrein" neuter shooting range
 lin range_V = variants {} ; --
@@ -15530,7 +16348,6 @@ lin rape_N = mkN "verkrachting" feminine ; -- status=guess
 lin rape_V2 = mkV2 (mkV "verkrachten") | mkV2 (schenden_V) ; -- status=guess, src=wikt status=guess, src=wikt
 lin rapid_A = mkA "snel" | mkA "snelle" ; -- status=guess status=guess
 lin rapid_N = mkN "stroomversnelling" feminine ; -- status=guess
-lin rapidly_Adv = adjAdv rapid_A ; -- -- derived
 lin rapier_N = mkN "rapier" neuter ; -- status=guess
 lin rapine_N = mkN "roof" masculine ; -- status=guess
 lin rapist_N = mkN "verkrachter" masculine ; -- status=guess
@@ -15539,7 +16356,6 @@ lin rapport_N = mkN "verstandhouding" feminine ; -- status=guess
 lin rapt_A = mkA "gefascineerd" ; -- status=guess
 lin rapture_N = mkN "verrukking" | mkN "vervoering" ; -- status=guess status=guess
 lin rare_A = mkA "bloedig" | mkA "bloedige" | mkA "saignant" ; -- status=guess status=guess status=guess
-lin rarely_Adv = mkAdv "zelden" | adjAdv rare_A ; -- status=guess -- derived
 lin rarity_N = mkN "zeldzaamheid" feminine ; -- status=guess
 lin rascal_N = mkN "bengel" masculine | mkN "rakker" masculine | mkN "rekel" masculine | mkN "vlegel" masculine | mkN "deugniet" ; -- status=guess status=guess status=guess status=guess status=guess
 lin rash_A = mkA "onbezonnen" ; -- status=guess
@@ -15580,16 +16396,21 @@ lin re_N = mkN "herexamen" neuter | mkN "heronderzoek" neuter ; -- status=guess 
 lin reach_N = variants {} ; --
 lin reach_V = no_geV (mkV "bereiken") ;
 lin reach_V2 = mkV2 reach_V ;
+lin reach_out_V = advV OP_reach_V OP_out_Adv ; -- guess-p-verb
+lin reach_out_for_V2 = prepV2 (advV OP_reach_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin reach_out_to_V2 = prepV2 (advV OP_reach_V OP_out_Adv ) OP_to_Prep ; -- guess-p-verb
 lin react_V = mkV "reageren" ; -- status=guess, src=wikt
 lin reaction_N = mkN "reactie" feminine ;
 lin reactor_N = mkN "reactor" ; -- status=guess
 lin read_V = L.read_V2 ;
 lin read_V2 = L.read_V2 ;
 lin read_VS = lin mkVS read_V2 ;
+lin read_off_V2 = prepV2 OP_read_V OP_off_Prep ; -- guess-p-verb
+lin read_out_V2 = prepV2 OP_read_V OP_out_Prep ; -- guess-p-verb
+lin read_up_on_V2 = prepV2 (advV OP_read_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
 lin readability_N = mkN "leesbaarheid" feminine ; -- status=guess
 lin readable_A = mkA "leesbaar" | mkA "lezenswaardig" ; -- status=guess status=guess
 lin reader_N = mkN "lezer" masculine ;
-lin readily_Adv = mkAdv "direct" | adjAdv ready_A ; -- status=guess -- derived
 lin reading_N = mkN "lezing" feminine ; -- status=guess
 lin reading_PN = mkPN "Reading" ; -- src=geonames status=guess
 lin ready_A = mkA "klaar" | mkA "gereed" ;
@@ -15603,7 +16424,6 @@ lin realizable_A = mkA "realiseerbaar" ; -- status=guess
 lin realization_N = mkN "besef" neuter ; -- status=guess
 lin realize_V2 = mkV2 (mkV "beseffen") | mkV2 (mkV "realiseren") | mkV2 (mkV "in" zien_V) ;
 lin realize_VS = mkVS (mkV "beseffen") | mkVS (mkV "realiseren") | mkVS (mkV "in" zien_V) ;
-lin really_Adv = mkAdv "echt" | mkAdv "werkelijk" | adjAdv real_A ; -- derived
 lin realm_N = mkN "domein" ; -- status=guess
 lin ream_N = mkN "riem" masculine ; -- status=guess
 lin reanimate_V2 = mkV2 (mkV "reanimeren") ; -- status=guess, src=wikt
@@ -15620,7 +16440,6 @@ lin reason_V = mkV "redeneren" ; -- status=guess, src=wikt
 lin reason_V2 = mkV2 (mkV "redeneren") ; -- status=guess, src=wikt
 lin reason_VS = mkVS (mkV "redeneren") ; -- status=guess, src=wikt
 lin reasonable_A = mkA "redelijk" ;
-lin reasonably_Adv = mkAdv "redelijk" | adjAdv reasonable_A ; -- status=guess -- derived
 lin reasoning_N = mkN "redenering" feminine ; -- status=guess
 lin reassure_V2 = variants {} ; --
 lin reassure_V2S = variants {} ; --
@@ -15655,7 +16474,6 @@ lin receive_V = no_geV (mkV "ontvangen" "ontving" "ontvangen") ;
 lin receive_V2 = mkV2 (receive_V) ;
 lin receiver_N = mkN "hoorn" ; -- status=guess
 lin recent_A = mkA "recent" ;
-lin recently_Adv = mkAdv "onlangs" | mkAdv "recentelijk" | mkAdv "laatst" | mkAdv "overlaatst" | adjAdv recent_A ; -- derived
 lin reception_N = mkN "ontvangst" ; -- status=guess
 lin receptionist_N = mkN "secretaris" masculine ; -- status=guess
 lin receptive_A = mkA "ontvankelijk" ; -- status=guess
@@ -15822,7 +16640,6 @@ lin regroup_V = mkV "hergroeperen" ; -- status=guess, src=wikt
 lin regroup_V2 = mkV2 (mkV "hergroeperen") ; -- status=guess, src=wikt
 lin regular_A = mkA "regelmatig" | mkA "geregeld" ; ---- gives strange translations
 lin regular_N = mkN "stamgast" masculine ; -- status=guess
-lin regularly_Adv = adjAdv regular_A ; -- -- derived
 lin regulate_V2 = mkV2 (mkV "regelen") ; -- status=guess, src=wikt
 lin regulation_N = mkN "regeling" feminine | mkN "verordening" feminine ;
 lin regulatory_A = variants {} ; --
@@ -15857,7 +16674,6 @@ lin relation_N = mkN "relatie" | mkN "verband" | mkN "verhouding" ; ---- note th
 lin relationship_N = mkN "relatie" ;
 lin relative_A = mkA "relatief" ; -- status=guess
 lin relative_N = mkN "familielid" neuter | mkN "bloedverwant" masculine ; -- status=guess status=guess
-lin relatively_Adv = mkAdv "relatief" | adjAdv relative_A ; -- derived
 lin relativity_N = mkN "relativiteit" ; -- status=guess
 lin relax_V = mkV "ontspannen" | mkV (mkV "losser") "worden" ; -- status=guess, src=wikt status=guess, src=wikt
 lin relax_V2 = mkV2 (mkV "ontspannen") | mkV2 (mkV (mkV "losser") "worden") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -15872,7 +16688,6 @@ lin relevance_N = variants {} ; --
 lin relevant_A = mkA "relevant" ;
 lin reliability_N = mkN "betrouwbaarheid" feminine ; -- status=guess
 lin reliable_A = mkA "betrouwbaar" | mkA "zeker" ; -- status=guess status=guess
-lin reliably_Adv = adjAdv reliable_A ; -- derived
 lin reliance_N = variants {} ; --
 lin relief_N = mkN "opluchting" | mkN "verlichting" ;
 lin relieve_V2 = variants {} ; --
@@ -15883,9 +16698,10 @@ lin relinquish_V2 = mkV2 (mkV "opgeven") | mkV2 (mkV "loslaten") | mkV2 (mkV "ve
 lin reliquary_N = mkN "reliekschrijn" masculine ; -- status=guess
 lin reluctance_N = mkN "tegenzin" masculine ; -- status=guess
 lin reluctant_A = mkA "aarzelend" ; -- status=guess
-lin reluctantly_Adv = mkAdv "met tegenzin" | adjAdv reluctant_A ; -- status=guess -- derived
 lin rely_V = mkV (mkV "rekenen") "op" ; -- status=guess, src=wikt
 lin rely_V2 = variants {} ; -- mkV (mkV "rekenen") "op" ; -- status=guess, src=wikt
+lin rely_on_V = advV OP_rely_V OP_on_Adv ; -- guess-p-verb
+lin rely_on_V2V = variants {} ; -- guess-p-verb
 lin remain_N = variants {} ; --
 lin remain_V = blijven_V ;
 lin remain_V2 = mkV2 (blijven_V) | mkV2 (mkV "resteren") ;
@@ -15899,7 +16715,6 @@ lin remark_N = mkN "opmerking" feminine ; -- status=guess
 lin remark_V = mkV "opmerken" | mkV "bemerken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin remark_VS = mkVS (mkV "opmerken") | mkVS (mkV "bemerken") ; -- status=guess, src=wikt status=guess, src=wikt
 lin remarkable_A = mkA "opmerkelijk" | mkA "markant" | mkA "opvallend" ; -- status=guess status=guess status=guess
-lin remarkably_Adv = mkAdv "opmerkelijk" | adjAdv remarkable_A ; -- status=guess -- derived
 lin remarry_V = mkV "hertrouwen" ; -- status=guess, src=wikt
 lin remarry_V2 = mkV2 (mkV "hertrouwen") ; -- status=guess, src=wikt
 lin remedy_N = mkN "remedie " neuter ; -- status=guess
@@ -15912,7 +16727,6 @@ lin reminder_N = mkN "geheugensteuntje" neuter ; -- status=guess
 lin remittance_N = mkN "overschrijving" feminine ; -- status=guess
 lin remnant_N = mkN "restant" ; -- status=guess
 lin remote_A = mkA "verwijderd" | mkA "afgelegen" | mkA "van op afstand" | mkA "veraf" ; -- status=guess status=guess status=guess status=guess
-lin remotely_Adv = adjAdv remote_A ; -- derived
 lin removable_A = mkA "uitneembaar" ; -- status=guess
 lin removal_N = mkN "verwijdering" ; -- status=guess
 lin remove_V = mkV "verwijderen" | mkV "weg" (mkV "halen") ;
@@ -15950,7 +16764,6 @@ lin repeat_V = mkV "herhalen" | mkV "herdoen" ; --- possibly split ; herdoen is 
 lin repeat_V2 = mkV2 repeat_V ;
 lin repeat_VS = mkVS repeat_V ;
 lin repeated_A = variants {} ; --
-lin repeatedly_Adv = mkAdv "herhaaldelijk" | mkAdv "meermaals" | mkAdv "telkens" | adjAdv repeated_A ; -- status=guess status=guess status=guess -- derived
 lin repechage_N = mkN "herkansing" ; -- status=guess
 lin repel_V2 = mkV2 (mkV "afstoten") ; -- status=guess, src=wikt
 lin repent_V = mkV "betreuren" | mkV (mkV "berouw") "hebben" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -15969,6 +16782,7 @@ lin report_N = mkN "rapport" neuter | mkN "verslag" neuter ;
 lin report_V = mkV "aan" (mkV "melden") | mkV "rapporteren" | verschijnen_V ;
 lin report_V2 = mkV2 report_V ;
 lin report_VS = mkVS report_V ;
+lin report_in_V = advV OP_report_V OP_in_Adv ; -- guess-p-verb
 lin reportedly_Adv = variants {} ; --
 lin reporterMasc_N = mkN "verslaggever" masculine ; -- status=guess
 lin repose_N = mkN "rust" masculine feminine ; -- status=guess
@@ -15993,7 +16807,6 @@ lin reputable_A = mkA "eerbaar" | mkA "fatsoenlijk" ; -- status=guess status=gue
 lin reputation_N = mkN "faam" masculine | mkN "naam" masculine | mkN "reputatie" feminine ; -- status=guess status=guess status=guess
 lin repute_N = mkN "reputatie de" ; -- status=guess
 lin reputed_A = variants {} ;
-lin reputedly_Adv = adjAdv reputed_A ; -- derived
 lin request_N = mkN "verzoek" neuter | mkN "vraag" feminine ; -- status=guess status=guess
 lin request_V2 = mkV2 (mkV "verzoeken") ; -- status=guess, src=wikt
 lin request_VS = mkVS (mkV "verzoeken") ; -- status=guess, src=wikt
@@ -16058,7 +16871,6 @@ lin respect_V2 = mkV2 (mkV "respecteren") ; -- status=guess, src=wikt
 lin respectable_A = variants {} ; --
 lin respectful_A = mkA "respectvol" ; -- status=guess
 lin respective_A = variants {} ; --
-lin respectively_Adv = mkAdv "respectievelijk" | adjAdv respective_A ; -- status=guess -- derived
 lin respiration_N = mkN "ademhaling" ; -- status=guess
 lin respite_N = mkN "verademing" ; -- status=guess
 lin resplendent_A = mkA "sprankelend" | mkA "blinkend" ; -- status=guess status=guess
@@ -16204,7 +17016,6 @@ lin ribbon_N = mkN "lint" neuter ; -- status=guess
 lin rice_N = mkN "rijst" masculine ; -- status=guess
 lin rich_A = mkA "rijk" ;
 lin richard_PN = mkPN "Richard" ; -- src=eng status=guess
-lin richly_Adv = adjAdv rich_A ; -- derived
 lin richmond_PN = mkPN "Richmond" ; -- src=geonames status=guess
 lin richmond_upon_thames_PN = mkPN "Richmond upon thames" ; -- src=eng status=guess
 lin rick_PN = mkPN "Rick" ; -- src=eng status=guess
@@ -16218,6 +17029,10 @@ lin riddle_V2 = mkV2 (mkV "doordringen") | mkV2 (mkV "doorspekt") ; -- status=gu
 lin ride_N = variants {} ; --
 lin ride_V = mkV (mkV "met") "de voeten treden" ; -- status=guess, src=wikt
 lin ride_V2 = mkV2 (mkV (mkV "met") "de voeten treden") ; -- status=guess, src=wikt
+lin ride_off_V = advV OP_ride_V OP_off_Adv ; -- guess-p-verb
+lin ride_on_V2 = prepV2 OP_ride_V OP_on_Prep ; -- guess-p-verb
+lin ride_out_V2 = prepV2 OP_ride_V OP_out_Prep ; -- guess-p-verb
+lin ride_up_V = advV OP_ride_V OP_up_Adv ; -- guess-p-verb
 lin riderMasc_N = mkN "ruiter" masculine feminine | mkN "motorrijder" masculine feminine ; -- status=guess status=guess
 lin ridge_N = mkN "heuvelkam" masculine ; -- status=guess
 lin ridiculous_A = mkA "belachelijk" ; -- status=guess
@@ -16239,7 +17054,6 @@ lin right_N = mkN "recht" ;
 lin right_Ord = L.right_Ord ;
 lin right_V2 = mkV2 (mkV "verbeteren") ; -- status=guess, src=wikt
 lin rightful_A = mkA "rechtmatig" ; -- status=guess
-lin rightly_Adv = adjAdv right_2_A ; -- -- derived
 lin rigid_A = mkA "stevig" | mkA "stabiel" ; -- status=guess status=guess
 lin rigmarole_N = mkN "gezwets" ; -- status=guess
 lin rigorous_A = mkA "rigoureus" ; -- status=guess
@@ -16254,6 +17068,14 @@ lin ring_4_V2 = mkV2 (mkV "bellen") ;
 lin ring_6_V2 = mkV2 (mkV "ringen") ;
 lin ring_N = mkN "ring" masculine ; -- status=guess
 lin ring_V = mkV "bellen" ;
+lin ring_back_V2 = mkV2 (advV OP_ring_V OP_back_Adv ) ; -- guess-p-verb
+lin ring_in_V = advV OP_ring_V OP_in_Adv ; -- guess-p-verb
+lin ring_off_V = advV OP_ring_V OP_off_Adv ; -- guess-p-verb
+lin ring_out_V = advV OP_ring_V OP_out_Adv ; -- guess-p-verb
+lin ring_round_V = advV OP_ring_V OP_round_Adv ; -- guess-p-verb
+lin ring_up_V = advV OP_ring_V OP_up_Adv ; -- guess-p-verb
+lin ring_up_V2 = prepV2 OP_ring_V OP_up_Prep ; -- guess-p-verb
+lin ring_with_V2 = prepV2 OP_ring_V OP_with_Prep ; -- guess-p-verb
 lin ringwood_PN = mkPN "Ringwood" ; -- src=geonames status=guess
 lin rio_de_janeiro_PN = mkPN "Rio de janeiro" ; -- src=eng status=guess
 lin riot_N = mkN "rel" masculine ; -- status=guess
@@ -16335,6 +17157,16 @@ lin role_N = role_1_N | role_2_N ;
 lin roll_N = mkN "rol" ; -- status=guess
 lin roll_V = mkV (mkV "overkop") "gaan" ; -- status=guess, src=wikt
 lin roll_V2 = mkV2 (mkV (mkV "overkop") "gaan") ; -- status=guess, src=wikt
+lin roll_back_V = advV OP_roll_V OP_back_Adv ; -- guess-p-verb
+lin roll_back_V2 = mkV2 (advV OP_roll_V OP_back_Adv ) ; -- guess-p-verb
+lin roll_by_V = advV OP_roll_V OP_by_Adv ; -- guess-p-verb
+lin roll_down_V = advV OP_roll_V OP_down_Adv ; -- guess-p-verb
+lin roll_in_V = advV OP_roll_V OP_in_Adv ; -- guess-p-verb
+lin roll_on_V = advV OP_roll_V OP_on_Adv ; -- guess-p-verb
+lin roll_on_V2 = prepV2 OP_roll_V OP_on_Prep ; -- guess-p-verb
+lin roll_out_V2 = prepV2 OP_roll_V OP_out_Prep ; -- guess-p-verb
+lin roll_over_V = advV OP_roll_V OP_over_Adv ; -- guess-p-verb
+lin roll_up_V = advV OP_roll_V OP_up_Adv ; -- guess-p-verb
 lin roller_N = mkN "rolgordijn" neuter ; -- status=guess
 lin rolling_N = mkN "deegroller" ; -- status=guess
 lin romance_N = variants {} ; --
@@ -16398,7 +17230,6 @@ lin rough_A = mkA "ruw" | mkA "ruig" ; -- status=guess status=guess
 lin rough_N = mkN "ruigpootbuizerd" ; -- status=guess
 lin roughen_V = mkV "ruwen" ; -- status=guess, src=wikt
 lin roughen_V2 = mkV2 (mkV "ruwen") ; -- status=guess, src=wikt
-lin roughly_Adv = mkAdv "grofweg" ; -- status=guess
 lin roulade_N = mkN "rollade" utrum ; -- status=guess
 lin roulette_N = mkN "roulette" ; -- status=guess
 lin round_A = L.round_A ;
@@ -16414,7 +17245,6 @@ lin route_N = mkN "route" | mkN "traject" neuter ;
 lin route_V2 = mkV2 (mkV "leiden") | mkV2 (mkV "sturen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin routine_A = variants {} ;
 lin routine_N = variants {} ; --
-lin routinely_Adv = adjAdv routine_A ; -- derived
 lin row_N = mkN "rij" feminine ;
 lin row_V = mkV "roeien" ; -- status=guess, src=wikt
 lin row_V2 = mkV2 (mkV "roeien") ; -- status=guess, src=wikt
@@ -16463,6 +17293,7 @@ lin rule_N = L.rule_N ;
 lin rule_V = mkV "regeren" ; -- status=guess, src=wikt
 lin rule_V2 = mkV2 (mkV "regeren") ; -- status=guess, src=wikt
 lin rule_VS = mkVS (mkV "regeren") ; -- status=guess, src=wikt
+lin rule_out_V2 = prepV2 OP_rule_V OP_out_Prep ; -- guess-p-verb
 lin ruler_N = mkN "meetlat" | mkN "liniaal" ; -- status=guess status=guess
 lin rulership_N = mkN "heerschappij" ; -- status=guess
 lin ruling_A = variants {} ; --
@@ -16478,6 +17309,33 @@ lin rumpus_N = mkN "geschil" | mkN "geroep" | mkN "verwarring" ; -- status=guess
 lin run_N = mkN "loop" masculine ;
 lin run_V = L.run_V ;
 lin run_V2 = mkV2 (mkV "rennen") | mkV2 (lopen_V) ;
+lin run_across_V2 = prepV2 OP_run_V OP_across_Prep ; -- guess-p-verb
+lin run_after_V2 = prepV2 OP_run_V OP_after_Prep ; -- guess-p-verb
+lin run_against_V2 = prepV2 OP_run_V OP_against_Prep ; -- guess-p-verb
+lin run_along_V = advV OP_run_V OP_along_Adv ; -- guess-p-verb
+lin run_around_V = advV OP_run_V OP_around_Adv ; -- guess-p-verb
+lin run_away_V = advV OP_run_V OP_away_Adv ; -- guess-p-verb
+lin run_away_from_V2 = prepV2 (advV OP_run_V OP_away_Adv ) OP_from_Prep ; -- guess-p-verb
+lin run_down_V = advV OP_run_V OP_down_Adv ; -- guess-p-verb
+lin run_down_V2 = prepV2 OP_run_V OP_down_Prep ; -- guess-p-verb
+lin run_for_V2 = prepV2 OP_run_V OP_for_Prep ; -- guess-p-verb
+lin run_in_V = advV OP_run_V OP_in_Adv ; -- guess-p-verb
+lin run_in_V2 = prepV2 OP_run_V OP_in_Prep ; -- guess-p-verb
+lin run_into_V2 = prepV2 OP_run_V OP_into_Prep ; -- guess-p-verb
+lin run_off_V = advV OP_run_V OP_off_Adv ; -- guess-p-verb
+lin run_off_V2 = prepV2 OP_run_V OP_off_Prep ; -- guess-p-verb
+lin run_on_V2 = prepV2 OP_run_V OP_on_Prep ; -- guess-p-verb
+lin run_out_V = advV OP_run_V OP_out_Adv ; -- guess-p-verb
+lin run_out_of_V2 = prepV2 (advV OP_run_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin run_over_V = advV OP_run_V OP_over_Adv ; -- guess-p-verb
+lin run_over_V2 = prepV2 OP_run_V OP_over_Prep ; -- guess-p-verb
+lin run_through_V2 = prepV2 OP_run_V OP_through_Prep ; -- guess-p-verb
+lin run_to_V2 = prepV2 OP_run_V OP_to_Prep ; -- guess-p-verb
+lin run_up_V = advV OP_run_V OP_up_Adv ; -- guess-p-verb
+lin run_up_V2 = prepV2 OP_run_V OP_up_Prep ; -- guess-p-verb
+lin run_up_against_V2 = prepV2 (advV OP_run_V OP_up_Adv ) OP_against_Prep ; -- guess-p-verb
+lin run_up_on_V2 = prepV2 (advV OP_run_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
+lin run_with_V2 = prepV2 OP_run_V OP_with_Prep ; -- guess-p-verb
 lin runaway_N = mkN "wegloper" | mkN "vluchteling" ; -- status=guess status=guess
 lin runcorn_PN = mkPN "Runcorn" ; -- src=geonames status=guess
 lin rune_N = mkN "rune" masculine feminine ; -- status=guess
@@ -16493,6 +17351,10 @@ lin rush_N = mkN "bies" ; -- status=guess
 lin rush_V = mkV "afraffelen" ; -- status=guess, src=wikt
 lin rush_V2 = mkV2 (mkV "afraffelen") ; -- status=guess, src=wikt
 lin rush_VV = mkVV (mkV "afraffelen") ; -- status=guess, src=wikt
+lin rush_away_V = advV OP_rush_V OP_away_Adv ; -- guess-p-verb
+lin rush_into_V2 = prepV2 OP_rush_V OP_into_Prep ; -- guess-p-verb
+lin rush_off_V = advV OP_rush_V OP_off_Adv ; -- guess-p-verb
+lin rush_out_V2 = prepV2 OP_rush_V OP_out_Prep ; -- guess-p-verb
 lin rusk_N = mkN "beschuit" feminine | mkN "scheepsbeschuit" feminine ; -- status=guess status=guess
 lin russia_PN = mkPN "Rusland" ; -- src=geonames status=guess
 lin rust_N = mkN "roestbruin" neuter ; -- status=guess
@@ -16546,13 +17408,11 @@ lin saddler_N = mkN "zadelmaker" masculine ; -- status=guess
 lin sadism_N = mkN "sadisme" neuter ; -- status=guess
 lin sadist_N = mkN "sadist" masculine ; -- status=guess
 lin sadistic_A = mkA "sadistisch" ; -- status=guess
-lin sadly_Adv = adjAdv sad_A ; -- -- derived
 lin sadomasochism_N = mkN "sadomasochisme" neuter ; -- status=guess
 lin sadomasochistic_A = mkA "sadomasochistisch" ; -- status=guess
 lin safari_N = mkN "safari" ; -- status=guess
 lin safe_A = mkA "veilig" ;
 lin safe_N = mkN "kluis" feminine | mkN "safe" feminine ; -- status=guess status=guess
-lin safely_Adv = mkAdv "veilig" | adjAdv safe_A ; -- status=guess -- derived
 lin safety_N = mkN "veiligheid" ;
 lin saffron_N = mkN "saffraan" ; -- status=guess
 lin saffron_walden_PN = mkPN "Saffron walden" ; -- src=eng status=guess
@@ -16567,6 +17427,8 @@ lin saiga_N = mkN "saïga" ; -- status=guess
 lin saigon_PN = mkPN "Saigon" ; -- src=eng status=guess
 lin sail_N = mkN "zeil" neuter ; -- status=guess
 lin sail_V = mkV "zeilen" ; -- status=guess, src=wikt
+lin sail_into_V2 = prepV2 OP_sail_V OP_into_Prep ; -- guess-p-verb
+lin sail_through_V2 = prepV2 OP_sail_V OP_through_Prep ; -- guess-p-verb
 lin sailboat_N = mkN "zeilboot" masculine ; -- status=guess
 lin sailing_N = mkN "zeilen" neuter ; -- status=guess
 lin sailor_N = mkN "matroos" masculine ; -- status=guess
@@ -16707,6 +17569,8 @@ lin savanna_N = mkN "savanne" feminine ; -- status=guess
 lin savannah_N = mkN "Afrikaanse steppevaraan" | mkN "steppevaraan" ; -- status=guess status=guess
 lin save_V = mkV "sparen" ; --- split mkV "redden" to save someone
 lin save_V2 = mkV2 (mkV "redden") | mkV2 (mkV "sparen") ;
+lin save_on_V2 = prepV2 OP_save_V OP_on_Prep ; -- guess-p-verb
+lin save_up_V2 = prepV2 OP_save_V OP_up_Prep ; -- guess-p-verb
 lin saving_N = variants {} ; --
 lin savings_N = mkN "spaargeld" ; -- status=guess
 lin savior_N = mkN "redder" masculine ; -- status=guess
@@ -16750,7 +17614,6 @@ lin scar_V = variants {} ; --
 lin scar_V2 = variants {} ; --
 lin scarborough_PN = mkPN "Scarborough" ; -- src=geonames status=guess
 lin scarce_A = mkA "schaars" ; -- status=guess
-lin scarcely_Adv = mkAdv "amper" | mkAdv "nauwelijks" | adjAdv scarce_A ; -- status=guess status=guess -- derived
 lin scarcity_N = mkN "schaarste" feminine ; -- status=guess
 lin scare_N = mkN "schrikken" ; -- status=guess
 lin scare_V = schrikken_V ; -- status=guess, src=wikt
@@ -16923,7 +17786,6 @@ lin secretary_N = mkN "secretaris" masculine | mkN "secretaresse" feminine ;
 lin secrete_V2 = mkV2 (mkV "verbergen") | mkV2 (mkV "verstoppen") | mkV2 (mkV "wegstoppen") | mkV2 (mkV "ontvreemden") | mkV2 (stelen_V) | mkV2 (mkV "verduisteren") | mkV2 (mkV "ontfutselen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin secretion_N = variants {} ; --
 lin secretive_A = mkA "gesloten" | mkA "gereserveerd" ; -- status=guess status=guess
-lin secretly_Adv = mkAdv "stiekem" | adjAdv secret_A ; -- status=guess -- derived
 lin sect_N = mkN "sekte" feminine ; -- status=guess
 lin section_N = mkN "sectie" | mkN "gedeelte" ;
 lin sector_N = mkN "sector" ;
@@ -16947,16 +17809,22 @@ lin see_V2 = L.see_V2 ;
 lin see_V2V = mkV2V (zien_V) ;
 lin see_VQ = mkVQ (zien_V) ; ---- subcat
 lin see_VS = mkVS (zien_V) ;
+lin see_about_V2 = prepV2 OP_see_V OP_about_Prep ; -- guess-p-verb
+lin see_into_V3 = variants {} ; -- guess-p-verb
+lin see_off_V2 = prepV2 OP_see_V OP_off_Prep ; -- guess-p-verb
+lin see_out_V2 = prepV2 OP_see_V OP_out_Prep ; -- guess-p-verb
+lin see_through_V2 = prepV2 OP_see_V OP_through_Prep ; -- guess-p-verb
+lin see_to_V2 = prepV2 OP_see_V OP_to_Prep ; -- guess-p-verb
 lin seed_N = L.seed_N ;
 lin seedling_N = mkN "zaailing" ; -- status=guess
 lin seek_V2 = L.seek_V2 ;
 lin seek_VV = mkVV (zoeken_V) | mkVV (mkV "na" "streven") ;
+lin seek_out_V2 = prepV2 (lin V OP_seek_V2) OP_out_Prep ; -- guess-p-verb
 lin seeker_N = mkN "zoeker" masculine ; -- status=guess
 lin seem_VA = mkVA (lijken_V) | mkVA (schijnen_V) ;
 lin seem_VS = mkVS (schijnen_V) | mkVS (lijken_V) ;
 lin seem_VV = mkVV (lijken_V) | mkVV (schijnen_V) ;
 lin seeming_A = variants {} ;
-lin seemingly_Adv = adjAdv seeming_A ; -- -- derived
 lin seer_N = mkN "ziener" ; -- status=guess
 lin seersucker_N = mkN "gestreept cloqué" | mkN "bobbeltjesstof" ; -- status=guess status=guess
 lin seethe_V = mkV "zieden" ; -- status=guess, src=wikt
@@ -16969,6 +17837,7 @@ lin seismologist_N = mkN "seismoloog" masculine | mkN "seismologe" feminine ; --
 lin seismology_N = mkN "seismologie" feminine ; -- status=guess
 lin seize_V = grijpen_V | vangen_V | mkV "pakken" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin seize_V2 = mkV2 (grijpen_V) | mkV2 (vangen_V) | mkV2 (mkV "pakken") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin seize_up_V = advV OP_seize_V OP_up_Adv ; -- guess-p-verb
 lin selby_PN = mkPN "Selby" ; -- src=geonames status=guess
 lin seldom_Adv = mkAdv "zelden" ; -- status=guess
 lin select_A = variants {} ; --
@@ -16988,6 +17857,12 @@ lin selkirk_PN = mkPN "Selkirk" ; -- src=geonames status=guess
 lin sell_V = fixprefixV "ver" kopen_V ;
 lin sell_V2 = mkV2 sell_V ;
 lin sell_V3 = L.sell_V3 ;
+lin sell_back_V = advV OP_sell_V OP_back_Adv ; -- guess-p-verb
+lin sell_off_V2 = prepV2 OP_sell_V OP_off_Prep ; -- guess-p-verb
+lin sell_on_V2 = prepV2 OP_sell_V OP_on_Prep ; -- guess-p-verb
+lin sell_out_V = advV OP_sell_V OP_out_Adv ; -- guess-p-verb
+lin sell_out_V2 = prepV2 OP_sell_V OP_out_Prep ; -- guess-p-verb
+lin sell_up_V2 = prepV2 OP_sell_V OP_up_Prep ; -- guess-p-verb
 lin sellerMasc_N = mkN "verkoper" masculine | mkN "verkoopster" feminine ; -- status=guess status=guess
 lin selsey_PN = mkPN "Selsey" ; -- src=geonames status=guess
 lin selston_PN = mkPN "Selston" ; -- src=eng status=guess
@@ -17016,6 +17891,15 @@ lin send_V = zenden_V | no_geV (mkV "verzenden") | mkV "sturen" | mkV "op" (mkV 
 lin send_V2 = mkV2 send_V ;
 lin send_V2V = mkV2V send_V ; ---- subcat
 lin send_V3 = L.send_V3 ;
+lin send_back_V2 = mkV2 (advV OP_send_V OP_back_Adv ) ; -- guess-p-verb
+lin send_for_V2 = prepV2 OP_send_V OP_for_Prep ; -- guess-p-verb
+lin send_in_V = advV OP_send_V OP_in_Adv ; -- guess-p-verb
+lin send_in_V2 = prepV2 OP_send_V OP_in_Prep ; -- guess-p-verb
+lin send_off_V2 = prepV2 OP_send_V OP_off_Prep ; -- guess-p-verb
+lin send_off_for_V2 = prepV2 (advV OP_send_V OP_off_Adv ) OP_for_Prep ; -- guess-p-verb
+lin send_out_V2 = prepV2 OP_send_V OP_out_Prep ; -- guess-p-verb
+lin send_out_for_V2 = prepV2 (advV OP_send_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin send_up_V2 = prepV2 OP_send_V OP_up_Prep ; -- guess-p-verb
 lin senegal_PN = mkPN "Senegal" ; -- src=geonames status=guess
 lin senile_A = mkA "seniel" ; -- status=guess
 lin senior_A = mkA "ouder" ; ---- strange-ish
@@ -17043,7 +17927,6 @@ lin separable_A = mkA "scheidbaar" ; -- status=guess
 lin separate_A = mkA "afzonderlijk" | mkA "gescheiden" | mkA "afgezonderd" ;
 lin separate_V = scheiden_V ; -- status=guess, src=wikt
 lin separate_V2 = mkV2 (scheiden_V) ; -- status=guess, src=wikt
-lin separately_Adv = adjAdv separate_A ; -- -- derived
 lin separation_N = mkN "scheiding" feminine ; -- status=guess
 lin separatism_N = mkN "separatisme" neuter ; -- status=guess
 lin sepsis_N = mkN "sepsis" feminine ; -- status=guess
@@ -17061,7 +17944,6 @@ lin serial_N = mkN "serienummer" neuter ; -- status=guess
 lin series_N = mkN "reeks" feminine | mkN "serie" feminine ;
 lin serif_N = mkN "schreef" ; -- status=guess
 lin serious_A = mkA "serieus" ;
-lin seriously_Adv = adjAdv serious_A ; -- -- derived
 lin seriousness_N = mkN "ernst" ; -- status=guess
 lin sermon_N = mkN "preek" utrum ; -- status=guess
 lin serpent_N = mkN "serpent" neuter | mkN "slang" feminine ; -- status=guess status=guess
@@ -17080,9 +17962,32 @@ lin set_1_N = mkN "set" masculine ;
 lin set_2_N = mkN "set" masculine ;
 lin set_N = mkN "set" masculine ;
 lin set_V2 = mkV2 (mkV "zetten") ;
+lin set_about_V2 = prepV2 (lin V OP_set_V2) OP_about_Prep ; -- guess-p-verb
+lin set_apart_V2 = mkV2 (advV (lin V OP_set_V2) OP_apart_Adv ) ; -- guess-p-verb
+lin set_aside_V2 = mkV2 (advV (lin V OP_set_V2) OP_aside_Adv ) ; -- guess-p-verb
+lin set_back_V = advV (lin V OP_set_V2) OP_back_Adv ; -- guess-p-verb
+lin set_back_V2 = mkV2 (advV (lin V OP_set_V2) OP_back_Adv ) ; -- guess-p-verb
+lin set_forth_V = advV (lin V OP_set_V2) OP_forth_Adv ; -- guess-p-verb
+lin set_forth_V2 = mkV2 (advV (lin V OP_set_V2) OP_forth_Adv ) ; -- guess-p-verb
+lin set_in_V = advV (lin V OP_set_V2) OP_in_Adv ; -- guess-p-verb
+lin set_off_V = advV (lin V OP_set_V2) OP_off_Adv ; -- guess-p-verb
+lin set_off_V2 = prepV2 (lin V OP_set_V2) OP_off_Prep ; -- guess-p-verb
+lin set_on_V2 = prepV2 (lin V OP_set_V2) OP_on_Prep ; -- guess-p-verb
+lin set_out_V = advV (lin V OP_set_V2) OP_out_Adv ; -- guess-p-verb
+lin set_out_V2 = prepV2 (lin V OP_set_V2) OP_out_Prep ; -- guess-p-verb
+lin set_to_V = advV (lin V OP_set_V2) OP_to_Adv ; -- guess-p-verb
+lin set_up_V = advV (lin V OP_set_V2) OP_up_Adv ; -- guess-p-verb
+lin set_up_V2 = prepV2 (lin V OP_set_V2) OP_up_Prep ; -- guess-p-verb
+lin set_upon_V2 = prepV2 (lin V OP_set_V2) OP_upon_Prep ; -- guess-p-verb
 lin setting_N = mkN "context" masculine ; -- status=guess
 lin settle_V = mkV "vestigen" ;
 lin settle_V2 = mkV2 (mkV "beslechten") ; ---- settle a discussion
+lin settle_back_V = advV OP_settle_V OP_back_Adv ; -- guess-p-verb
+lin settle_down_V = advV OP_settle_V OP_down_Adv ; -- guess-p-verb
+lin settle_for_V2 = prepV2 OP_settle_V OP_for_Prep ; -- guess-p-verb
+lin settle_in_V = advV OP_settle_V OP_in_Adv ; -- guess-p-verb
+lin settle_on_V2 = prepV2 OP_settle_V OP_on_Prep ; -- guess-p-verb
+lin settle_up_V = advV OP_settle_V OP_up_Adv ; -- guess-p-verb
 lin settlement_N = mkN "nederzetting" feminine ; -- status=guess
 lin seven_sisters_PN = mkPN "Seven sisters" ; -- src=eng status=guess
 lin sevenoaks_PN = mkPN "Sevenoaks" ; -- src=geonames status=guess
@@ -17092,7 +17997,6 @@ lin several_Det = mkDet "verscheidene" | mkDet "divers" ;
 lin severally_Adv = variants {} ;
 lin severance_N = mkN "scheiding" feminine | mkN "lossnijden" | mkN "los zijn" ; -- status=guess status=guess status=guess
 lin severe_A = mkA "streng" ; -- status=guess
-lin severely_Adv = adjAdv severe_A ; -- -- derived
 lin severity_N = mkN "ernst" feminine | mkN "ongewenstheid" feminine | mkN "slechtheid" feminine ; -- status=guess status=guess status=guess
 lin sevilla_PN = mkPN "Sevilla" ; -- src=geonames status=guess
 lin seville_PN = mkPN "Seville" ; -- src=geonames status=guess
@@ -17106,7 +18010,6 @@ lin sex_V2 = mkV2 (vrijen_V) | mkV2 (mkV (mkV "de") "liefde bedrijven") ; -- sta
 lin sexton_N = mkN "koster" masculine ; -- status=guess
 lin sexual_A = mkA "seksueel" ;
 lin sexuality_N = mkN "sexualiteit" feminine ; -- status=guess
-lin sexually_Adv = adjAdv sexual_A ; -- -- derived
 lin sexy_A = mkA "sexy" ; -- status=guess
 lin seychelles_PN = mkPN "Seychellen" ; -- src=geonames status=guess
 lin sgd_PN = mkPN "Sgd" ; -- src=eng status=guess
@@ -17124,6 +18027,10 @@ lin shag_V = mkV "wippen" ; -- status=guess, src=wikt
 lin shag_V2 = mkV2 (mkV "wippen") ; -- status=guess, src=wikt
 lin shake_V = mkV "schudden" ;
 lin shake_V2 = mkV2 (mkV "schudden") ;
+lin shake_down_V2 = prepV2 OP_shake_V OP_down_Prep ; -- guess-p-verb
+lin shake_off_V2 = prepV2 OP_shake_V OP_off_Prep ; -- guess-p-verb
+lin shake_out_V2 = prepV2 OP_shake_V OP_out_Prep ; -- guess-p-verb
+lin shake_up_V2 = prepV2 OP_shake_V OP_up_Prep ; -- guess-p-verb
 lin shaky_A = mkA "bibberig" | mkA "trillerig" ; -- status=guess status=guess
 lin shale_N = mkN "schaliegas" neuter ; -- status=guess
 lin shall_VV = auxVV R.zullen_V ;
@@ -17147,9 +18054,11 @@ lin shape_N = mkN "vorm" ;
 lin shape_V = mkV (mkV "de") "vorm aannemen" ; -- status=guess, src=wikt
 lin shape_V2 = mkV2 (mkV (mkV "de") "vorm aannemen") ; -- status=guess, src=wikt
 lin shape_VV = mkVV (mkV (mkV "de") "vorm aannemen") ; -- status=guess, src=wikt
+lin shape_up_V = advV OP_shape_V OP_up_Adv ; -- guess-p-verb
 lin share_N = mkN "aandeel" neuter | mkN "deel" neuter ;
 lin share_V = mkV "delen" ;
 lin share_V2 = mkV2 (mkV "delen") ;
+lin share_out_V = advV OP_share_V OP_out_Adv ; -- guess-p-verb
 lin shared_A = mkA "gedeeld" | mkA "gezamenlijk" | mkA "verdeeld" ; -- status=guess status=guess status=guess
 lin shareholder_N = variants {} ; --
 lin shark_N = mkN "haai" masculine ; -- status=guess
@@ -17159,7 +18068,6 @@ lin sharp_N = mkN "kruis" neuter ; -- status=guess
 lin sharpen_V = mkV "scherpen" | slijpen_V | mkV "aanscherpen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin sharpen_V2 = mkV2 (mkV "scherpen") | mkV2 (slijpen_V) | mkV2 (mkV "aanscherpen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin sharpener_N = mkN "slijper" masculine ; -- status=guess
-lin sharply_Adv = adjAdv sharp_A ; -- -- derived
 lin sharpness_N = mkN "scherpheid" feminine ; -- status=guess
 lin shatter_V = mkV "verbrijzelen" ; -- status=guess, src=wikt
 lin shatter_V2 = mkV2 (mkV "verbrijzelen") ; -- status=guess, src=wikt
@@ -17252,6 +18160,13 @@ lin shoemaker_N = mkN "schoenmaker" masculine ; -- status=guess
 lin shoot_N = mkN "scheut" feminine ; -- status=guess
 lin shoot_V = schieten_V ;
 lin shoot_V2 = mkV2 schieten_V ;
+lin shoot_away_V = advV OP_shoot_V OP_away_Adv ; -- guess-p-verb
+lin shoot_back_V = advV OP_shoot_V OP_back_Adv ; -- guess-p-verb
+lin shoot_for_V2 = prepV2 OP_shoot_V OP_for_Prep ; -- guess-p-verb
+lin shoot_off_V = advV OP_shoot_V OP_off_Adv ; -- guess-p-verb
+lin shoot_out_V = advV OP_shoot_V OP_out_Adv ; -- guess-p-verb
+lin shoot_up_V = advV OP_shoot_V OP_up_Adv ; -- guess-p-verb
+lin shoot_up_V2 = prepV2 OP_shoot_V OP_up_Prep ; -- guess-p-verb
 lin shooter_N = mkN "schutter" masculine ; -- status=guess
 lin shooting_N = mkN "schietpartij" feminine ; -- status=guess
 lin shop_N = L.shop_N ;
@@ -17266,7 +18181,6 @@ lin short_Adv = variants {} ; --
 lin short_N = mkN "kortsluiting" feminine ; -- status=guess
 lin short_term_A = variants {} ; --
 lin shortage_N = mkN "krapte" feminine | mkN "tekort" neuter ; -- status=guess status=guess
-lin shortly_Adv = adjAdv short_A ; -- -- derived
 lin shot_N = mkN "kogel" masculine ; -- status=guess
 lin shotgun_N = mkN "hagelgeweer" neuter | mkN "jachtgeweer" neuter | mkN "buks" masculine feminine ; -- status=guess status=guess status=guess
 lin shotton_PN = mkPN "Shotton" ; -- src=geonames status=guess
@@ -17276,6 +18190,8 @@ lin shoulder_N = mkN "schouder" ;
 lin shout_N = mkN "schreeuw" masculine ; -- status=guess
 lin shout_V = mkV "schreeuwen" ; -- status=guess, src=wikt
 lin shout_V2 = mkV2 (mkV "schreeuwen") ; -- status=guess, src=wikt
+lin shout_down_V2 = prepV2 OP_shout_V OP_down_Prep ; -- guess-p-verb
+lin shout_out_V2 = prepV2 OP_shout_V OP_out_Prep ; -- guess-p-verb
 lin shovel_N = mkN "schop" feminine | mkN "schep" feminine ; -- status=guess status=guess
 lin shovel_V2 = mkV2 (scheppen_V) ; -- status=guess, src=wikt
 lin shoveler_N = mkN "slobeend" ; -- status=guess
@@ -17284,6 +18200,16 @@ lin show_V = mkV (mkV "laten") "zien" | mkV "tonen" | mkV "vertonen" ;
 lin show_V2 = mkV2 (mkV (mkV "laten") "zien") | mkV2 (mkV "tonen") | mkV2 (mkV "vertonen") ;
 lin show_VQ = mkVQ (mkV (mkV "laten") "zien") ;
 lin show_VS = mkVS (mkV (mkV "laten") "zien") ;
+lin show_around_V2 = prepV2 OP_show_V OP_around_Prep ; -- guess-p-verb
+lin show_in_V2 = prepV2 OP_show_V OP_in_Prep ; -- guess-p-verb
+lin show_off_V = advV OP_show_V OP_off_Adv ; -- guess-p-verb
+lin show_off_V2 = prepV2 OP_show_V OP_off_Prep ; -- guess-p-verb
+lin show_out_V2 = prepV2 OP_show_V OP_out_Prep ; -- guess-p-verb
+lin show_over_V3 = variants {} ; -- guess-p-verb
+lin show_round_V2 = prepV2 OP_show_V OP_round_Prep ; -- guess-p-verb
+lin show_through_V = advV OP_show_V OP_through_Adv ; -- guess-p-verb
+lin show_up_V = advV OP_show_V OP_up_Adv ; -- guess-p-verb
+lin show_up_V2 = prepV2 OP_show_V OP_up_Prep ; -- guess-p-verb
 lin shower_N = mkN "regenbui" feminine | mkN "bui" feminine | mkN "schoer" masculine ; -- status=guess status=guess status=guess
 lin shower_V = mkV "douchen" | mkV (mkV "een") "douche nemen" | mkV (mkV "een") "stortbad nemen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin shower_V2 = mkV2 (mkV "douchen") | mkV2 (mkV (mkV "een") "douche nemen") | mkV2 (mkV (mkV "een") "stortbad nemen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -17307,6 +18233,7 @@ lin shrove_tuesday_PN = mkPN "Shrove tuesday" ; -- src=eng status=guess
 lin shrub_N = mkN "struik" | mkN "heester" feminine ; -- status=guess status=guess
 lin shrug_N = mkN "schouderophalen" neuter ; -- status=guess
 lin shrug_V2 = variants {} ; --
+lin shrug_off_V2 = prepV2 (lin V OP_shrug_V2) OP_off_Prep ; -- guess-p-verb
 lin shudder_N = mkN "rilling" ; -- status=guess
 lin shudder_V = mkV "huiveren" ; -- status=guess, src=wikt
 lin shuffle_V = mkV "schudden" ; -- status=guess, src=wikt
@@ -17315,6 +18242,15 @@ lin shun_V2 = mkV2 (mkV "ontwijken") ; -- status=guess, src=wikt
 lin shunt_V = mkV "rangeren" ; -- status=guess, src=wikt
 lin shunt_V2 = mkV2 (mkV "rangeren") ; -- status=guess, src=wikt
 lin shut_V2 = mkV2 (sluiten_V) | mkV2 (mkV "dichtklappen") ; -- status=guess, src=wikt status=guess, src=wikt
+lin shut_away_V2 = mkV2 (advV (lin V OP_shut_V2) OP_away_Adv ) ; -- guess-p-verb
+lin shut_down_V2 = prepV2 (lin V OP_shut_V2) OP_down_Prep ; -- guess-p-verb
+lin shut_in_V2 = prepV2 (lin V OP_shut_V2) OP_in_Prep ; -- guess-p-verb
+lin shut_off_V = advV (lin V OP_shut_V2) OP_off_Adv ; -- guess-p-verb
+lin shut_off_V2 = prepV2 (lin V OP_shut_V2) OP_off_Prep ; -- guess-p-verb
+lin shut_out_V2 = prepV2 (lin V OP_shut_V2) OP_out_Prep ; -- guess-p-verb
+lin shut_out_of_V2 = prepV2 (advV (lin V OP_shut_V2) OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin shut_up_V2 = prepV2 (lin V OP_shut_V2) OP_up_Prep ; -- guess-p-verb
+lin shut_yourself_away_V = variants {} ; -- guess-p-verb
 lin shutter_N = mkN "sluiter" masculine ; -- status=guess
 lin shuttlecock_N = mkN "shuttle" masculine | mkN "pluimbal" masculine | mkN "vederbal" masculine ; -- status=guess status=guess status=guess
 lin shy_A = mkA "verstandig" | mkA "voorzichtig" ; -- status=guess status=guess
@@ -17352,6 +18288,22 @@ lin sigma_N = mkN "sigma" masculine ; -- status=guess
 lin sign_N = mkN "teken" neuter ;
 lin sign_V = mkV "ondertekenen" | mkV "tekenen" ;
 lin sign_V2 = mkV2 sign_V ;
+lin sign_away_V2 = mkV2 (advV OP_sign_V OP_away_Adv ) ; -- guess-p-verb
+lin sign_for_V3 = variants {} ; -- guess-p-verb
+lin sign_in_V = advV OP_sign_V OP_in_Adv ; -- guess-p-verb
+lin sign_in_V2 = prepV2 OP_sign_V OP_in_Prep ; -- guess-p-verb
+lin sign_into_V2 = prepV2 OP_sign_V OP_into_Prep ; -- guess-p-verb
+lin sign_off_V = advV OP_sign_V OP_off_Adv ; -- guess-p-verb
+lin sign_off_V2 = prepV2 OP_sign_V OP_off_Prep ; -- guess-p-verb
+lin sign_off_on_V2 = prepV2 (advV OP_sign_V OP_off_Adv ) OP_on_Prep ; -- guess-p-verb
+lin sign_on_V = advV OP_sign_V OP_on_Adv ; -- guess-p-verb
+lin sign_on_V2 = prepV2 OP_sign_V OP_on_Prep ; -- guess-p-verb
+lin sign_on_with_V2 = prepV2 (advV OP_sign_V OP_on_Adv ) OP_with_Prep ; -- guess-p-verb
+lin sign_out_V = advV OP_sign_V OP_out_Adv ; -- guess-p-verb
+lin sign_out_V2 = prepV2 OP_sign_V OP_out_Prep ; -- guess-p-verb
+lin sign_out_of_V2 = prepV2 (advV OP_sign_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin sign_up_V = advV OP_sign_V OP_up_Adv ; -- guess-p-verb
+lin sign_with_V2 = prepV2 OP_sign_V OP_with_Prep ; -- guess-p-verb
 lin signage_N = mkN "bewegwijzering" feminine | mkN "bebording" feminine ; -- status=guess status=guess
 lin signal_N = mkN "sein" neuter ; -- status=guess
 lin signal_V2 = variants {} ; --
@@ -17359,7 +18311,6 @@ lin signal_VS = variants {} ; --
 lin signature_N = mkN "handtekening" ; -- status=guess
 lin significance_N = mkN "betekenis" | mkN "belang" feminine | mkN "importantie" feminine ; -- status=guess status=guess status=guess
 lin significant_A = mkA "significant" | mkA "beduidend" | mkA "waarneembaar" ;
-lin significantly_Adv = adjAdv significant_A ; -- -- derived
 lin signify_V = mkV (mkV "duidelijk") "maken" | mkV (mkV "te") "kennen geven" ; -- status=guess, src=wikt status=guess, src=wikt
 lin signify_V2 = mkV2 (mkV (mkV "duidelijk") "maken") | mkV2 (mkV (mkV "te") "kennen geven") ; -- status=guess, src=wikt status=guess, src=wikt
 lin silage_N = mkN "silage" feminine ; -- status=guess
@@ -17367,7 +18318,6 @@ lin sileby_PN = mkPN "Sileby" ; -- src=geonames status=guess
 lin silence_N = mkN "stilzwijgen" neuter ; -- status=guess
 lin silencer_N = mkN "demper" ; -- status=guess
 lin silent_A = variants {} ; --
-lin silently_Adv = mkAdv "stilletjes" | adjAdv silent_A ; -- status=guess -- derived
 lin silicon_N = mkN "silicium" neuter ; -- status=guess
 lin silk_N = mkN "zijde" feminine | mkN "zijdedoek" masculine ; -- status=guess status=guess
 lin silken_A = mkA "zijden" ; -- status=guess
@@ -17388,7 +18338,6 @@ lin silvia_PN = mkPN "Silvia" ; -- src=geonames status=guess
 lin silviculture_N = mkN "bosbouw" masculine ; -- status=guess
 lin similar_A = mkA "gelijkend" | mkA "lijkend" ;
 lin similarity_N = mkN "gelijkenis" feminine ; -- status=guess
-lin similarly_Adv = adjAdv similar_A ; -- -- derived
 lin simile_N = mkN "vergelijking" feminine ; -- status=guess
 lin simmer_V = mkV "sudderen" ; -- status=guess, src=wikt
 lin simmer_V2 = mkV2 (mkV "sudderen") ; -- status=guess, src=wikt
@@ -17402,18 +18351,15 @@ lin simplicity_N = variants {} ; --
 lin simplification_N = mkN "vereenvoudiging" feminine | mkN "versimpeling" feminine ; -- status=guess status=guess
 lin simplify_V = mkV "vereenvoudigen" | mkV "versimpelen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin simplify_V2 = mkV2 (mkV "vereenvoudigen") | mkV2 (mkV "versimpelen") ; -- status=guess, src=wikt status=guess, src=wikt
-lin simply_Adv = mkAdv "simpelweg" | mkAdv "gewoon" | adjAdv simple_A ; -- derived
 lin simulation_N = mkN "simulatie" feminine ; -- status=guess
 lin simultaneity_N = mkN "gelijktijdigheid" utrum ; -- status=guess
 lin simultaneous_A = mkA "gelijktijdig" | mkA "simultaan" ; -- status=guess status=guess
-lin simultaneously_Adv = mkAdv "tegelijkertijd" | mkAdv "tegelijk" | mkAdv "simultaan" | mkAdv "gelijktijdig" | adjAdv simultaneous_A ; -- status=guess status=guess status=guess status=guess -- derived
 lin simultaneousness_N = mkN "gelijktijdigheid" feminine ; -- status=guess
 lin sin_N = mkN "zonde" ; -- status=guess
 lin since_Adv = variants {} ; --
 lin since_Prep = mkPrep "sinds" | mkPrep "sedert" ;
 lin since_Subj = mkSubj "sinds" ;
 lin sincere_A = mkA "oprecht" ; -- status=guess
-lin sincerely_Adv = adjAdv sincere_A ; -- -- derived
 lin sincerity_N = mkN "oprechtheid" feminine ; -- status=guess
 lin sine_N = mkN "sinus" masculine ; -- status=guess
 lin sinecure_N = mkN "sinecure" ; -- status=guess
@@ -17421,6 +18367,9 @@ lin sinew_N = mkN "wilskracht" ; -- status=guess
 lin sinful_A = mkA "zondig" ; -- status=guess
 lin sing_V = L.sing_V ;
 lin sing_V2 = mkV2 (zingen_V) ;
+lin sing_along_V = advV OP_sing_V OP_along_Adv ; -- guess-p-verb
+lin sing_out_V = advV OP_sing_V OP_out_Adv ; -- guess-p-verb
+lin sing_up_V = advV OP_sing_V OP_up_Adv ; -- guess-p-verb
 lin singapore_PN = mkPN "Singapore" ; -- src=geonames status=guess
 lin singer_N = mkN "zanger" masculine | mkN "zangeres" feminine ; -- status=guess status=guess
 lin singing_N = mkN "zang" masculine ; -- status=guess
@@ -17436,6 +18385,7 @@ lin sining_PN = mkPN "Sining" ; -- src=eng status=guess
 lin sink_N = mkN "gootsteen" masculine | mkN "afwasbak" masculine ; -- status=guess status=guess
 lin sink_V = zinken_V ; -- status=guess, src=wikt
 lin sink_V2 = mkV2 (zinken_V) ; -- status=guess, src=wikt
+lin sink_in_V = advV OP_sink_V OP_in_Adv ; -- guess-p-verb
 lin sinless_A = mkA "zondeloos" ; -- status=guess
 lin sinn_fein_PN = mkPN "Sinn fein" ; -- src=eng status=guess
 lin sinner_N = mkN "zondaar" masculine ; -- status=guess
@@ -17451,6 +18401,21 @@ lin sister_N = L.sister_N ;
 lin sisterhood_N = mkN "zusterschap" feminine ; -- status=guess
 lin sit_V = L.sit_V ;
 lin sit_V2 = mkV2 L.sit_V ;
+lin sit_about_V = advV OP_sit_V OP_about_Adv ; -- guess-p-verb
+lin sit_around_V = advV OP_sit_V OP_around_Adv ; -- guess-p-verb
+lin sit_back_V = advV OP_sit_V OP_back_Adv ; -- guess-p-verb
+lin sit_by_V = advV OP_sit_V OP_by_Adv ; -- guess-p-verb
+lin sit_down_V2 = prepV2 OP_sit_V OP_down_Prep ; -- guess-p-verb
+lin sit_for_V2 = prepV2 OP_sit_V OP_for_Prep ; -- guess-p-verb
+lin sit_in_V2 = prepV2 OP_sit_V OP_in_Prep ; -- guess-p-verb
+lin sit_in_for_V2 = prepV2 (advV OP_sit_V OP_in_Adv ) OP_for_Prep ; -- guess-p-verb
+lin sit_in_on_V2 = prepV2 (advV OP_sit_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin sit_on_V2 = prepV2 OP_sit_V OP_on_Prep ; -- guess-p-verb
+lin sit_out_V2 = prepV2 OP_sit_V OP_out_Prep ; -- guess-p-verb
+lin sit_over_V2 = prepV2 OP_sit_V OP_over_Prep ; -- guess-p-verb
+lin sit_through_V2 = prepV2 OP_sit_V OP_through_Prep ; -- guess-p-verb
+lin sit_up_V = advV OP_sit_V OP_up_Adv ; -- guess-p-verb
+lin sit_with_V2 = prepV2 OP_sit_V OP_with_Prep ; -- guess-p-verb
 lin site_N = mkN "plek" ;
 lin sittingbourne_PN = mkPN "Sittingbourne" ; -- src=geonames status=guess
 lin situate_V2 = mkV2 (mkV "situeren") ; -- status=guess, src=wikt
@@ -17487,7 +18452,6 @@ lin skill_V = variants {} ; --
 lin skilled_A = mkA "bedreven" ; -- status=guess
 lin skillet_N = mkN "eenpansgerecht" ; -- status=guess
 lin skillful_A = mkA "bedreven" | mkA "vaardig" ; -- status=guess status=guess
-lin skillfully_Adv = adjAdv skillful_A ; -- derived
 lin skim_A = mkA "afgeroomd" ; -- status=guess
 lin skim_N = mkN "afgeroomde melk" feminine | mkN "magere melk" feminine ; -- status=guess status=guess
 lin skim_V = mkV "doorbladeren" | mkV (mkV "diagonaal") "lezen" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -17554,6 +18518,11 @@ lin sledge_N = mkN "voorhamer" masculine ; -- status=guess
 lin sledgehammer_N = mkN "voorhamer" masculine ; -- status=guess
 lin sleep_N = mkN "slaap" masculine ; -- status=guess
 lin sleep_V = L.sleep_V ;
+lin sleep_in_V = advV OP_sleep_V OP_in_Adv ; -- guess-p-verb
+lin sleep_off_V2 = prepV2 OP_sleep_V OP_off_Prep ; -- guess-p-verb
+lin sleep_on_V2 = prepV2 OP_sleep_V OP_on_Prep ; -- guess-p-verb
+lin sleep_over_V = advV OP_sleep_V OP_over_Adv ; -- guess-p-verb
+lin sleep_through_V2 = prepV2 OP_sleep_V OP_through_Prep ; -- guess-p-verb
 lin sleeper_N = mkN "dwarsligger" masculine | mkN "biels" utrum | mkN "biel" utrum ; -- status=guess status=guess status=guess
 lin sleeping_A = variants {} ; --
 lin sleeping_N = mkN "slaapzak" masculine ; -- status=guess
@@ -17575,7 +18544,6 @@ lin slide_N = mkN "glijbaan" feminine | mkN "schuifaf" feminine ; -- status=gues
 lin slide_V = mkV "slepen" | schuiven_V ; -- status=guess, src=wikt status=guess, src=wikt
 lin slide_V2 = mkV2 (mkV "slepen") | mkV2 (schuiven_V) ; -- status=guess, src=wikt status=guess, src=wikt
 lin slight_A = mkA "onbeduidend" ; -- status=guess
-lin slightly_Adv = mkAdv "lichtelijk" | mkAdv "tikkeltje" | adjAdv slight_A ; -- derived
 lin sligo_PN = mkPN "Sligo" ; -- src=geonames status=guess
 lin slim_A = mkA "slank" | mkA "dun" ; -- status=guess status=guess
 lin slim_V = mkV "vermageren" | mkV "lijnen" | mkV (mkV "aan") "de lijn doen" | mkV "afslanken" | mkV "diëten" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -17590,6 +18558,17 @@ lin slink_V = sluipen_V ; -- status=guess, src=wikt
 lin slip_N = mkN "slip" masculine ; -- status=guess
 lin slip_V = mkV "falen" ; -- status=guess, src=wikt
 lin slip_V2 = mkV2 (mkV "falen") ; -- status=guess, src=wikt
+lin slip_away_V = advV OP_slip_V OP_away_Adv ; -- guess-p-verb
+lin slip_by_V = advV OP_slip_V OP_by_Adv ; -- guess-p-verb
+lin slip_down_V = advV OP_slip_V OP_down_Adv ; -- guess-p-verb
+lin slip_in_V2 = prepV2 OP_slip_V OP_in_Prep ; -- guess-p-verb
+lin slip_into_V2 = prepV2 OP_slip_V OP_into_Prep ; -- guess-p-verb
+lin slip_off_V = advV OP_slip_V OP_off_Adv ; -- guess-p-verb
+lin slip_off_V2 = prepV2 OP_slip_V OP_off_Prep ; -- guess-p-verb
+lin slip_off_to_V2 = prepV2 (advV OP_slip_V OP_off_Adv ) OP_to_Prep ; -- guess-p-verb
+lin slip_on_V2 = prepV2 OP_slip_V OP_on_Prep ; -- guess-p-verb
+lin slip_out_V = advV OP_slip_V OP_out_Adv ; -- guess-p-verb
+lin slip_up_V = advV OP_slip_V OP_up_Adv ; -- guess-p-verb
 lin slipper_N = mkN "pantoffel" masculine ; -- status=guess
 lin slipperiness_N = mkN "gladheid" feminine ; -- status=guess
 lin slippery_A = mkA "glibberig" | mkA "glad" ; -- status=guess status=guess
@@ -17613,7 +18592,6 @@ lin slovenly_A = mkA "slordig" ; -- status=guess
 lin slow_A = mkA "traag" | mkA "langzaam" | mkA "sloom" ; -- status=guess status=guess status=guess
 lin slow_V = mkV "vertragen" | mkV "ophouden" ; -- status=guess, src=wikt status=guess, src=wikt
 lin slow_V2 = mkV2 (mkV "vertragen") | mkV2 (mkV "ophouden") ; -- status=guess, src=wikt status=guess, src=wikt
-lin slowly_Adv = mkAdv "traag" | mkAdv "langzaam" | mkAdv "langzaamaan" | adjAdv slow_A ; -- derived
 lin slowness_N = mkN "langzaamheid" | mkN "traagheid" feminine ; -- status=guess status=guess
 lin slug_N = mkN "slak" feminine | mkN "wijngaardslak" feminine | mkN "naaktslak" feminine ; -- status=guess status=guess status=guess
 lin sluggish_A = mkA "langzaam" ; -- status=guess
@@ -17653,13 +18631,13 @@ lin smog_N = mkN "smog" masculine ; -- status=guess
 lin smoke_N = L.smoke_N ;
 lin smoke_V = mkV "roken" ; -- status=guess, src=wikt
 lin smoke_V2 = mkV2 (mkV "roken") ; -- status=guess, src=wikt
+lin smoke_out_V2 = prepV2 OP_smoke_V OP_out_Prep ; -- guess-p-verb
 lin smokestack_N = mkN "schoorsteen" masculine ; -- status=guess
 lin smoking_N = mkN "roken" ; -- status=guess
 lin smooth_A = L.smooth_A ;
 lin smooth_N = mkN "gladhuidige" utrum ; -- status=guess
 lin smooth_V = mkV (mkV "glad") "maken" | mkV "gladstrijken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin smooth_V2 = mkV2 (mkV (mkV "glad") "maken") | mkV2 (mkV "gladstrijken") ; -- status=guess, src=wikt status=guess, src=wikt
-lin smoothly_Adv = adjAdv smooth_A ; -- -- derived
 lin smoothness_N = mkN "gladheid" ; -- status=guess
 lin smother_V2 = mkV2 (mkV "uitdoven") ; -- status=guess, src=wikt
 lin smug_A = mkA "zelfingenomen" ; -- status=guess
@@ -17674,6 +18652,11 @@ lin snakebite_N = mkN "slangenbeet" masculine ; -- status=guess
 lin snap_N = mkN "drukknoop" masculine ; -- status=guess
 lin snap_V = mkV "snauwen" ; -- status=guess, src=wikt
 lin snap_V2 = mkV2 (mkV "snauwen") ; -- status=guess, src=wikt
+lin snap_back_V = advV OP_snap_V OP_back_Adv ; -- guess-p-verb
+lin snap_off_V2 = prepV2 OP_snap_V OP_off_Prep ; -- guess-p-verb
+lin snap_out_of_V2 = prepV2 (advV OP_snap_V OP_out_Adv ) OP_of_Prep ; -- guess-p-verb
+lin snap_to_it_V2 = variants {} ; -- guess-p-verb
+lin snap_up_V2 = prepV2 OP_snap_V OP_up_Prep ; -- guess-p-verb
 lin snapdragon_N = mkN "leeuwenbek" masculine ; -- status=guess
 lin snappy_A = mkA "snel" ; -- status=guess
 lin snare_N = mkN "snarentrom" ; -- status=guess
@@ -17746,7 +18729,6 @@ lin social_N = mkN "Sociaal Darwinisme" ; -- status=guess
 lin socialism_N = mkN "socialisme" neuter ; -- status=guess
 lin socialist_A = mkA "socialistisch" | mkA "socialistische" ; -- status=guess status=guess
 lin socialist_N = mkN "socialist" masculine | mkN "socialiste" feminine ; -- status=guess status=guess
-lin socially_Adv = adjAdv social_A ; -- -- derived
 lin society_N = mkN "maatschappij" | mkN "samenleving" ; --- split mkN "societeit" corps society
 lin sociolinguistic_A = mkA "sociolinguïstisch" ; -- status=guess
 lin sociological_A = variants {} ; --
@@ -17764,7 +18746,6 @@ lin soft_A = mkA "zacht" ;
 lin soften_V = mkV "verzachten" ; -- status=guess, src=wikt
 lin soften_V2 = mkV2 (mkV "verzachten") ; -- status=guess, src=wikt
 lin softhearted_A = mkA "zachtzinnig" ; -- status=guess
-lin softly_Adv = mkAdv "zacht" | adjAdv soft_A ; -- status=guess -- derived
 lin software_N = mkN "software" masculine | mkN "programmatuur" masculine ;
 lin soggy_A = mkA "doorweekt" | mkA "doorweekte" | mkA "klef" ; -- status=guess status=guess status=guess
 lin soho_PN = mkPN "Soho" ; -- src=geonames status=guess
@@ -17781,7 +18762,6 @@ lin soldier_N = mkN "heilsoldaat" masculine | mkN "heilsoldate" feminine ; -- st
 lin sole_A = mkA "enig" ; -- status=guess
 lin sole_N = mkN "zool" masculine | mkN "schoenzool" masculine ; -- status=guess status=guess
 lin sole_V2 = mkV2 (mkV "zolen") ; -- status=guess, src=wikt
-lin solely_Adv = adjAdv sole_A ; -- -- derived
 lin solemn_A = mkA "ernstig" ; -- status=guess
 lin solenoid_N = mkN "solenoïde" feminine ; -- status=guess
 lin solicitorMasc_N = mkN "rechtskundig adviseur" masculine ; -- status=guess
@@ -17852,6 +18832,7 @@ lin sorry_Interj = mkInterj "sorry" | mkInterj "het spijt me" | mkInterj "pardon
 lin sort_N = mkN "soort" neuter ;
 lin sort_V = mkV "rangschikken" ; -- status=guess, src=wikt
 lin sort_V2 = mkV2 (mkV "rangschikken") ; -- status=guess, src=wikt
+lin sort_out_V2 = prepV2 OP_sort_V OP_out_Prep ; -- guess-p-verb
 lin sot_N = mkN "zot" masculine ; -- status=guess
 lin soul_N = mkN "ziel" feminine ; -- status=guess
 lin soulless_A = mkA "zielloos" ; -- status=guess
@@ -17861,6 +18842,8 @@ lin sound_V = klinken_V ;
 lin sound_V2 = mkV2 sound_V ;
 lin sound_VA = mkVA sound_V ;
 lin sound_VS = mkVS sound_V ;
+lin sound_off_V = advV OP_sound_V OP_off_Adv ; -- guess-p-verb
+lin sound_out_V2 = prepV2 OP_sound_V OP_out_Prep ; -- guess-p-verb
 lin soup_N = mkN "soep" feminine ; -- status=guess
 lin soupspoon_N = mkN "soeplepel" masculine ; -- status=guess
 lin sour_A = mkA "zuur" ; -- status=guess
@@ -17920,7 +18903,6 @@ lin spare_V2 = mkV2 (mkV "sparen") ; -- status=guess, src=wikt
 lin spark_N = mkN "vonk" ; -- status=guess
 lin sparrow_N = mkN "huismus" masculine feminine ; -- status=guess
 lin sparse_A = mkA "verspreid" ; -- status=guess
-lin sparsely_Adv = adjAdv sparse_A ; -- derived
 lin spasm_N = mkN "stuip" masculine feminine ; -- status=guess
 lin spat_N = mkN "gamasch" | mkN "overschoen" | mkN "overschoen" ; -- status=guess status=guess status=guess
 lin spat_V = mkV (mkV "ruzien") "" ; -- status=guess, src=wikt
@@ -17930,6 +18912,8 @@ lin spatula_N = mkN "spatel" utrum ; -- status=guess
 lin spay_V2 = mkV2 (mkV "steriliseren") ; -- status=guess, src=wikt
 lin speak_V = spreken_V ;
 lin speak_V2 = L.speak_V2 ;
+lin speak_out_V = advV OP_speak_V OP_out_Adv ; -- guess-p-verb
+lin speak_up_V = advV OP_speak_V OP_up_Adv ; -- guess-p-verb
 lin speaker_N = mkN "box" | mkN "luidspreker" | mkN "speaker" ; --- split mkN "spreker" ; speaker at a congress
 lin spear_N = mkN "speer" feminine | mkN "spies" feminine | mkN "lans" feminine | mkN "geer" masculine ; -- status=guess status=guess status=guess status=guess
 lin spearhead_N = mkN "speerpunt" masculine ; -- status=guess
@@ -17938,11 +18922,9 @@ lin specialist_A = variants {} ; --
 lin specialist_N = mkN "specialist" masculine feminine ; -- status=guess
 lin specialize_V = variants {} ; --
 lin specialize_V2 = variants {} ; --
-lin specially_Adv = adjAdv special_A ; -- -- derived
 lin specialty_N = mkN "specialiteit" feminine | mkN "terrein" neuter ; -- status=guess status=guess
 lin species_N = mkN "soort" feminine ;
 lin specific_A = mkA "specifiek" ;
-lin specifically_Adv = adjAdv specific_A ; -- -- derived
 lin specification_N = variants {} ; --
 lin specificity_N = mkN "specificiteit" ; -- status=guess
 lin specified_A = variants {} ; --
@@ -18023,6 +19005,8 @@ lin split_N = mkN "grand écart" masculine | mkN "spagaat" | mkN "split" masculi
 lin split_PN = mkPN "Split" ; -- src=geonames status=guess
 lin split_V = mkV "splitsen" | mkV "opsplitsen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin split_V2 = L.split_V2 ;
+lin split_up_V = advV OP_split_V OP_up_Adv ; -- guess-p-verb
+lin split_up_V2 = prepV2 OP_split_V OP_up_Prep ; -- guess-p-verb
 lin spoil_N = mkN "buit" feminine ; -- status=guess
 lin spoil_V = bederven_V ; -- status=guess, src=wikt
 lin spoil_V2 = mkV2 (bederven_V) ; -- status=guess, src=wikt
@@ -18037,7 +19021,6 @@ lin sponsor_N = variants {} ; --
 lin sponsor_V2 = mkV2 (mkV "sponsoren") ; -- status=guess, src=wikt
 lin sponsorship_N = variants {} ; --
 lin spontaneous_A = mkA "spontaan" ; -- status=guess
-lin spontaneously_Adv = mkAdv "spontaan" | adjAdv spontaneous_A ; -- status=guess -- derived
 lin spoof_N = mkN "grap" | mkN "mystificatie" | mkN "bedotterij" ; -- status=guess status=guess status=guess
 lin spoof_V2 = mkV2 (mkV "misleiden") | mkV2 (bedriegen_V) ; -- status=guess, src=wikt status=guess, src=wikt
 lin spook_N = mkN "spook" neuter | mkN "schijnsel" neuter ; -- status=guess status=guess
@@ -18064,6 +19047,7 @@ lin spray_V2 = variants {} ; --
 lin spread_N = variants {} ; --
 lin spread_V = mkV "spreiden" | mkV "verspreiden" ; ---- END edits by EdG
 lin spread_V2 = mkV2 spread_V ;
+lin spread_out_V2 = prepV2 OP_spread_V OP_out_Prep ; -- guess-p-verb
 lin spring_N = mkN "voorjaarsschoonmaak" ; -- status=guess
 lin spring_V = springen_V ; -- status=guess, src=wikt
 lin spring_V2 = mkV2 (springen_V) ; -- status=guess, src=wikt
@@ -18201,6 +19185,20 @@ lin stanchion_N = mkN "afsluiting" ; -- status=guess
 lin stand_N = mkN "positie" feminine ; -- status=guess
 lin stand_V = L.stand_V ;
 lin stand_V2 = mkV2 stand_V ;
+lin stand_about_V = advV OP_stand_V OP_about_Adv ; -- guess-p-verb
+lin stand_around_V = advV OP_stand_V OP_around_Adv ; -- guess-p-verb
+lin stand_aside_V = advV OP_stand_V OP_aside_Adv ; -- guess-p-verb
+lin stand_back_V = advV OP_stand_V OP_back_Adv ; -- guess-p-verb
+lin stand_by_V = advV OP_stand_V OP_by_Adv ; -- guess-p-verb
+lin stand_by_V2 = prepV2 OP_stand_V OP_by_Prep ; -- guess-p-verb
+lin stand_down_V = advV OP_stand_V OP_down_Adv ; -- guess-p-verb
+lin stand_for_V2 = prepV2 OP_stand_V OP_for_Prep ; -- guess-p-verb
+lin stand_in_for_V2 = prepV2 (advV OP_stand_V OP_in_Adv ) OP_for_Prep ; -- guess-p-verb
+lin stand_out_V = advV OP_stand_V OP_out_Adv ; -- guess-p-verb
+lin stand_up_V = advV OP_stand_V OP_up_Adv ; -- guess-p-verb
+lin stand_up_V2 = prepV2 OP_stand_V OP_up_Prep ; -- guess-p-verb
+lin stand_up_for_V2 = prepV2 (advV OP_stand_V OP_up_Adv ) OP_for_Prep ; -- guess-p-verb
+lin stand_up_to_V2 = prepV2 (advV OP_stand_V OP_up_Adv ) OP_to_Prep ; -- guess-p-verb
 lin standard_A = mkA "standaard" ;
 lin standard_N = mkN "standaard" utrum ;
 lin standing_N = mkN "domiciliëring" feminine ; -- status=guess
@@ -18227,6 +19225,19 @@ lin starling_N = mkN "spreeuw" masculine ; -- status=guess
 lin start_N = mkN "start" | mkN "begin" neuter | mkN "aanvangst" ;
 lin start_V = mkV "starten" | beginnen_V | mkV "aanvangen" ;
 lin start_V2 = mkV2 (mkV "starten") | mkV2 (beginnen_V) | mkV2 (mkV "aanvangen") ;
+lin start_ing_VV = variants {} ; -- guess-p-verb
+lin start_off_V = advV OP_start_V OP_off_Adv ; -- guess-p-verb
+lin start_off_V2 = prepV2 OP_start_V OP_off_Prep ; -- guess-p-verb
+lin start_off_on_V2 = prepV2 (advV OP_start_V OP_off_Adv ) OP_on_Prep ; -- guess-p-verb
+lin start_on_V2 = prepV2 OP_start_V OP_on_Prep ; -- guess-p-verb
+lin start_on_at_V2 = prepV2 (advV OP_start_V OP_on_Adv ) OP_at_Prep ; -- guess-p-verb
+lin start_out_V = advV OP_start_V OP_out_Adv ; -- guess-p-verb
+lin start_out_as_V2 = prepV2 (advV OP_start_V OP_out_Adv ) OP_as_Prep ; -- guess-p-verb
+lin start_out_to_V2 = prepV2 (advV OP_start_V OP_out_Adv ) OP_to_Prep ; -- guess-p-verb
+lin start_over_V = advV OP_start_V OP_over_Adv ; -- guess-p-verb
+lin start_to_VV = variants {} ; -- guess-p-verb
+lin start_up_V = advV OP_start_V OP_up_Adv ; -- guess-p-verb
+lin start_up_V2 = prepV2 OP_start_V OP_up_Prep ; -- guess-p-verb
 lin starter_N = mkN "voorgerecht" neuter | mkN "voorafje" neuter ; -- status=guess status=guess
 lin startle_V2 = mkV2 (mkV (mkV "laten") "schrikken") ; -- status=guess, src=wikt
 lin starvation_N = mkN "uithongering" ; -- status=guess
@@ -18243,7 +19254,6 @@ lin static_A = variants {} ; --
 lin static_N = mkN "statisch" ; -- status=guess
 lin station_N = mkN "station" | mkN "halte" feminine ;
 lin statistical_A = variants {} ; --
-lin statistically_Adv = adjAdv statistical_A ; -- derived
 lin statistics_N = mkN "statistiek" feminine ; -- status=guess
 lin statue_N = mkN "standbeeld" neuter ; -- status=guess
 lin status_N = mkN "status" ;
@@ -18256,8 +19266,14 @@ lin stave_V2 = mkV2 (mkV "afweren") ; -- status=guess, src=wikt
 lin stay_N = mkN "verblijf" neuter ; -- status=guess
 lin stay_V = blijven_V | fixprefixV "ver" blijven_V ;
 lin stay_VA = mkVA (blijven_V) | mkVA (fixprefixV "ver" blijven_V) ;
+lin stay_away_V = advV OP_stay_V OP_away_Adv ; -- guess-p-verb
+lin stay_away_from_V2 = prepV2 (advV OP_stay_V OP_away_Adv ) OP_from_Prep ; -- guess-p-verb
+lin stay_in_V = advV OP_stay_V OP_in_Adv ; -- guess-p-verb
+lin stay_on_V = advV OP_stay_V OP_on_Adv ; -- guess-p-verb
+lin stay_out_V = advV OP_stay_V OP_out_Adv ; -- guess-p-verb
+lin stay_over_V = advV OP_stay_V OP_over_Adv ; -- guess-p-verb
+lin stay_up_V = advV OP_stay_V OP_up_Adv ; -- guess-p-verb
 lin std_PN = mkPN "Std" ; -- src=eng status=guess
-lin steadily_Adv = adjAdv steady_A ; -- -- derived
 lin steady_A = variants {} ; --
 lin steady_V = mkV "stabiliseren" ; -- status=guess, src=wikt
 lin steady_V2 = mkV2 (mkV "stabiliseren") ; -- status=guess, src=wikt
@@ -18265,6 +19281,11 @@ lin steak_N = mkN "biefstuk" masculine | mkN "steak" masculine ; -- status=guess
 lin steal_N = mkN "koopje" neuter ; -- status=guess
 lin steal_V = stelen_V ; -- status=guess, src=wikt
 lin steal_V2 = mkV2 (stelen_V) ; -- status=guess, src=wikt
+lin steal_away_V = advV OP_steal_V OP_away_Adv ; -- guess-p-verb
+lin steal_out_V = advV OP_steal_V OP_out_Adv ; -- guess-p-verb
+lin steal_over_V2 = prepV2 OP_steal_V OP_over_Prep ; -- guess-p-verb
+lin steal_up_V = advV OP_steal_V OP_up_Adv ; -- guess-p-verb
+lin steal_up_on_V2 = prepV2 (advV OP_steal_V OP_up_Adv ) OP_on_Prep ; -- guess-p-verb
 lin stealth_N = mkN "steels" | mkN "stiekem" ; -- status=guess status=guess
 lin steam_N = mkN "stoommachine" feminine ; -- status=guess
 lin steam_V = mkV "stomen" ; -- status=guess, src=wikt
@@ -18293,6 +19314,16 @@ lin stenosis_N = mkN "adervernauwing" ; -- status=guess
 lin step_N = mkN "stap" masculine ;
 lin step_V = gaan_V ; -- status=guess, src=wikt
 lin step_V2 = mkV2 (gaan_V) ; -- status=guess, src=wikt
+lin step_aside_V = advV OP_step_V OP_aside_Adv ; -- guess-p-verb
+lin step_back_V = advV OP_step_V OP_back_Adv ; -- guess-p-verb
+lin step_down_V = advV OP_step_V OP_down_Adv ; -- guess-p-verb
+lin step_down_V2 = prepV2 OP_step_V OP_down_Prep ; -- guess-p-verb
+lin step_forward_V = advV OP_step_V OP_forward_Adv ; -- guess-p-verb
+lin step_in_V = advV OP_step_V OP_in_Adv ; -- guess-p-verb
+lin step_on_it_V2 = variants {} ; -- guess-p-verb
+lin step_out_V = advV OP_step_V OP_out_Adv ; -- guess-p-verb
+lin step_to_V2 = prepV2 OP_step_V OP_to_Prep ; -- guess-p-verb
+lin step_up_V2 = prepV2 OP_step_V OP_up_Prep ; -- guess-p-verb
 lin stepbrother_N = mkN "stiefbroer" masculine ; -- status=guess
 lin stepdaughter_N = mkN "stiefdochter" feminine ; -- status=guess
 lin stepfather_N = mkN "stiefvader" masculine ; -- status=guess
@@ -18302,7 +19333,6 @@ lin stepmother_N = mkN "stiefmoeder" feminine ; -- status=guess
 lin stepson_N = mkN "stiefzoon" masculine ; -- status=guess
 lin steradian_N = mkN "steradiaal" masculine ; -- status=guess
 lin stereotypical_A = variants {} ;
-lin stereotypically_Adv = adjAdv stereotypical_A ; -- derived
 lin sterile_A = mkA "onvruchtbaar" | mkA "steriel" ; -- status=guess status=guess
 lin sterilize_V = mkV "steriliseer" ; -- status=guess, src=wikt
 lin sterilize_V2 = mkV2 (mkV "steriliseer") ; -- status=guess, src=wikt
@@ -18323,6 +19353,20 @@ lin steyning_PN = mkPN "Steyning" ; -- src=geonames status=guess
 lin stick_N = L.stick_N ;
 lin stick_V = mkV "kleven" | mkV "plakken" ;
 lin stick_V2 = mkV2 stick_V ;
+lin stick_around_V = advV OP_stick_V OP_around_Adv ; -- guess-p-verb
+lin stick_at_V2 = prepV2 OP_stick_V OP_at_Prep ; -- guess-p-verb
+lin stick_by_V2 = prepV2 OP_stick_V OP_by_Prep ; -- guess-p-verb
+lin stick_down_V2 = prepV2 OP_stick_V OP_down_Prep ; -- guess-p-verb
+lin stick_it_to_V2 = variants {} ; -- guess-p-verb
+lin stick_out_V = advV OP_stick_V OP_out_Adv ; -- guess-p-verb
+lin stick_out_V2 = prepV2 OP_stick_V OP_out_Prep ; -- guess-p-verb
+lin stick_out_for_V2 = prepV2 (advV OP_stick_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin stick_to_V2 = prepV2 OP_stick_V OP_to_Prep ; -- guess-p-verb
+lin stick_together_V = advV OP_stick_V OP_together_Adv ; -- guess-p-verb
+lin stick_up_V = advV OP_stick_V OP_up_Adv ; -- guess-p-verb
+lin stick_up_V2 = prepV2 OP_stick_V OP_up_Prep ; -- guess-p-verb
+lin stick_up_for_V2 = prepV2 (advV OP_stick_V OP_up_Adv ) OP_for_Prep ; -- guess-p-verb
+lin stick_with_V2 = prepV2 OP_stick_V OP_with_Prep ; -- guess-p-verb
 lin sticker_N = mkN "sticker" masculine | mkN "klever" masculine ; -- status=guess status=guess
 lin sticky_A = variants {} ; --
 lin stiff_A = mkA "stevig" ; -- status=guess
@@ -18353,6 +19397,7 @@ lin stipulate_VS = mkVS (mkV "bedingen") ; -- status=guess, src=wikt
 lin stir_N = mkN "roerbakschotel" ; -- status=guess
 lin stir_V = mkV "roeren" ; -- status=guess, src=wikt
 lin stir_V2 = mkV2 (mkV "roeren") ; -- status=guess, src=wikt
+lin stir_up_V2 = prepV2 OP_stir_V OP_up_Prep ; -- guess-p-verb
 lin stirling_PN = mkPN "Stirling" ; -- src=geonames status=guess
 lin stirrup_N = mkN "stijgbeugel" masculine ; -- status=guess
 lin stitch_N = variants {} ; --
@@ -18389,6 +19434,16 @@ lin stop_N = mkN "occlusief" masculine ; -- status=guess
 lin stop_V = L.stop_V ;
 lin stop_V2 = mkV2 (mkV "stoppen") ;
 lin stop_VV = mkVV stop_V ; --- stoppen met, but mkVV has no V -> Prep -> VV at the moment
+lin stop_around_V = advV OP_stop_V OP_around_Adv ; -- guess-p-verb
+lin stop_back_V = advV OP_stop_V OP_back_Adv ; -- guess-p-verb
+lin stop_behind_V = advV OP_stop_V OP_behind_Adv ; -- guess-p-verb
+lin stop_by_V2 = prepV2 OP_stop_V OP_by_Prep ; -- guess-p-verb
+lin stop_in_V = advV OP_stop_V OP_in_Adv ; -- guess-p-verb
+lin stop_off_V = advV OP_stop_V OP_off_Adv ; -- guess-p-verb
+lin stop_out_V = advV OP_stop_V OP_out_Adv ; -- guess-p-verb
+lin stop_over_V = advV OP_stop_V OP_over_Adv ; -- guess-p-verb
+lin stop_up_V = advV OP_stop_V OP_up_Adv ; -- guess-p-verb
+lin stop_up_V2 = prepV2 OP_stop_V OP_up_Prep ; -- guess-p-verb
 lin storage_N = mkN "opslag" masculine ; -- status=guess
 lin store_N = mkN "magazijn" neuter ; -- status=guess
 lin store_V2 = mkV2 (mkV "opslaan") ; -- status=guess, src=wikt
@@ -18421,7 +19476,6 @@ lin strait_N = mkN "nauw" neuter ; -- status=guess
 lin straitjacket_N = mkN "dwangbuis" ; -- status=guess
 lin strand_N = variants {} ; --
 lin strange_A = mkA "vreemd" | mkA "raar" ;
-lin strangely_Adv = adjAdv strange_A ; -- -- derived
 lin stranger_N = mkN "vreemde" masculine ; -- status=guess
 lin strangle_V2 = mkV2 (mkV "wurgen") | mkV2 (mkV "worgen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin stranglehold_N = mkN "verwurging" feminine ; -- status=guess
@@ -18431,7 +19485,6 @@ lin strap_N = variants {} ; --
 lin strasbourg_PN = mkPN "Straatsburg" ; -- src=geonames status=guess
 lin strategic_A = mkA "strategisch" ; -- status=guess
 lin strategical_A = variants {} ;
-lin strategically_Adv = mkAdv "strategisch" | adjAdv strategical_A ; -- status=guess -- derived
 lin strategist_N = mkN "strateeg" masculine ; -- status=guess
 lin strategy_N = mkN "strategie" ;
 lin stratford_on_avon_PN = mkPN "Stratford-on-avon" ; -- src=eng status=guess
@@ -18453,11 +19506,11 @@ lin stress_VS = variants {} ; --
 lin stretch_N = mkN "rek" masculine ; -- status=guess
 lin stretch_V = mkV "rekken" ; -- status=guess, src=wikt
 lin stretch_V2 = mkV2 (mkV "rekken") ; -- status=guess, src=wikt
+lin stretch_out_V = advV OP_stretch_V OP_out_Adv ; -- guess-p-verb
 lin stretcher_N = mkN "kader" neuter | mkN "frame" neuter ; -- status=guess status=guess
 lin stretford_PN = mkPN "Stretford" ; -- src=geonames status=guess
 lin strew_V2 = mkV2 (mkV "strooien") | mkV2 (mkV "bestrooien") ; -- status=guess, src=wikt status=guess, src=wikt
 lin strict_A = mkA "streng" ; -- status=guess
-lin strictly_Adv = adjAdv strict_A ; -- -- derived
 lin stride_V = mkV "schrijden" ; -- status=guess, src=wikt
 lin strife_N = mkN "geschil" neuter | mkN "vijandige rivaliteit" | mkN "strijd" | mkN "conflict" ; -- status=guess status=guess status=guess status=guess
 lin strike_1_N = variants {} ; --
@@ -18465,6 +19518,16 @@ lin strike_2_N = variants {} ; --
 lin strike_N = mkN "staking" ; -- status=guess
 lin strike_V = mkV "door" (mkV "strepen") | mkV "uit" (mkV "wissen") | mkV "wissen" ; --- split mkV "staken" ; hunger strike
 lin strike_V2 = mkV2 (mkV "doorstrepen") | mkV2 (mkV "uitwissen") | mkV2 (mkV "wissen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin strike_back_V = advV OP_strike_V OP_back_Adv ; -- guess-p-verb
+lin strike_down_V = advV OP_strike_V OP_down_Adv ; -- guess-p-verb
+lin strike_down_V2 = prepV2 OP_strike_V OP_down_Prep ; -- guess-p-verb
+lin strike_off_V2 = prepV2 OP_strike_V OP_off_Prep ; -- guess-p-verb
+lin strike_on_V2 = prepV2 OP_strike_V OP_on_Prep ; -- guess-p-verb
+lin strike_out_V = advV OP_strike_V OP_out_Adv ; -- guess-p-verb
+lin strike_out_V2 = prepV2 OP_strike_V OP_out_Prep ; -- guess-p-verb
+lin strike_up_V = advV OP_strike_V OP_up_Adv ; -- guess-p-verb
+lin strike_up_V2 = prepV2 OP_strike_V OP_up_Prep ; -- guess-p-verb
+lin strike_upon_V2 = prepV2 OP_strike_V OP_upon_Prep ; -- guess-p-verb
 lin striker_N = variants {} ; --
 lin striking_A = mkA "opvallend" | mkA "treffend" ; -- status=guess status=guess
 lin string_N = mkN "draad" masculine ; -- status=guess
@@ -18483,18 +19546,17 @@ lin stroll_N = mkN "wandeling" ; -- status=guess
 lin stroll_V = mkV "slenteren" | mkV "wandelen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin stroller_N = mkN "kinderwagen" masculine ; -- status=guess
 lin strong_A = mkA "sterk" | mkA "krachtig" ;
-lin strongly_Adv = adjAdv strong_A ; -- -- derived
 lin strontium_N = mkN "strontium" neuter ; -- status=guess
 lin strop_N = mkN "riem" masculine ; -- status=guess
 lin strop_V2 = mkV2 (mkV "wetten") ; -- status=guess, src=wikt
 lin stroud_PN = mkPN "Stroud" ; -- src=geonames status=guess
 lin structural_A = mkA "structureel" ; -- status=guess
-lin structurally_Adv = adjAdv structural_A ; -- derived
 lin structure_N = mkN "structuur" feminine ; --- split mkN "gebouw" building
 lin structure_V2 = mkV2 (mkV "structureren") ; -- status=guess, src=wikt
 lin struggle_N = mkN "gevecht" | mkN "strijd" ; -- status=guess status=guess
 lin struggle_V = vechten_V | mkV "worstelen" | mkV (mkV "moeite") "hebben met" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin struggle_VV = mkVV (vechten_V) | mkVV (mkV "worstelen") | mkVV (mkV (mkV "moeite") "hebben met") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin struggle_back_V = advV OP_struggle_V OP_back_Adv ; -- guess-p-verb
 lin strumpet_N = mkN "hoer" feminine | mkN "lichtekooi" feminine ; -- status=guess status=guess
 lin strut_V = mkV "paraderen" ; -- status=guess, src=wikt
 lin strychnine_N = mkN "strychnine" ; -- status=guess
@@ -18570,7 +19632,6 @@ lin subscribe_V = mkV "abonneren" ; -- status=guess, src=wikt
 lin subscribe_V2 = mkV2 (mkV "abonneren") ; -- status=guess, src=wikt
 lin subscription_N = variants {} ; --
 lin subsequent_A = mkA "volgend" | mkA "subsequent" ;
-lin subsequently_Adv = mkAdv "hierop" | mkAdv "vervolgens" | adjAdv subsequent_A ; -- status=guess status=guess -- derived
 lin subset_N = mkN "deelverzameling" ; -- status=guess
 lin subside_V = mkV "kalmeren" | mkV "milderen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin subsidiary_N = mkN "dochterbedrijf" neuter | mkN "filiaal" feminine ; -- status=guess status=guess
@@ -18578,7 +19639,6 @@ lin subsidize_V2 = mkV2 (mkV "subsidiëren") ; -- status=guess, src=wikt
 lin subsidy_N = mkN "subsidie" feminine ; -- status=guess
 lin substance_N = mkN "drugsmisbruik" neuter ; -- status=guess
 lin substantial_A = mkA "substantieel" ;
-lin substantially_Adv = adjAdv substantial_A ; -- -- derived
 lin substantive_A = variants {} ; --
 lin substantive_N = mkN "zelfstandig naamwoord" neuter | mkN "substantief" neuter ; -- status=guess status=guess
 lin substitute_N = mkN "vervanger" masculine | mkN "plaatsvervanger" masculine | mkN "vervanging" feminine ; -- status=guess status=guess status=guess
@@ -18599,10 +19659,8 @@ lin succeed_V = mkV "navolgen" | mkV "slagen" | mkV "lukken" ; -- status=guess, 
 lin succeed_V2 = mkV2 (mkV "navolgen") | mkV2 (mkV "slagen") | mkV2 (mkV "lukken") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin success_N = mkN "succes" neuter | mkN "welgang" masculine ;
 lin successful_A = mkA "succesvol" | mkA "geslaagd" | mkA "gelukt" ;
-lin successfully_Adv = mkAdv "met succes" | adjAdv successful_A ; -- status=guess -- derived
 lin succession_N = mkN "opeenvolging" ; -- status=guess
 lin successive_A = variants {} ; --
-lin successively_Adv = mkAdv "achtereenvolgens" | adjAdv successive_A ; -- status=guess -- derived
 lin successor_N = mkN "opvolger" masculine | mkN "opvolgster" feminine ; -- status=guess status=guess
 lin succinct_A = mkA "bondig" ; -- status=guess
 lin suchow_PN = mkPN "Suchow" ; -- src=eng status=guess
@@ -18613,7 +19671,6 @@ lin sucrose_N = mkN "sacharose " masculine ; -- status=guess
 lin sudan_PN = mkPN "Soedan" ; -- src=geonames status=guess
 lin sudbury_PN = mkPN "Sudbury" ; -- src=geonames status=guess
 lin sudden_A = mkA "plotseling" | mkA "plotselinge" ; -- status=guess status=guess
-lin suddenly_Adv = mkAdv "plotseling" | mkAdv "plots" | mkAdv "plotsklaps" | mkAdv "ineens" | mkAdv "pardoes" | adjAdv sudden_A ; -- derived
 lin suds_N = mkN "sop" neuter ; -- status=guess
 lin sue_PN = mkPN "Sue" ; -- src=eng status=guess
 lin sue_V = mkV "aanklagen" ; -- status=guess, src=wikt
@@ -18628,7 +19685,6 @@ lin suffice_V = mkV (mkV "genoeg") "zijn" | mkV "volstaan" | mkV "voldoen" ; -- 
 lin suffice_V2 = mkV2 (mkV (mkV "genoeg") "zijn") | mkV2 (mkV "volstaan") | mkV2 (mkV "voldoen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin suffice_V2V = mkV2V (mkV (mkV "genoeg") "zijn") | mkV2V (mkV "volstaan") | mkV2V (mkV "voldoen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin sufficient_A = mkA "voldoende" ; -- status=guess
-lin sufficiently_Adv = adjAdv sufficient_A ; -- -- derived
 lin suffix_N = mkN "achtervoegsel" neuter | mkN "suffix" masculine | mkN "aanhangsel" neuter ; -- status=guess status=guess status=guess
 lin suffocate_V = mkV "verstikken" ; -- status=guess, src=wikt
 lin suffocate_V2 = mkV2 (mkV "verstikken") ; -- status=guess, src=wikt
@@ -18642,6 +19698,7 @@ lin suicide_N = mkN "zelfmoordbrief" masculine ; -- status=guess
 lin suit_N = mkN "kleur" ; -- status=guess
 lin suit_V = variants {} ; --
 lin suit_V2 = variants {} ; --
+lin suit_up_V = advV OP_suit_V OP_up_Adv ; -- guess-p-verb
 lin suitability_N = mkN "geschiktheid" ; -- status=guess
 lin suitable_A = mkA "geschikt" ; -- status=guess
 lin suitcase_N = mkN "valies" feminine | mkN "koffer" utrum ; -- status=guess status=guess
@@ -18720,7 +19777,6 @@ lin supporting_A = variants {} ; --
 lin suppose_V2 = mkV2 (mkV "aan" nemen_V) ;
 lin suppose_VS = mkVS (mkV "aan" nemen_V) ;
 lin supposed_A = mkA "vermeend" ; -- status=guess
-lin supposedly_Adv = adjAdv supposed_A ; -- -- derived
 lin suppository_N = mkN "zetpil" feminine | mkN "suppositoir" masculine | mkN "suppo" masculine ; -- status=guess status=guess status=guess
 lin suppress_V2 = mkV2 (mkV "onderdrukken") ; -- status=guess, src=wikt
 lin supremacy_N = mkN "suprematie" feminine ; -- status=guess
@@ -18732,7 +19788,6 @@ lin surcharge_N = mkN "toeslag" ; -- status=guess
 lin sure_A = mkA "zeker" ;
 lin sure_Adv = variants {} ; --
 lin surefooted_A = mkA "zelfzeker" | mkA "zelfverzekerd" ; -- status=guess status=guess
-lin surely_Adv = mkAdv "zeker" | mkAdv "vast" | adjAdv sure_A ; -- derived
 lin surface_N = mkN "oppervlak" neuter ;
 lin surfboard_N = mkN "surfplank" ; -- status=guess
 lin surgeon_N = mkN "chirurg" ; -- status=guess
@@ -18748,9 +19803,7 @@ lin surprise_N = mkN "verrassings-" | mkN "verrassend" | mkN "onverwacht" ; -- s
 lin surprise_V2 = mkV2 (mkV "verbazen") | mkV2 (mkV "verrassen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin surprise_V2V = mkV2V (mkV "verbazen") | mkV2V (mkV "verrassen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin surprised_A = mkA "verbaasd" ; -- status=guess
-lin surprisedly_Adv = adjAdv surprised_A ; -- derived
 lin surprising_A = mkA "verrassend" ; -- status=guess
-lin surprisingly_Adv = mkAdv "verrassend" | adjAdv surprising_A ; -- status=guess -- derived
 lin surrealism_N = mkN "Surrealisme" neuter ; -- status=guess
 lin surrealistic_A = mkA "surrealistisch" ; -- status=guess
 lin surrender_N = mkN "overgave" feminine ; -- status=guess
@@ -18825,6 +19878,7 @@ lin sweaty_A = mkA "bezweet" ; -- status=guess
 lin sweden_PN = mkPN "Zweden" ; -- src=geonames status=guess
 lin sweep_V = mkV (mkV "iets") "onder het tapijt vegen" ; -- status=guess, src=wikt
 lin sweep_V2 = mkV2 (mkV (mkV "iets") "onder het tapijt vegen") ; -- status=guess, src=wikt
+lin sweep_through_V2 = prepV2 OP_sweep_V OP_through_Prep ; -- guess-p-verb
 lin sweet_A = mkA "zoetzuur" ; -- status=guess
 lin sweet_N = mkN "snoep " neuter | mkN "snoepje" neuter ; -- status=guess status=guess
 lin sweetbread_N = mkN "zwezerik" masculine ; -- status=guess
@@ -18840,7 +19894,6 @@ lin swell_V2 = mkV2 (zwellen_V) | mkV2 (mkV "opzwellen") | mkV2 (mkV "aanzwellen
 lin swerve_V = zwerven_V ; -- status=guess, src=wikt
 lin swerve_V2 = mkV2 (zwerven_V) ; -- status=guess, src=wikt
 lin swift_A = variants {} ; --
-lin swiftly_Adv = adjAdv swift_A ; -- -- derived
 lin swill_N = mkN "slobber" masculine ; -- status=guess
 lin swim_N = mkN "zwemmen" neuter ; -- status=guess
 lin swim_V = L.swim_V ;
@@ -18856,6 +19909,10 @@ lin swine_N = mkN "smeerlap" masculine ; -- status=guess
 lin swing_N = mkN "schommel" masculine ; -- status=guess
 lin swing_V = mkV "schommelen" | mkV "zwaaien" ; -- status=guess, src=wikt status=guess, src=wikt
 lin swing_V2 = mkV2 (mkV "schommelen") | mkV2 (mkV "zwaaien") ; -- status=guess, src=wikt status=guess, src=wikt
+lin swing_around_V = advV OP_swing_V OP_around_Adv ; -- guess-p-verb
+lin swing_at_V2 = prepV2 OP_swing_V OP_at_Prep ; -- guess-p-verb
+lin swing_by_V = advV OP_swing_V OP_by_Adv ; -- guess-p-verb
+lin swing_round_V = advV OP_swing_V OP_round_Adv ; -- guess-p-verb
 lin swinton_PN = mkPN "Swinton" ; -- src=geonames status=guess
 lin swipe_V2 = mkV2 (mkV "jatten") ; -- status=guess, src=wikt
 lin switch8off_V2 = L.switch8off_V2 ;
@@ -18863,6 +19920,8 @@ lin switch8on_V2 = L.switch8on_V2 ;
 lin switch_N = mkN "schakelaar" masculine ; -- status=guess
 lin switch_V = mkV "uitzetten" ; -- status=guess, src=wikt
 lin switch_V2 = mkV2 (mkV "uitzetten") ; -- status=guess, src=wikt
+lin switch_off_V2 = prepV2 OP_switch_V OP_off_Prep ; -- guess-p-verb
+lin switch_on_V2 = prepV2 OP_switch_V OP_on_Prep ; -- guess-p-verb
 lin switchblade_N = mkN "stiletto" masculine ; -- status=guess
 lin switzerland_PN = mkPN "Zwitserland" ; -- src=geonames status=guess
 lin swoon_N = mkN "bezwijming" ; -- status=guess
@@ -18959,6 +20018,31 @@ lin taiwan_PN = mkPN "China" ; -- src=geonames status=guess
 lin taiyuan_PN = mkPN "Taiyuan" ; -- src=geonames status=guess
 lin take_N = mkN "nemen" ; -- status=guess
 lin take_V2 = mkV2 I.nemen_V ;
+lin take_after_V2 = prepV2 (lin V OP_take_V2) OP_after_Prep ; -- guess-p-verb
+lin take_apart_V2 = mkV2 (advV (lin V OP_take_V2) OP_apart_Adv ) ; -- guess-p-verb
+lin take_aside_V2 = mkV2 (advV (lin V OP_take_V2) OP_aside_Adv ) ; -- guess-p-verb
+lin take_away_V2 = mkV2 (advV (lin V OP_take_V2) OP_away_Adv ) ; -- guess-p-verb
+lin take_back_V = advV (lin V OP_take_V2) OP_back_Adv ; -- guess-p-verb
+lin take_back_V2 = mkV2 (advV (lin V OP_take_V2) OP_back_Adv ) ; -- guess-p-verb
+lin take_down_V2 = prepV2 (lin V OP_take_V2) OP_down_Prep ; -- guess-p-verb
+lin take_for_V2 = prepV2 (lin V OP_take_V2) OP_for_Prep ; -- guess-p-verb
+lin take_in_V = advV (lin V OP_take_V2) OP_in_Adv ; -- guess-p-verb
+lin take_in_V2 = prepV2 (lin V OP_take_V2) OP_in_Prep ; -- guess-p-verb
+lin take_it_V2 = variants {} ; -- guess-p-verb
+lin take_it_out_on_V2 = variants {} ; -- guess-p-verb
+lin take_it_upon_yourself_V = variants {} ; -- guess-p-verb
+lin take_off_V = advV (lin V OP_take_V2) OP_off_Adv ; -- guess-p-verb
+lin take_off_V2 = prepV2 (lin V OP_take_V2) OP_off_Prep ; -- guess-p-verb
+lin take_on_V = advV (lin V OP_take_V2) OP_on_Adv ; -- guess-p-verb
+lin take_on_V2 = prepV2 (lin V OP_take_V2) OP_on_Prep ; -- guess-p-verb
+lin take_out_V = advV (lin V OP_take_V2) OP_out_Adv ; -- guess-p-verb
+lin take_out_V2 = prepV2 (lin V OP_take_V2) OP_out_Prep ; -- guess-p-verb
+lin take_over_V = advV (lin V OP_take_V2) OP_over_Adv ; -- guess-p-verb
+lin take_over_V2 = prepV2 (lin V OP_take_V2) OP_over_Prep ; -- guess-p-verb
+lin take_through_V2 = prepV2 (lin V OP_take_V2) OP_through_Prep ; -- guess-p-verb
+lin take_to_V2 = prepV2 (lin V OP_take_V2) OP_to_Prep ; -- guess-p-verb
+lin take_up_V = advV (lin V OP_take_V2) OP_up_Adv ; -- guess-p-verb
+lin take_up_V2 = prepV2 (lin V OP_take_V2) OP_up_Prep ; -- guess-p-verb
 lin takeover_N = variants {} ; --
 lin tale_N = mkN "vertelsel" neuter | mkN "verhaaltje" neuter ; -- status=guess status=guess
 lin talent_N = mkN "talent" ; -- status=guess
@@ -18968,6 +20052,20 @@ lin talk_N = mkN "praatje" neuter | mkN "gesprek" neuter | mkN "conversatie" fem
 lin talk_V = mkV "praten" | spreken_V | mkV "overleggen" ;
 lin talk_V2 = mkV2 (mkV "praten") | mkV2 (spreken_V) | mkV2 (mkV "overleggen") ;
 lin talk_V3 = L.talk_V3 ;
+lin talk_around_V2 = prepV2 OP_talk_V OP_around_Prep ; -- guess-p-verb
+lin talk_at_V2 = prepV2 OP_talk_V OP_at_Prep ; -- guess-p-verb
+lin talk_back_V = advV OP_talk_V OP_back_Adv ; -- guess-p-verb
+lin talk_back_to_V2 = prepV2 (advV OP_talk_V OP_back_Adv ) OP_to_Prep ; -- guess-p-verb
+lin talk_down_V2 = prepV2 OP_talk_V OP_down_Prep ; -- guess-p-verb
+lin talk_down_to_V2 = prepV2 (advV OP_talk_V OP_down_Adv ) OP_to_Prep ; -- guess-p-verb
+lin talk_into_V3 = variants {} ; -- guess-p-verb
+lin talk_out_V2 = prepV2 OP_talk_V OP_out_Prep ; -- guess-p-verb
+lin talk_out_of_V3 = variants {} ; -- guess-p-verb
+lin talk_over_V2 = prepV2 OP_talk_V OP_over_Prep ; -- guess-p-verb
+lin talk_round_V2 = prepV2 OP_talk_V OP_round_Prep ; -- guess-p-verb
+lin talk_through_V3 = variants {} ; -- guess-p-verb
+lin talk_up_V2 = prepV2 OP_talk_V OP_up_Prep ; -- guess-p-verb
+lin talk_yourself_out_V = variants {} ; -- guess-p-verb
 lin talkative_A = mkA "spraakzaam" | mkA "praatgraag" | mkA "babbelziek" ; -- status=guess status=guess status=guess
 lin talking_N = variants {} ; --
 lin tall_A = mkA "hoog" ; -- status=guess
@@ -19002,6 +20100,11 @@ lin tanzania_PN = mkPN "Tanzania" ; -- src=geonames status=guess
 lin tap_N = mkN "kraan" feminine ; -- status=guess
 lin tap_V = mkV "draadtappen" ; -- status=guess, src=wikt
 lin tap_V2 = mkV2 (mkV "draadtappen") ; -- status=guess, src=wikt
+lin tap_for_V3 = variants {} ; -- guess-p-verb
+lin tap_into_V2 = prepV2 OP_tap_V OP_into_Prep ; -- guess-p-verb
+lin tap_off_with_V2 = prepV2 (advV OP_tap_V OP_off_Adv ) OP_with_Prep ; -- guess-p-verb
+lin tap_out_V2 = prepV2 OP_tap_V OP_out_Prep ; -- guess-p-verb
+lin tap_up_V2 = prepV2 OP_tap_V OP_up_Prep ; -- guess-p-verb
 lin tape_N = mkN "plakband" neuter ; -- status=guess
 lin taper_N = mkN "kaars" ; -- status=guess
 lin taper_V = mkV "versmallen" ; -- status=guess, src=wikt
@@ -19081,18 +20184,26 @@ lin teapot_N = mkN "theepot" masculine ; -- status=guess
 lin tear_N = mkN "traan" ; -- status=guess
 lin tear_V = mkV "scheuren" ; -- status=guess, src=wikt
 lin tear_V2 = mkV2 (mkV "scheuren") ; -- status=guess, src=wikt
+lin tear_apart_V2 = mkV2 (advV OP_tear_V OP_apart_Adv ) ; -- guess-p-verb
+lin tear_at_V2 = prepV2 OP_tear_V OP_at_Prep ; -- guess-p-verb
+lin tear_away_V2 = mkV2 (advV OP_tear_V OP_away_Adv ) ; -- guess-p-verb
+lin tear_down_V2 = prepV2 OP_tear_V OP_down_Prep ; -- guess-p-verb
+lin tear_into_V2 = prepV2 OP_tear_V OP_into_Prep ; -- guess-p-verb
+lin tear_off_V = advV OP_tear_V OP_off_Adv ; -- guess-p-verb
+lin tear_off_V2 = prepV2 OP_tear_V OP_off_Prep ; -- guess-p-verb
+lin tear_out_V = advV OP_tear_V OP_out_Adv ; -- guess-p-verb
+lin tear_up_V = advV OP_tear_V OP_up_Adv ; -- guess-p-verb
+lin tear_up_V2 = prepV2 OP_tear_V OP_up_Prep ; -- guess-p-verb
 lin tease_V2 = mkV2 (mkV "plagen") ; -- status=guess, src=wikt
 lin teasel_N = mkN "distel" masculine feminine | mkN "kaardebol" masculine ; -- status=guess status=guess
 lin teaspoon_N = mkN "theelepeltje" neuter | mkN "theelepel" masculine | mkN "koffielepel" masculine ; -- status=guess status=guess status=guess
 lin teat_N = mkN "speen" masculine ; -- status=guess
 lin technetium_N = mkN "technetium" neuter ; -- status=guess
 lin technical_A = mkA "technisch" ;
-lin technically_Adv = mkAdv "technisch gesproken" | mkAdv "strikt genomen" | adjAdv technical_A ; -- status=guess status=guess -- derived
 lin technician_N = mkN "technicus" masculine | mkN "technieker" masculine ; -- status=guess status=guess
 lin technique_N = mkN "techniek" feminine ;
 lin techno_N = mkN "techno" masculine ; -- status=guess
 lin technological_A = variants {} ; --
-lin technologically_Adv = adjAdv technological_A ; -- derived
 lin technology_N = mkN "technologie" ;
 lin ted_PN = mkPN "Ted" ; -- src=eng status=guess
 lin teddy_N = mkN "teddybeer" masculine | mkN "knuffelbeer" masculine ; -- status=guess status=guess
@@ -19129,7 +20240,10 @@ lin tell_V2S = mkV2S (mkV "vertellen") ;
 lin tell_V2V = mkV2V (mkV "vertellen") ;
 lin tell_V3 = mkV3 (mkV "vertellen") ;
 lin tell_VS = mkVS (mkV "vertellen") ;
+lin tell_apart_V2 = mkV2 (advV OP_tell_V OP_apart_Adv ) ; -- guess-p-verb
 lin tell_from_V3 = mkV3 (mkV "onderscheiden") ;
+lin tell_off_V2 = prepV2 OP_tell_V OP_off_Prep ; -- guess-p-verb
+lin tell_on_V2 = prepV2 OP_tell_V OP_on_Prep ; -- guess-p-verb
 lin teller_N = mkN "bankbediende" masculine feminine ; -- status=guess
 lin tellurium_N = mkN "telluur" neuter | mkN "tellurium" neuter ; -- status=guess status=guess
 lin telly_N = variants {} ; --
@@ -19144,7 +20258,6 @@ lin temperature_N = mkN "temperatuur" feminine ; -- status=guess
 lin template_N = mkN "sjabloon" neuter | mkN "malplaatje" neuter ; -- status=guess status=guess
 lin temple_N = mkN "slaap" masculine ; -- status=guess
 lin tempo_N = mkN "tempo" neuter ; -- status=guess
-lin temporarily_Adv = mkAdv "tijdelijk" | adjAdv temporary_A ; -- status=guess -- derived
 lin temporary_A = mkA "tijdelijk" ; -- status=guess
 lin tempt_V2 = mkV2 (mkV "lokken") | mkV2 (mkV "verlokken") ; -- status=guess, src=wikt status=guess, src=wikt
 lin tempt_V2V = mkV2V (mkV "lokken") | mkV2V (mkV "verlokken") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -19178,7 +20291,6 @@ lin tension_N = mkN "spanning" feminine ; -- status=guess
 lin tent_N = mkN "tent" masculine ; -- status=guess
 lin tentacle_N = mkN "tentakel" neuter ; -- status=guess
 lin tentative_A = variants {} ;
-lin tentatively_Adv = adjAdv tentative_A ; -- derived
 lin tenterden_PN = mkPN "Tenterden" ; -- src=geonames status=guess
 lin tenuous_A = mkA "onbelangrijk" | mkA "dunnetjes" ; -- status=guess status=guess
 lin tenure_N = mkN "vastbenoemd zijn" | mkN "een vaste benoeming hebben" ; -- status=guess status=guess
@@ -19206,7 +20318,6 @@ lin terrace_V2 = mkV2 (mkV (mkV "een") "terras aanleggen") ; -- status=guess, sr
 lin terrain_N = mkN "terrein" ; -- status=guess
 lin terrapin_N = mkN "moerasschildpad" | mkN "specifically the genus doosschildpad" ; -- status=guess status=guess
 lin terrible_A = mkA "afschuwelijk" ; -- status=guess
-lin terribly_Adv = adjAdv terrible_A ; -- -- derived
 lin terrier_N = mkN "terriër" masculine ; -- status=guess
 lin terrify_V2 = variants {} ; --
 lin territorial_A = mkA "territoriaal" ; -- status=guess
@@ -19253,8 +20364,7 @@ lin thatcher_N = mkN "dakdekker" masculine ; -- status=guess
 lin thaw_N = mkN "dooi" ; -- status=guess
 lin thaw_V = mkV "ontdooien" ; -- status=guess, src=wikt
 lin thaw_V2 = mkV2 (mkV "ontdooien") ; -- status=guess, src=wikt
-lin theater_N = mkN "theater" neuter ; -- status=guess
-lin theatre_N = variants {} ; --
+lin theatre_N = mkN "theater" neuter ; -- status=guess
 lin theatrical_A = mkA "dramatisch" ; -- status=guess
 lin theft_N = mkN "diefstal" feminine ; -- status=guess
 lin theism_N = mkN "theïsme" neuter ; -- status=guess
@@ -19270,7 +20380,6 @@ lin theology_N = mkN "theologie" feminine | mkN "godgeleerdheid" feminine ; -- s
 lin theophany_N = mkN "theofanie" masculine ; -- status=guess
 lin theorem_N = mkN "theorema" masculine | mkN "stelling" feminine ; -- status=guess status=guess
 lin theoretical_A = mkA "theoretisch" ; -- status=guess
-lin theoretically_Adv = adjAdv theoretical_A ; -- derived
 lin theorist_N = mkN "theoreticus" masculine ; -- status=guess
 lin theory_N = mkN "theorie" ;
 lin theosophy_N = mkN "theosofie" ; -- status=guess
@@ -19320,6 +20429,9 @@ lin thing_N = mkN "ding" neuter | mkN "zaak" ;
 lin think_V = L.think_V ;
 lin think_V2 = mkV2 (denken_V) ;
 lin think_VS = mkVS (denken_V) ;
+lin think_over_V2 = prepV2 OP_think_V OP_over_Prep ; -- guess-p-verb
+lin think_through_V2 = prepV2 OP_think_V OP_through_Prep ; -- guess-p-verb
+lin think_up_V2 = prepV2 OP_think_V OP_up_Prep ; -- guess-p-verb
 lin thinkable_A = mkA "denkbaar" ; -- status=guess
 lin thinkerMasc_N = mkN "denker" masculine | mkN "intellectueel" ; -- status=guess status=guess
 lin thinking_A = variants {} ; --
@@ -19340,7 +20452,6 @@ lin thorne_PN = mkPN "Thorne" ; -- src=eng status=guess
 lin thorough_A = mkA "grondig" | mkA "diepgaand" ; -- status=guess status=guess
 lin thoroughfare_N = mkN "doorgangsweg" masculine | mkN "doorgaande weg" ; -- status=guess status=guess
 lin thoroughgoing_A = mkA "ingrijpend" ; -- status=guess
-lin thoroughly_Adv = adjAdv thorough_A ; -- -- derived
 lin though_Adv = mkAdv "echter" ;
 lin though_Subj = mkSubj "echter" | mkSubj "hoewel" ;
 lin thought_N = mkN "gedachte" feminine | mkN "idee" neuter ;
@@ -19381,6 +20492,19 @@ lin throughout_Prep = mkPrep "door" ; ---- no proper translation
 lin throw_N = mkN "verplaatsing" feminine ; -- status=guess
 lin throw_V = lin V throw_V2 ;
 lin throw_V2 = L.throw_V2 ;
+lin throw_away_V2 = mkV2 (advV OP_throw_V OP_away_Adv ) ; -- guess-p-verb
+lin throw_in_V = advV OP_throw_V OP_in_Adv ; -- guess-p-verb
+lin throw_in_V2 = prepV2 OP_throw_V OP_in_Prep ; -- guess-p-verb
+lin throw_off_V = advV OP_throw_V OP_off_Adv ; -- guess-p-verb
+lin throw_off_V2 = prepV2 OP_throw_V OP_off_Prep ; -- guess-p-verb
+lin throw_on_V2 = prepV2 OP_throw_V OP_on_Prep ; -- guess-p-verb
+lin throw_out_V2 = prepV2 OP_throw_V OP_out_Prep ; -- guess-p-verb
+lin throw_over_V2 = prepV2 OP_throw_V OP_over_Prep ; -- guess-p-verb
+lin throw_together_V2 = mkV2 (advV OP_throw_V OP_together_Adv ) ; -- guess-p-verb
+lin throw_up_V = advV OP_throw_V OP_up_Adv ; -- guess-p-verb
+lin throw_up_V2 = prepV2 OP_throw_V OP_up_Prep ; -- guess-p-verb
+lin throw_yourself_at_V2 = variants {} ; -- guess-p-verb
+lin throw_yourself_into_V2 = variants {} ; -- guess-p-verb
 lin thrush_N = mkN "lijster" ; -- status=guess
 lin thrust_N = mkN "steek" masculine ; -- status=guess
 lin thrust_V = mkV "vooruitstuwen" ; -- status=guess, src=wikt
@@ -19421,6 +20545,12 @@ lin tidy_A = mkA "net" | mkA "proper" | mkA "rein" ; -- status=guess status=gues
 lin tie_N = mkN "boog" ; -- status=guess
 lin tie_V = mkV "knopen" | mkV "vastknopen" | binden_V | mkV "strikken" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin tie_V2 = L.tie_V2 ;
+lin tie_back_V2 = mkV2 (advV OP_tie_V OP_back_Adv ) ; -- guess-p-verb
+lin tie_down_V2 = prepV2 OP_tie_V OP_down_Prep ; -- guess-p-verb
+lin tie_in_V = advV OP_tie_V OP_in_Adv ; -- guess-p-verb
+lin tie_in_V2 = prepV2 OP_tie_V OP_in_Prep ; -- guess-p-verb
+lin tie_in_with_V2 = prepV2 (advV OP_tie_V OP_in_Adv ) OP_with_Prep ; -- guess-p-verb
+lin tie_up_V2 = prepV2 OP_tie_V OP_up_Prep ; -- guess-p-verb
 lin tientsin_PN = mkPN "Tientsin" ; -- src=eng status=guess
 lin tier_N = mkN "laag" feminine | mkN "rang" masculine ; -- status=guess status=guess
 lin tiercel_N = mkN "tersel" ; -- status=guess
@@ -19429,7 +20559,6 @@ lin tight_A = variants {} ; --
 lin tight_Adv = variants {} ; --
 lin tighten_V = variants {} ; --
 lin tighten_V2 = variants {} ; --
-lin tightly_Adv = adjAdv tight_A ; -- -- derived
 lin tights_N = mkN "collant" ; -- status=guess
 lin tigress_N = mkN "tijgerin" feminine ; -- status=guess
 lin tilburg_PN = mkPN "Tilburg" ; -- src=geonames status=guess
@@ -19478,7 +20607,6 @@ lin tiptoe_V = mkV (mkV "op") "de tippen lopen" ; -- status=guess, src=wikt
 lin tire_V = reflMkV "vermoeien" | mkV (mkV "moe") "worden" ; -- status=guess, src=wikt status=guess, src=wikt
 lin tire_V2 = mkV2 (reflMkV "vermoeien") | mkV2 (mkV (mkV "moe") "worden") ; -- status=guess, src=wikt status=guess, src=wikt
 lin tired_A = mkA "moe" | mkA "vermoeid" ; -- status=guess status=guess
-lin tiredly_Adv = adjAdv tired_A ; -- derived
 lin tissue_N = mkN "weefsel" neuter ; -- status=guess
 lin tit_N = mkN "tiet" feminine ; -- status=guess
 lin titanium_N = mkN "titanium" neuter | mkN "titaan" neuter ; -- status=guess status=guess
@@ -19588,7 +20716,6 @@ lin total_N = mkN "totaal" neuter ;
 lin total_V = mkV "bijeentellen" | mkV "optellen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin total_V2 = mkV2 (mkV "bijeentellen") | mkV2 (mkV "optellen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin totalitarian_A = mkA "totalitair" | mkA "totalitaire" ; -- status=guess status=guess
-lin totally_Adv = mkAdv "volledig" | mkAdv "helemaal" | mkAdv "totaal" | adjAdv total_A ; -- status=guess status=guess status=guess -- derived
 lin tote_N = mkN "boodschappentas" feminine | mkN "draagtas" feminine ; -- status=guess status=guess
 lin tote_V2 = mkV2 (mkV "samentellen") ; -- status=guess, src=wikt
 lin totem_N = mkN "totem" masculine ; -- status=guess
@@ -19597,6 +20724,13 @@ lin toucan_N = mkN "toekan" masculine ; -- status=guess
 lin touch_N = mkN "detail" neuter ; -- status=guess
 lin touch_V = mkV "aan" (mkV "raken") | mkV "raken" | mkV "roeren" ;
 lin touch_V2 = mkV2 touch_V ;
+lin touch_down_V = advV OP_touch_V OP_down_Adv ; -- guess-p-verb
+lin touch_for_V3 = variants {} ; -- guess-p-verb
+lin touch_off_V2 = prepV2 OP_touch_V OP_off_Prep ; -- guess-p-verb
+lin touch_on_V2 = prepV2 OP_touch_V OP_on_Prep ; -- guess-p-verb
+lin touch_type_V = variants {} ; -- guess-p-verb
+lin touch_up_V2 = prepV2 OP_touch_V OP_up_Prep ; -- guess-p-verb
+lin touch_upon_V2 = prepV2 OP_touch_V OP_upon_Prep ; -- guess-p-verb
 lin touching_A = mkA "roerend" ; -- status=guess
 lin tough_A = variants {} ; --
 lin tough_N = mkN "taai" | mkN "hard" | mkN "sterk" | mkN "robuust" ; -- status=guess status=guess status=guess status=guess
@@ -19640,13 +20774,19 @@ lin tracy_PN = mkPN "Tracy" ; -- src=geonames status=guess
 lin trade_N = mkN "handel" masculine | mkN "ruil" ;
 lin trade_V = variants {} ; --
 lin trade_V2 = variants {} ; --
+lin trade_away_V = advV OP_trade_V OP_away_Adv ; -- guess-p-verb
+lin trade_down_V = advV OP_trade_V OP_down_Adv ; -- guess-p-verb
+lin trade_in_V2 = prepV2 OP_trade_V OP_in_Prep ; -- guess-p-verb
+lin trade_off_V2 = prepV2 OP_trade_V OP_off_Prep ; -- guess-p-verb
+lin trade_on_V2 = prepV2 OP_trade_V OP_on_Prep ; -- guess-p-verb
+lin trade_up_V = advV OP_trade_V OP_up_Adv ; -- guess-p-verb
+lin trade_upon_V2 = prepV2 OP_trade_V OP_upon_Prep ; -- guess-p-verb
 lin trademark_N = mkN "handelsmerk" neuter ; -- status=guess
 lin trader_N = mkN "handelaar" masculine ; -- status=guess
 lin trading_A = variants {} ; --
 lin trading_N = mkN "handelspost" utrum ; -- status=guess
 lin tradition_N = mkN "traditie" feminine ;
 lin traditional_A = mkA "traditioneel" ;
-lin traditionally_Adv = mkAdv "traditioneel" | adjAdv traditional_A ; -- status=guess -- derived
 lin traffic_N = mkN "verkeer" neuter ;
 lin tragedy_N = mkN "tragedie" ; -- status=guess
 lin tragic_A = mkA "tragisch" ; -- status=guess
@@ -19659,6 +20799,7 @@ lin train_N = L.train_N ;
 lin train_V = mkV "trainen" | mkV "oefenen" ;
 lin train_V2 = mkV2 (mkV "trainen") ;
 lin train_V2V = mkV2V (mkV "trainen") ;
+lin train_up_V2 = prepV2 OP_train_V OP_up_Prep ; -- guess-p-verb
 lin trained_A = variants {} ; --
 lin trainee_N = variants {} ; --
 lin trainer_N = mkN "trainer" masculine | mkN "trainster" feminine ; -- status=guess status=guess
@@ -19824,7 +20965,6 @@ lin trudge_V = mkV "sloffen" ; -- status=guess, src=wikt
 lin true_A = mkA "waar" | mkA "echt" ;
 lin true_N = mkN "wants" masculine ; -- status=guess
 lin true_V2 = mkV2 (mkV "rechttrekken") | mkV2 (mkV "rechtzetten") ; -- status=guess, src=wikt status=guess, src=wikt
-lin truly_Adv = mkAdv "waarlijk" | mkAdv "oprecht" | adjAdv true_A ; -- status=guess status=guess -- derived
 lin trump_N = mkN "troef" ; -- status=guess
 lin trump_V = mkV "overtroeven" ; -- status=guess, src=wikt
 lin trump_V2 = mkV2 (mkV "overtroeven") ; -- status=guess, src=wikt
@@ -19848,6 +20988,13 @@ lin try_N = variants {} ; --
 lin try_V = mkV "proberen" | mkV "uitproberen" ;
 lin try_V2 = mkV2 (mkV "proberen") ;
 lin try_VV = mkVV (mkV "proberen") ;
+lin try_back_V = advV OP_try_V OP_back_Adv ; -- guess-p-verb
+lin try_for_V2 = prepV2 OP_try_V OP_for_Prep ; -- guess-p-verb
+lin try_it_on_V = variants {} ; -- guess-p-verb
+lin try_on_V2 = prepV2 OP_try_V OP_on_Prep ; -- guess-p-verb
+lin try_out_V = advV OP_try_V OP_out_Adv ; -- guess-p-verb
+lin try_out_V2 = prepV2 OP_try_V OP_out_Prep ; -- guess-p-verb
+lin try_out_for_V2 = prepV2 (advV OP_try_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
 lin tryst_N = mkN "rendez-vous" | mkN "afspraak" ; -- status=guess status=guess
 lin tsar_N = mkN "tsaar" ; -- status=guess
 lin tsarina_N = mkN "tsarina" feminine ; -- status=guess
@@ -19906,6 +21053,25 @@ lin turn_N = mkN "beurt" ;
 lin turn_V = L.turn_V ;
 lin turn_V2 = mkV2 (turn_V) ;
 lin turn_VA = mkVA (turn_V) ;
+lin turn_against_V2 = prepV2 OP_turn_V OP_against_Prep ; -- guess-p-verb
+lin turn_around_V2 = prepV2 OP_turn_V OP_around_Prep ; -- guess-p-verb
+lin turn_away_V = advV OP_turn_V OP_away_Adv ; -- guess-p-verb
+lin turn_away_V2 = mkV2 (advV OP_turn_V OP_away_Adv ) ; -- guess-p-verb
+lin turn_back_V = advV OP_turn_V OP_back_Adv ; -- guess-p-verb
+lin turn_down_V2 = prepV2 OP_turn_V OP_down_Prep ; -- guess-p-verb
+lin turn_in_V = advV OP_turn_V OP_in_Adv ; -- guess-p-verb
+lin turn_in_V2 = prepV2 OP_turn_V OP_in_Prep ; -- guess-p-verb
+lin turn_into_V2 = prepV2 OP_turn_V OP_into_Prep ; -- guess-p-verb
+lin turn_off_V2 = prepV2 OP_turn_V OP_off_Prep ; -- guess-p-verb
+lin turn_on_V = advV OP_turn_V OP_on_Adv ; -- guess-p-verb
+lin turn_on_V2 = prepV2 OP_turn_V OP_on_Prep ; -- guess-p-verb
+lin turn_out_V = advV OP_turn_V OP_out_Adv ; -- guess-p-verb
+lin turn_out_V2 = prepV2 OP_turn_V OP_out_Prep ; -- guess-p-verb
+lin turn_over_V = advV OP_turn_V OP_over_Adv ; -- guess-p-verb
+lin turn_over_V2 = prepV2 OP_turn_V OP_over_Prep ; -- guess-p-verb
+lin turn_to_V2 = prepV2 OP_turn_V OP_to_Prep ; -- guess-p-verb
+lin turn_up_V = advV OP_turn_V OP_up_Adv ; -- guess-p-verb
+lin turn_up_V2 = prepV2 OP_turn_V OP_up_Prep ; -- guess-p-verb
 lin turning_N = mkN "keerpunt" neuter ; -- status=guess
 lin turnip_N = mkN "raap" masculine | mkN "knolraap" masculine ; -- status=guess status=guess
 lin turnout_N = mkN "opkomst" feminine ; -- status=guess
@@ -19951,7 +21117,6 @@ lin typical_1_A = variants {} ; --
 lin typical_2_A = variants {} ; --
 lin typical_3_A = variants {} ; --
 lin typical_A = mkA "typisch" ; -- status=guess
-lin typically_Adv = adjAdv typical_3_A ; -- -- derived
 lin typify_V2 = mkV2 (mkV "typeren") ; -- status=guess, src=wikt
 lin typography_N = mkN "typografie" ; -- status=guess
 lin tyranny_N = mkN "tyrannie" feminine ; -- status=guess
@@ -19973,7 +21138,6 @@ lin ulcer_N = mkN "zweer" feminine ; -- status=guess
 lin ulna_N = mkN "ellepijp" feminine ; -- status=guess
 lin ulster_PN = mkPN "Ulster" ; -- src=eng status=guess
 lin ultimate_A = mkA "definitief" ; -- status=guess
-lin ultimately_Adv = adjAdv ultimate_A ; -- -- derived
 lin ultimatum_N = mkN "ultimatum" neuter ; -- status=guess
 lin ultramarine_N = mkN "ultramarijn" neuter ; -- status=guess
 lin ulverston_PN = mkPN "Ulverston" ; -- src=geonames status=guess
@@ -19987,7 +21151,6 @@ lin unadorned_A = mkA "kaal" ; -- status=guess
 lin unaltered_A = mkA "ongewijzigd" ; -- status=guess
 lin unambiguous_A = mkA "ondubbelzinnig" ; -- status=guess
 lin unanimous_A = mkA "unaniem" ; -- status=guess
-lin unanimously_Adv = adjAdv unanimous_A ; -- derived
 lin unattached_A = mkA "los" | mkA "niet gebonden" ; -- status=guess status=guess
 lin unavailable_A = mkA "niet beschikbaar" | mkA "niet verkrijgbaar" ; -- status=guess status=guess
 lin unavoidable_A = mkA "onvermijdelijk" | mkA "onontkoombaar" ; -- status=guess status=guess
@@ -20059,7 +21222,6 @@ lin undivided_A = mkA "ongedeeld" ; -- status=guess
 lin undo_V2 = mkV2 (mkV (mkV "ongedaan") "maken") | mkV2 (mkV "tenietdoen") | mkV2 (mkV "ontdoen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin undoing_N = mkN "ondergang" masculine ; -- status=guess
 lin undoubted_A = variants {} ;
-lin undoubtedly_Adv = mkAdv "ongetwijfeld" | mkAdv "zonder twijfel" | adjAdv undoubted_A ; -- status=guess status=guess -- derived
 lin undress_V = reflMkV "uitkleden" ; -- status=guess, src=wikt
 lin undress_V2 = mkV2 (reflMkV "uitkleden") ; -- status=guess, src=wikt
 lin undrinkable_A = mkA "ondrinkbaar" ; -- status=guess
@@ -20072,7 +21234,6 @@ lin unesco_PN = mkPN "Unesco" ; -- src=eng status=guess
 lin uneven_A = mkA "oneven" ; -- status=guess
 lin unexceptionable_A = mkA "onberispelijk" ; -- status=guess
 lin unexpected_A = mkA "onverwacht" ; -- status=guess
-lin unexpectedly_Adv = mkAdv "onverwachts" | adjAdv unexpected_A ; -- status=guess -- derived
 lin unfair_A = variants {} ; --
 lin unfaithful_A = mkA "ontrouw" ; -- status=guess
 lin unfamiliar_A = variants {} ; --
@@ -20105,7 +21266,6 @@ lin unidirectional_A = mkA "unidirectioneel" | mkA "eenrichtings-" ; -- status=g
 lin unification_N = mkN "eenwording" feminine ; -- status=guess
 lin uniform_A = mkA "uniform" | mkA "consistent" ; -- status=guess status=guess
 lin uniform_N = mkN "uniform" neuter ; -- status=guess
-lin uniformly_Adv = adjAdv uniform_A ; -- derived
 lin unify_V2 = mkV2 (reflMkV "verenigen") ; -- status=guess, src=wikt
 lin unimpeded_A = mkA "ongehinderd" ; -- status=guess
 lin unimportant_A = mkA "onbelangrijk" ; -- status=guess
@@ -20118,7 +21278,6 @@ lin uninterrupted_A = mkA "ononderbroken" ; -- status=guess
 lin union_N = mkN "vereniging" | mkN "unie" ;
 lin unionist_N = variants {} ; --
 lin unique_A = mkA "uniek" ; -- status=guess
-lin uniquely_Adv = mkAdv "uniek" | adjAdv unique_A ; -- status=guess -- derived
 lin unit_1_N = mkN "eenheid" "eenheden" utrum ; ---- unit of measurement
 lin unit_2_N = unit_1_N ; ---- structural whole
 lin unit_3_N = unit_1_N ; ---- organization as part of a group
@@ -20132,7 +21291,6 @@ lin united_A = mkA "verenigd" ; -- status=guess
 lin unity_N = mkN "eenheid" feminine ; -- status=guess
 lin univ_PN = mkPN "Univ" ; -- src=eng status=guess
 lin universal_A = mkA "universeel" ; -- status=guess
-lin universally_Adv = adjAdv universal_A ; -- derived
 lin universe_N = mkN "heelal" neuter | mkN "universum" neuter ; -- status=guess status=guess
 lin university_N = L.university_N ;
 lin unjust_A = mkA "onrechtvaardig" ; -- status=guess
@@ -20157,7 +21315,6 @@ lin unmistakable_A = mkA "onmiskenbaar" ; -- status=guess
 lin unnecessary_A = mkA "onnodig" ; -- status=guess
 lin unnerve_V2 = mkV2 (mkV "verzwakken") ; -- status=guess, src=wikt
 lin unofficial_A = mkA "officieus" ; -- status=guess
-lin unofficially_Adv = adjAdv unofficial_A ; -- derived
 lin unpalatable_A = mkA "onsmakelijk" ; -- status=guess
 lin unparalleled_A = mkA "ongeëvenaard" ; -- status=guess
 lin unpaved_A = mkA "onverhard" | mkA "onbestraat" | mkA "ongeplaveid" ; -- status=guess status=guess status=guess
@@ -20186,7 +21343,6 @@ lin unseen_A = mkA "ongezien" ; -- status=guess
 lin unselfish_A = mkA "onbaatzuchtig" | mkA "onzelfzuchtig" ; -- status=guess status=guess
 lin unstable_A = mkA "instabiel" ; -- status=guess
 lin unsuccessful_A = variants {} ; --
-lin unsuccessfully_Adv = adjAdv unsuccessful_A ; -- derived
 lin unsuitable_A = mkA "ongeschikt" | mkA "ongepast" ; -- status=guess status=guess
 lin unsung_A = mkA "ongezongen" ; -- status=guess
 lin unsurpassed_A = mkA "onovertroffen" ; -- status=guess
@@ -20208,7 +21364,6 @@ lin ununpentium_N = mkN "ununpentium" neuter ; -- status=guess
 lin ununquadium_N = mkN "ununquadium" neuter ; -- status=guess
 lin ununtrium_N = mkN "ununtrium" neuter ; -- status=guess
 lin unusual_A = mkA "ongebruikelijk" | mkA "ongewoon" ; -- status=guess status=guess
-lin unusually_Adv = adjAdv unusual_A ; -- -- derived
 lin unveil_V = mkV "blootstellen" ; -- status=guess, src=wikt
 lin unveil_V2 = mkV2 (mkV "blootstellen") ; -- status=guess, src=wikt
 lin unwanted_A = variants {} ; --
@@ -20265,9 +21420,10 @@ lin urge_N = mkN "drang" masculine | mkN "aandrang" masculine | mkN "aandrift" f
 lin urge_V2 = mkV2 (mkV "aansporen") ; -- status=guess, src=wikt
 lin urge_V2V = mkV2V (mkV "aansporen") ; -- status=guess, src=wikt
 lin urge_VS = mkVS (mkV "aansporen") ; -- status=guess, src=wikt
+lin urge_on_V2 = prepV2 (lin V OP_urge_V2) OP_on_Prep ; -- guess-p-verb
+lin urge_upon_V2 = prepV2 (lin V OP_urge_V2) OP_upon_Prep ; -- guess-p-verb
 lin urgency_N = variants {} ; --
 lin urgent_A = mkA "dringend" ; -- status=guess
-lin urgently_Adv = adjAdv urgent_A ; -- -- derived
 lin urinal_N = mkN "urinoir" | mkN "pisbak" ; -- status=guess status=guess
 lin urinate_V = mkV "urineren" | mkV "plassen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin urine_N = mkN "urine" ; -- status=guess
@@ -20283,6 +21439,8 @@ lin use_N = mkN "gebruik" neuter ;
 lin use_V = mkV "gebruiken" ;
 lin use_V2 = mkV2 (mkV "gebruiken") ; -- status=guess, src=wikt
 lin use_VV = mkVV (mkV "gebruiken") ; ---- subcat, not to be used as "used to ...", that is not translatable
+lin use_up_V = advV OP_use_V OP_up_Adv ; -- guess-p-verb
+lin use_up_V2 = prepV2 OP_use_V OP_up_Prep ; -- guess-p-verb
 lin used_A = mkA "gewend te" ; -- status=guess
 lin useful_A = mkA "nuttig" | mkA "bruikbaar" ;
 lin usefulness_N = mkN "bruikbaarheid" feminine ; -- status=guess
@@ -20292,7 +21450,6 @@ lin ushaw_moor_PN = mkPN "Ushaw moor" ; -- src=eng status=guess
 lin usher_N = mkN "plaatsaanwijzer" masculine ; -- status=guess
 lin usher_V2 = mkV2 (mkV "begeleiden") ; -- status=guess, src=wikt
 lin usual_A = mkA "gewoon" ;
-lin usually_Adv = mkAdv "gewoonlijk" | adjAdv usual_A ; -- derived
 lin usurer_N = mkN "woekeraar" masculine | mkN "woekeraarster" feminine ; -- status=guess status=guess
 lin usurp_V2 = mkV2 (reflMkV "toeëigenen") ; -- status=guess, src=wikt
 lin usurper_N = mkN "usurpator" masculine | mkN "machtsovernemer" masculine ; -- status=guess status=guess
@@ -20309,7 +21466,6 @@ lin utrecht_PN = mkPN "Utrecht" ; -- src=geonames status=guess
 lin utter_A = mkA "uiten" ; -- status=guess
 lin utter_V2 = mkV2 (mkV "produceren") | mkV2 (mkV "voortbrengen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin utterance_N = mkN "uiting" feminine | mkN "taaluiting" feminine ; -- status=guess status=guess
-lin utterly_Adv = adjAdv utter_A ; -- -- derived
 lin uttoxeter_PN = mkPN "Uttoxeter" ; -- src=geonames status=guess
 lin uvula_N = mkN "huig" ; -- status=guess
 lin vacancy_N = mkN "vacature" feminine ; -- status=guess
@@ -20331,7 +21487,6 @@ lin vaginal_A = mkA "vaginaal" ; -- status=guess
 lin vagrancy_N = mkN "landloperij" ; -- status=guess
 lin vagrant_N = mkN "dwaalgast" masculine ; -- status=guess
 lin vague_A = mkA "vaag" ; -- status=guess
-lin vaguely_Adv = mkAdv "vaag" | adjAdv vague_A ; -- status=guess -- derived
 lin vain_A = mkA "ijdel" ; -- status=guess
 lin vale_N = mkN "tranendal" neuter ; -- status=guess
 lin valedictorian_N = mkN "de student die spreekt tijdens de afsluitceremonie" ; -- status=guess
@@ -20381,7 +21536,6 @@ lin variety_1_N = mkN "verscheidenheid" feminine ;
 lin variety_2_N = mkN "soort" ;
 lin variety_N = variety_1_N ;
 lin various_A = mkA "verscheiden" | mkA "uiteenlopend" | mkA "verschillend" ;
-lin variously_Adv = adjAdv various_A ; -- derived
 lin varnish_N = mkN "vernis" masculine | mkN "lak" masculine ; -- status=guess status=guess
 lin varnish_V2 = mkV2 (mkV "vernissen") | mkV2 (mkV "lakken") ; -- status=guess, src=wikt status=guess, src=wikt
 lin vary_V = mkV "variëren" ;
@@ -20392,7 +21546,6 @@ lin vasectomy_N = mkN "vasectomie" feminine ; -- status=guess
 lin vassal_N = mkN "vazal" masculine ; -- status=guess
 lin vast_A = mkA "enorm" ; -- status=guess
 lin vasteras_PN = mkPN "Vasteras" ; -- src=eng status=guess
-lin vastly_Adv = adjAdv vast_A ; -- derived
 lin vat_N = variants {} ; --
 lin vault_N = mkN "sprong met stok en handensteun" | mkN "polsstoksprong" ; -- status=guess status=guess
 lin vector_N = mkN "koers" feminine ; -- status=guess
@@ -20443,7 +21596,6 @@ lin verdict_N = mkN "uitspraak" ; -- status=guess
 lin verge_N = mkN "roede or" masculine | mkN "staf" masculine ; -- status=guess status=guess
 lin verge_V = mkV (mkV "grenzen") "aan" ; -- status=guess, src=wikt
 lin verification_N = mkN "verificatie" | mkN "bewijs" ; -- status=guess status=guess
-lin verily_Adv = adjAdv very_A ; -- derived
 lin verisimilitude_N = mkN "waarschijnlijkheid" ; -- status=guess
 lin vermicelli_N = mkN "vermicelli" ; -- status=guess
 lin vermin_N = mkN "ongedierte" neuter ; -- status=guess
@@ -20462,7 +21614,6 @@ lin vertebrate_A = mkA "gewerveld" ; -- status=guess
 lin vertebrate_N = mkN "gewervelde" | mkN "werveldier" neuter | mkN "vertebraat" masculine ; -- status=guess status=guess status=guess
 lin vertex_N = mkN "hoek" ; -- status=guess
 lin vertical_A = mkA "verticaal" ; -- status=guess
-lin vertically_Adv = adjAdv vertical_A ; -- derived
 lin very_A = mkA "erg" | mkA "heel" ;
 lin very_AdA = S.very_AdA ;
 lin vessel_N = mkN "vat" neuter | mkN "hulsel" neuter ; -- status=guess status=guess
@@ -20520,7 +21671,6 @@ lin vigilance_N = mkN "waaksheid" feminine | mkN "waakzaamheid" feminine ; -- st
 lin vigilante_N = mkN "lid van een waakzaamheidscomité" | mkN "verontruste burger" ; -- status=guess status=guess
 lin vigo_PN = mkPN "Vigo" ; -- src=geonames status=guess
 lin vigorous_A = mkA "krachtig" | mkA "sterk" ; -- status=guess status=guess
-lin vigorously_Adv = mkAdv "vinnig" | mkAdv "krachtig" | adjAdv vigorous_A ; -- status=guess status=guess -- derived
 lin vile_A = mkA "verachtelijk" ; -- status=guess
 lin vileness_N = mkN "misselijkheid" feminine ; -- status=guess
 lin vilify_V2 = mkV2 (mkV "kleineren") ; -- status=guess, src=wikt
@@ -20545,7 +21695,6 @@ lin violate_V2 = mkV2 (schenden_V) ; -- status=guess, src=wikt
 lin violation_N = mkN "overtreding" feminine | mkN "schending" feminine ; -- status=guess status=guess
 lin violence_N = mkN "geweld" neuter ; -- status=guess
 lin violent_A = mkA "gewelddadig" ; -- status=guess
-lin violently_Adv = mkAdv "gewelddadig" | adjAdv violent_A ; -- status=guess -- derived
 lin violet_N = mkN "violet" ; -- status=guess
 lin violet_PN = mkPN "Violet" ; -- src=geonames status=guess
 lin violin_N = mkN "viool" ; -- status=guess
@@ -20561,7 +21710,6 @@ lin virgo_PN = mkPN "Virgo" ; -- src=eng status=guess
 lin virile_A = mkA "viriel" | mkA "mannelijk" ; -- status=guess status=guess
 lin virology_N = mkN "virologie" ; -- status=guess
 lin virtual_A = mkA "virtueel" ; -- status=guess
-lin virtually_Adv = mkAdv "praktisch" | adjAdv virtual_A ; -- status=guess -- derived
 lin virtue_N = mkN "deugd" feminine ; -- status=guess
 lin virtuoso_N = mkN "virtuoos" ; -- status=guess
 lin virus_N = variants {} ; --
@@ -20573,7 +21721,6 @@ lin viscous_A = mkA "viskeus" ; -- status=guess
 lin vise_N = mkN "bankschroef" ; -- status=guess
 lin visibility_N = mkN "zichtbaarheid" utrum ; -- status=guess
 lin visible_A = mkA "zichtbaar" | mkA "zichtbare" ; -- status=guess status=guess
-lin visibly_Adv = adjAdv visible_A ; -- derived
 lin vision_N = mkN "visioen" neuter ; -- status=guess
 lin visionary_A = mkA "visionair" ; -- status=guess
 lin visionary_N = mkN "dromer" masculine | mkN "idealist" masculine | mkN "fantast" masculine ; -- status=guess status=guess status=guess
@@ -20585,7 +21732,6 @@ lin visor_N = mkN "klep" ; -- status=guess
 lin vista_N = mkN "uitzicht" ; -- status=guess
 lin visual_A = mkA "visueel" ; -- status=guess
 lin visual_N = mkN "beeldende kunst" feminine ; -- status=guess
-lin visually_Adv = adjAdv visual_A ; -- derived
 lin vital_A = mkA "essentieel" ; -- status=guess
 lin vitamin_N = mkN "vitamine" utrum ; -- status=guess
 lin vitiate_V2 = mkV2 (bederven_V) ; -- status=guess, src=wikt
@@ -20631,7 +21777,6 @@ lin volt_N = mkN "volt" ; -- status=guess
 lin voltage_N = mkN "spanning" ; -- status=guess
 lin volume_N = mkN "jaargang" masculine ;
 lin voluminous_A = mkA "volumineus" ; -- status=guess
-lin voluntarily_Adv = mkAdv "vrijwillig" | adjAdv voluntary_A ; -- status=guess -- derived
 lin voluntary_A = mkA "vrijwillig" ; -- status=guess
 lin volunteerMasc_N = mkN "vrijwilliger" masculine ; -- status=guess
 lin volunteer_V = variants {} ; --
@@ -20647,6 +21792,7 @@ lin vote_V = mkV "stemmen" ; -- status=guess, src=wikt
 lin vote_V2 = mkV2 (mkV "stemmen") ; -- status=guess, src=wikt
 lin vote_V3 = variants {} ; -- mkV2 (mkV "stemmen") ; -- status=guess, src=wikt
 lin vote_VV = mkVV (mkV "stemmen") ; -- status=guess, src=wikt
+lin vote_down_V = advV OP_vote_V OP_down_Adv ; -- guess-p-verb
 lin voter_N = mkN "stemmer" ; -- status=guess
 lin votive_A = mkA "votief" ; -- status=guess
 lin vouch_V = mkV (mkV "instaan") "voor" ; -- status=guess, src=wikt
@@ -20688,6 +21834,15 @@ lin waistcoat_N = mkN "vest" neuter ; -- status=guess
 lin wait_V = mkV "wachten" | mkV "af" "wachten" ;
 lin wait_V2 = L.wait_V2 ;
 lin wait_VV = mkVV (mkV "wachten") | mkVV (mkV "af" "wachten") ;
+lin wait_about_V = advV OP_wait_V OP_about_Adv ; -- guess-p-verb
+lin wait_around_V = advV OP_wait_V OP_around_Adv ; -- guess-p-verb
+lin wait_behind_V = advV OP_wait_V OP_behind_Adv ; -- guess-p-verb
+lin wait_in_V = advV OP_wait_V OP_in_Adv ; -- guess-p-verb
+lin wait_on_V2 = prepV2 OP_wait_V OP_on_Prep ; -- guess-p-verb
+lin wait_out_V2 = prepV2 OP_wait_V OP_out_Prep ; -- guess-p-verb
+lin wait_up_V = advV OP_wait_V OP_up_Adv ; -- guess-p-verb
+lin wait_up_for_V2 = prepV2 (advV OP_wait_V OP_up_Adv ) OP_for_Prep ; -- guess-p-verb
+lin wait_upon_V2 = prepV2 OP_wait_V OP_upon_Prep ; -- guess-p-verb
 lin waiter_N = mkN "ober" masculine | mkN "kelner" masculine ; -- status=guess status=guess
 lin waiting_A = variants {} ; --
 lin waiting_N = mkN "bedienen" ; -- status=guess
@@ -20696,11 +21851,27 @@ lin waiver_N = mkN "verklaring van afstand" | mkN "vrijstelling" ; -- status=gue
 lin wake_N = mkN "kielzog" neuter ; -- status=guess
 lin wake_V = mkV "wekken" | mkV (mkV "wakker") "maken" ; -- status=guess, src=wikt status=guess, src=wikt
 lin wake_V2 = mkV2 (mkV "wekken") | mkV2 (mkV (mkV "wakker") "maken") ; -- status=guess, src=wikt status=guess, src=wikt
+lin wake_up_V = advV OP_wake_V OP_up_Adv ; -- guess-p-verb
+lin wake_up_V2 = prepV2 OP_wake_V OP_up_Prep ; -- guess-p-verb
 lin wakefield_PN = mkPN "Wakefield" ; -- src=geonames status=guess
 lin wales_PN = mkPN "Wales" ; -- src=geonames status=guess
 lin walk_N = mkN "wandeling" feminine ; -- status=guess
 lin walk_V = L.walk_V ;
 lin walk_V2 = mkV2 walk_V ; ---- subcat
+lin walk_away_from_V2 = prepV2 (advV OP_walk_V OP_away_Adv ) OP_from_Prep ; -- guess-p-verb
+lin walk_away_with_V2 = prepV2 (advV OP_walk_V OP_away_Adv ) OP_with_Prep ; -- guess-p-verb
+lin walk_back_from_V2 = prepV2 (advV OP_walk_V OP_back_Adv ) OP_from_Prep ; -- guess-p-verb
+lin walk_by_V = advV OP_walk_V OP_by_Adv ; -- guess-p-verb
+lin walk_in_V = advV OP_walk_V OP_in_Adv ; -- guess-p-verb
+lin walk_in_on_V2 = prepV2 (advV OP_walk_V OP_in_Adv ) OP_on_Prep ; -- guess-p-verb
+lin walk_into_V2 = prepV2 OP_walk_V OP_into_Prep ; -- guess-p-verb
+lin walk_off_V2 = prepV2 OP_walk_V OP_off_Prep ; -- guess-p-verb
+lin walk_off_with_V2 = prepV2 (advV OP_walk_V OP_off_Adv ) OP_with_Prep ; -- guess-p-verb
+lin walk_on_V = advV OP_walk_V OP_on_Adv ; -- guess-p-verb
+lin walk_out_V = advV OP_walk_V OP_out_Adv ; -- guess-p-verb
+lin walk_out_on_V2 = prepV2 (advV OP_walk_V OP_out_Adv ) OP_on_Prep ; -- guess-p-verb
+lin walk_through_V3 = variants {} ; -- guess-p-verb
+lin walk_up_V = advV OP_walk_V OP_up_Adv ; -- guess-p-verb
 lin walker_N = variants {} ; --
 lin walking_A = variants {} ; --
 lin walking_N = mkN "looprek" neuter ; -- status=guess
@@ -20728,6 +21899,7 @@ lin waltham_forest_PN = mkPN "Waltham forest" ; -- src=eng status=guess
 lin walton_PN = mkPN "Walton" ; -- src=geonames status=guess
 lin wand_N = mkN "staf" masculine | mkN "roede" masculine ; -- status=guess status=guess
 lin wander_V = mkV "afdwalen" ; -- status=guess, src=wikt
+lin wander_off_V = advV OP_wander_V OP_off_Adv ; -- guess-p-verb
 lin wanderer_N = mkN "wandelaar" masculine | mkN "dwaler" | mkN "zwermer" masculine ; -- status=guess status=guess status=guess
 lin wandsworth_PN = mkPN "Wandsworth" ; -- src=geonames status=guess
 lin waning_N = mkN "afnemende maan" feminine | mkN "wanende maan" feminine ; -- status=guess status=guess
@@ -20737,6 +21909,8 @@ lin want_V = mkV "willen" | mkV "willen" "wou" "wouden" "gewild" ;
 lin want_V2 = mkV2 want_V ;
 lin want_V2V = mkV2V want_V ;
 lin want_VV = S.want_VV ; --- I can not find SyntaxDut.gf, but I suspect that the irregular forms are not added there
+lin want_in_V = advV OP_want_V OP_in_Adv ; -- guess-p-verb
+lin want_out_V = advV OP_want_V OP_out_Adv ; -- guess-p-verb
 lin wantage_PN = mkPN "Wantage" ; -- src=geonames status=guess
 lin wanton_A = mkA "onbeheerst onkuis" ; -- status=guess
 lin war_N = L.war_N ;
@@ -20780,6 +21954,12 @@ lin wary_A = variants {} ; --
 lin wash_N = variants {} ; --
 lin wash_V = wassen_V ; -- status=guess, src=wikt
 lin wash_V2 = L.wash_V2 ;
+lin wash_away_V2 = mkV2 (advV OP_wash_V OP_away_Adv ) ; -- guess-p-verb
+lin wash_down_V2 = prepV2 OP_wash_V OP_down_Prep ; -- guess-p-verb
+lin wash_out_V2 = prepV2 OP_wash_V OP_out_Prep ; -- guess-p-verb
+lin wash_over_V2 = prepV2 OP_wash_V OP_over_Prep ; -- guess-p-verb
+lin wash_up_V = advV OP_wash_V OP_up_Adv ; -- guess-p-verb
+lin wash_up_V2 = prepV2 OP_wash_V OP_up_Prep ; -- guess-p-verb
 lin washbasin_N = mkN "wastafel" | mkN "wasbak" | mkN "waskom" ; -- status=guess status=guess status=guess
 lin washcloth_N = mkN "washandje" neuter ; -- status=guess
 lin washer_N = mkN "wasserettejuffrouw" ; -- status=guess
@@ -20792,6 +21972,7 @@ lin waste_A = mkA "woest" | mkA "braakliggend" ; -- status=guess status=guess
 lin waste_N = mkN "wegkwijning" | mkN "verval" ; -- status=guess status=guess
 lin waste_V = mkV "wegkwijnen" ; -- status=guess, src=wikt
 lin waste_V2 = mkV2 (mkV "wegkwijnen") ; -- status=guess, src=wikt
+lin waste_away_V = advV OP_waste_V OP_away_Adv ; -- guess-p-verb
 lin wasteful_A = mkA "verspillend" | mkA "verkwistend" ; -- status=guess status=guess
 lin wasteland_N = mkN "woestenij" feminine ; -- status=guess
 lin watch_1_V2 = mkV2 kijken_V ;
@@ -20801,6 +21982,9 @@ lin watch_V = mkV "op" (mkV "letten") ;
 lin watch_V2 = L.watch_V2 ;
 lin watch_V2V = mkV2V (mkV "oppassen") ; -- status=guess, src=wikt
 lin watch_VS = mkVS (mkV "oppassen") ; -- status=guess, src=wikt
+lin watch_out_V = advV OP_watch_V OP_out_Adv ; -- guess-p-verb
+lin watch_out_for_V2 = prepV2 (advV OP_watch_V OP_out_Adv ) OP_for_Prep ; -- guess-p-verb
+lin watch_over_V2 = prepV2 OP_watch_V OP_over_Prep ; -- guess-p-verb
 lin water_N = L.water_N ;
 lin water_V = mkV "wateren" | mkV "plassen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin water_V2 = mkV2 (mkV "wateren") | mkV2 (mkV "plassen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -20823,6 +22007,11 @@ lin watford_PN = mkPN "Watford" ; -- src=geonames status=guess
 lin wave_N = mkN "wave" masculine ; -- status=guess
 lin wave_V = mkV "zwaaien" | mkV "zwenken" | mkV "wapperen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin wave_V2 = mkV2 (mkV "zwaaien") | mkV2 (mkV "zwenken") | mkV2 (mkV "wapperen") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+lin wave_aside_V2 = mkV2 (advV OP_wave_V OP_aside_Adv ) ; -- guess-p-verb
+lin wave_away_V = advV OP_wave_V OP_away_Adv ; -- guess-p-verb
+lin wave_down_V2 = prepV2 OP_wave_V OP_down_Prep ; -- guess-p-verb
+lin wave_off_V2 = prepV2 OP_wave_V OP_off_Prep ; -- guess-p-verb
+lin wave_on_V2 = prepV2 OP_wave_V OP_on_Prep ; -- guess-p-verb
 lin wavelength_N = mkN "golflengte" ; -- status=guess
 lin waver_N = mkN "translated by nominalizing the verb" ; -- status=guess
 lin waver_V = mkV "twijfelen" | mkV "weifelen" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -20853,6 +22042,11 @@ lin wear_N = mkN "kledij" feminine | mkN "kleding" feminine ; -- status=guess st
 lin wear_PN = mkPN "Wear" ; -- src=eng status=guess
 lin wear_V = dragen_V | mkV "aan" hebben_V ;
 lin wear_V2 = mkV2 wear_V ;
+lin wear_away_V2 = mkV2 (advV OP_wear_V OP_away_Adv ) ; -- guess-p-verb
+lin wear_down_V2 = prepV2 OP_wear_V OP_down_Prep ; -- guess-p-verb
+lin wear_off_V = advV OP_wear_V OP_off_Adv ; -- guess-p-verb
+lin wear_out_V = advV OP_wear_V OP_out_Adv ; -- guess-p-verb
+lin wear_out_V2 = prepV2 OP_wear_V OP_out_Prep ; -- guess-p-verb
 lin wearer_N = mkN "drager" masculine | mkN "draagster" feminine ; -- status=guess status=guess
 lin weary_A = variants {} ; --mkA "uitputting" feminine | mkA "vermoeidheid" feminine ; -- status=guess status=guess
 lin weary_V = mkV "uitputten" | mkV "vermoeien" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -20903,7 +22097,6 @@ lin weld_V2 = mkV2 (mkV "verbinden") | mkV2 (mkV "samenvoegen") ; -- status=gues
 lin welder_N = mkN "lasapparaat" neuter ; -- status=guess
 lin welfare_N = variants {} ; --
 lin well_A = mkA "gezond" ; -- status=guess
-lin well_Adv = mkAdv "goed" | mkAdv "wel" ;
 lin well_Interj = mkInterj "nou" ;
 lin well_N = mkN "bron" feminine | mkN "put" masculine ; -- status=guess status=guess
 lin well_V = mkV "vloeien" | mkV "opwellen" ; -- status=guess, src=wikt status=guess, src=wikt
@@ -21054,7 +22247,6 @@ lin wickford_PN = mkPN "Wickford" ; -- src=geonames status=guess
 lin wicklow_PN = mkPN "Wicklow" ; -- src=geonames status=guess
 lin wide_A = L.wide_A ;
 lin wide_Adv = variants {} ; --
-lin widely_Adv = adjAdv wide_A ; -- -- derived
 lin widen_V2 = variants {} ; --
 lin widespread_A = mkA "wijdverspreid" ; -- status=guess
 lin widnes_PN = mkPN "Widnes" ; -- src=geonames status=guess
@@ -21074,7 +22266,6 @@ lin wild_N = mkN "everzwijn" neuter | mkN "wild zwijn" neuter ; -- status=guess 
 lin wildcat_N = mkN "wilde kat" feminine | mkN "wilde staking" ; -- status=guess status=guess
 lin wilderness_N = mkN "wildernisgebied" ; -- status=guess
 lin wildlife_N = mkN "wildleven" neuter ; -- status=guess
-lin wildly_Adv = adjAdv wild_A ; -- -- derived
 lin wilf_PN = mkPN "Wilf" ; -- src=eng status=guess
 lin wilfrid_PN = mkPN "Wilfrid" ; -- src=eng status=guess
 lin wilhelmshaven_PN = mkPN "Wilhelmshaven" ; -- src=geonames status=guess
@@ -21085,7 +22276,6 @@ lin will_V2 = mkV2 (mkV "zullen") ; -- status=guess, src=wikt
 lin william_PN = mkPN "William" ; -- src=eng status=guess
 lin willie_PN = mkPN "Willie" ; -- src=eng status=guess
 lin willing_A = mkA "bereid" ; -- status=guess
-lin willingly_Adv = mkAdv "graag" | mkAdv "willens" | adjAdv willing_A ; -- status=guess status=guess -- derived
 lin willingness_N = variants {} ; --
 lin willington_PN = mkPN "Willington" ; -- src=geonames status=guess
 lin willow_N = mkN "wilg" masculine ; -- status=guess
@@ -21103,12 +22293,21 @@ lin wimple_N = mkN "nonnenkap" ; -- status=guess
 lin win_N = mkN "overwinning" feminine ; -- status=guess
 lin win_V = winnen_V | mkV "over" winnen_V ;
 lin win_V2 = L.win_V2 ;
+lin win_back_V = advV OP_win_V OP_back_Adv ; -- guess-p-verb
+lin win_down_V = advV OP_win_V OP_down_Adv ; -- guess-p-verb
+lin win_over_V = advV OP_win_V OP_over_Adv ; -- guess-p-verb
+lin win_up_V = advV OP_win_V OP_up_Adv ; -- guess-p-verb
 lin wince_N = mkN "samentrekking" feminine | mkN "stuip" masculine ; -- status=guess status=guess
 lin wince_V2 = mkV2 (mkV "samenkrimpen") | mkV2 (mkV "samentrekken") | mkV2 (mkV "stuipen") | mkV2 (mkV "huiveren") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin winch_N = mkN "winch" ; -- status=guess
 lin winchester_PN = mkPN "Winchester" ; -- src=geonames status=guess
 lin wind_N = L.wind_N ;
 lin wind_V = mkV "terugspoelen" ; -- status=guess, src=wikt
+lin wind_down_V = advV OP_wind_V OP_down_Adv ; -- guess-p-verb
+lin wind_down_V2 = prepV2 OP_wind_V OP_down_Prep ; -- guess-p-verb
+lin wind_on_V = advV OP_wind_V OP_on_Adv ; -- guess-p-verb
+lin wind_up_V = advV OP_wind_V OP_up_Adv ; -- guess-p-verb
+lin wind_up_V2 = prepV2 OP_wind_V OP_up_Prep ; -- guess-p-verb
 lin windermere_PN = mkPN "Windermere" ; -- src=geonames status=guess
 lin windmill_N = mkN "windmolentje" neuter ; -- status=guess
 lin window_N = L.window_N ;
@@ -21139,6 +22338,8 @@ lin winter_N = mkN "winter" masculine ;
 lin winter_V = mkV (mkV "winter") "" ; -- status=guess, src=wikt
 lin wipe_V = mkV "wissen" ; -- status=guess, src=wikt
 lin wipe_V2 = L.wipe_V2 ;
+lin wipe_out_V = advV OP_wipe_V OP_out_Adv ; -- guess-p-verb
+lin wipe_out_V2 = prepV2 OP_wipe_V OP_out_Prep ; -- guess-p-verb
 lin wipeout_N = mkN "botsing" feminine ; -- status=guess
 lin wire_N = mkN "draad" masculine ; -- status=guess
 lin wire_V = mkV "aansluiten" ; -- status=guess, src=wikt
@@ -21229,6 +22430,14 @@ lin work_2_V = mkV "werken" ;
 lin work_N = mkN "werk" neuter | mkN "arbeid" ;
 lin work_V = mkV "werken" ;
 lin work_V2 = mkV2 ("bewerken") ;
+lin work_off_V2 = prepV2 OP_work_V OP_off_Prep ; -- guess-p-verb
+lin work_on_V2 = prepV2 OP_work_V OP_on_Prep ; -- guess-p-verb
+lin work_out_V = advV OP_work_V OP_out_Adv ; -- guess-p-verb
+lin work_out_V2 = prepV2 OP_work_V OP_out_Prep ; -- guess-p-verb
+lin work_over_V2 = prepV2 OP_work_V OP_over_Prep ; -- guess-p-verb
+lin work_through_V2 = prepV2 OP_work_V OP_through_Prep ; -- guess-p-verb
+lin work_together_V = advV OP_work_V OP_together_Adv ; -- guess-p-verb
+lin work_up_V = advV OP_work_V OP_up_Adv ; -- guess-p-verb
 lin worker_N = mkN "arbeider" masculine | mkN "arbeidskracht" utrum ;
 lin workforce_N = variants {} ; --
 lin working_A = mkA "werkende" ;
@@ -21250,14 +22459,12 @@ lin worm_N = L.worm_N ;
 lin worm_V2 = mkV2 (reflMkV "wurmen") ; -- status=guess, src=wikt
 lin wormwood_N = mkN "alsem" masculine ; -- status=guess
 lin worried_A = mkA "ongerust" | mkA "bezorgd" ; -- status=guess status=guess
-lin worriedly_Adv = adjAdv worried_A ; -- derived
 lin worrisome_A = mkA "verontrustend" | mkA "verontrustende" ; -- status=guess status=guess
 lin worry_N = variants {} ; --
 lin worry_V = zijnV (mkV "bezorgd") | reflV (mkV "zorgen" (mkV "maken")) ;
 lin worry_V2 = mkV2 worry_V ;
 lin worry_VS = mkVS worry_V ;
 lin worrying_A = variants {} ; --
-lin worryingly_Adv = adjAdv worrying_A ; -- derived
 lin worse_A = mkA "slechter" | mkA "erger" ; -- status=guess status=guess
 lin worse_Adv = variants {} ; --
 lin worsen_V = mkV "verergeren" ; -- status=guess, src=wikt
@@ -21311,6 +22518,11 @@ lin writ_large_A = variants {} ;
 lin write_V = mkV "schrijven" | mkV "opschrijven" | mkV "neerschrijven" ;
 lin write_V2 = L.write_V2 ;
 lin write_VS = mkVS (write_V) ; ---- subcat
+lin write_down_V2 = prepV2 OP_write_V OP_down_Prep ; -- guess-p-verb
+lin write_in_V = advV OP_write_V OP_in_Adv ; -- guess-p-verb
+lin write_off_V2 = prepV2 OP_write_V OP_off_Prep ; -- guess-p-verb
+lin write_out_V2 = prepV2 OP_write_V OP_out_Prep ; -- guess-p-verb
+lin write_up_V2 = prepV2 OP_write_V OP_up_Prep ; -- guess-p-verb
 lin writer_N = mkN "schrijver" masculine | mkN "schrijfster" feminine | mkN "auteur" masculine feminine ;
 lin writhe_V = mkV "kronkelen" | mkV "draaien" | mkV "vervormen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
 lin writing_N = mkN "schrijfsel" neuter | mkN "werk" neuter | mkN "oeuvre" neuter ; -- status=guess status=guess status=guess
@@ -21321,7 +22533,6 @@ lin wrong_A = mkA "slecht" | mkA "fout" | mkA "verkeerd" ;
 lin wrong_Adv = mkAdv "fout" | mkAdv "foutief" | mkAdv "verkeerd" | mkAdv "onjuist" ; -- status=guess status=guess status=guess status=guess
 lin wrong_N = mkN "verkeerde" neuter | mkN "kwaad" neuter | mkN "onrecht" neuter ; -- status=guess status=guess status=guess
 lin wrong_V2 = mkV2 (mkV (mkV "onbillijk") "beoordelen") ; -- status=guess, src=wikt
-lin wrongly_Adv = adjAdv wrong_A ; -- derived
 lin wroughton_PN = mkPN "Wroughton" ; -- src=geonames status=guess
 lin wry_A = mkA "verdraaid" | mkA "verwrongen" ; -- status=guess status=guess
 lin wuhan_PN = mkPN "Wuhan" ; -- src=geonames status=guess
@@ -21453,4 +22664,313 @@ lin zoology_N = mkN "zoölogie" | mkN "dierkunde" ; -- status=guess status=guess
 lin zoom_N = mkN "zoem" masculine | mkN "zoom" ; -- status=guess status=guess
 lin zoom_V = mkV "zoeven" | mkV "zoemen" ; -- status=guess, src=wikt status=guess, src=wikt
 lin zurich_PN = mkPN "Zurich" ; -- src=eng status=guess
+
+oper OP_by_Prep : Prep = mkPrep "bij" ; --- split mkPrep "tegen" by 6 o'clock, --- split mkPrep "door" decision by
+oper OP_for_Prep : Prep = S.for_Prep ;
+oper OP_on_Prep : Prep = S.on_Prep ;
+oper OP_out_Prep : Prep = variants {} ; --
+oper OP_upon_Prep : Prep = mkPrep "op" ;
+oper OP_up_Prep : Prep = mkPrep "op" | mkPrep "omhoog" ;
+oper OP_to_Prep : Prep = S.to_Prep ;
+oper OP_with_Prep : Prep = S.with_Prep ;
+oper OP_at_Prep : Prep = mkPrep "bij" ;
+oper OP_of_Prep : Prep = mkPrep "van" ;
+oper OP_down_Prep : Prep = mkPrep "af" | mkPrep "naar beneden" ;
+oper OP_about_Prep : Prep = mkPrep "over" ; --- split mkPrep "om" care about, split mkPrep "ongeveer" about this tall
+oper OP_after_Prep : Prep = S.after_Prep ;
+oper OP_around_Prep : Prep = mkPrep "rond" ;
+oper OP_in_Prep : Prep = S.in_Prep ;
+oper OP_over_Prep : Prep = mkPrep "over" ; -- mkPrep "boven" over your head
+oper OP_round_Prep : Prep = mkPrep "rond" ;
+oper OP_off_Prep : Prep = mkPrep "van" ; --- split mkPrep "vanaf" This can be split into van and af
+oper OP_into_Prep : Prep = mkPrep "in" ; --- split mkPrep "tegen" driving into, but this could also be "in" depending on sense
+oper OP_under_Prep : Prep = S.under_Prep ;
+oper OP_through_Prep : Prep = S.through_Prep ;
+oper OP_along_Prep : Prep = mkPrep "langs" ;
+oper OP_across_Prep : Prep = mkPrep "door" ; --- split mkPrep "over"
+oper OP_before_Prep : Prep = S.before_Prep ;
+oper OP_from_Prep : Prep = S.from_Prep ;
+oper OP_against_Prep : Prep = mkPrep "tegen" ;
+oper OP_among_Prep : Prep = mkPrep "onder" | mkPrep "tussen" ;
+oper OP_towards_Prep : Prep = mkPrep "richting" ;
+oper OP_as_Prep : Prep = mkPrep "als" ;
+oper OP_onto_Prep : Prep = mkPrep "naar" ;
+oper OP_above_Prep : Prep = S.above_Prep ;
+oper OP_behind_Prep : Prep = S.behind_Prep ;
+oper OP_past_Prep : Prep = mkPrep "langs" | mkPrep "voorbij" ;
+oper OP_without_Prep : Prep = S.without_Prep ;
+oper OP_toward_Prep : Prep = variants {} ; --
+oper OP_up_Adv : Adv = mkAdv "omhoog" | mkAdv "op" | mkAdv "opwaarts" ; -- tocheck order
+oper OP_in_Adv : Adv = mkAdv "binnen" | mkAdv "in" ;
+oper OP_on_Adv : Adv = mkAdv "aan" ; ---- mkAdv "verder" and so on
+oper OP_back_Adv : Adv = mkAdv "terug" ;
+oper OP_around_Adv : Adv = mkAdv "rond" | mkAdv "cirka" ;
+oper OP_away_Adv : Adv = mkAdv "weg" ;
+oper OP_down_Adv : Adv = mkAdv "omlaag" | mkAdv "naar beneden" | mkAdv "neer" ;
+oper OP_off_Adv : Adv = mkAdv "weg" | mkAdv "vanaf" | mkAdv "af" ;
+oper OP_out_Adv : Adv = mkAdv "uit" ;
+oper OP_about_Adv : Adv = mkAdv "rond" ;
+oper OP_over_Adv : Adv = mkAdv "overnieuw" | mkAdv "opnieuw" ;
+oper OP_apart_Adv : Adv = mkAdv "apart" ;
+oper OP_along_Adv : Adv = mkAdv "langs" | mkAdv "naar" ;
+oper OP_forth_Adv : Adv = mkAdv "voort" ; -- status=guess
+oper OP_forward_Adv : Adv = mkAdv "vooruit" | mkAdv "voorwaarts" ; ---- can not translate 'from this day forward'
+oper OP_aside_Adv : Adv = variants {} ; --
+oper OP_under_Adv : Adv = variants {} ; -- S.under_Prep ;
+oper OP_round_Adv : Adv = mkAdv "rond" ;
+oper OP_together_Adv : Adv = mkAdv "samen" | mkAdv "tezamen" ;
+oper OP_across_Adv : Adv = mkAdv "horizontaal" ; -- status=guess
+oper OP_by_Adv : Adv = mkAdv "langs" ; -- status=guess
+oper OP_through_Adv : Adv = mkAdv "door" ;
+oper OP_to_Adv : Adv = mkAdv "toe" | mkAdv "dicht" ;
+oper OP_even_Adv : Adv = mkAdv "nog" ; ---- mkAdv "zelfs" even he can do that
+oper OP_clean_Adv : Adv = variants {} ;
+oper OP_behind_Adv : Adv = variants {} ; -- S.behind_Prep ;
+oper OP_ahead_Adv : Adv = mkAdv "vooruit" | mkAdv "voorop" | mkAdv "voor ons" ;
+oper OP_way_Adv : Adv = mkAdv "heel" | mkAdv "zeer" ; -- status=guess status=guess
+oper OP_before_Adv : Adv = mkAdv "voor" | mkAdv "tevoren" | mkAdv "voorheen" ;
+oper OP_below_Adv : Adv = mkAdv "onder" ;
+oper OP_for_Adv : Adv = mkAdv "bijvoorbeeld" ; -- status=guess
+oper OP_open_Adv : Adv = variants {} ; --
+oper OP_after_Adv : Adv = variants {} ;
+oper OP_clear_Adv : Adv = mkAdv "helemaal" ; -- status=guess
+oper OP_account_V : V = variants {} ; --
+oper OP_act_V : V = mkV "gedragen" | mkV "op" (mkV "treden") ;
+oper OP_add_V : V = mkV "toe" (mkV "voegen") ;
+oper OP_agree_V : V = mkV "in" (mkV "stemmen") ;
+oper OP_aim_V : V = mkV "richten" ;
+oper OP_answer_V : V = mkV "antwoorden" ;
+oper OP_apply_V : V = gelden_V | reflV (mkV "toe" "passen") ;
+oper OP_argue_V : V = mkV "argumenteren" | mkV "redetwisten" ; --- split mkV "betogen" | mkV "beweren" ; implemented sense is a form of discussing, to split sense is argueing a stance (in a monologue)
+oper OP_ask_V : V = mkV "vragen" ;
+oper OP_back_V : V = reflV (mkV "terugtrekken") ;
+oper OP_bear_V : V = dragen_V ;
+oper OP_beat_V : V = slaan_V | mkV "kloppen" ;
+oper OP_bend_V : V = mkV "bukken" ; -- status=guess, src=wikt
+oper OP_blow_V : V = L.blow_V ;
+oper OP_break_V : V = lin v break_V2 ;
+oper OP_build_V : V = mkV "bouwen" ;
+oper OP_burn_V : V = L.burn_V ;
+oper OP_burst_V : V = barsten_V ; -- status=guess, src=wikt
+oper OP_buy_V : V = kopen_V ;
+oper OP_call_V : V = mkV "bellen" ; --- mkV "roepen" call for help, mkV "noemen" call me Erik
+oper OP_care_V : V = mkV "zorgen" ;
+oper OP_carry_V : V = mkV "dragen" "droeg" "droegen" "gedragen" ;
+oper OP_cast_V : V = mkV (mkV "met") "modder gooien naar" ; -- status=guess, src=wikt
+oper OP_change_V : V = no_geV (mkV "veranderen") | reflV (mkV "aan" (mkV "passen")) ;
+oper OP_charge_V : V = mkV "laden" ;
+oper OP_check_V : V = mkV "controleren" ;
+oper OP_clean_V : V = mkV "poetsen" | mkV "schoonmaken" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_clear_V : V = mkV "op" (mkV "klaren") ;
+oper OP_climb_V : V = klimmen_V ; -- status=guess, src=wikt
+oper OP_close_V : V = sluiten_V ;
+oper OP_come_V : V = L.come_V ;
+oper OP_continue_V : V = mkV "door" go_V | mkV "verder" go_V | mkV "voort" (mkV "zetten") ;
+oper OP_cost_V : V = mkV "kosten" ;
+oper OP_count_V : V = mkV "tellen" ; -- status=guess, src=wikt
+oper OP_crash_V : V = mkV "vastlopen" ; -- status=guess, src=wikt
+oper OP_cross_V : V = mkV "door" (mkV "kruisen") ; --- split mkV "over" steken_V ; to cross a street or river
+oper OP_cry_V : V = mkV "huilen" | mkV "schreeuwen" | mkV "gillen" | mkV "krijsen" ;
+oper OP_cut_V : V = snijden_V ;
+oper OP_decide_V : V = no_geV (mkV "beslissen") | no_geV (mkV "besluiten") ;
+oper OP_die_V : V = L.die_V ;
+oper OP_dig_V : V = L.dig_V ;
+oper OP_divide_V : V = mkV (mkV "divide") "et impera" | mkV (mkV "deel") "en heers" | mkV (mkV "verdeel") "en heers" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_double_V : V = mkV "dubbelklikken" ; -- status=guess, src=wikt
+oper OP_drag_V : V = mkV "slepen" ; -- status=guess, src=wikt
+oper OP_draw_V : V = mkV (mkV "opzien") "baren" | mkV (mkV "aandacht") "trekken" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_dream_V : V = mkV "dromen" ; -- status=guess, src=wikt
+oper OP_dress_V : V = mkV "kleden" | mkV "aankleden" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_drink_V : V = drinken_V ;
+oper OP_drive_V : V = rijden_V ; --- split mkV "aan" drijven_V to drive machinery
+oper OP_drop_V : V = mkV "laten" vallen_V ; ---- let fall
+oper OP_dry_V : V = mkV (mkV "droog") "worden" ; -- status=guess, src=wikt
+oper OP_ease_V : V = variants {} ; --
+oper OP_eat_V : V = eten_V | vreten_V | mkV "op" vreten_V ;
+oper OP_end_V : V = mkV "beëindigen" | mkV "eindigen" | mkV "afsluiten" ;
+oper OP_enter_V : V = mkV "binnen" gaan_V ;
+oper OP_face_V : V = mkV "tegemoet" gaan_V ;
+oper OP_fall_V : V = mkV "vallen" "viel" "gevallen" | mkV "in" (mkV "storten") ; -- instorten means falling down
+oper OP_feed_V : V = reflMkV "voeden met" ; -- status=guess, src=wikt
+oper OP_feel_V : V = mkV "voelen" ;
+oper OP_fight_V : V = vechten_V ;
+oper OP_figure_V : V = mkV "uitvogelen" | mkV (mkV "er") "achter komen" | mkV "ontcijferen" | mkV "doorhebben" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_file_V : V = mkV "archiveren" ; -- status=guess, src=wikt
+oper OP_fill_V : V = mkV "op" (mkV "vullen") | mkV "aan" (mkV "vullen") ;
+oper OP_find_V : V = vinden_V ;
+oper OP_finish_V : V = mkV "eindigen" | mkV "op" houden_V ;
+oper OP_fire_V : V = mkV "vuren" | schieten_V ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_fit_V : V = mkV "passen" ;
+oper OP_fix_V : V = variants {} ; --
+oper OP_fly_V : V = L.fly_V ;
+oper OP_focus_V : V = variants {} ; --
+oper OP_follow_V : V = mkV "volgen" ;
+oper OP_force_V : V = dwingen_V | mkV "verplichten" | mkV "af" dwingen_V | mkV "forceren" ;
+oper OP_gain_V : V = fixprefixV "ver" krijgen_V | winnen_V | mkV "bekomen" ;
+oper OP_give_V : V = geven_V ;
+oper OP_go_V : V = L.go_V ;
+oper OP_grow_V : V = mkV "groeien" | spruiten_V ;
+oper OP_hang_V : V = hangen_V ;
+oper OP_have_V : V = mkV "hebben" ;
+oper OP_head_V : V = mkV "leiden" | mkV "koppen" ;
+oper OP_hear_V : V = mkV "horen" ;
+oper OP_help_V : V = helpen_V ;
+oper OP_hide_V : V = reflMkV "verbergen" | reflMkV "verstoppen" | reflMkV "wegstoppen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_hit_V : V = lin V L.hit_V2 ;
+oper OP_hold_V : V = mkV "houden" "hield" "hielden" "gehouden" ;
+oper OP_issue_V : V = mkV "uit" geven_V ; --- split mkV "af" (mkV "kondigen") ; to issue a new law
+oper OP_join_V : V = mkV "lid" worden_V ;
+oper OP_jump_V : V = L.jump_V ;
+oper OP_keep_V : V = mkV "houden" ;
+oper OP_kick_V : V = mkV "schoppen" | mkV "stampen" | mkV "trappen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_kill_V : V = mkV "doden" | mkV "vermoorden" ;
+oper OP_knock_V : V = mkV "rondzwerven" ; -- status=guess, src=wikt
+oper OP_land_V : V = mkV (mkV "doen") "landen" | mkV (mkV "aan") "de grond zetten" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_laugh_V : V = L.laugh_V ;
+oper OP_lay_V : V = mkV "leggen" ;
+oper OP_lead_V : V = mkV "leiden" ;
+oper OP_lean_V : V = mkV "leunen" ; -- status=guess, src=wikt
+oper OP_leave_V : V = mkV "verlaten" "verliet" "verlieten" "verlaten" ;
+oper OP_lie_V : V = L.lie_V ;
+oper OP_lift_V : V = mkV "op" (mkV "tillen") | mkV "op" (mkV "heffen") ;
+oper OP_light_V : V = mkV "lichten" | mkV "bijlichten" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_link_V : V = fixprefixV "ver" binden_V | mkV "linken" ;
+oper OP_listen_V : V = mkV "luisteren" ;
+oper OP_live_V : V = L.live_V ;
+oper OP_lock_V : V = mkV "blokkeren" | mkV "vastlopen" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_look_V : V = mkV "kijken" "keek" "keken" "gekeken" ;
+oper OP_lose_V : V = verliezen_V ;
+oper OP_make_V : V = mkV "maken" | mkV "doen" ;
+oper OP_marry_V : V = mkV "trouwen" | mkV "huwen" | reflMkV "in de echt verbinden" ;
+oper OP_measure_V : V = meten_V ;
+oper OP_meet_V : V = mkV "ontmoeten" | mkV (mkV "leren") "kennen" ;
+oper OP_miss_V : V = mkV "missen" ;
+oper OP_mix_V : V = mkV "vermengen" ; -- status=guess, src=wikt
+oper OP_mount_V : V = mkV "monteren" | mkV "bevestigen" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_move_V : V = mkV "bewegen" "bewoog" "bewogen" "bewogen" | mkV "verplaatsen" ;
+oper OP_nod_V : V = mkV "knikkebollen" ; -- status=guess, src=wikt
+oper OP_note_V : V = mkV "noteren" | mkV "op" (mkV "merken") ;
+oper OP_occur_V : V = mkV "voor" L.come_V | mkV "plaats" vinden_V ;
+oper OP_open_V : V = mkV "open" (mkV "gaan") ;
+oper OP_operate_V : V = mkV "aan" drijven_V | mkV "opereren" ;
+oper OP_pack_V : V = variants {} ; --
+oper OP_pass_V : V = mkV "over" gaan_V ; --- split mkV "over" slaan_V to skip on something
+oper OP_pay_V : V = mkV "betalen" ;
+oper OP_pick_V : V = kiezen_V ; ---- subcat?
+oper OP_play_V : V = mkV "spelen" ;
+oper OP_point_V : V = wijzen_V ;
+oper OP_pour_V : V = gieten_V | mkV "uitstorten" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_press_V : V = mkV "drukken" ;
+oper OP_print_V : V = mkV "drukken" | mkV "afdrukken" | mkV "printen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_pull_V : V = trekken_V ;
+oper OP_push_V : V = lin V L.push_V2 ;
+oper OP_race_V : V = mkV "razen" ; -- status=guess, src=wikt
+oper OP_reach_V : V = no_geV (mkV "bereiken") ;
+oper OP_read_V : V = L.read_V2 ;
+oper OP_rely_V : V = mkV (mkV "rekenen") "op" ; -- status=guess, src=wikt
+oper OP_report_V : V = mkV "aan" (mkV "melden") | mkV "rapporteren" | verschijnen_V ;
+oper OP_ride_V : V = mkV (mkV "met") "de voeten treden" ; -- status=guess, src=wikt
+oper OP_ring_V : V = mkV "bellen" ;
+oper OP_roll_V : V = mkV (mkV "overkop") "gaan" ; -- status=guess, src=wikt
+oper OP_rule_V : V = mkV "regeren" ; -- status=guess, src=wikt
+oper OP_run_V : V = L.run_V ;
+oper OP_rush_V : V = mkV "afraffelen" ; -- status=guess, src=wikt
+oper OP_sail_V : V = mkV "zeilen" ; -- status=guess, src=wikt
+oper OP_save_V : V = mkV "sparen" ; --- split mkV "redden" to save someone
+oper OP_see_V : V = zien_V | mkV "aanschouwen" | no_geV (mkV "bekijken") | mkV "bezien" ; --- "het snappen", to understand/see, does this need disambiguation?
+oper OP_seize_V : V = grijpen_V | vangen_V | mkV "pakken" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_sell_V : V = fixprefixV "ver" kopen_V ;
+oper OP_send_V : V = zenden_V | no_geV (mkV "verzenden") | mkV "sturen" | mkV "op" (mkV "sturen") ; --- split send_V3?
+oper OP_settle_V : V = mkV "vestigen" ;
+oper OP_shake_V : V = mkV "schudden" ;
+oper OP_shape_V : V = mkV (mkV "de") "vorm aannemen" ; -- status=guess, src=wikt
+oper OP_share_V : V = mkV "delen" ;
+oper OP_shoot_V : V = schieten_V ;
+oper OP_shout_V : V = mkV "schreeuwen" ; -- status=guess, src=wikt
+oper OP_show_V : V = mkV (mkV "laten") "zien" | mkV "tonen" | mkV "vertonen" ;
+oper OP_sign_V : V = mkV "ondertekenen" | mkV "tekenen" ;
+oper OP_sing_V : V = L.sing_V ;
+oper OP_sink_V : V = zinken_V ; -- status=guess, src=wikt
+oper OP_sit_V : V = L.sit_V ;
+oper OP_sleep_V : V = L.sleep_V ;
+oper OP_slip_V : V = mkV "falen" ; -- status=guess, src=wikt
+oper OP_smoke_V : V = mkV "roken" ; -- status=guess, src=wikt
+oper OP_snap_V : V = mkV "snauwen" ; -- status=guess, src=wikt
+oper OP_sort_V : V = mkV "rangschikken" ; -- status=guess, src=wikt
+oper OP_sound_V : V = klinken_V ;
+oper OP_speak_V : V = spreken_V ;
+oper OP_split_V : V = mkV "splitsen" | mkV "opsplitsen" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_spread_V : V = mkV "spreiden" | mkV "verspreiden" ; ---- END edits by EdG
+oper OP_stand_V : V = L.stand_V ;
+oper OP_start_V : V = mkV "starten" | beginnen_V | mkV "aanvangen" ;
+oper OP_stay_V : V = blijven_V | fixprefixV "ver" blijven_V ;
+oper OP_steal_V : V = stelen_V ; -- status=guess, src=wikt
+oper OP_step_V : V = gaan_V ; -- status=guess, src=wikt
+oper OP_stick_V : V = mkV "kleven" | mkV "plakken" ;
+oper OP_stir_V : V = mkV "roeren" ; -- status=guess, src=wikt
+oper OP_stop_V : V = L.stop_V ;
+oper OP_stretch_V : V = mkV "rekken" ; -- status=guess, src=wikt
+oper OP_strike_V : V = mkV "door" (mkV "strepen") | mkV "uit" (mkV "wissen") | mkV "wissen" ; --- split mkV "staken" ; hunger strike
+oper OP_struggle_V : V = vechten_V | mkV "worstelen" | mkV (mkV "moeite") "hebben met" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_suit_V : V = variants {} ; --
+oper OP_sweep_V : V = mkV (mkV "iets") "onder het tapijt vegen" ; -- status=guess, src=wikt
+oper OP_swing_V : V = mkV "schommelen" | mkV "zwaaien" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_switch_V : V = mkV "uitzetten" ; -- status=guess, src=wikt
+oper OP_talk_V : V = mkV "praten" | spreken_V | mkV "overleggen" ;
+oper OP_tap_V : V = mkV "draadtappen" ; -- status=guess, src=wikt
+oper OP_tear_V : V = mkV "scheuren" ; -- status=guess, src=wikt
+oper OP_tell_V : V = mkV "vertellen" ;
+oper OP_think_V : V = L.think_V ;
+oper OP_throw_V : V = lin V throw_V2 ;
+oper OP_tie_V : V = mkV "knopen" | mkV "vastknopen" | binden_V | mkV "strikken" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_touch_V : V = mkV "aan" (mkV "raken") | mkV "raken" | mkV "roeren" ;
+oper OP_trade_V : V = variants {} ; --
+oper OP_train_V : V = mkV "trainen" | mkV "oefenen" ;
+oper OP_try_V : V = mkV "proberen" | mkV "uitproberen" ;
+oper OP_turn_V : V = L.turn_V ;
+oper OP_use_V : V = mkV "gebruiken" ;
+oper OP_vote_V : V = mkV "stemmen" ; -- status=guess, src=wikt
+oper OP_wait_V : V = mkV "wachten" | mkV "af" "wachten" ;
+oper OP_wake_V : V = mkV "wekken" | mkV (mkV "wakker") "maken" ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_walk_V : V = L.walk_V ;
+oper OP_wander_V : V = mkV "afdwalen" ; -- status=guess, src=wikt
+oper OP_want_V : V = mkV "willen" | mkV "willen" "wou" "wouden" "gewild" ;
+oper OP_wash_V : V = wassen_V ; -- status=guess, src=wikt
+oper OP_waste_V : V = mkV "wegkwijnen" ; -- status=guess, src=wikt
+oper OP_watch_V : V = mkV "op" (mkV "letten") ;
+oper OP_wave_V : V = mkV "zwaaien" | mkV "zwenken" | mkV "wapperen" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_wear_V : V = dragen_V | mkV "aan" hebben_V ;
+oper OP_win_V : V = winnen_V | mkV "over" winnen_V ;
+oper OP_wind_V : V = mkV "terugspoelen" ; -- status=guess, src=wikt
+oper OP_wipe_V : V = mkV "wissen" ; -- status=guess, src=wikt
+oper OP_work_V : V = mkV "werken" ;
+oper OP_write_V : V = mkV "schrijven" | mkV "opschrijven" | mkV "neerschrijven" ;
+oper OP_allow_V2 : V2 = mkV2 I.laten_V ;
+oper OP_block_V2 : V2 = mkV2 (mkV "verhinderen") | mkV2 (mkV "tegenhouden") ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_bring_V2 : V2 = mkV2 (mkV "brengen") ;
+oper OP_catch_V2 : V2 = mkV2 vangen_V ;
+oper OP_choose_V2 : V2 = mkV2 (kiezen_V) ;
+oper OP_cover_V2 : V2 = mkV2 (fixprefixV "be" (mkV "dekken")) | mkV2 (mkV "dekken") ;
+oper OP_explain_V2 : V2 = mkV2 (mkV "verklaren") | mkV2 (mkV "uit" "leggen") ;
+oper OP_free_V2 : V2 = mkV2 (mkV "bevrijden") | mkV2 (mkV "loslaten") | mkV2 (mkV (mkV "laten") "gaan") ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
+oper OP_frighten_V2 : V2 = mkV2 (mkV (mkV "bang") "maken") | mkV2 (mkV "beangstigen") ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_get_V2 : V2 = mkV2 krijgen_V ;
+oper OP_hand_V2 : V2 = mkV2 (mkV "overleveren") ; -- status=guess, src=wikt
+oper OP_hate_V2 : V2 = L.hate_V2 ;
+oper OP_invite_V2 : V2 = mkV2 (mkV "uit" (mkV "nodigen")) ;
+oper OP_kiss_V2 : V2 = mkV2 (mkV (mkV "elkaar") "kussen") | mkV2 (mkV (mkV "elkaar") "zoenen") ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_mark_V2 : V2 = mkV2 (mkV "aan" geven_V) ;
+oper OP_match_V2 : V2 = mkV2 (mkV "evenaren") ; -- status=guess, src=wikt
+oper OP_offer_V2 : V2 = mkV2 (mkV "aan" I.bieden_V) ;
+oper OP_own_V2 : V2 = mkV2 (fixprefixV "be" zitten_V) ;
+oper OP_plant_V2 : V2 = mkV2 (mkV "planten") | mkV2 (mkV "poten") ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_put_V2 : V2 = L.put_V2 ;
+oper OP_seek_V2 : V2 = L.seek_V2 ;
+oper OP_set_V2 : V2 = mkV2 (mkV "zetten") ;
+oper OP_shrug_V2 : V2 = variants {} ; --
+oper OP_shut_V2 : V2 = mkV2 (sluiten_V) | mkV2 (mkV "dichtklappen") ; -- status=guess, src=wikt status=guess, src=wikt
+oper OP_take_V2 : V2 = mkV2 I.nemen_V ;
+oper OP_urge_V2 : V2 = mkV2 (mkV "aansporen") ; -- status=guess, src=wikt
+
+
 }

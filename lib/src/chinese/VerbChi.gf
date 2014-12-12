@@ -48,6 +48,12 @@ concrete VerbChi of Verb = CatChi ** open ResChi, Prelude in {
       ATPlace False => insertAdvPost (ss (zai_V.s ++ adv.s)) vp ;   -- he today *here* sleeps
       ATTime | ATPoss => insertTopic adv vp                                  -- *today* he here sleeps
       } ;
+    ExtAdvVP vp adv = case adv.advType of {  ---- ExtAdvVP also ?
+      ATManner => insertObj (ss (deVAdv_s ++ adv.s)) vp ;           -- he sleeps *well*
+      ATPlace True => insertAdvPost adv vp ;                        -- he today *in the house* sleeps
+      ATPlace False => insertAdvPost (ss (zai_V.s ++ adv.s)) vp ;   -- he today *here* sleeps
+      ATTime | ATPoss => insertTopic adv vp                                  -- *today* he here sleeps
+      } ;
 
     AdVVP adv vp = insertAdv adv vp ; 
     

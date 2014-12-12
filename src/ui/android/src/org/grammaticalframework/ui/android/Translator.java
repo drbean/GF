@@ -12,6 +12,7 @@ import org.grammaticalframework.pgf.ExprProb;
 import org.grammaticalframework.pgf.FullFormEntry;
 import org.grammaticalframework.pgf.MorphoAnalysis;
 import org.grammaticalframework.pgf.NercLiteralCallback;
+import org.grammaticalframework.pgf.UnknownLiteralCallback;
 import org.grammaticalframework.pgf.PGF;
 import org.grammaticalframework.pgf.ParseError;
 
@@ -311,13 +312,19 @@ public class Translator {
         } catch (ParseError e) {
         	output = translateByLookup(input);
         }
+        
+        if (output == null)
+        	output = "% ";     // make sure that we return something
 
         return new Pair<String,List<ExprProb>>(output, exprs);
     }
 
     public String linearize(Expr expr) {
     	Concr targetLang = getTargetConcr();
-    	return targetLang.linearize(expr);
+    	String s = targetLang.linearize(expr);
+    	if (s == null)
+    		s = "% ";     // make sure that we return something
+    	return s;
     }
 
     public Object[] bracketedLinearize(Expr expr) {
@@ -481,6 +488,7 @@ public class Translator {
 		        mConcr = mGrammarLoader.getGrammar().getLanguages().get(mLanguage.getConcrete());
 		        mConcr.load(in);
 		        mConcr.addLiteral("PN", new NercLiteralCallback(mGrammarLoader.getGrammar(), mConcr));
+		        mConcr.addLiteral("Symb", new UnknownLiteralCallback(mConcr));
 		        long t2 = System.currentTimeMillis();
 		        Log.d(TAG, name + " loaded ("+(t2-t1)+" ms)");
 		    } catch (FileNotFoundException e) {

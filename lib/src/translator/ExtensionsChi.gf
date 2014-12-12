@@ -51,13 +51,16 @@ lin
     s = v.s ;
     c = ge_s ---- ge
   } ;
-  
-  GerundAP v = {
-    s = v.s ++ de_s ; ----
-    monoSyl = False ;
-    hasAdA = True ; --- 
+
+  GerundNP vp = {
+    s = infVP vp ; ---- ?
   } ;
 
+  GerundAdv vp = {
+    s = infVP vp ++ "地" ; ---- ?
+    advType = ATManner ;
+  } ;
+  
   PastPartAP v = {
     s = v.verb.s ++ de_s ; ----
     monoSyl = False ;
