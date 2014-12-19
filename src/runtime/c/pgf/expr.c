@@ -73,6 +73,45 @@ pgf_expr_unapply(PgfExpr expr, GuPool* pool)
 	return appl;
 }
 
+PgfExpr
+pgf_expr_apply(PgfApplication* app, GuPool* pool)
+{
+	PgfExpr expr;
+
+	size_t len = strlen(app->fun);
+	PgfExprFun *efun =
+		gu_new_flex_variant(PGF_EXPR_FUN,
+					        PgfExprFun,
+					        fun, len+1,
+					        &expr, pool);
+	strcpy(efun->fun, app->fun);
+
+	for (int i = 0; i < app->n_args; i++) {
+		expr = gu_new_variant_i(pool, 
+				                PGF_EXPR_APP, PgfExprApp,
+						        .fun = expr,
+						        .arg = app->args[i]);
+	}
+	
+	return expr;
+}
+
+PgfExpr
+pgf_expr_string(GuString str, GuPool* pool)
+{
+	PgfLiteral lit;
+	PgfLiteralStr* plit = 
+		gu_new_flex_variant(PGF_LITERAL_STR,
+		                    PgfLiteralStr,
+		                    val, strlen(str)+1,
+		                    &lit, pool);
+	strcpy(plit->val, str);
+	return gu_new_variant_i(pool,
+	                        PGF_EXPR_LIT,
+	                        PgfExprLit,
+	                        lit);
+}
+
 typedef struct PgfExprParser PgfExprParser;
 
 typedef enum {
@@ -388,17 +427,7 @@ pgf_expr_parser_term(PgfExprParser* parser)
 		char* str =
 			gu_buf_data(parser->token_value);
 		pgf_expr_parser_token(parser);
-		PgfLiteral lit;
-		PgfLiteralStr* plit = 
-			gu_new_flex_variant(PGF_LITERAL_STR,
-			                    PgfLiteralStr,
-			                    val, strlen(str)+1,
-			                    &lit, parser->expr_pool);
-		strcpy(plit->val, str);
-		return gu_new_variant_i(parser->expr_pool,
-		                        PGF_EXPR_LIT,
-		                        PgfExprLit,
-		                        lit);
+		return pgf_expr_string(str, parser->expr_pool);
 	}
 	case PGF_TOKEN_FLT: {
 		char* str = 

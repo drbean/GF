@@ -17,7 +17,7 @@ module PGF2 (-- * PGF
              -- * Concrete syntax
              Concr,languages,parse,parseWithHeuristics,linearize,
              -- * Trees
-             Expr,readExpr,showExpr,unApp,
+             Expr,readExpr,showExpr,mkApp,unApp,mkStr,
              -- * Morphology
              MorphoAnalysis, lookupMorpho, fullFormLexicon,
              -- * Exceptions
@@ -139,6 +139,21 @@ data Expr = forall a . Expr {expr :: PgfExpr, exprMaster :: a}
 instance Show Expr where
   show = showExpr
 
+mkApp :: String -> [Expr] -> Expr
+mkApp fun args =
+  unsafePerformIO $
+    withCString fun $ \cfun ->
+    allocaBytes ((#size PgfApplication) + len * sizeOf (undefined :: PgfExpr)) $ \papp -> do
+      (#poke PgfApplication, fun) papp cfun
+      (#poke PgfApplication, n_args) papp len
+      pokeArray (papp `plusPtr` (#offset PgfApplication, args)) (map expr args)
+      exprPl <- gu_new_pool
+      c_expr <- pgf_expr_apply papp exprPl
+      exprFPl <- newForeignPtr gu_pool_finalizer exprPl
+      return (Expr c_expr (exprFPl,args))
+  where
+    len = length args
+
 unApp :: Expr -> Maybe (String,[Expr])
 unApp (Expr expr master) =
   unsafePerformIO $
@@ -151,6 +166,15 @@ unApp (Expr expr master) =
            arity <- (#peek PgfApplication, n_args) appl :: IO CInt 
            c_args <- peekArray (fromIntegral arity) (appl `plusPtr` (#offset PgfApplication, args))
            return $ Just (fun, [Expr c_arg master | c_arg <- c_args])
+
+mkStr :: String -> Expr
+mkStr str =
+  unsafePerformIO $
+    withCString str $ \cstr -> do
+      exprPl <- gu_new_pool
+      c_expr <- pgf_expr_string cstr exprPl
+      exprFPl <- newForeignPtr gu_pool_finalizer exprPl
+      return (Expr c_expr exprFPl)
 
 readExpr :: String -> Maybe Expr
 readExpr str =
@@ -234,7 +258,21 @@ getAnalysis ref self c_lemma c_anal prob exn = do
 parse :: Concr -> String -> String -> Either String [(Expr,Float)]
 parse lang cat sent = parseWithHeuristics lang cat sent (-1.0) []
 
-parseWithHeuristics :: Concr -> String -> String -> Double -> [(String, Int -> String -> Int -> Maybe (Expr,Float,Int))] -> Either String [(Expr,Float)]
+parseWithHeuristics :: Concr      -- ^ the language with which we parse
+                    -> String     -- ^ the start category
+                    -> String     -- ^ the input sentence
+                    -> Double     -- ^ the heuristic factor. 
+                                  -- A negative value tells the parser 
+                                  -- to lookup up the default from 
+                                  -- the grammar flags
+                    -> [(String, Int -> String -> Int -> Maybe (Expr,Float,Int))]
+                                  -- ^ a list of callbacks for literal categories.
+                                  -- The arguments of the callback are:
+                                  -- the index of the constituent for the literal category;
+                                  -- the input sentence; the current offset in the sentence.
+                                  -- If a literal has been recognized then the output should
+                                  -- be Just (expr,probability,end_offset)
+                    -> Either String [(Expr,Float)]
 parseWithHeuristics lang cat sent heuristic callbacks =
   unsafePerformIO $
     do parsePl <- gu_new_pool
@@ -280,11 +318,8 @@ mkCallbacksMap concr callbacks pool = do
   where
     match_callback match _ clin_idx csentence poffset out_pool = do
       sentence <- peekCString csentence
-      coffset  <- peek poffset
-      offset <- alloca $ \pcsentence -> do
-                   poke pcsentence csentence
-                   gu2hs_string_offset pcsentence (plusPtr csentence (fromIntegral coffset)) 0
-      case match (fromIntegral clin_idx) sentence offset of
+      coffset <- peek poffset
+      case match (fromIntegral clin_idx) sentence (fromIntegral coffset) of
         Nothing               -> return nullPtr
         Just (e,prob,offset') -> do poke poffset (fromIntegral offset')
 
@@ -306,13 +341,6 @@ mkCallbacksMap concr callbacks pool = do
                                     return ep
 
     predict_callback _ _ _ _ = return nullPtr
-
-    gu2hs_string_offset pcstart cend offset = do
-      cstart <- peek pcstart
-      if cstart < cend
-        then do gu_utf8_decode pcstart
-                gu2hs_string_offset pcstart cend (offset+1)
-        else return offset
 
 linearize :: Concr -> Expr -> String
 linearize lang e = unsafePerformIO $
