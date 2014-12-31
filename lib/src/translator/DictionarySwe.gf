@@ -56455,7 +56455,8 @@ lin tamarin_N = variants {} ; -- status=guess
 lin tamarind_N = variants {} ; -- status=guess
 lin tamarisk_N = variants {} ; -- status=guess
 lin tambala_N = variants {} ; -- status=guess
-lin tambour_N = variants {} ; -- status=guess
+lin tambour_1_N = variants {} ; -- status=guess
+lin tambour_2_N = variants {} ; -- status=guess
 lin tambourine_N = mkN "tamburin" "tamburiner" ; -- SaldoWN
 lin tame_A = mkA "trist" "trist" ; -- comment=4
 lin tame_V2 = mkV2 (mkV "tämja") ; -- status=guess, src=wikt
@@ -61740,7 +61741,6 @@ lin variegation_N = variants {} ; -- status=guess
 lin varietal_N = variants {} ; -- status=guess
 lin variety_1_N = mkN "omväxling" ;
 lin variety_2_N = mkN "sort" "sorter" ;
-lin variety_N = mkN "omväxling" | mkN "sort" "sorter" ; --- already split
 lin variform_A = variants {} ; -- status=guess
 lin variolar_A = variants {} ; -- status=guess
 lin variolation_N = variants {} ; -- status=guess
