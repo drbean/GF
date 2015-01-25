@@ -12,20 +12,27 @@
 #include <gu/enum.h>
 #include <gu/exn.h>
 
-module PGF2 (-- * PGF
-             PGF,readPGF,abstractName,startCat,
+module PGF2 (-- * CId
+             CId,
+             -- * PGF
+             PGF,readPGF,AbsName,abstractName,startCat,
              -- * Concrete syntax
-             Concr,languages,parse,linearize,
+             ConcName,Concr,languages,parse,parseWithHeuristics,linearize,alignWords,
+             -- * Types
+             Type(..), Hypo, functionType,
              -- * Trees
-             Expr,readExpr,showExpr,unApp,
+             Expr,Fun,readExpr,showExpr,mkApp,unApp,mkStr,
              -- * Morphology
              MorphoAnalysis, lookupMorpho, fullFormLexicon,
              -- * Exceptions
-             PGFError(..)
+             PGFError(..),
+             -- * Grammar specific callbacks
+             LiteralCallback,literalCallbacks
             ) where
 
 import Prelude hiding (fromEnum)
 import Control.Exception(Exception,throwIO)
+import Control.Monad(forM_)
 import System.IO.Unsafe(unsafePerformIO,unsafeInterleaveIO)
 import PGF2.FFI
 
@@ -34,7 +41,12 @@ import Foreign.C
 import Data.Typeable
 import qualified Data.Map as Map
 import Data.IORef
+import Data.Char(isUpper,isSpace)
+import Data.List(isSuffixOf,maximumBy)
+import Data.Function(on)
+--import Debug.Trace
 
+type CId = String
  
 -----------------------------------------------------------------------
 -- Functions that take a PGF.
@@ -46,6 +58,11 @@ import Data.IORef
 
 data PGF = PGF {pgf :: Ptr PgfPGF, pgfMaster :: ForeignPtr GuPool}
 data Concr = Concr {concr :: Ptr PgfConcr, concrMaster :: PGF}
+
+type AbsName = String -- ^ Name of abstract syntax
+type ConcName = String -- ^ Name of concrete syntax
+type Cat = String -- ^ Name of syntactic category
+type Fun = String -- ^ Name of function
 
 readPGF :: FilePath -> IO PGF
 readPGF fpath =
@@ -68,7 +85,7 @@ readPGF fpath =
      master <- newForeignPtr gu_pool_finalizer pool
      return PGF {pgf = pgf, pgfMaster = master}
 
-languages :: PGF -> Map.Map String Concr
+languages :: PGF -> Map.Map ConcName Concr
 languages p =
   unsafePerformIO $
     do ref <- newIORef Map.empty
@@ -86,7 +103,7 @@ languages p =
       concr <- fmap (\ptr -> Concr ptr p) $ peek (castPtr value)
       writeIORef ref $! Map.insert name concr langs
 
-generateAll :: PGF -> String -> [(Expr,Float)]
+generateAll :: PGF -> Cat -> [(Expr,Float)]
 generateAll p cat =
   unsafePerformIO $
     do genPl  <- gu_new_pool
@@ -97,10 +114,10 @@ generateAll p cat =
        exprFPl <- newForeignPtr gu_pool_finalizer exprPl
        fromPgfExprEnum enum genFPl (p,exprFPl)
 
-abstractName :: PGF -> String
+abstractName :: PGF -> AbsName
 abstractName p = unsafePerformIO (peekCString =<< pgf_abstract_name (pgf p))
 
-startCat :: PGF -> String
+startCat :: PGF -> Cat
 startCat p = unsafePerformIO (peekCString =<< pgf_start_cat (pgf p))
 
 loadConcr :: Concr -> FilePath -> IO ()
@@ -126,6 +143,57 @@ unloadConcr :: Concr -> IO ()
 unloadConcr c = pgf_concrete_unload (concr c)
 
 -----------------------------------------------------------------------------
+-- Types
+
+data Type =
+   DTyp [Hypo] CId [Expr]
+  deriving Show
+
+data BindType = 
+    Explicit
+  | Implicit
+  deriving Show
+
+-- | 'Hypo' represents a hypothesis in a type i.e. in the type A -> B, A is the hypothesis
+type Hypo = (BindType,CId,Type)
+
+functionType :: PGF -> CId -> Type
+functionType p fn =
+  unsafePerformIO $
+  withCString fn $ \c_fn -> do
+    c_type <- pgf_function_type (pgf p) c_fn
+    peekType c_type
+  where
+    peekType c_type = do
+      cid <- (#peek PgfType, cid) c_type >>= peekCString
+      c_hypos <- (#peek PgfType, hypos) c_type
+      n_hypos <- (#peek GuSeq, len) c_hypos
+      hs <- peekHypos (c_hypos `plusPtr` (#offset GuSeq, data)) 0 n_hypos
+      n_exprs <- (#peek PgfType, n_exprs) c_type
+      es <- peekExprs (c_type `plusPtr` (#offset PgfType, exprs)) 0 n_exprs
+      return (DTyp hs cid es)
+
+    peekHypos :: Ptr a -> Int -> Int -> IO [Hypo]
+    peekHypos c_hypo i n
+      | i < n     = do cid <- (#peek PgfHypo, cid) c_hypo >>= peekCString
+                       ty  <- (#peek PgfHypo, type) c_hypo >>= peekType
+                       bt  <- fmap toBindType ((#peek PgfHypo, bind_type) c_hypo)
+                       hs <- peekHypos (plusPtr c_hypo (#size PgfHypo)) (i+1) n
+                       return ((bt,cid,ty) : hs)
+      | otherwise = return []
+
+    toBindType :: Int -> BindType
+    toBindType (#const PGF_BIND_TYPE_EXPLICIT) = Explicit
+    toBindType (#const PGF_BIND_TYPE_IMPLICIT) = Implicit
+
+    peekExprs ptr i n
+      | i < n     = do e  <- peekElemOff ptr i
+                       es <- peekExprs ptr (i+1) n
+                       return (Expr e p : es)
+      | otherwise = return []
+
+
+-----------------------------------------------------------------------------
 -- Expressions
 
 -- The C structure for the expression may point to other structures
@@ -138,7 +206,22 @@ data Expr = forall a . Expr {expr :: PgfExpr, exprMaster :: a}
 instance Show Expr where
   show = showExpr
 
-unApp :: Expr -> Maybe (String,[Expr])
+mkApp :: Fun -> [Expr] -> Expr
+mkApp fun args =
+  unsafePerformIO $
+    withCString fun $ \cfun ->
+    allocaBytes ((#size PgfApplication) + len * sizeOf (undefined :: PgfExpr)) $ \papp -> do
+      (#poke PgfApplication, fun) papp cfun
+      (#poke PgfApplication, n_args) papp len
+      pokeArray (papp `plusPtr` (#offset PgfApplication, args)) (map expr args)
+      exprPl <- gu_new_pool
+      c_expr <- pgf_expr_apply papp exprPl
+      exprFPl <- newForeignPtr gu_pool_finalizer exprPl
+      return (Expr c_expr (exprFPl,args))
+  where
+    len = length args
+
+unApp :: Expr -> Maybe (Fun,[Expr])
 unApp (Expr expr master) =
   unsafePerformIO $
     withGuPool $ \pl -> do
@@ -150,6 +233,15 @@ unApp (Expr expr master) =
            arity <- (#peek PgfApplication, n_args) appl :: IO CInt 
            c_args <- peekArray (fromIntegral arity) (appl `plusPtr` (#offset PgfApplication, args))
            return $ Just (fun, [Expr c_arg master | c_arg <- c_args])
+
+mkStr :: String -> Expr
+mkStr str =
+  unsafePerformIO $
+    withCString str $ \cstr -> do
+      exprPl <- gu_new_pool
+      c_expr <- pgf_expr_string cstr exprPl
+      exprFPl <- newForeignPtr gu_pool_finalizer exprPl
+      return (Expr c_expr exprFPl)
 
 readExpr :: String -> Maybe Expr
 readExpr str =
@@ -183,7 +275,7 @@ showExpr e =
 -- Functions using Concr
 -- Morpho analyses, parsing & linearization
 
-type MorphoAnalysis = (String,String,Float)
+type MorphoAnalysis = (Fun,String,Float)
 
 lookupMorpho :: Concr -> String -> [MorphoAnalysis]
 lookupMorpho (Concr concr master) sent = unsafePerformIO $
@@ -230,15 +322,33 @@ getAnalysis ref self c_lemma c_anal prob exn = do
   anal  <- peekCString c_anal
   writeIORef ref ((lemma, anal, prob):ans)
 
-parse :: Concr -> String -> String -> Either String [(Expr,Float)]
-parse lang cat sent =
+parse :: Concr -> Cat -> String -> Either String [(Expr,Float)]
+parse lang cat sent = parseWithHeuristics lang cat sent (-1.0) []
+
+parseWithHeuristics :: Concr      -- ^ the language with which we parse
+                    -> Cat        -- ^ the start category
+                    -> String     -- ^ the input sentence
+                    -> Double     -- ^ the heuristic factor. 
+                                  -- A negative value tells the parser 
+                                  -- to lookup up the default from 
+                                  -- the grammar flags
+                    -> [(Cat, Int -> String -> Int -> Maybe (Expr,Float,Int))]
+                                  -- ^ a list of callbacks for literal categories.
+                                  -- The arguments of the callback are:
+                                  -- the index of the constituent for the literal category;
+                                  -- the input sentence; the current offset in the sentence.
+                                  -- If a literal has been recognized then the output should
+                                  -- be Just (expr,probability,end_offset)
+                    -> Either String [(Expr,Float)]
+parseWithHeuristics lang cat sent heuristic callbacks =
   unsafePerformIO $
     do parsePl <- gu_new_pool
        exprPl  <- gu_new_pool
        exn     <- gu_new_exn parsePl
        enum    <- withCString cat $ \cat ->
-                    withCString sent $ \sent ->
-                      pgf_parse (concr lang) cat sent exn parsePl exprPl
+                    withCString sent $ \sent -> do
+                      callbacks_map <- mkCallbacksMap (concr lang) callbacks parsePl
+                      pgf_parse_with_heuristics (concr lang) cat sent heuristic callbacks_map exn parsePl exprPl
        failed  <- gu_exn_is_raised exn
        if failed
          then do is_parse_error <- gu_exn_caught exn gu_exn_type_PgfParseError
@@ -263,34 +373,20 @@ parse lang cat sent =
                  exprs    <- fromPgfExprEnum enum parseFPl (lang,exprFPl)
                  return (Right exprs)
 
-addLiteral :: Concr -> String -> (Int -> String -> Int -> Maybe (Expr,Float,Int)) -> IO ()
-addLiteral lang cat match =
-  withCString cat $ \ccat ->
-  withGuPool  $ \tmp_pool -> do
-    callback <- hspgf_new_literal_callback (concr lang)
-    match    <- wrapLiteralMatchCallback match_callback
-    predict  <- wrapLiteralPredictCallback predict_callback
-    (#poke PgfLiteralCallback, match)   callback match
-    (#poke PgfLiteralCallback, predict) callback predict
-    exn      <- gu_new_exn tmp_pool
-    pgf_concr_add_literal (concr lang) ccat callback exn
-    failed <- gu_exn_is_raised exn
-    if failed
-      then do is_exn <- gu_exn_caught exn gu_exn_type_PgfExn
-              if is_exn
-                then do c_msg <- (#peek GuExn, data.data) exn
-                        msg <- peekCString c_msg
-                        throwIO (PGFError msg)
-                else throwIO (PGFError "The literal cannot be added")
-      else return ()
+mkCallbacksMap :: Ptr PgfConcr -> [(String, Int -> String -> Int -> Maybe (Expr,Float,Int))] -> Ptr GuPool -> IO (Ptr PgfCallbacksMap)
+mkCallbacksMap concr callbacks pool = do
+  callbacks_map <- pgf_new_callbacks_map concr pool
+  forM_ callbacks $ \(cat,match) ->
+    withCString cat $ \ccat -> do
+      match    <- wrapLiteralMatchCallback (match_callback match)
+      predict  <- wrapLiteralPredictCallback predict_callback
+      hspgf_callbacks_map_add_literal concr callbacks_map ccat match predict pool
+  return callbacks_map
   where
-    match_callback _ clin_idx csentence poffset out_pool = do
+    match_callback match _ clin_idx csentence poffset out_pool = do
       sentence <- peekCString csentence
-      coffset  <- peek poffset
-      offset <- alloca $ \pcsentence -> do
-                   poke pcsentence csentence
-                   gu2hs_string_offset pcsentence (plusPtr csentence (fromIntegral coffset)) 0
-      case match (fromIntegral clin_idx) sentence offset of
+      coffset <- peek poffset
+      case match (fromIntegral clin_idx) sentence (fromIntegral coffset) of
         Nothing               -> return nullPtr
         Just (e,prob,offset') -> do poke poffset (fromIntegral offset')
 
@@ -313,13 +409,6 @@ addLiteral lang cat match =
 
     predict_callback _ _ _ _ = return nullPtr
 
-    gu2hs_string_offset pcstart cend offset = do
-      cstart <- peek pcstart
-      if cstart < cend
-        then do gu_utf8_decode pcstart
-                gu2hs_string_offset pcstart cend (offset+1)
-        else return offset
-
 linearize :: Concr -> Expr -> String
 linearize lang e = unsafePerformIO $
   withGuPool $ \pl ->
@@ -340,6 +429,33 @@ linearize lang e = unsafePerformIO $
          else do lin <- gu_string_buf_freeze sb pl
                  peekCString lin
 
+alignWords :: Concr -> Expr -> [(String, [Int])]
+alignWords lang e = unsafePerformIO $
+  withGuPool $ \pl ->
+    do exn <- gu_new_exn pl
+       seq <- pgf_align_words (concr lang) (expr e) exn pl
+       failed <- gu_exn_is_raised exn
+       if failed
+         then do is_nonexist <- gu_exn_caught exn gu_exn_type_PgfLinNonExist
+                 if is_nonexist
+                   then return []
+                   else do is_exn <- gu_exn_caught exn gu_exn_type_PgfExn
+                           if is_exn
+                             then do c_msg <- (#peek GuExn, data.data) exn
+                                     msg <- peekCString c_msg
+                                     throwIO (PGFError msg)
+                             else throwIO (PGFError "The abstract tree cannot be linearized")
+         else do len <- (#peek GuSeq, len) seq
+                 arr <- peekArray (fromIntegral (len :: CInt)) (seq `plusPtr` (#offset GuSeq, data))
+                 mapM peekAlignmentPhrase arr
+  where
+    peekAlignmentPhrase :: Ptr () -> IO (String, [Int])
+    peekAlignmentPhrase ptr = do
+      c_phrase <- (#peek PgfAlignmentPhrase, phrase) ptr
+      phrase <- peekCString c_phrase
+      n_fids <- (#peek PgfAlignmentPhrase, n_fids) ptr
+      fids <- peekArray (fromIntegral (n_fids :: CInt)) (ptr `plusPtr` (#offset PgfAlignmentPhrase, fids))
+      return (phrase, fids)
 
 -----------------------------------------------------------------------------
 -- Helper functions
@@ -371,3 +487,75 @@ newtype PGFError = PGFError String
      deriving (Show, Typeable)
 
 instance Exception PGFError
+
+-----------------------------------------------------------------------
+
+type LiteralCallback =
+       PGF -> (ConcName,Concr) -> Int -> String -> Int -> Maybe (Expr,Float,Int)
+
+-- | Callbacks for the App grammar
+literalCallbacks :: [(AbsName,[(Cat,LiteralCallback)])]
+literalCallbacks = [("App",[("PN",nerc),("Symb",chunk)])]
+
+-- | Named entity recognition for the App grammar 
+-- (based on ../java/org/grammaticalframework/pgf/NercLiteralCallback.java)
+nerc :: LiteralCallback
+nerc pgf (lang,concr) lin_idx sentence offset =
+  case consume capitalized (drop offset sentence) of
+    (capwords@(_:_),rest) |
+       not ("Eng" `isSuffixOf` lang && name `elem` ["I","I'm"]) ->
+        if null ls
+        then pn
+        else case cat of
+              "PN" -> retLit (mkApp lemma [])
+              "WeekDay" -> retLit (mkApp "weekdayPN" [mkApp lemma []])
+              "Month" -> retLit (mkApp "monthPN" [mkApp lemma []])
+              "Language" -> Nothing
+              _ -> pn
+      where
+        retLit e = --traceShow (name,e,drop end_offset sentence) $
+                   Just (e,0,end_offset)
+          where end_offset = length sentence-length rest
+        pn = retLit (mkApp "SymbPN" [mkApp "MkSymb" [mkStr name]])
+        ((lemma,cat),_) = maximumBy (compare `on` snd) (reverse ls)
+        ls = [((fun,cat),p)
+              |(fun,_,p)<-lookupMorpho concr name,
+                let cat=functionCat fun,
+                cat/="Nationality"]
+        name = trimRight (concat capwords)
+    _ -> Nothing
+  where
+    -- | Variant of unfoldr
+    consume munch xs =
+      case munch xs of
+        Nothing -> ([],xs)
+        Just (y,xs') -> (y:ys,xs'')
+          where (ys,xs'') = consume munch xs'
+
+    functionCat f = case functionType pgf f of DTyp _ cat _ -> cat
+
+-- | Callback to parse arbitrary words as chunks (from
+-- ../java/org/grammaticalframework/pgf/UnknownLiteralCallback.java)
+chunk :: LiteralCallback
+chunk _ (_,concr) lin_idx sentence offset =
+  case uncapitalized (drop offset sentence) of
+    Just (word@(_:_),rest) | null (lookupMorpho concr word) ->
+        Just (expr,0,length sentence-length rest)
+      where
+        expr = mkApp "MkSymb" [mkStr (trimRight word)]
+    _ -> Nothing
+
+
+-- More helper functions
+
+trimRight = reverse . dropWhile isSpace . reverse
+
+capitalized = capitalized' isUpper
+uncapitalized = capitalized' (not.isUpper)
+
+capitalized' test s@(c:_) | test c =
+  case span (not.isSpace) s of
+    (name,rest1) ->
+      case span isSpace rest1 of
+        (space,rest2) -> Just (name++space,rest2)
+capitalized' not s = Nothing

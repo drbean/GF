@@ -51,6 +51,7 @@ flags coding = utf8 ;
     Card = {s : Str ; postpositive : Str ; n : Number ; tenPlus : Bool} ; 
     Ord = Adj ;                   -- {pred : Style => TTense => Polarity => Str ; attr, adv,
                                   --  dropNaEnging : Str ; te, ba : Polarity => Str} ;
+    DAP = Det ;
     Numeral = {s : Str ; n : Number ; tenPlus : Bool} ;
     Digits  = {s : Str ; n : Number ; tenPlus : Bool ; tail : DTail} ;
     Conj = Conjunction ;          -- {s : Str ; null : Str ; type : ConjType} ;
@@ -60,13 +61,13 @@ flags coding = utf8 ;
                                   --  Str ; te, ba : Polarity => Str ; needSubject : Bool} 
     V2 = Verb2 ;                  -- {s, pass : Style => TTense => Polarity => Str ; a_stem, i_stem, 
                                   --  pass_a_stem, pass_i_stem, prep : Str ; te, ba, pass_te, 
-                                  --  pass_ba : Polarity => Str ; needSubject : Bool} ;
+                                  --  pass_ba : Polarity => Str} ;
     V3 = Verb3 ;                  -- {s : Speaker => Style => TTense => Polarity => Str ; a_stem, 
                                   --  i_stem : Speaker => Str ; te, ba : Speaker => Polarity => 
                                   --  Str ; prep1, prep2 : Str} ;
-    VV = ResJpn.VV ;              -- {s : Speaker => Style => TTense => Polarity => Str ; te,  
-                                  --  a_stem, i_stem, ba, te_neg, ba_neg : Speaker => Str ; 
-                                  --  sense : ModSense} ;
+    VV = ResJpn.VV ;              -- {s : Speaker => Style => TTense => Polarity => Str ; 
+                                  --  a_stem, i_stem : Speaker => Str ; 
+                                  --  te, ba : Speaker => Polarity => Str ; sense : ModSense} ;
     VS = Verb2 ;
     VQ = Verb2 ;
     VA = Verb ;

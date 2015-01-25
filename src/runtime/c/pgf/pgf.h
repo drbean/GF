@@ -25,6 +25,10 @@ PgfPGF*
 pgf_read(const char* fpath,
          GuPool* pool, GuExn* err);
 
+PgfPGF*
+pgf_read_in(GuIn* in,
+            GuPool* pool, GuPool* tmp_pool, GuExn* err);
+
 void
 pgf_concrete_load(PgfConcr* concr, GuIn* in, GuExn* err);
 
@@ -71,6 +75,16 @@ pgf_has_linearization(PgfConcr* concr, PgfCId id);
 void
 pgf_linearize(PgfConcr* concr, PgfExpr expr, GuOut* out, GuExn* err);
 
+typedef struct {
+	GuString phrase;
+	size_t n_fids;
+	int fids[];
+} PgfAlignmentPhrase;
+
+GuSeq*
+pgf_align_words(PgfConcr* concr, PgfExpr expr,
+                GuExn* err, GuPool* pool);
+
 bool
 pgf_parseval(PgfConcr* concr, PgfExpr expr, PgfCId cat, 
              double *precision, double *recall, double *exact);
@@ -114,9 +128,12 @@ GuEnum*
 pgf_lookup_word_prefix(PgfConcr *concr, GuString prefix,
                        GuPool* pool, GuExn* err);
 
+typedef GuMap PgfCallbacksMap;
+
 PgfExprEnum*
 pgf_parse_with_heuristics(PgfConcr* concr, PgfCId cat, 
                           GuString sentence, double heuristics,
+                          PgfCallbacksMap* callbacks,
                           GuExn* err,
                           GuPool* pool, GuPool* out_pool);
 
@@ -129,9 +146,6 @@ typedef struct {
 GuEnum*
 pgf_complete(PgfConcr* concr, PgfCId cat, GuString string, 
              GuString prefix, GuExn* err, GuPool* pool);
-
-GuPool*
-pgf_concr_get_pool(PgfConcr* concr);
 
 typedef struct PgfLiteralCallback PgfLiteralCallback;
 
@@ -146,10 +160,12 @@ struct PgfLiteralCallback {
 	                      GuPool *out_pool);
 };
 
+PgfCallbacksMap*
+pgf_new_callbacks_map(PgfConcr* concr, GuPool *pool);
+
 void
-pgf_concr_add_literal(PgfConcr *concr, PgfCId cat,
-                      PgfLiteralCallback* callback,
-                      GuExn* err);
+pgf_callbacks_map_add_literal(PgfConcr* concr, PgfCallbacksMap* callbacks,
+                              PgfCId cat, PgfLiteralCallback* callback);
 
 void
 pgf_print(PgfPGF* pgf, GuOut* out, GuExn* err); 

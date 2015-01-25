@@ -21,6 +21,7 @@ data GuString
 data GuStringBuf
 data GuMapItor
 data GuOut
+data GuSeq
 data GuPool
 
 foreign import ccall fopen :: CString -> CString -> IO (Ptr ())
@@ -72,9 +73,6 @@ foreign import ccall "gu/enum.h gu_enum_next"
 foreign import ccall "gu/string.h gu_string_buf_freeze"
   gu_string_buf_freeze :: Ptr GuStringBuf -> Ptr GuPool -> IO CString
 
-foreign import ccall "gu/utf8.h gu_utf8_decode" 
-  gu_utf8_decode :: Ptr (Ptr CChar) -> IO ()
-
 withGuPool :: (Ptr GuPool -> IO a) -> IO a
 withGuPool f = bracket gu_new_pool gu_pool_free f
 
@@ -91,7 +89,7 @@ data PgfFullFormEntry
 data PgfMorphoCallback
 data PgfPrintContext
 data PgfType
-data PgfLiteralCallback
+data PgfCallbacksMap
 
 foreign import ccall "pgf/pgf.h pgf_read"
   pgf_read :: CString -> Ptr GuPool -> Ptr GuExn -> IO (Ptr PgfPGF)
@@ -138,8 +136,11 @@ foreign import ccall "pgf/pgf.h pgf_print_name"
 foreign import ccall "pgf/pgf.h pgf_linearize"
   pgf_linearize :: Ptr PgfConcr -> PgfExpr -> Ptr GuOut -> Ptr GuExn -> IO ()
 
-foreign import ccall "pgf/pgf.h pgf_parse"
-  pgf_parse :: Ptr PgfConcr -> CString -> CString -> Ptr GuExn -> Ptr GuPool -> Ptr GuPool -> IO (Ptr GuEnum)
+foreign import ccall "pgf/pgf.h pgf_align_words"
+  pgf_align_words :: Ptr PgfConcr -> PgfExpr -> Ptr GuExn -> Ptr GuPool -> IO (Ptr GuSeq)
+
+foreign import ccall "pgf/pgf.h pgf_parse_with_heuristics"
+  pgf_parse_with_heuristics :: Ptr PgfConcr -> CString -> CString -> Double -> Ptr PgfCallbacksMap -> Ptr GuExn -> Ptr GuPool -> Ptr GuPool -> IO (Ptr GuEnum)
 
 type LiteralMatchCallback = Ptr () -> CInt -> CString -> Ptr CInt -> Ptr GuPool -> IO (Ptr PgfExprProb)
 
@@ -151,11 +152,11 @@ type LiteralPredictCallback = Ptr () -> CInt -> CString -> Ptr GuPool -> IO (Ptr
 foreign import ccall "wrapper"
   wrapLiteralPredictCallback :: LiteralPredictCallback -> IO (FunPtr LiteralPredictCallback)
 
-foreign import ccall 
-  hspgf_new_literal_callback :: Ptr PgfConcr -> IO (Ptr PgfLiteralCallback)
+foreign import ccall "pgf/pgf.h pgf_new_callbacks_map"
+  pgf_new_callbacks_map :: Ptr PgfConcr -> Ptr GuPool -> IO (Ptr PgfCallbacksMap)
 
-foreign import ccall "pgf/pgf.h pgf_concr_add_literal"
-  pgf_concr_add_literal :: Ptr PgfConcr -> CString -> Ptr PgfLiteralCallback -> Ptr GuExn -> IO ()
+foreign import ccall
+  hspgf_callbacks_map_add_literal :: Ptr PgfConcr -> Ptr PgfCallbacksMap -> CString -> FunPtr LiteralMatchCallback -> FunPtr LiteralPredictCallback -> Ptr GuPool -> IO ()
 
 foreign import ccall "pgf/pgf.h pgf_lookup_morpho"
   pgf_lookup_morpho :: Ptr PgfConcr -> CString -> Ptr PgfMorphoCallback -> Ptr GuExn -> IO ()
@@ -178,7 +179,13 @@ foreign import ccall "pgf/pgf.h pgf_fullform_get_string"
 
 foreign import ccall "pgf/pgf.h pgf_fullform_get_analyses"
   pgf_fullform_get_analyses :: Ptr PgfFullFormEntry -> Ptr PgfMorphoCallback -> Ptr GuExn -> IO ()
-                    
+
+foreign import ccall "pgf/pgf.h pgf_expr_apply"
+  pgf_expr_apply :: Ptr PgfApplication -> Ptr GuPool -> IO PgfExpr
+
+foreign import ccall "pgf/pgf.h pgf_expr_string"
+  pgf_expr_string :: CString -> Ptr GuPool -> IO PgfExpr
+
 foreign import ccall "pgf/pgf.h pgf_expr_unapply"
   pgf_expr_unapply :: PgfExpr -> Ptr GuPool -> IO (Ptr PgfApplication)
 
