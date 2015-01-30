@@ -215,9 +215,8 @@ lin abrasive_N = mkN "Schleifscheibe" feminine ; -- status=guess
 lin abrasiveness_N = variants {} ;
 lin abreast_Adv = mkAdv "auf" ; -- status=guess
 lin abridge_V2 = mkV2 (mkV "verkürzen") | mkV2 (mkV "kürzen") ; -- status=guess, src=wikt status=guess, src=wikt
-lin abridgement_N = variants {} ;
+lin abridgement_N = mkN "Auszug" "Auszüge" masculine | mkN "Kurzfassung" | mkN "Kurzform" "Kurzformen" feminine ; -- status=guess status=guess status=guess
 lin abridger_N = variants {} ;
-lin abridgment_N = mkN "Auszug" "Auszüge" masculine | mkN "Kurzfassung" | mkN "Kurzform" "Kurzformen" feminine ; -- status=guess status=guess status=guess
 lin abroach_A = variants {} ;
 lin abroad_A = variants {} ;
 lin abroad_Adv = mkAdv "im Ausland" ; -- status=guess
@@ -243,7 +242,6 @@ lin absent_minded_A = variants {} ;
 lin absentee_N = variants {} ;
 lin absenteeism_N = variants {} ;
 lin absentmindedness_N = variants {} ;
-lin absinth_N = variants {} ;
 lin absinthe_N = mkN "Wermut" "Wermuts" masculine ; -- status=guess
 lin absolute_A = regA "absolut" ; -- status=guess
 lin absolute_N = mkN "absolute Superlativ" "absoluten Superlative" masculine ; -- status=guess
@@ -16330,7 +16328,6 @@ lin dimension_N = mkN "Dimension" ; -- status=guess
 lin dimensional_A = mkA "-dimensional" ; -- status=guess
 lin dimensionality_N = variants {} ;
 lin dimensioning_A = variants {} ;
-lin dimensions_N = variants {} ;
 lin dimer_N = variants {} ;
 lin dimethylglyoxime_N = variants {} ;
 lin dimetrodon_N = variants {} ;
@@ -49008,8 +49005,7 @@ lin rummage_V2 = mkV2 (mkV "wühlen") | mkV2 (mkV "stöbern") ; -- status=guess,
 lin rummer_N = variants {} ;
 lin rummy_A = variants {} ;
 lin rummy_N = mkN "Rommé" neuter ; -- status=guess
-lin rumor_N = mkN "Gerücht" neuter ; -- status=guess
-lin rumour_N = variants {} ; --
+lin rumour_N = mkN "Gerücht" neuter ; -- status=guess
 lin rumour_V2 = variants {} ;
 lin rumour_V3 = variants {} ;
 lin rumour_monger_N = variants {} ;
