@@ -1190,7 +1190,6 @@ lin aftershafted_A = variants {} ;
 lin aftershock_N = mkN "Nachbeben" "Nachbeben" neuter ; -- status=guess
 lin aftertaste_N = mkN "Nachgeschmack" masculine ; -- status=guess
 lin afterthought_N = variants {} ;
-lin afterward_Adv = variants {} ;
 lin afterwards_Adv = mkAdv "später" | mkAdv "nachher" | mkAdv "danach" | mkAdv "hinterher" ; -- status=guess status=guess status=guess status=guess
 lin afterworld_N = variants {} ;
 lin again_Adv = mkAdv "wieder" ;
@@ -54200,7 +54199,10 @@ lin sprig_N = variants {} ;
 lin sprigged_A = variants {} ;
 lin sprightliness_N = variants {} ;
 lin sprightly_A = variants {} ;
-lin spring_N = mkN "Frühjahrsputz" ; -- status=guess
+lin spring_1_N = mkN "Frühjahr";
+lin spring_2_N = mkN "Feder";
+lin spring_3_N = mkN "Quelle";
+lin spring_4_N = mkN "Sprung";
 lin spring_V = irregV "springen" "springt" "sprang" "spränge" "gesprungen" ; -- status=guess, src=wikt
 lin spring_V2 = mkV2 (irregV "springen" "springt" "sprang" "spränge" "gesprungen") ; -- status=guess, src=wikt
 lin spring_back_V = variants {} ;
@@ -54221,7 +54223,7 @@ lin springfield_PN = mkPN "Springfield" ; -- src=geonames status=guess
 lin springless_A = variants {} ;
 lin springlike_A = variants {} ;
 lin springtide_N = variants {} ;
-lin springtime_N = variants {} ;
+lin springtime_N = mkN "Frühjahr";
 lin springy_A = variants {} ;
 lin sprinkle_N = mkN "Nieselregen" "Nieselregen" masculine ; -- status=guess
 lin sprinkle_V2 = mkV2 (mkV "sprühen") ; -- status=guess, src=wikt
