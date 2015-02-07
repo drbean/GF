@@ -98,7 +98,7 @@ lin abrade_V2 = mkV2 (mkV "schuren") ; -- status=guess, src=wikt
 lin abraham_PN = mkPN "Abraham" ; -- src=eng status=guess
 lin abreast_Adv = mkAdv "op de hoogte" | mkAdv "bekend" | mkAdv "goed ingelicht" | mkAdv "welingelicht" ; -- status=guess status=guess status=guess status=guess
 lin abridge_V2 = mkV2 (mkV "beroven") ; -- status=guess, src=wikt
-lin abridgment_N = mkN "bekorting" | mkN "verkorting" ; -- status=guess status=guess
+lin abridgement_N = mkN "bekorting" | mkN "verkorting" ; -- status=guess status=guess
 lin abroad_Adv = mkAdv "in het buitenland" | mkAdv "naar het buitenland" ; -- status=guess status=guess
 lin abrogate_V2 = mkV2 (mkV "afschaffen") ; -- status=guess, src=wikt
 lin abrupt_A = mkA "afgeknot" ; -- status=guess
@@ -17301,8 +17301,7 @@ lin ruling_N = variants {} ; --
 lin rumble_N = mkN "straatgevecht" neuter ; -- status=guess
 lin rumen_N = mkN "pens" masculine ; -- status=guess
 lin ruminant_N = mkN "herkauwer" ; -- status=guess
-lin rumor_N = mkN "gerucht" neuter ; -- status=guess
-lin rumour_N = variants {} ; --
+lin rumour_N = mkN "gerucht" neuter ; -- status=guess
 lin rump_N = mkN "achterwerk" neuter ; -- status=guess
 lin rumple_V2 = mkV2 (mkV "verkreukelen") ; -- status=guess, src=wikt
 lin rumpus_N = mkN "geschil" | mkN "geroep" | mkN "verwarring" ; -- status=guess status=guess status=guess
@@ -19048,7 +19047,10 @@ lin spread_N = variants {} ; --
 lin spread_V = mkV "spreiden" | mkV "verspreiden" ; ---- END edits by EdG
 lin spread_V2 = mkV2 spread_V ;
 lin spread_out_V2 = prepV2 OP_spread_V OP_out_Prep ; -- guess-p-verb
-lin spring_N = mkN "voorjaarsschoonmaak" ; -- status=guess
+lin spring_1_N = mkN "voorjaar";
+lin spring_2_N = mkN "veer";
+lin spring_3_N = mkN "bron";
+lin spring_4_N = mkN "sprong";
 lin spring_V = springen_V ; -- status=guess, src=wikt
 lin spring_V2 = mkV2 (springen_V) ; -- status=guess, src=wikt
 lin springboard_N = mkN "springplank" ; -- status=guess

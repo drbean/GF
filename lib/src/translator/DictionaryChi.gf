@@ -170,7 +170,6 @@ lin absent_A = mkA "缺席" ;
 lin absent_Prep = mkPrep "缺席" ;
 lin absentee_N = mkN "不在者" | mkN "缺席者" ; -- open-multilingual-wordnet
 lin absenteeism_N = mkN "旷课" "次" ;
-lin absinth_N = mkN "苦艾酒" ; -- open-multilingual-wordnet
 lin absinthe_N = mkN "苦艾" | {-mwn-} mkN "苦艾酒" ; -- status=guess -- open-multilingual-wordnet
 lin absolute_A = mkA "绝对" ;
 lin absolute_N = mkN "君主專制" | mkN "君主专制" | mkN "絕對君主制" | mkN "绝对君主制" | {-HSK-} mkN "绝对" | {-mwn-} mkN "绝对事物" ; -- status=guess -- status=guess -- status=guess -- status=guess -- open-multilingual-wordnet
@@ -28204,8 +28203,7 @@ lin ruminative_A = mkA "冥想" | mkA "沉思" | mkA "爱默想" | mkA "盘算" 
 lin rummage_N = mkN "翻找""次" ;
 lin rummage_V = mkV "翻找" ;
 lin rummage_V2 = mkV2 "使+搜出" ;
-lin rumor_N = mkN "謠言" | mkN "谣言" | mkN "傳聞" | mkN "传闻" | mkN "傳言" | mkN "传言" ; -- status=guess -- status=guess -- status=guess -- status=guess -- status=guess -- status=guess
-lin rumour_N = mkN "谣言" ;
+lin rumour_N = mkN "謠言" | mkN "谣言" | mkN "傳聞" | mkN "传闻" | mkN "傳言" | mkN "传言" ; -- status=guess -- status=guess -- status=guess -- status=guess -- status=guess -- status=guess
 lin rumour_V2 = mkV2 "传闻" ;
 lin rumour_V3 = mkV3 "谣传" ;
 lin rump_N = mkN "屁股" ; -- status=guess
@@ -30768,13 +30766,16 @@ lin spreader_N = mkN "散布机" ; -- open-multilingual-wordnet
 lin spreadsheet_N = mkN "試算表" | mkN "试算表" | mkN "電子表格" | mkN "电子表格" ; -- status=guess -- status=guess -- status=guess -- status=guess
 lin spree_N = mkN "大礼包" ;
 lin sprightly_A = mkA "活泼" ;
-lin spring_N = mkN "春" | {-HSK-} mkN "春天" ;
+lin spring_1_N = mkN "春" | {-HSK-} mkN "春天" ;
+lin spring_2_N = variants {};
+lin spring_3_N = variants {};
+lin spring_4_N = mkN "跳";
 lin spring_V = mkV "春天" ;
 lin spring_V2 = mkV2 "春天" ;
 lin springboard_N = mkN "跳板" ; -- status=guess
 lin springer_N = mkN "猎獚" ; -- open-multilingual-wordnet
 lin springfield_PN = mkPN ("斯普林菲尔德" | "斯普林菲爾德") ; -- comment=src=geonames status=guess
-lin springtime_N = mkN "春季""" ;
+lin springtime_N = mkN "春季" ;
 lin sprinkle_V2 = mkV2 "洒" ;
 lin sprinkler_N = mkN "洒水车" "辆" ;
 lin sprint_N = mkN "短跑" ; -- status=guess

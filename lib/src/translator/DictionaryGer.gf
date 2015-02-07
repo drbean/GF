@@ -215,9 +215,8 @@ lin abrasive_N = mkN "Schleifscheibe" feminine ; -- status=guess
 lin abrasiveness_N = variants {} ;
 lin abreast_Adv = mkAdv "auf" ; -- status=guess
 lin abridge_V2 = mkV2 (mkV "verkürzen") | mkV2 (mkV "kürzen") ; -- status=guess, src=wikt status=guess, src=wikt
-lin abridgement_N = variants {} ;
+lin abridgement_N = mkN "Auszug" "Auszüge" masculine | mkN "Kurzfassung" | mkN "Kurzform" "Kurzformen" feminine ; -- status=guess status=guess status=guess
 lin abridger_N = variants {} ;
-lin abridgment_N = mkN "Auszug" "Auszüge" masculine | mkN "Kurzfassung" | mkN "Kurzform" "Kurzformen" feminine ; -- status=guess status=guess status=guess
 lin abroach_A = variants {} ;
 lin abroad_A = variants {} ;
 lin abroad_Adv = mkAdv "im Ausland" ; -- status=guess
@@ -243,7 +242,6 @@ lin absent_minded_A = variants {} ;
 lin absentee_N = variants {} ;
 lin absenteeism_N = variants {} ;
 lin absentmindedness_N = variants {} ;
-lin absinth_N = variants {} ;
 lin absinthe_N = mkN "Wermut" "Wermuts" masculine ; -- status=guess
 lin absolute_A = regA "absolut" ; -- status=guess
 lin absolute_N = mkN "absolute Superlativ" "absoluten Superlative" masculine ; -- status=guess
@@ -1192,7 +1190,6 @@ lin aftershafted_A = variants {} ;
 lin aftershock_N = mkN "Nachbeben" "Nachbeben" neuter ; -- status=guess
 lin aftertaste_N = mkN "Nachgeschmack" masculine ; -- status=guess
 lin afterthought_N = variants {} ;
-lin afterward_Adv = variants {} ;
 lin afterwards_Adv = mkAdv "später" | mkAdv "nachher" | mkAdv "danach" | mkAdv "hinterher" ; -- status=guess status=guess status=guess status=guess
 lin afterworld_N = variants {} ;
 lin again_Adv = mkAdv "wieder" ;
@@ -16330,7 +16327,6 @@ lin dimension_N = mkN "Dimension" ; -- status=guess
 lin dimensional_A = mkA "-dimensional" ; -- status=guess
 lin dimensionality_N = variants {} ;
 lin dimensioning_A = variants {} ;
-lin dimensions_N = variants {} ;
 lin dimer_N = variants {} ;
 lin dimethylglyoxime_N = variants {} ;
 lin dimetrodon_N = variants {} ;
@@ -49008,8 +49004,7 @@ lin rummage_V2 = mkV2 (mkV "wühlen") | mkV2 (mkV "stöbern") ; -- status=guess,
 lin rummer_N = variants {} ;
 lin rummy_A = variants {} ;
 lin rummy_N = mkN "Rommé" neuter ; -- status=guess
-lin rumor_N = mkN "Gerücht" neuter ; -- status=guess
-lin rumour_N = variants {} ; --
+lin rumour_N = mkN "Gerücht" neuter ; -- status=guess
 lin rumour_V2 = variants {} ;
 lin rumour_V3 = variants {} ;
 lin rumour_monger_N = variants {} ;
@@ -54204,7 +54199,10 @@ lin sprig_N = variants {} ;
 lin sprigged_A = variants {} ;
 lin sprightliness_N = variants {} ;
 lin sprightly_A = variants {} ;
-lin spring_N = mkN "Frühjahrsputz" ; -- status=guess
+lin spring_1_N = mkN "Frühjahr";
+lin spring_2_N = mkN "Feder";
+lin spring_3_N = mkN "Quelle";
+lin spring_4_N = mkN "Sprung";
 lin spring_V = irregV "springen" "springt" "sprang" "spränge" "gesprungen" ; -- status=guess, src=wikt
 lin spring_V2 = mkV2 (irregV "springen" "springt" "sprang" "spränge" "gesprungen") ; -- status=guess, src=wikt
 lin spring_back_V = variants {} ;
@@ -54225,7 +54223,7 @@ lin springfield_PN = mkPN "Springfield" ; -- src=geonames status=guess
 lin springless_A = variants {} ;
 lin springlike_A = variants {} ;
 lin springtide_N = variants {} ;
-lin springtime_N = variants {} ;
+lin springtime_N = mkN "Frühjahr";
 lin springy_A = variants {} ;
 lin sprinkle_N = mkN "Nieselregen" "Nieselregen" masculine ; -- status=guess
 lin sprinkle_V2 = mkV2 (mkV "sprühen") ; -- status=guess, src=wikt
@@ -63660,7 +63658,7 @@ lin weary_A = mkA "müde" ; -- status=guess
 lin weary_V = variants {} ;
 lin weary_V2 = variants {} ;
 lin weasel_N = mkN "Wiesel" "Wiesel" neuter ; -- status=guess
-lin weather_N = wetter_N ; -- status=guess
+lin weather_N = mkN "Wetter" "Wetter" neuter ;
 lin weather_V = mkV "überstehen" ; -- status=guess, src=wikt
 lin weather_V2 = mkV2 (mkV "überstehen") ; -- status=guess, src=wikt
 lin weather_beaten_A = variants {} ;
@@ -63896,7 +63894,6 @@ lin wether_N = mkN "Mönch" masculine | mkN "kastrierter Ziegenbock" masculine ;
 lin wetherby_PN = mkPN "Wetherby" ; -- src=geonames status=guess
 lin wetland_N = mkN "Feuchtgebiet" "Feuchtgebiete" neuter ; -- status=guess
 lin wetness_N = mkN "Nässe" feminine | mkN "Feuchte" feminine ; -- status=guess status=guess
-lin wetter_N = variants {} ;
 lin wetting_N = variants {} ;
 lin wexford_PN = mkPN "Wexford" ; -- src=eng status=guess
 lin weymouth_PN = mkPN "Weymouth" ; -- src=geonames status=guess
