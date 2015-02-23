@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, DeriveDataTypeable #-}
+{-# LANGUAGE ExistentialQuantification, DeriveDataTypeable, ScopedTypeVariables #-}
 -------------------------------------------------
 -- |
 -- Maintainer  : Krasimir Angelov
@@ -459,8 +459,8 @@ alignWords lang e = unsafePerformIO $
       c_phrase <- (#peek PgfAlignmentPhrase, phrase) ptr
       phrase <- peekCString c_phrase
       n_fids <- (#peek PgfAlignmentPhrase, n_fids) ptr
-      fids <- peekArray (fromIntegral (n_fids :: CInt)) (ptr `plusPtr` (#offset PgfAlignmentPhrase, fids))
-      return (phrase, fids)
+      (fids :: [CInt]) <- peekArray (fromIntegral (n_fids :: CInt)) (ptr `plusPtr` (#offset PgfAlignmentPhrase, fids))
+      return (phrase, map fromIntegral fids)
 
 -----------------------------------------------------------------------------
 -- Helper functions
@@ -520,7 +520,7 @@ nerc pgf (lang,concr) lin_idx sentence offset =
       where
         retLit e = --traceShow (name,e,drop end_offset sentence) $
                    Just (e,0,end_offset)
-          where end_offset = length sentence-length rest
+          where end_offset = offset+length name
         pn = retLit (mkApp "SymbPN" [mkApp "MkSymb" [mkStr name]])
         ((lemma,cat),_) = maximumBy (compare `on` snd) (reverse ls)
         ls = [((fun,cat),p)
@@ -544,10 +544,11 @@ nerc pgf (lang,concr) lin_idx sentence offset =
 chunk :: LiteralCallback
 chunk _ (_,concr) lin_idx sentence offset =
   case uncapitalized (drop offset sentence) of
-    Just (word@(_:_),rest) | null (lookupMorpho concr word) ->
-        Just (expr,0,length sentence-length rest)
+    Just (word0@(_:_),rest) | null (lookupMorpho concr word) ->
+        Just (expr,0,offset+length word)
       where
-        expr = mkApp "MkSymb" [mkStr (trimRight word)]
+        word = trimRight word0
+        expr = mkApp "MkSymb" [mkStr word]
     _ -> Nothing
 
 

@@ -126,7 +126,7 @@ data CFGTransform = CFGNoLR
   deriving (Show,Eq,Ord)
 
 data HaskellOption = HaskellNoPrefix | HaskellGADT | HaskellLexical
-                   | HaskellConcrete
+                   | HaskellConcrete | HaskellVariants
   deriving (Show,Eq,Ord)
 
 data Warning = WarnMissingLincat
@@ -173,8 +173,7 @@ data Flags = Flags {
       optDump            :: [Dump],
       optTagsOnly        :: Bool,
       optHeuristicFactor :: Maybe Double,
-      optMetaProb        :: Maybe Double,
-      optMetaToknProb    :: Maybe Double,
+      optPlusAsBind      :: Bool,
       optJobs            :: Maybe (Maybe Int)
     }
   deriving (Show)
@@ -222,8 +221,6 @@ optionsPGF opts =
          maybe [] (\x -> [("language",LStr x)]) (flag optSpeechLanguage opts)
       ++ maybe [] (\x -> [("startcat",LStr x)]) (flag optStartCat opts)
       ++ maybe [] (\x -> [("heuristic_search_factor",LFlt x)]) (flag optHeuristicFactor opts)
-      ++ maybe [] (\x -> [("meta_prob",LFlt x)]) (flag optMetaProb opts)
-      ++ maybe [] (\x -> [("meta_token_prob",LFlt x)]) (flag optMetaToknProb opts)
 
 -- Option manipulation
 
@@ -285,8 +282,7 @@ defaultFlags = Flags {
       optDump            = [],
       optTagsOnly        = False,
       optHeuristicFactor = Nothing,
-      optMetaProb        = Nothing,
-      optMetaToknProb    = Nothing,
+      optPlusAsBind      = False,
       optJobs            = Nothing
     }
 
@@ -369,10 +365,7 @@ optDescr =
      Option [] ["cse"] (onOff (toggleOptimize OptCSE) True) "Perform common sub-expression elimination (default on).",
      Option [] ["cfg"] (ReqArg cfgTransform "TRANS") "Enable or disable specific CFG transformations. TRANS = merge, no-merge, bottomup, no-bottomup, ...",
      Option [] ["heuristic_search_factor"] (ReqArg (readDouble (\d o -> o { optHeuristicFactor = Just d })) "FACTOR") "Set the heuristic search factor for statistical parsing",
-     Option [] ["meta_prob"] (ReqArg (readDouble (\d o -> o { optMetaProb = Just d })) "PROB") "Set the probability of introducting a meta variable in the parser",
-     Option [] ["meta_token_prob"] (ReqArg (readDouble (\d o -> o { optMetaToknProb = Just d })) "PROB") "Set the probability for skipping a token in the parser",
---     Option [] ["new-comp"] (NoArg (set $ \o -> o{optNewComp = True})) "Use the new experimental compiler.",
---     Option [] ["old-comp"] (NoArg (set $ \o -> o{optNewComp = False})) "Use old trusty compiler.",
+     Option [] ["plus-as-bind"] (NoArg (set $ \o -> o{optPlusAsBind=True})) "Uses of (+) with runtime variables automatically generate BIND (experimental feature).",
      dumpOption "source" Source,
      dumpOption "rebuild" Rebuild,
      dumpOption "extend" Extend,
@@ -521,7 +514,8 @@ haskellOptionNames =
     [("noprefix", HaskellNoPrefix),
      ("gadt",     HaskellGADT),
      ("lexical",  HaskellLexical),
-     ("concrete", HaskellConcrete)]
+     ("concrete", HaskellConcrete),
+     ("variants", HaskellVariants)]
 
 -- | This is for bacward compatibility. Since GHC 6.12 we
 -- started using the native Unicode support in GHC but it

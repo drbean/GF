@@ -71,11 +71,12 @@ shell opts files = loop opts =<< runSIO (importInEnv emptyGFEnv opts files)
 -- | Run the GF Server (@gf -server@).
 -- The 'Int' argument is the port number for the HTTP service.
 mainServerGFI opts0 port files =
-    server port root (execute1 opts)
+    server jobs port root (execute1 opts)
       =<< runSIO (importInEnv emptyGFEnv opts files)
   where
     root = flag optDocumentRoot opts
     opts = beQuiet opts0
+    jobs = join (flag optJobs opts)
 #else
 mainServerGFI opts files =
   error "GF has not been compiled with server mode support"
@@ -332,9 +333,7 @@ checkComputeTerm sgr t = do
                  mo <- maybe (raise "no source grammar in scope") return $ greatestResource sgr
                  ((t,_),_) <- runCheck $ do t <- renameSourceTerm sgr mo t
                                             inferLType sgr [] t
-                 t1 <- {-if new
-                       then-} return (CN.normalForm (CN.resourceValues sgr) (L NoLoc identW) t)
-                       {-else computeConcrete sgr t-}
+                 t1 <- return (CN.normalForm (CN.resourceValues noOptions sgr) (L NoLoc identW) t)
                  checkPredefError t1
 
 fetchCommand :: GFEnv -> IO String

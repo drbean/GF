@@ -3,7 +3,7 @@
 
 var gftranslate = {}
 
-gftranslate.jsonurl="/robust/App13.pgf"
+gftranslate.jsonurl="/robust/App14.pgf"
 gftranslate.grammar="App" // the name of the grammar
 
 gftranslate.call=function(querystring,cont,errcont) {
@@ -16,15 +16,47 @@ function enc_langs(g,to) {
 	     : g+to
 }
 
+function unspace_translations(g,trans) {
+    var langs=[g+"Chi",g+"Jpn",g+"Tha"]
+    for(var i=0;i<trans.length;i++) {
+	var lins=trans[i].linearizations
+	if(lins) {
+	    for(var j=0;j<lins.length;j++) {
+		var lin=lins[j]
+		if(elem(lin.to,langs)) {
+		    //console.log(i,j,"space",lin.to,lin.text)
+		    lin.text=lin.text.split(" ").join("")
+		    //console.log(i,j,"unspace",lin.to,lin.text)
+		}
+	    }
+	}
+    }
+    return trans
+}
+
+function length_limit(lang) {
+    switch(lang) {
+    case "Bul":
+    case "Chi":
+    case "Eng":
+    case "Swe":
+	return 500
+    default:
+	return 200
+    }
+}
+
 // Translate a sentence
 gftranslate.translate=function(source,from,to,start,limit,cont) {
     var g=gftranslate.grammar
     var lexer="&lexer=text"
-    if(from=="Chi" || from=="Jpn") lexer="",source=source.split("").join(" ")
+    if(from=="Chi") lexer="",source=source.split("").join(" ")
     var encsrc=encodeURIComponent(source)
     function errcont(text,code) { cont([{error:code+" "+text}]) }
-    function extract(result) { cont(result[0].translations) }
-    if(encsrc.length<500)
+    function extract(result) {
+	cont(unspace_translations(g,result[0].translations))
+    }
+    if(encsrc.length<length_limit(from))
 	gftranslate.call("?command=c-translate&input="+encsrc
 		      +lexer+"&unlexer=text&from="+g+from+"&to="+enc_langs(g,to)
 		      +"&start="+start+"&limit="+limit,extract,errcont)
@@ -38,9 +70,11 @@ gftranslate.wordforword=function(source,from,to,cont) {
     if(from=="Chi") lexer="",source=source.split("").join(" ")
     var encsrc=encodeURIComponent(source)
     function errcont(text,code) { cont([{error:code+" "+text}]) }
-    function extract(result) { cont(result[0].translations) }
+    function extract(result) {
+	cont(unspace_translations(g,result[0].translations))
+    }
     var enc_to = enc_langs(g,to)
-    if(encsrc.length<500)
+    if(encsrc.length<length_limit(from))
 	gftranslate.call("?command=c-wordforword&input="+encsrc
 			 +lexer+"&unlexer=text&from="+g+from+"&to="+enc_to
 			 ,extract,errcont)
