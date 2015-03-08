@@ -217,7 +217,6 @@ Library
     GF.Grammar.Lexer
     GF.Grammar.Lockfield
     GF.Grammar.Lookup
-    GF.Grammar.MMacros
     GF.Grammar.Macros
     GF.Grammar.Parser
     GF.Grammar.PatternMatch
@@ -319,7 +318,7 @@ Executable gf
   ghc-options: -threaded -fwarn-unused-imports
 
   if impl(ghc>=7.0)
-    ghc-options: -rtsopts
+    ghc-options: -rtsopts -with-rtsopts=-I5
     if impl(ghc<7.8)
       ghc-options: -with-rtsopts=-K64M
 
