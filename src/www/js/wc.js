@@ -98,6 +98,7 @@ wc.translate=function() {
 		    p.appendChild(span_class("pick "+q,pick))
 		}
 	    }
+	    if(!so.got_more) p.appendChild(text("..."))
 	    /*
 	    p.appendChild(wrap_class("small","pick",
 				     node("a",{href:wc.google_translate_url(),
@@ -109,9 +110,23 @@ wc.translate=function() {
 	    wc.selected=so
 	    var r=so.rs[so.current_pick]
 	    var prob=r.prob<=0 ? "" : r.prob || ""
-	    if(e) e.innerHTML=prob+"<br>"+(r.tree||"")
+	    if(e) {
+		e.innerHTML=prob+"<br>"
+		if(r.tree) {
+		    var t=wrap("span",text(r.tree))
+		    var imgurl="/robust/AppEng.pgf?command=abstrtree&tree="+encodeURIComponent(r.tree)+"&format=svg"
+		    e.appendChild(t)
+		    if(!r.img) r.img=node("img",{src:imgurl},[])
+		    e.appendChild(empty("br"))
+		    e.appendChild(r.img)
+		}
+	    }
 	    if(wc.p /*&& so.rs.length>1*/) show_picks()
 	    //if(f.speak.checked) wc.speak(t.text,f.to.value)
+	    if(!so.got_more) {
+		so.got_more=true
+		trans(so.input,1,9)
+	    }
 	}
 	so.target.onclick=show_more
 
@@ -175,7 +190,7 @@ wc.translate=function() {
 	    }
 	    gftranslate.translate(text,f.from.value,wc.languages || f.to.value,i,count,step3)
 	}
-	function step2(text) { trans(text,0,10) }
+	function step2(text) { trans(text,0,1) }
 	function step2cnl(text) {
 	    function step3cnl(results) {
 		var trans=results[0].translations
