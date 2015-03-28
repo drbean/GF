@@ -6,6 +6,10 @@ var gftranslate = {}
 gftranslate.jsonurl="/robust/App14.pgf"
 gftranslate.grammar="App" // the name of the grammar
 
+gftranslate.documented_classes=
+    ["N", "N2", "N3", "A", "A2", "V", "V2", "VV", "VS", "VQ", "VA", "V3", "V2V",
+     "V2S", "V2Q", "V2A", "Adv", "Prep"]
+
 gftranslate.call=function(querystring,cont,errcont) {
     http_get_json(gftranslate.jsonurl+querystring,cont,errcont)
 }
@@ -57,7 +61,7 @@ gftranslate.translate=function(source,from,to,start,limit,cont) {
 	cont(unspace_translations(g,result[0].translations))
     }
     if(encsrc.length<length_limit(from))
-	gftranslate.call("?command=c-translate&input="+encsrc
+	gftranslate.call("?command=c-translate&jsontree=true&input="+encsrc
 		      +lexer+"&unlexer=text&from="+g+from+"&to="+enc_langs(g,to)
 		      +"&start="+start+"&limit="+limit,extract,errcont)
     else cont([{error:"sentence too long"}])

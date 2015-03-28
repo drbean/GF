@@ -106,6 +106,27 @@ wc.translate=function() {
 					  [text("Google Translate")])))
 	    */
 	}
+	function treetext(tree) {
+	    function inflect(w,wcls) {
+		function show_inflections(lins) {
+		    if(wc.e2) wc.e2.innerHTML=lins[0].text
+		}
+		function get_inflections() {
+		    var tree="MkDocument+%22%22+(Inflection"+wcls+"+"+w+")+%22%22"
+		    var l=gftranslate.grammar+f.to.value
+		    gftranslate.call("?command=c-linearize&to="+l+"&tree="+tree,show_inflections)
+		}
+		var wn=wrap_class("span","inflect",text(w))
+		if(wc.e2) wn.onclick=get_inflections
+		return wn
+	    }
+	    function word(w) {
+		var ps=w.split("_")
+		return ps.length==2 && elem(ps[1],gftranslate.documented_classes)
+		        ? inflect(w,ps[1]) : text(w)
+	    }
+	    return tree.split(/([ ()]+)/).map(word)
+	}
 	function show_more() {
 	    wc.selected=so
 	    var r=so.rs[so.current_pick]
@@ -113,11 +134,12 @@ wc.translate=function() {
 	    if(e) {
 		e.innerHTML=prob+"<br>"
 		if(r.tree) {
-		    var t=wrap("span",text(r.tree))
-		    e.appendChild(t)
+		    wc.e2=node("div",{id:"tree-container","class":"e2"})
+		    e.appendChild(wrap("span",treetext(r.tree)))
+		    /*
 		    var g=gftranslate.jsonurl
 		    var u="format=svg&tree="+encodeURIComponent(r.tree)
-		    var from="&from="+gftranslate.grammar+f.to.value
+		    var from="&from="+r.grammar+f.to.value
 		    r.imgurls=[g+"?command=c-abstrtree&"+u,
 			       g+"?command=c-parsetree&"+u+from]
 		    if(!r.img) {
@@ -130,8 +152,10 @@ wc.translate=function() {
 		    }
 		    else if(r.img.src!=r.imgurls[r.img_ix]) // language change?
 			r.img.src=r.imgurls[r.img_ix]
-		    e.appendChild(empty("br"))
-		    e.appendChild(r.img)
+		    wc.e2.appendChild(r.img)
+		    */
+		    e.appendChild(wc.e2)
+		    d3Tree(wc.bracketsToD3(r.jsontree))
 		}
 	    }
 	    if(wc.p /*&& so.rs.length>1*/) show_picks()
@@ -329,6 +353,17 @@ wc.try_google=function() {
     w.focus()
 }
 
+wc.bracketsToD3=function(bs) {
+    if(bs.token) return {name:bs.token}
+    else if(bs.other) return {name:bs.other}
+    else if(bs.fun) {
+	var t={name:bs.fun}
+	if(bs.children/* && bs.children.length>0*/)
+	    t.children=bs.children.map(wc.bracketsToD3)
+	return t
+    }
+    else return {name:"??"}
+}
 
 // Update language selection menus with the languages supported by the grammar
 function init_languages() {
