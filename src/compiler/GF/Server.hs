@@ -16,7 +16,11 @@ import GF.System.Directory(doesDirectoryExist,doesFileExist,createDirectory,
                            getDirectoryContents,removeFile,removeDirectory,
                            getModificationTime)
 import Data.Time (getCurrentTime,formatTime)
+#if MIN_VERSION_time(1,5,0)
+import Data.Time.Format(defaultTimeLocale,rfc822DateFormat)
+#else
 import System.Locale(defaultTimeLocale,rfc822DateFormat)
+#endif
 import System.FilePath(dropExtension,takeExtension,takeFileName,takeDirectory,
                        (</>),makeRelative)
 #ifndef mingw32_HOST_OS
@@ -52,10 +56,10 @@ import URLEncoding(decodeQuery)
 debug s = logPutStrLn s
 
 -- | Combined FastCGI and HTTP server
-server port optroot execute1 state0 =
+server jobs port optroot execute1 state0 =
   do --stderrToFile logFile
      state <- newMVar M.empty
-     cache <- PS.newPGFCache
+     cache <- PS.newPGFCache jobs
      datadir <- getDataDir
      let root = maybe (datadir</>"www") id optroot
 --   debug $ "document root="++root
@@ -147,7 +151,7 @@ handle logLn documentroot state0 cache execute1 stateVar
          return r{resHeaders=("Date",fmt):resHeaders r}
 
     normal_request qs =
-      do logPutStrLn $ method++" "++upath++" "++show (mapSnd (take 100.fst) qs)
+      do logPutStrLn $ method++" "++upath++" "++show (mapSnd (take 500.fst) qs)
          let stateful m = modifyMVar stateVar $ \ s -> run m (qs,s)
           -- stateful ensures mutual exclusion, so you can use/change the cwd
          case upath of

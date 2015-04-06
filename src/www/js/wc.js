@@ -1,3 +1,6 @@
+
+/* --- Wide Coverage Translation Demo web app ------------------------------- */
+
 var wc={}
 //wc.cnl="Phrasebook" // try this controlled natural language first
 wc.f=document.forms[0]
@@ -11,12 +14,14 @@ wc.local=appLocalStorage("gf.wc.")
 wc.translating=""
 
 wc.delayed_translate=function() {
-    function restart(){ if(wc.f.input.value!=wc.translating) wc.translate() }
+    function restart(){
+	if(wc.f.input.value!=wc.translating) wc.translate()
+	var h=wc.f.input.scrollHeight,bh=document.body.clientHeight
+	if(h>bh) h=bh
+	if(wc.f.input.clientHeight<h) wc.f.input.style.height=h+15+"px"
+    }
     if(wc.timer) clearTimeout(wc.timer);
     wc.timer=setTimeout(restart,500)
-    var h=wc.f.input.scrollHeight,bh=document.body.clientHeight
-    if(h>bh) h=bh
-    if(wc.f.input.clientHeight<h) wc.f.input.style.height=h+15+"px"
 }
 
 wc.clear=function() {
@@ -93,6 +98,7 @@ wc.translate=function() {
 		    p.appendChild(span_class("pick "+q,pick))
 		}
 	    }
+	    if(!so.got_more) p.appendChild(text("..."))
 	    /*
 	    p.appendChild(wrap_class("small","pick",
 				     node("a",{href:wc.google_translate_url(),
@@ -100,13 +106,64 @@ wc.translate=function() {
 					  [text("Google Translate")])))
 	    */
 	}
+	function treetext(tree) {
+	    function inflect(w,wcls) {
+		function show_inflections(lins) {
+		    if(wc.e2) wc.e2.innerHTML=lins[0].text
+		}
+		function get_inflections() {
+		    var tree="MkDocument+%22%22+(Inflection"+wcls+"+"+w+")+%22%22"
+		    var l=gftranslate.grammar+f.to.value
+		    gftranslate.call("?command=c-linearize&to="+l+"&tree="+tree,show_inflections)
+		}
+		var wn=wrap_class("span","inflect",text(w))
+		if(wc.e2) wn.onclick=get_inflections
+		return wn
+	    }
+	    function word(w) {
+		var ps=w.split("_")
+		return ps.length==2 && elem(ps[1],gftranslate.documented_classes)
+		        ? inflect(w,ps[1]) : text(w)
+	    }
+	    return tree.split(/([ ()]+)/).map(word)
+	}
 	function show_more() {
 	    wc.selected=so
 	    var r=so.rs[so.current_pick]
 	    var prob=r.prob<=0 ? "" : r.prob || ""
-	    if(e) e.innerHTML=prob+"<br>"+(r.tree||"")
+	    if(e) {
+		e.innerHTML=prob+"<br>"
+		if(r.tree) {
+		    wc.e2=node("div",{id:"tree-container","class":"e2"})
+		    e.appendChild(wrap("span",treetext(r.tree)))
+		    /*
+		    var g=gftranslate.jsonurl
+		    var u="format=svg&tree="+encodeURIComponent(r.tree)
+		    var from="&from="+r.grammar+f.to.value
+		    r.imgurls=[g+"?command=c-abstrtree&"+u,
+			       g+"?command=c-parsetree&"+u+from]
+		    if(!r.img) {
+			r.img=node("img",{src:r.imgurls[0]},[])
+			r.img_ix=0
+			r.img.onclick=function() {
+			    r.img_ix=1-r.img_ix
+			    r.img.src=r.imgurls[r.img_ix]
+			}
+		    }
+		    else if(r.img.src!=r.imgurls[r.img_ix]) // language change?
+			r.img.src=r.imgurls[r.img_ix]
+		    wc.e2.appendChild(r.img)
+		    */
+		    e.appendChild(wc.e2)
+		    d3Tree(wc.bracketsToD3(r.jsontree))
+		}
+	    }
 	    if(wc.p /*&& so.rs.length>1*/) show_picks()
 	    //if(f.speak.checked) wc.speak(t.text,f.to.value)
+	    if(!so.got_more) {
+		so.got_more=true
+		trans(so.input,1,9)
+	    }
 	}
 	so.target.onclick=show_more
 
@@ -170,7 +227,7 @@ wc.translate=function() {
 	    }
 	    gftranslate.translate(text,f.from.value,wc.languages || f.to.value,i,count,step3)
 	}
-	function step2(text) { trans(text,0,10) }
+	function step2(text) { trans(text,0,1) }
 	function step2cnl(text) {
 	    function step3cnl(results) {
 		var trans=results[0].translations
@@ -296,6 +353,17 @@ wc.try_google=function() {
     w.focus()
 }
 
+wc.bracketsToD3=function(bs) {
+    if(bs.token) return {name:bs.token}
+    else if(bs.other) return {name:bs.other}
+    else if(bs.fun) {
+	var t={name:bs.fun}
+	if(bs.children/* && bs.children.length>0*/)
+	    t.children=bs.children.map(wc.bracketsToD3)
+	return t
+    }
+    else return {name:"??"}
+}
 
 // Update language selection menus with the languages supported by the grammar
 function init_languages() {

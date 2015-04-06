@@ -196,6 +196,7 @@ rgl_dst_dir lbi = buildDir lbi </> "rgl"
 -- don't support all flags needed; they are used in tests
 
 langsCoding = [
+  (("afrikaans","Afr"),""),
   (("amharic",  "Amh"),""),
   (("arabic",   "Ara"),""),
   (("bulgarian","Bul"),""),
@@ -217,6 +218,8 @@ langsCoding = [
   (("latin",    "Lat"),""),
   (("latvian",    "Lav"),""),
   (("maltese",  "Mlt"),""),
+  (("mongolian","Mon"),""),
+  (("nepali",   "Nep"),""),
   (("norwegian","Nor"),""),
   (("persian",  "Pes"),""),
   (("polish",   "Pol"),""),
@@ -241,7 +244,7 @@ langsLang = langs -- `except` ["Amh","Ara","Lat","Tur"]
 --langsLang = langs `only` ["Fin"] --test
 
 -- languagues that have notpresent marked
-langsPresent = langsLang `except` ["Chi","Gre","Heb","Jpn","Mlt","Nep","Pes","Snd","Tha","Thb","Est"]
+langsPresent = langsLang `except` ["Afr","Chi","Gre","Heb","Jpn","Mlt","Mon","Nep","Pes","Snd","Tha","Thb","Est"]
 
 -- languages for which to compile Try
 langsAPI  = langsLang `except` langsIncomplete -- ["Ina","Amh","Ara"]
@@ -249,7 +252,7 @@ langsAPI  = langsLang `except` langsIncomplete -- ["Ina","Amh","Ara"]
 langsIncomplete = ["Amh","Ara","Heb","Ina","Lat","Tur"]
 
 -- languages for which to compile Symbolic
-langsSymbolic  = langsAPI `except` ["Jpn"]
+langsSymbolic  = langsAPI `except` ["Afr","Jpn","Mon","Nep"]
 
 -- languages for which to run demo test
 langsDemo = langsLang `except` ["Ara","Hin","Ina","Lav","Tha"]

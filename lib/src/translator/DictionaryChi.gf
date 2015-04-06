@@ -393,7 +393,6 @@ lin acidimetry_N = mkN "酸定量法" | mkN "酸量滴定法" ; -- open-multilin
 lin acidity_N = mkN "酸性" | mkN "酸度" ; -- status=guess -- status=guess
 lin acidophil_N = mkN "嗜酸菌" ; -- open-multilingual-wordnet
 lin acidotic_A = mkA "酸中毒" ;
-lin ackee_N = mkN "西非荔枝果" | mkN "阿开木果" ; -- open-multilingual-wordnet
 lin acknowledge_V2 = mkV2 "承认" ;
 lin acknowledge_VS = mkVS "确认" ;
 lin acknowledgeable_A = mkA "有知识" ; -- open-multilingual-wordnet
@@ -1042,7 +1041,7 @@ lin airworthy_A = mkA "适宜航空" ; -- open-multilingual-wordnet
 lin airy_A = mkA "幻想" | mkA "无实体" | mkA "空气状" | mkA "象空气" ; -- open-multilingual-wordnet
 lin aisle_N = mkN "通道" "条" ;
 lin aitchbone_N = mkN "牛的臀骨肉" ; -- open-multilingual-wordnet
-lin akee_N = mkN "西非荔枝果" | mkN "阿开木果" ; -- open-multilingual-wordnet
+lin ackee_N = mkN "西非荔枝果" | mkN "阿开木果" ; -- open-multilingual-wordnet
 lin akin_A = mkA "类似" ;
 lin akinesis_N = mkN "无动力" | mkN "运动不能" ; -- open-multilingual-wordnet
 lin akron_PN = mkPN "阿克伦" ; -- comment=src=geonames status=guess
@@ -18948,7 +18947,6 @@ lin late_Adv = mkAdv "晚" | {-HSK-} mkAdv "深" ;
 lin lateen_N = mkN "三角帆" ; -- open-multilingual-wordnet
 lin lately_Adv = adjAdv late_A ; -- derived
 lin latent_A = mkA "潛在" | mkA "潜在" ; -- status=guess -- status=guess
-lin later_A = mkA "下" | mkA "以后" | mkA "后来" | mkA "后面" ;
 lin later_Adv = mkAdv "下" | mkAdv "以后" | mkAdv "后来" | mkAdv "后面" ;
 lin lateral_A = mkA "旁边" | {-mwn-} mkA "侧面" | mkA "向侧面" | mkA "在侧面" | mkA "横斜" ; -- open-multilingual-wordnet
 lin latest_A = mkA "最近" ;
@@ -21439,7 +21437,6 @@ lin mojarra_N = mkN "银鲈" ; -- open-multilingual-wordnet
 lin moke_N = mkN "驴" ; -- open-multilingual-wordnet
 lin molar_N = mkN "臼齒" | mkN "臼齿" ; -- status=guess -- status=guess
 lin molasses_N = mkN "糖蜜" ; -- status=guess
-lin mold_N = mkN "霉菌" ; -- status=guess
 lin mold_PN = foreignPN "Mold" ; -- comment=src=geonames status=guess
 lin mold_V = mkV "塑造" | {-HSK-} mkV "浇" ;
 lin mold_V2 = mkV2 "塑造" | {-HSK-} mkV2 "浇" ;
@@ -21686,7 +21683,7 @@ lin motorist_N = mkN "驾驶员" ;
 lin motorize_V2 = mkV2 "机动化" ;
 lin motorway_N = mkN "公路" "条" ;
 lin motto_N = mkN "座右銘" | mkN "座右铭" | {-mwn-} mkN "口号" | mkN "标语" | mkN "格言" ; -- status=guess -- status=guess -- open-multilingual-wordnet
-lin mould_N = mkN "模" ;
+lin mould_N = mkN "霉菌" | mkN "模" ;
 lin mouldy_A = mkA "發霉" | mkA "发霉" ; -- status=guess -- status=guess
 lin moult_N = mkN "換毛" | mkN "换毛" | mkN "換羽" | mkN "换羽" | {-mwn-} mkN "眠起" | mkN "脱毛" | mkN "脱皮" | mkN "脱角" | mkN "蜕皮" ; -- status=guess -- status=guess -- status=guess -- status=guess -- open-multilingual-wordnet
 lin moult_V = mkV "換毛" | mkV "换毛" | mkV "換羽" | mkV "换羽" ; -- status=guess, src=wikt -- status=guess, src=wikt -- status=guess, src=wikt -- status=guess, src=wikt
@@ -28642,7 +28639,7 @@ lin scale_N = mkN "比例" | mkN "规模" "個" | {-HSK-} mkN "规模" ;
 lin scale_V = mkV "衡量" ;
 lin scale_V2 = mkV2 "衡量" ;
 lin scalic_A = mkA "节拍器" ; -- open-multilingual-wordnet
-lin scallop_N = mkN "扇貝" | mkN "扇贝" | {-mwn-} mkN "干贝" | mkN "海扇贝" | mkN "海贝" ; -- status=guess -- status=guess -- open-multilingual-wordnet
+lin scallop_N = mkN "扇貝" | mkN "扇贝" | mkN "干贝" | mkN "海扇贝" | mkN "海贝" ; -- status=guess -- status=guess -- open-multilingual-wordnet
 lin scalp_N = mkN "头皮" ;
 lin scalpel_N = mkN "解剖刀" | mkN "手術刀" | mkN "手术刀" ; -- status=guess -- status=guess -- status=guess
 lin scalper_N = mkN "黄牛" | mkN "票販子" | mkN "票贩子" ; -- status=guess -- status=guess -- status=guess
@@ -28761,7 +28758,6 @@ lin scoff_V = mkV "嘲笑" ;
 lin scold_N = mkN "责骂""" ;
 lin scold_V = mkV "责骂" | {-HSK-} mkV "骂" ;
 lin scold_V2 = mkV2 "责骂" | {-HSK-} mkV2 "骂" ;
-lin scollop_N = mkN "干贝" | mkN "扇贝" | mkN "海扇贝" | mkN "海贝" ; -- open-multilingual-wordnet
 lin scolopendrium_N = mkN "对开蕨" | mkN "荷叶蕨" | mkN "蜈蚣科" ; -- open-multilingual-wordnet
 lin scombroid_N = mkN "鲭亚目鱼" ; -- open-multilingual-wordnet
 lin scoop_N = mkN "勺" | {-HSK-} mkN "勺子" "把" ;
@@ -33440,8 +33436,8 @@ lin trancelike_A = mkA "像出神了一样" | mkA "像发呆一样" | mkA "恍�
 lin tranche_N = mkN "一期款项" | mkN "份" | mkN "份额" | mkN "部分" ; -- open-multilingual-wordnet
 lin tranent_PN = foreignPN "Tranent" ; -- comment=src=geonames status=guess
 lin tranquil_A = mkA "平静" ;
-lin tranquility_N = mkN "宁静" ;
-lin tranquilizer_N = mkN "鎮靜劑" | mkN "镇静剂" ; -- status=guess -- status=guess
+lin tranquillity_N = mkN "宁静" ;
+lin tranquillizer_N = mkN "鎮靜劑" | mkN "镇静剂" ; -- status=guess -- status=guess
 lin trans_PN = foreignPN "Trans" ; -- comment=src=eng status=guess
 lin transact_V2 = mkV2 "办理" ;
 lin transactinide_A = mkA "超锕" | mkA "超锕系元素" ; -- open-multilingual-wordnet
@@ -35159,7 +35155,6 @@ lin vine_N = mkN "葡萄树" ;
 lin vinegar_N = mkN "醋" ; -- status=guess
 lin vineyard_N = mkN "葡萄园" ;
 lin vinification_N = mkN "葡萄酒酿造法" ; -- open-multilingual-wordnet
-lin vino_N = mkN "葡萄酒" | mkN "酒" ; -- open-multilingual-wordnet
 lin vinous_A = mkA "葡萄酒" ; -- open-multilingual-wordnet
 lin vintage_N = mkN "葡萄收获期" ;
 lin vinyl_N = mkN "乙烯基" "" ;
@@ -35802,8 +35797,7 @@ lin whisk_N = mkN "打蛋器" ; -- status=guess
 lin whisk_V2 = mkV2 "扫" ;
 lin whisker_N = mkN "感覺毛" | mkN "感觉毛" ; -- status=guess -- status=guess
 lin whiskered_A = mkA "有胡子" | mkA "有须" ; -- open-multilingual-wordnet
-lin whiskey_N = mkN "威士忌酒" ;
-lin whisky_N = mkN "威士忌酒" "瓶" ;
+lin whiskey_N = mkN "威士忌酒" "瓶" ;
 lin whisper_N = mkN "耳语" "" ;
 lin whisper_V = mkV "私语" ;
 lin whisper_V2 = mkV2 "耳语" ;

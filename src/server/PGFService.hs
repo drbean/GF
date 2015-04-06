@@ -21,7 +21,11 @@ import qualified PGF2 as C
 
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format(formatTime)
+#if MIN_VERSION_time(1,5,0)
+import Data.Time.Format(defaultTimeLocale,rfc822DateFormat)
+#else
 import System.Locale(defaultTimeLocale,rfc822DateFormat)
+#endif
 import Text.JSON
 import Text.PrettyPrint as PP(render, text, (<+>))
 import qualified Codec.Binary.UTF8.String as UTF8 (decodeString)
@@ -31,6 +35,7 @@ import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
 import Control.Monad.State(State,evalState,get,put)
+import Control.Monad.Catch(bracket_)
 import Data.Char
 import Data.Function (on)
 import Data.List (sortBy,intersperse,mapAccumL,nub,isSuffixOf,nubBy)
@@ -48,25 +53,30 @@ import Fold(fold) -- transfer function for OpenMath LaTeX
 catchIOE :: IO a -> (E.IOException -> IO a) -> IO a
 catchIOE = E.catch
 
+withQSem qsem = bracket_ (liftIO $ waitQSem qsem) (liftIO $ signalQSem qsem)
+
 logFile :: FilePath
 logFile = "pgf-error.log"
 
 #ifdef C_RUNTIME
-type Caches = (Cache PGF,Cache (C.PGF,({-MVar ParseCache-})))
+type Caches = (Cache PGF,(Cache (C.PGF,({-MVar ParseCache-})),QSem))
+--type Caches = (Cache PGF,Cache (C.PGF,({-MVar ParseCache-})))
 --type ParseCache = Map.Map (String,String) (ParseResult,UTCTime)
 --type ParseResult = Either String [(C.Expr,Float)]
 
-newPGFCache = do pgfCache <- newCache' PGF.readPGF
-                 cCache <- newCache' $ \ path -> do pgf <- C.readPGF path
-                                                  --pc <- newMVar Map.empty
-                                                    return (pgf,({-pc-}))
-                 return (pgfCache,cCache)
-flushPGFCache (c1,c2) = flushCache c1 >> flushCache c2
-listPGFCache (c1,c2) = (,) # listCache c1 % listCache c2
+newPGFCache jobs = do pgfCache <- newCache' PGF.readPGF
+                      let n = maybe 4 id jobs
+                      qsem <- newQSem n
+                      cCache <- newCache' $ \ path -> do pgf <- C.readPGF path
+                                                       --pc <- newMVar Map.empty
+                                                         return (pgf,({-pc-}))
+                      return (pgfCache,(cCache,qsem))
+flushPGFCache (c1,(c2,_)) = flushCache c1 >> flushCache c2
+listPGFCache (c1,(c2,_)) = (,) # listCache c1 % listCache c2
 #else
 type Caches = (Cache PGF,())
-newPGFCache = do pgfCache <- newCache' PGF.readPGF
-                 return (pgfCache,())
+newPGFCache _ = do pgfCache <- newCache' PGF.readPGF
+                   return (pgfCache,())
 flushPGFCache (c1,_) = flushCache c1
 listPGFCache (c1,_) = (,) # listCache c1 % return []
 #endif
@@ -96,7 +106,8 @@ cgiMain' cache path =
          "download" -> outputBinary    =<< getFile BS.readFile path
          'c':'-':_  ->
 #ifdef C_RUNTIME
-                   cpgfMain command =<< getFile (readCache' (snd cache)) path
+                   cpgfMain (snd (snd cache)) command
+                      =<< getFile (readCache' (fst (snd cache))) path
 #else
                    serverError "Server configured without C run-time support" ""
 #endif
@@ -114,14 +125,18 @@ getFile get path =
 
 #ifdef C_RUNTIME
 --cpgfMain :: String -> (C.PGF,MVar ParseCache) -> CGI CGIResult
-cpgfMain command (t,(pgf,pc)) =
+cpgfMain qsem command (t,(pgf,pc)) =
   case command of
-    "c-parse"       -> out t=<< join (parse # input % start % limit % trie)
+    "c-parse"       -> withQSem qsem $
+                       out t=<< join (parse # input % start % limit % treeopts)
     "c-linearize"   -> out t=<< lin # tree % to
-    "c-translate"   -> out t=<< join (trans # input % to % start % limit % trie)
+    "c-translate"   -> withQSem qsem $
+                       out t=<<join(trans # input % to % start % limit%treeopts)
     "c-lookupmorpho"-> out t=<< morpho # from1 % textInput
     "c-flush"       -> out t=<< flush
     "c-grammar"     -> out t grammar
+    "c-abstrtree"   -> outputGraphviz=<< C.graphvizAbstractTree pgf # tree
+    "c-parsetree"   -> outputGraphviz=<< C.graphvizParseTree . snd # from1 %tree
     "c-wordforword" -> out t =<< wordforword # input % to
     _               -> badRequest "Unknown command" command
   where
@@ -140,20 +155,19 @@ cpgfMain command (t,(pgf,pc)) =
       where
         languages = [makeObj ["name".= l] | (l,_)<-Map.toList langs]
 
-    parse input@((from,_),_) start mlimit trie =
+    parse input@((from,_),_) start mlimit (trie,json) =
         do r <- parse' start mlimit input
-           return $ showJSON [makeObj ("from".=from:jsonParseResult r)]
+           return $ showJSON [makeObj ("from".=from:jsonParseResult json r)]
 
-    jsonParseResult = either bad good
+    jsonParseResult json = either bad good
       where
         bad err = ["parseFailed".=err]
         good trees = "trees".=map tp trees :[]  -- :addTrie trie trees
-        tp (tree,prob) = makeObj ["tree".=tree,"prob".=prob]
+        tp (tree,prob) = makeObj (addTree json tree++["prob".=prob])
 
     -- Without caching parse results:
     parse' start mlimit ((from,concr),input) =
-        return $
-        maybe id take mlimit . drop start # cparse
+        return $ maybe id take mlimit . drop start # cparse
       where
       --cparse = C.parse concr cat input
         cparse = C.parseWithHeuristics concr cat input (-1) callbacks
@@ -180,7 +194,7 @@ cpgfMain command (t,(pgf,pc)) =
     lin' tree (tos,unlex) =
         [makeObj ["to".=to,"text".=unlex (C.linearize c tree)]|(to,c)<-tos]
 
-    trans input@((from,_),_) to start mlimit trie =
+    trans input@((from,_),_) to start mlimit (trie,jsontree) =
       do parses <- parse' start mlimit input
          return $
            showJSON [ makeObj ["from".=from,
@@ -189,9 +203,9 @@ cpgfMain command (t,(pgf,pc)) =
         jsonParses = either bad good
           where
             bad err = [makeObj ["error".=err]]
-            good parses = [makeObj ["tree".=tree,
-                                     "prob".=prob,
-                                     "linearizations".=lin' tree to]
+            good parses = [makeObj (addTree jsontree tree++
+                                    ["prob".=prob,
+                                     "linearizations".=lin' tree to])
                                     | (tree,prob) <- parses]
 
     morpho (from,concr) input =
@@ -279,6 +293,17 @@ instance JSON C.Expr where
     readJSON x = readJSON x >>= maybe (fail "Bad expression.") return . C.readExpr
     showJSON = showJSON . C.showExpr
 
+
+-- | Convert a 'Tree' to an 'ATree'
+cToATree :: C.Expr -> PGF.ATree C.Expr
+cToATree e = maybe (PGF.Other e) app (C.unApp e)
+  where
+    app (f,es) = PGF.App (read f) (map cToATree es)
+
+instance ToATree C.Expr where
+  showTree = show
+  toATree = cToATree
+
 #endif
 
 --------------------------------------------------------------------------------
@@ -287,9 +312,9 @@ instance JSON C.Expr where
 -- | Lexers with a text lexer that tries to be a more clever with the first word
 ilexer good = lexer' uncap
   where
-    uncap s = if good s
-              then s
-              else uncapitInit s
+    uncap s = case span isUpper s of
+                ([c],r) | not (good s) -> toLower c:r
+                _ -> s
 
 -- | Standard lexers
 lexer = lexer' uncapitInit
@@ -326,14 +351,14 @@ unlexer = maybe (return id) unlexerfun =<< getInput "unlexer"
 --pgfMain :: String -> PGF -> CGI CGIResult
 pgfMain command (t,pgf) =
     case command of
-      "parse"          -> o =<< doParse pgf # input % cat % limit % trie
+      "parse"          -> o =<< doParse pgf # input % cat % limit % treeopts
       "complete"       -> o =<< doComplete pgf # input % cat % limit % full
       "linearize"      -> o =<< doLinearize pgf # tree % to
       "linearizeAll"   -> o =<< doLinearizes pgf # tree % to
       "linearizeTable" -> o =<< doLinearizeTabular pgf # tree % to
       "random"         -> o =<< join (doRandom pgf # cat % depth % limit % to)
       "generate"       -> o =<< doGenerate pgf # cat % depth % limit % to
-      "translate"      -> o =<< doTranslate pgf # input % cat % to % limit %trie
+      "translate"      -> o =<< doTranslate pgf # input % cat %to%limit%treeopts
       "translategroup" -> o =<< doTranslateGroup pgf # input % cat % to % limit
       "lookupmorpho"   -> o =<< doLookupMorpho pgf # from1 % textInput
       "grammar"        -> o =<< doGrammar t pgf # requestAcceptLanguage
@@ -453,9 +478,10 @@ depth = readInput "depth"
 start :: CGI Int
 start = maybe 0 id # readInput "start"
 
-trie :: CGI Bool
-trie = maybe False toBool # getInput "trie"
+treeopts :: CGI TreeOpts
+treeopts = (,) # getBool "trie" % getBool "jsontree"
 
+getBool x = maybe False toBool # getInput x
 toBool s = s `elem` ["","yes","true","True"]
 
 missing = badRequest "Missing parameter"
@@ -501,9 +527,10 @@ doLookupMorpho pgf from input =
 
 type From = (Maybe PGF.Language,String)
 type To = ([PGF.Language],Unlexer)
+type TreeOpts = (Bool,Bool) -- (trie,jsontree)
 
-doTranslate :: PGF -> From -> Maybe PGF.Type -> To -> Maybe Int -> Bool -> JSValue
-doTranslate pgf (mfrom,input) mcat (tos,unlex) mlimit trie =
+doTranslate :: PGF -> From -> Maybe PGF.Type -> To -> Maybe Int -> TreeOpts -> JSValue
+doTranslate pgf (mfrom,input) mcat (tos,unlex) mlimit (trie,jsontree) =
   showJSON
      [makeObj ("from".=from : "brackets".=bs : jsonTranslateOutput po)
           | (from,po,bs) <- parse' pgf input mcat mfrom]
@@ -513,11 +540,11 @@ doTranslate pgf (mfrom,input) mcat (tos,unlex) mlimit trie =
         PGF.ParseOk trees ->
             addTrie trie trees++
             ["translations".=
-              [makeObj ["tree".=tree,
-                        "linearizations".=
+              [makeObj (addTree jsontree tree++
+                       ["linearizations".=
                             [makeObj ["to".=to, "text".=unlex text,
                                       "brackets".=bs]
-                               | (to,text,bs)<- linearizeAndBind pgf tos tree]]
+                               | (to,text,bs)<- linearizeAndBind pgf tos tree]])
                 | tree <- maybe id take mlimit trees]]
         PGF.ParseIncomplete -> ["incomplete".=True]
         PGF.ParseFailed n   -> ["parseFailed".=n]
@@ -576,21 +603,26 @@ doTranslateGroup pgf (mfrom,input) mcat (tos,unlex) mlimit =
 
    notDisamb = (/="Disamb") . take 6 . PGF.showLanguage
 
-doParse :: PGF -> From -> Maybe PGF.Type -> Maybe Int -> Bool -> JSValue
-doParse pgf (mfrom,input) mcat mlimit trie = showJSON $ map makeObj
+doParse :: PGF -> From -> Maybe PGF.Type -> Maybe Int -> TreeOpts -> JSValue
+doParse pgf (mfrom,input) mcat mlimit (trie,jsontree) = showJSON $ map makeObj
      ["from".=from : "brackets".=bs : jsonParseOutput po
         | (from,po,bs) <- parse' pgf input mcat mfrom]
   where
     jsonParseOutput output =
       case output of
-        PGF.ParseOk trees   -> ["trees".=maybe id take mlimit trees]
+        PGF.ParseOk trees   -> ["trees".=trees']
+                               ++["jsontrees".=map jsonExpr trees'|jsontree]
                                ++addTrie trie trees
+          where trees' = maybe id take mlimit trees
         PGF.TypeError errs  -> jsonTypeErrors errs
         PGF.ParseIncomplete -> ["incomplete".=True]
         PGF.ParseFailed n   -> ["parseFailed".=n]
 
 addTrie trie trees =
     ["trie".=map head (PGF.toTrie (map PGF.toATree trees))|trie]
+
+addTree json tree = "tree".=showTree tree:
+                    ["jsontree".= jsonExpr tree | json]
 
 doComplete :: PGF -> From -> Maybe PGF.Type -> Maybe Int -> Bool -> JSValue
 doComplete pgf (mfrom,input) mcat mlimit full = showJSON
@@ -845,8 +877,16 @@ doBrowse pgf (Just id) cssClass href _ pn = -- default to "html" format
     annotatePrintNames = "<DL>"++(unwords pns)++"</DL>"
       where pns = ["<DT>"++(show lang)++"</DT><DD>"++(PGF.showPrintName pgf lang id)++"</DD>" | lang <- PGF.languages pgf ]
 
+class ToATree a where 
+  showTree :: a -> String
+  toATree :: a -> PGF.ATree a
+
+instance ToATree PGF.Expr where
+  showTree = PGF.showExpr []
+  toATree = PGF.toATree
+
 -- | Render trees as JSON with numbered functions
-jsonExpr e = evalState (expr (PGF.toATree e)) 0
+jsonExpr e = evalState (expr (toATree e)) 0
   where
     expr e =
       case e of

@@ -15,7 +15,8 @@ import GF.Compile.Compute.Predef(predef,predefName,delta)
 import GF.Data.Str(Str,glueStr,str2strings,str,sstr,plusStr,strTok)
 import GF.Data.Operations(Err,err,errIn,maybeErr,combinations,mapPairsM)
 import GF.Data.Utilities(mapFst,mapSnd,mapBoth)
-import Control.Monad(ap,liftM,liftM2,unless) --,mplus
+import GF.Infra.Option
+import Control.Monad(ap,liftM,liftM2) -- ,unless,mplus
 import Data.List (findIndex,intersect,nub,elemIndex,(\\)) --,isInfixOf
 --import Data.Char (isUpper,toUpper,toLower)
 import GF.Text.Pretty
@@ -25,9 +26,9 @@ import qualified Data.Map as Map
 -- * Main entry points
 
 normalForm :: GlobalEnv -> L Ident -> Term -> Term
-normalForm (GE gr rv _) loc = err (bugloc loc) id . nfx (GE gr rv loc)
+normalForm (GE gr rv opts _) loc = err (bugloc loc) id . nfx (GE gr rv opts loc)
 
-nfx env@(GE _ _ loc) t = value2term loc [] # eval env t
+nfx env@(GE _ _ _ loc) t = value2term loc [] # eval env t
 
 eval :: GlobalEnv -> Term -> Err Value
 eval ge t = ($[]) # value (toplevel ge) t
@@ -40,8 +41,9 @@ apply env = apply' env
 
 type ResourceValues = Map.Map ModuleName (Map.Map Ident (Err Value))
 
-data GlobalEnv = GE Grammar ResourceValues (L Ident)
+data GlobalEnv = GE Grammar ResourceValues Options (L Ident)
 data CompleteEnv = CE {srcgr::Grammar,rvs::ResourceValues,
+                       opts::Options,
                        gloc::L Ident,local::LocalScope}
 type LocalScope = [Ident]
 type Stack = [Value]
@@ -49,8 +51,8 @@ type OpenValue = Stack->Value
                             
 ext b env = env{local=b:local env}
 extend bs env = env{local=bs++local env}
-global env = GE (srcgr env) (rvs env) (gloc env)
-toplevel (GE gr rvs loc) = CE gr rvs loc []
+global env = GE (srcgr env) (rvs env) (opts env) (gloc env)
+toplevel (GE gr rvs opts loc) = CE gr rvs opts loc []
 
 var :: CompleteEnv -> Ident -> Err OpenValue
 var env x = maybe unbound pick' (elemIndex x (local env))
@@ -76,14 +78,14 @@ resource env (m,c) =
   where e = fail $ "Not found: "++render m++"."++showIdent c
 
 -- | Convert operators once, not every time they are looked up
-resourceValues :: SourceGrammar -> GlobalEnv
-resourceValues gr = env
+resourceValues :: Options -> SourceGrammar -> GlobalEnv
+resourceValues opts gr = env
   where
-    env = GE gr rvs (L NoLoc identW)
+    env = GE gr rvs opts (L NoLoc identW)
     rvs = Map.mapWithKey moduleResources (moduleMap gr)
     moduleResources m = Map.mapWithKey (moduleResource m) . jments
     moduleResource m c _info = do L l t <- lookupResDefLoc gr (m,c)
-                                  eval (GE gr rvs (L l c)) t
+                                  eval (GE gr rvs opts (L l c)) t
 
 -- * Computing values
 
@@ -159,10 +161,6 @@ value env t0 =
     ELin c r -> (unlockVRec (gloc env) c.) # value env r
     EPatt p  -> return $ const (VPatt p) -- hmm
     t -> fail.render $ "value"<+>ppT 10 t $$ show t
-
-paramValues env ty = do let ge = global env
-                        ats <- allParamValues (srcgr env) =<< nfx ge ty
-                        mapM (eval ge) ats
 
 vconcat vv@(v1,v2) =
     case vv of
@@ -254,9 +252,11 @@ glue env (v1,v2) = glu v1 v2
           (v1@(VApp NonExist _),_) -> v1
           (_,v2@(VApp NonExist _)) -> v2
 --        (v1,v2) -> ok2 VGlue v1 v2
-          (v1,v2) -> error . render $
-                     ppL loc (hang "unsupported token gluing:" 4
-                                   (Glue (vt v1) (vt v2)))
+          (v1,v2) -> if flag optPlusAsBind (opts env)
+                       then VC v1 (VC (VApp BIND []) v2)
+                       else error . render $
+                                      ppL loc (hang "unsupported token gluing:" 4
+                                                    (Glue (vt v1) (vt v2)))
 
     vt = value2term loc (local env)
     loc = gloc env
@@ -317,40 +317,40 @@ match loc cs = err bad return . matchPattern cs . value2term loc []
 
 valueMatch :: CompleteEnv -> (Bind Env,Substitution) -> Err Value
 valueMatch env (Bind f,env') = f # mapPairsM (value0 env) env'
---{-
+
 valueTable :: CompleteEnv -> TInfo -> [Case] -> Err OpenValue
 valueTable env i cs =
     case i of
       TComp ty -> do pvs <- paramValues env ty
                      ((VV ty pvs .) # sequence) # mapM (value env.snd) cs
-      _ -> do vty <- value env =<< getTableType i
-              err (keep vty) return convert
+      _ -> do ty <- getTableType i
+              cs' <- mapM valueCase cs
+              err (dynamic cs' ty) return (convert cs' ty)
   where
-    keep vty _ = cases vty # mapM valueCase cs
-    cases vty cs vs = VT wild (vty vs) (mapSnd ($vs) cs)
-    wild =  case i of
-              TWild _ -> True
-              _ -> False
+    dynamic cs' ty _ = cases cs' # value env ty
+
+    cases cs' vty vs = err keep ($vs) (convertv cs' (vty vs))
+      where
+        keep msg = --trace (msg++"\n"++render (ppT 0 (T i cs))) $
+                   VT wild (vty vs) (mapSnd ($vs) cs')
+
+    wild = case i of TWild _ -> True; _ -> False
+
+    convertv cs' vty = convert' cs' =<< paramValues'' env pty
+      where pty = value2term (gloc env) [] vty
+
+    convert cs' ty = convert' cs' =<< paramValues' env ty
+
+    convert' cs' ((pty,vs),pvs) =
+      do sts  <- mapM (matchPattern cs') vs
+         return $ \ vs -> VV pty pvs $ map (err bug id . valueMatch env)
+                                           (mapFst ($vs) sts)
 
     valueCase (p,t) = do p' <- measurePatt # inlinePattMacro p
-                         let allpvs = allPattVars p'
-                             pvs = nub allpvs
-                             dups = allpvs \\ pvs
-                         unless (null dups) $
-                           fail.render $ hang "Pattern is not linear:" 4
-                                              (ppPatt Unqualified 0 p')
+                         pvs <- linPattVars p'
                          vt <- value (extend pvs env) t
-                         return (p', \ vs -> Bind $ \ bs -> vt (push' p' bs pvs vs))
---{-
-    convert :: Err OpenValue
-    convert = do ty   <- getTableType i
-                 pty  <- nfx (global env) ty
-                 vs   <- allParamValues (srcgr env) pty
-                 pvs  <- mapM (value0 env) vs
-                 cs'  <- mapM valueCase cs
-                 sts  <- mapM (matchPattern cs') vs 
-                 return $ \ vs -> VV pty pvs $ map (err bug id . valueMatch env) (mapFst ($vs) sts)
---}
+                         return (p',\vs-> Bind $ \bs-> vt (push' p' bs pvs vs))
+
     inlinePattMacro p =
         case p of
           PM qc -> do r <- resource env qc
@@ -359,7 +359,15 @@ valueTable env i cs =
                         _ -> ppbug $ hang "Expected pattern macro:" 4
                                           (show r)
           _ -> composPattOp inlinePattMacro p
---}
+
+
+paramValues env ty = snd # paramValues' env ty
+
+paramValues' env ty = paramValues'' env =<< nfx (global env) ty
+
+paramValues'' env pty = do ats <- allParamValues (srcgr env) pty
+                           pvs <- mapM (eval (global env)) ats
+                           return ((pty,ats),pvs)
 
 push' p bs xs = if length bs/=length xs
                 then bug $ "push "++show (p,bs,xs)
@@ -479,6 +487,15 @@ value2term loc xs v0 =
       where (env',xs') = pushs (pattVars p) ([],xs)
 
 --  nf gr (env,xs) = value2term xs . eval gr env
+
+linPattVars p =
+    if null dups
+    then return pvs
+    else fail.render $ hang "Pattern is not linear:" 4 (ppPatt Unqualified 0 p)
+  where
+    allpvs = allPattVars p
+    pvs = nub allpvs
+    dups = allpvs \\ pvs
 
 pattVars = nub . allPattVars
 allPattVars p =

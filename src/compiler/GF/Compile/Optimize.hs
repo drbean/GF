@@ -50,7 +50,7 @@ optimizeModule opts sgr m@(name,mi)
  where
    oopts = opts `addOptions` mflags mi
 
-   resenv = resourceValues sgr
+   resenv = resourceValues oopts sgr
 
    updateEvalInfo mi (i,info) = do
      info <- evalInfo oopts resenv sgr (name,mi) i info
@@ -195,6 +195,7 @@ mkLinReference gr typ =
        RecType [] -> Bad "no string"
        RecType rs -> do
          msum (map (\(l,ty) -> mkDefField ty (P trm l)) (sortRec rs))
+           `mplus` Bad "no string"
        _ | Just _ <- isTypeInts typ -> Bad "no string"
        _ -> Bad (render ("linearization type field cannot be" <+> typ))
 
