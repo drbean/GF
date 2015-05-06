@@ -35,7 +35,7 @@ def lexerChi(sentence):
 	idx += 1;
     return ' '.join(tokens).encode('utf-8');
 
-def lexer(lang='Eng'):
+def lexer(lang='translator'):
     if lang[-3:] == 'Eng':
 	return lexerI;
     elif lang[-3:] == 'Chi':
@@ -113,16 +113,16 @@ def printMosesNbestFormat(hypothesisList, sentid=count(1)):
 	mosesRepr.append("%d ||| %s ||| NULL ||| %s" %(sid, hypStr, ' '.join(['%.6f'%score for score in hypScores])));
     return '\n'.join(mosesRepr);
 
-def getKLinearizations(grammar, tgtlanguage, abstractParsesList):
-    generator = grammar.languages[tgtlanguage].linearize;
+def getKLinearizations(grammar, tgtlanguage, abstractParsesList, K=10):
+    generator = grammar.languages[tgtlanguage].linearizeAll;
     for parsesBlock in abstractParsesList:
 	kBestTrans = [];
 	for parseprob, parse in parsesBlock:
-	    #print str(parse);
-	    kBestTrans.append( ((parseprob,), postprocessor( generator(parse) )) );
+	    for linstring in generator(parse, n=K):
+		kBestTrans.append( ((parseprob,), postprocessor(linstring)) );
 	yield kBestTrans;
 
-def getKBestParses(grammar, language, K, callbacks=[], serializable=False, sentid=count(1)):
+def getKBestParses(grammar, language, K, callbacks=[], serializable=False, sentid=count(1), max_length=50):
     parser = grammar.languages[language].parse;
     def worker(sentence):
 	sentence = sentence.strip();
@@ -130,6 +130,10 @@ def getKBestParses(grammar, language, K, callbacks=[], serializable=False, senti
 	tstart = time.time();
 	kBestParses = [];
 	parseScores = {};
+	if len(sentence.split()) > max_length:
+	    tend, err = time.time(), "Sentence too long (%d tokens). Might potentially run out of memory" %(len(sentence.split()));
+	    print >>sys.stderr, '%d\t%.4f\t%s' %(curid, tend-tstart, err);
+	    return tend-tstart, kBestParses; # temporary hack to make sure parser does not get killed for very long sentences;
 	try:
 	    for parseidx, parse in enumerate( parser(sentence, heuristics=0, callbacks=callbacks) ):
 		parseScores[parse[0]] = True;
@@ -152,8 +156,9 @@ def getKBestParses(grammar, language, K, callbacks=[], serializable=False, senti
 def pgf_parse(args):
     grammar  = pgf.readPGF(args.pgfgrammar);
     import translation_pipeline;
-    
-    inputSet = translation_pipeline.web_lexer(grammar, args.srclang, args.inputstream);
+
+    preprocessor = lexer();
+    inputSet = translation_pipeline.web_lexer(grammar, args.srclang, imap(preprocessor, args.inputstream) );
     outputPrinter = lambda X: "%f\t%s" %(X[0], str(X[1])); #operator.itemgetter(1);
     callbacks = [('PN', translation_pipeline.parseNames(grammar, args.srclang)), ('Symb', translation_pipeline.parseUnknown(grammar, args.srclang))];
     parser = getKBestParses(grammar, args.srclang, 1, callbacks);
@@ -168,7 +173,8 @@ def pgf_kparse(args):
     grammar = pgf.readPGF(args.pgfgrammar);
     import translation_pipeline;
     
-    inputSet = translation_pipeline.web_lexer(grammar, args.srclang, args.inputstream);
+    preprocessor = lexer();
+    inputSet = translation_pipeline.web_lexer(grammar, args.srclang, imap(preprocessor, args.inputstream) );
     outputPrinter = printJohnsonRerankerFormat;
     callbacks = [('PN', translation_pipeline.parseNames(grammar, args.srclang)), ('Symb', translation_pipeline.parseUnknown(grammar, args.srclang))];
     parser = getKBestParses(grammar, args.srclang, args.K, callbacks=callbacks);
@@ -207,7 +213,7 @@ def pgf_klinearize(args):
     sentIdsList = imap(itemgetter(0), inputSet);
     parsesBlocks = map(itemgetter(1), inputSet);
 
-    for transBlock in getKLinearizations(grammar, args.tgtlang, parsesBlocks):
+    for transBlock in getKLinearizations(grammar, args.tgtlang, parsesBlocks, args.K):
 	strTrans = str(outputPrinter(transBlock, sentIdsList));
 	if strTrans:
 	    print >>args.outputstream, strTrans;
