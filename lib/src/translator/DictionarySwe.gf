@@ -1391,7 +1391,6 @@ lin aircrew_N = mkN "flygplansbesättning" ;
 lin aircrewman_N = variants {} ; -- status=guess
 lin airdock_N = variants {} ; -- status=guess
 lin airdrie_PN = mkPN "Airdrie" neutrum ; -- src=geonames status=guess
-lin airdrome_N = variants {} ; -- status=guess
 lin airdrop_N = mkN "luftlandsättningar"; -- src=google
 lin aireborough_PN = mkPN "Aireborough" ; -- src=eng status=guess
 lin airedale_N = variants {} ; -- status=guess
@@ -3126,7 +3125,6 @@ lin approx_PN = mkPN "Approx" ; -- src=eng status=guess
 lin approximate_A = mkA "ungefärlig" ; -- comment=2
 lin approximate_V = mkV "approximerar" ; -- comment=2
 lin approximate_V2 = variants {} ; -- status=guess
-lin approximately_A = variants {} ;
 lin approximation_N = mkN "närmande" ; -- comment=2
 lin appurtenance_N = mkN "tillbehör" neutrum ; -- status=guess
 lin apr_PN = mkPN "Apr" ; -- src=eng status=guess
@@ -21539,7 +21537,7 @@ lin flasher_N = mkN "blottare" utrum ; -- comment=3
 lin flashgun_N = variants {} ; -- status=guess
 lin flashiness_N = variants {} ; -- status=guess
 lin flashing_N = mkN "blinkande" ;
-lin flashlight_N = mkN "ficklampa" ; -- comment=3
+lin flashlight_N = mkN "ficklampa";
 lin flashover_N = mkN "överslag" neutrum ;
 lin flashpoint_N = mkN "flampunkt" "flampunkter" ; -- comment=2
 lin flashy_A = mkA "prålig" ; -- comment=3
@@ -37493,7 +37491,6 @@ lin newtonian_A = variants {} ; -- status=guess
 lin newtonian_N = mkN "newtonsk"; -- src=google
 lin newtown_PN = mkPN "Newtown" neutrum ; -- src=geonames status=guess
 lin next_A = mkA "nästa" ; -- status=guess
-lin next_N = mkN "nästa" ; -- comment=3
 lin next_Prep = mkPrep "nästintill" ; ---- Prep ?
 lin next_to_Prep = mkPrep "bredvid" | mkPrep "intill" ;
 lin nexus_N = variants {} ; -- status=guess
@@ -43527,7 +43524,8 @@ lin practice_V2 = mkV2 (mkV "öva") | mkV2 (mkV "träna") ; -- status=guess, src
 lin practician_N = mkN "praktiker" "praktikern" "praktiker" "praktikerna" ;
 lin practise_V = mkV "övar" ; -- comment=8
 lin practise_V2 = variants {} ; -- mkV "övar" ; -- comment=8
-lin practitioner_N = mkN "utövare" "utövare" ; -- status=guess
+lin practitionerMasc_N = mkN "utövare" "utövare" ; -- status=guess
+lin practitionerFem_N = mkN "utövare" "utövare" ; -- status=guess
 lin praenomen_N = variants {} ; -- status=guess
 lin praesidium_N = mkN "presidium" "presidiet" "presidier" "presidierna" ;
 lin praetor_N = variants {} ; -- status=guess
@@ -58261,7 +58259,9 @@ lin topsy_turvydom_N = variants {} ; -- status=guess
 lin toque_N = mkN "toque" "toquer" ;
 lin tor_N = variants {} ; -- status=guess
 lin torbay_PN = mkPN "Torbay" neutrum ; -- src=geonames status=guess
-lin torch_N = mkN "fackla" | mkN "bloss" neutrum ; -- SaldoWN -- comment=3
+lin torch_1_N = mkN "fackla";
+lin torch_2_N = mkN "ficklampa";
+lin torch_3_N = mkN "bloss" neutrum;
 lin torch_V2 = variants {} ; -- status=guess
 lin torch_race_N = mkN "fackla-race"; -- src=google
 lin torch_singer_N = mkN "fackla-sångare";
@@ -58549,7 +58549,8 @@ lin trainband_N = variants {} ; -- status=guess
 lin trainbandsman_N = variants {} ; -- status=guess
 lin trainbearer_N = variants {} ; -- status=guess
 lin trained_A = variants {} ; --
-lin trainee_N = mkN "praktikant" "praktikanter" ; -- comment=5
+lin traineeMasc_N = mkN "praktikant" "praktikanter" ; -- comment=5
+lin traineeFem_N = mkN "praktikant" "praktikanter" ; -- comment=5
 lin traineeship_N = mkN "praktisering" ; -- status=guess
 lin trainer_N = mkN "tränare" utrum | mkN "tränare" utrum ; -- SaldoWN -- comment=3
 lin training_N = mkN "träning" | mkN "utbildning" ;
@@ -63299,7 +63300,6 @@ lin when_Subj = S.when_Subj ;
 lin whence_Adv = mkAdv "varifrån" | mkAdv "var i från" | (mkAdv "vadan") ; -- status=guess status=guess status=guess
 lin whencesoever_A = variants {} ; -- status=guess
 lin whenever_Adv = mkAdv "närsom" | mkAdv "när som helst" | mkAdv "närhelst" ; -- status=guess status=guess status=guess
-lin where_Adv = mkAdv "där" ; -- status=guess
 lin where_IAdv = S.where_IAdv ;
 lin where_Subj = lin Subj {s = "där"} ;
 lin where_as_Prep = variants {} ; -- status=guess
@@ -64038,7 +64038,6 @@ lin worshipful_A = variants {} ; -- status=guess
 lin worshipper_N = mkN "troende" ; -- status=guess
 lin worst_A = mkA "värst" ; -- status=guess
 lin worst_Adv = variants {} ; -- status=guess
-lin worst_N = mkN "värsta"; -- src=google
 lin worst_V2 = variants {} ; -- status=guess
 lin worsted_N = mkN "kamgarn" neutrum ; -- status=guess
 lin wort_N = mkN "vört" ; -- status=guess

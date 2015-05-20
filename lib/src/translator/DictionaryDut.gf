@@ -1026,7 +1026,6 @@ lin approve_V = mkV (mkV "instemmen") "met" ; -- status=guess, src=wikt
 lin approve_V2 = mkV2 (mkV (mkV "instemmen") "met") ; -- status=guess, src=wikt
 lin approved_A = variants {} ; --
 lin approx_PN = mkPN "Approx" ; -- src=eng status=guess
-lin approximately_A = variants {} ;
 lin approximation_N = mkN "benaderen" | mkN "schatten" ; -- status=guess status=guess
 lin apr_PN = mkPN "Apr" ; -- src=eng status=guess
 lin apricot_N = mkN "abrikoos" feminine ; -- status=guess
@@ -13629,7 +13628,6 @@ lin newton_le_willows_PN = mkPN "Newton-le-willows" ; -- src=eng status=guess
 lin newton_mearns_PN = mkPN "Newton mearns" ; -- src=eng status=guess
 lin newtown_PN = mkPN "Newtown" ; -- src=geonames status=guess
 lin next_A = mkA "naast" | mkA "dichtst" ; -- status=guess status=guess
-lin next_N = mkN "de volgende" masculine ; -- status=guess
 lin nexus_N = mkN "band" masculine | mkN "verbinding" feminine ; -- status=guess status=guess
 lin nibble_N = mkN "nibble" ; -- status=guess
 lin nibble_V = mkV "knabbelen" ; -- status=guess, src=wikt
@@ -15508,7 +15506,8 @@ lin practice_V = mkV "beoefen" ; -- status=guess, src=wikt
 lin practice_V2 = mkV2 (mkV "beoefen") ; -- status=guess, src=wikt
 lin practise_V = variants {} ; --
 lin practise_V2 = variants {} ; --
-lin practitioner_N = mkN "beoefenaar" masculine ; -- status=guess
+lin practitionerMasc_N = mkN "beoefenaar" masculine ; -- status=guess
+lin practitionerFem_N = mkN "beoefenaar" masculine ; -- status=guess
 lin pragmatic_A = mkA "pragmatisch" ; -- status=guess
 lin pragmatics_N = mkN "Pragmatiek" ; -- status=guess
 lin pragmatism_N = mkN "pragmatisme" masculine ; -- status=guess
@@ -20693,7 +20692,9 @@ lin topos_N = mkN "topos " neuter ; -- status=guess
 lin topsail_N = mkN "bovenzeil" neuter ; -- status=guess
 lin toque_N = mkN "muts" ; -- status=guess
 lin torbay_PN = mkPN "Torbay" ; -- src=geonames status=guess
-lin torch_N = mkN "zaklamp" ; -- status=guess
+lin torch_1_N = mkN "zaklamp" ; -- status=guess
+lin torch_2_N = mkN "zaklamp" ; -- status=guess
+lin torch_3_N = mkN "zaklamp" ; -- status=guess
 lin torino_PN = mkPN "Torino" ; -- src=eng status=guess
 lin torment_N = mkN "kwelling" ; -- status=guess
 lin torment_V2 = mkV2 (mkV "kwellen") ; -- status=guess, src=wikt
@@ -20802,7 +20803,8 @@ lin train_V2 = mkV2 (mkV "trainen") ;
 lin train_V2V = mkV2V (mkV "trainen") ;
 lin train_up_V2 = prepV2 OP_train_V OP_up_Prep ; -- guess-p-verb
 lin trained_A = variants {} ; --
-lin trainee_N = variants {} ; --
+lin traineeMasc_N = variants {} ; --
+lin traineeFem_N = variants {} ; --
 lin trainer_N = mkN "trainer" masculine | mkN "trainster" feminine ; -- status=guess status=guess
 lin training_N = mkN "opleiding" feminine | mkN "training" ;
 lin trait_N = mkN "karaktereigenschap" ; -- status=guess
@@ -22156,7 +22158,6 @@ lin when_IAdv = S.when_IAdv ;
 lin when_Subj = S.when_Subj ;
 lin whence_Adv = mkAdv "waarvandaan" ; -- status=guess
 lin whenever_Adv = mkAdv "wanneer ook" ; -- status=guess
-lin where_Adv = mkAdv "waar" | mkAdv "waarheen" | mkAdv "waarvan" | mkAdv "waarvandaan" ; -- status=guess status=guess status=guess status=guess
 lin where_IAdv = S.where_IAdv ;
 lin where_Subj = mkSubj "waar" ;
 lin whereabouts_N = mkN "waaromtrent" ; -- status=guess

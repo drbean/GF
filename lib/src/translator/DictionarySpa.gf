@@ -851,7 +851,6 @@ lin airbus_N = mkN "aerobus" masculine ; -- status=guess
 lin aircraft_N = mkN "aeronave" feminine ;
 lin aircrew_N = mkN "tripulación" | mkN "tripulación_aérea" ; --UWN
 lin airdrie_PN = mkPN "Airdrie" ; -- status=guess src=geonames
-lin airdrome_N = mkN "aeropuerto" ; --UWN
 lin airfield_N = mkN "aeródromo" | mkN "campo de aviación" ; -- status=guess status=guess
 lin airflow_N = mkN "corriente" | mkN "corriente_de_air" ; --UWN
 lin airfoil_N = mkN "perfil alar" | mkN "perfil aerodinámico" | mkN "perfil" masculine ; -- status=guess status=guess status=guess
@@ -1809,7 +1808,6 @@ lin approve_V2 = mkV2 (aprobar_V) ; -- status=guess
 lin approved_A = variants {} ; --
 lin approvingly_Adv = mkAdv "con aprobación" ; -- status=guess
 lin approximate_A = mkA "aproximado" ; -- status=guess
-lin approximately_A = variants {} ;
 lin approximation_N = mkN "aproximación" feminine ; -- status=guess
 lin apraxia_N = mkN "apraxia" ; -- status=guess
 lin apricot_N = mkN "albaricoque" | mkN "chabacano" ; -- status=guess
@@ -19791,7 +19789,6 @@ lin newswoman_N = mkN "presentadora_de_noticias" ; --UWN
 lin newton_N = mkN "newton" masculine ; -- status=guess
 lin newtown_PN = mkPN "Newtown" ; -- status=guess src=geonames
 lin next_A = mkA "próximo" ; -- status=guess
-lin next_N = mkN "siguiente" masculine | mkN "próxima" | mkN "próximo" ; -- status=guess status=guess status=guess
 lin nexus_N = mkN "centro" ; -- status=guess
 lin nib_N = mkN "pico" ; --UWN
 lin nibble_V = mkV "comiscar" | mkV "comisquear" | mkV "picotear" ; -- status=guess, src=wikt status=guess, src=wikt status=guess, src=wikt
@@ -22619,7 +22616,8 @@ lin practice_V = mkV "practicar" ; -- status=guess, src=wikt
 lin practice_V2 = mkV2 (mkV "practicar") ; -- status=guess, src=wikt
 lin practise_V = variants {} ; --
 lin practise_V2 = variants {} ; --
-lin practitioner_N = variants {} ; --
+lin practitionerMasc_N = variants {} ; --
+lin practitionerFem_N = variants {} ; --
 lin praenomen_N = mkN "prenombre" masculine ; -- status=guess
 lin praesidium_N = mkN "presidium" ; --UWN
 lin praetorian_A = mkA "pretoriano" ; --UWN
@@ -29969,7 +29967,9 @@ lin topple_V = mkV "derribar" ; -- status=guess, src=wikt
 lin topple_V2 = mkV2 (mkV "derribar") ; -- status=guess, src=wikt
 lin topsail_N = mkN "gavia" ; -- status=guess
 lin torbay_PN = mkPN "Torbay" ; -- status=guess src=geonames
-lin torch_N = mkN "lámpara" | mkN "linterna" ; -- status=guess
+lin torch_1_N = mkN "lámpara"; -- status=guess
+lin torch_2_N = mkN "linterna"; -- status=guess
+lin torch_3_N = mkN "lámpara"; -- status=guess
 lin toreador_N = mkN "torero" ; -- status=guess
 lin torero_N = mkN "torero" ; --UWN
 lin torment_N = mkN "tormento" ; -- status=guess
@@ -30120,7 +30120,8 @@ lin train_V2 = mkV2 (mkV "entrenar") ;
 lin train_V2V = mkV2V (mkV "entrenar") ;
 lin train_up_V2 = prepV2 OP_train_V OP_up_Prep ; -- guess-p-verb
 lin trained_A = variants {} ; --
-lin trainee_N = variants {} ; --
+lin traineeMasc_N = variants {} ; --
+lin traineeFem_N = variants {} ; --
 lin trainer_N = mkN "entrenador" | mkN "amaestrador" masculine ; -- status=guess
 lin training_N = mkN "formación" | mkN "entrenamiento" ;
 lin trainman_N = mkN "empleado_del_ferrocarril" | mkN "ferroviario" ; --UWN

@@ -747,7 +747,7 @@ lin aeriform_A = mkA "幻想" | mkA "无实体" | mkA "空气状" | mkA "象空�
 lin aerobe_N = mkN "好氧性生物" ; -- open-multilingual-wordnet
 lin aerobiosis_N = mkN "好氧生活" | mkN "需氧生活" ; -- open-multilingual-wordnet
 lin aerodontalgia_N = mkN "高空牙痛症" ; -- open-multilingual-wordnet
-lin aerodrome_N = mkN "飞机场""" ;
+lin aerodrome_N = mkN "机场" | mkN "飞机场" ; -- open-multilingual-wordnet
 lin aerodynamic_A = mkA "空气动力学" ;
 lin aerodynamics_N = mkN "空气动力学" ; -- open-multilingual-wordnet
 lin aerolite_N = mkN "陨石" ; -- open-multilingual-wordnet
@@ -1010,7 +1010,6 @@ lin aircrew_N = mkN "全体机员" ; -- open-multilingual-wordnet
 lin aircrewman_N = mkN "机组人员" ; -- open-multilingual-wordnet
 lin airdock_N = mkN "机库" | mkN "飞机库" | mkN "飞机棚" ; -- open-multilingual-wordnet
 lin airdrie_PN = mkPN "艾尔德里" ; -- comment=src=geonames status=guess
-lin airdrome_N = mkN "机场" | mkN "飞机场" ; -- open-multilingual-wordnet
 lin aireborough_PN = foreignPN "Aireborough" ; -- comment=src=eng status=guess
 lin airfare_N = mkN "机票价格" | mkN "飞机票价" | mkN "飞机费用" ; -- open-multilingual-wordnet
 lin airfield_N = mkN "机场" | {-HSK-} mkN "机场" "家" ;
@@ -2319,7 +2318,6 @@ lin approver_N = mkN "批准者" ; -- open-multilingual-wordnet
 lin approx_PN = foreignPN "Approx" ; -- comment=src=eng status=guess
 lin approximate_A = mkA "大概" ;
 lin approximate_V2 = mkV2 "近似" ;
-lin approximately_A = mkA "大约" | mkA "近" ;
 lin approximation_N = mkN "近似算法" ; -- status=guess
 lin apr_PN = foreignPN "Apr" ; -- comment=src=eng status=guess
 lin apractic_A = mkA "运用不能症" ; -- open-multilingual-wordnet
@@ -22316,7 +22314,6 @@ lin newton_le_willows_PN = foreignPN "Newton-le-willows" ; -- comment=src=eng st
 lin newton_mearns_PN = foreignPN "Newton mearns" ; -- comment=src=eng status=guess
 lin newtown_PN = mkPN ("纽敦" | "新镇") ; -- comment=src=geonames status=guess
 lin next_A = mkA "下" | mkA "其次" | mkA "来" | {-HSK-} mkA "下一个" ;
-lin next_N = mkN "下" | mkN "其次" | mkN "来" | {-HSK-} mkN "秒""" ;
 lin next_Prep = mkPrep "比邻" ;
 lin nexus_N = mkN "关系" "种" ;
 lin nib_N = mkN "喙" | mkN "嘴" | mkN "鸟嘴" ; -- open-multilingual-wordnet
@@ -25403,7 +25400,8 @@ lin practice_V = mkV "实习" | mkV "实践" ;
 lin practice_V2 = mkV2 "实习" | mkV2 "实践" ;
 lin practise_V = mkV "练习" ;
 lin practise_V2 = mkV2 "练习" ;
-lin practitioner_N = mkN "医生" ;
+lin practitionerMasc_N = mkN "医生" ;
+lin practitionerFem_N = mkN "医生" ;
 lin praetorian_A = mkA "司法官" | mkA "行政长官" ; -- open-multilingual-wordnet
 lin pragmatic_A = mkA "实用" | {-HSK-} mkA "实际" ;
 lin pragmatically_Adv = mkAdv "现实主义+地" | mkAdv "讲究实效+地" ; -- open-multilingual-wordnet
@@ -33247,7 +33245,9 @@ lin topple_V2 = mkV2 "倾覆" ;
 lin topsoil_N = mkN "上层土" | mkN "表土" ; -- open-multilingual-wordnet
 lin topsy_turvy_Adv = mkAdv "颠三倒四" ;
 lin torbay_PN = foreignPN "Torbay" ; -- comment=src=geonames status=guess
-lin torch_N = mkN "火炬" ;
+lin torch_1_N = mkN "火炬" ;
+lin torch_2_N = mkN "火炬" ;
+lin torch_3_N = mkN "火炬" ;
 lin torch_V2 = mkV2 "火炬" ;
 lin torino_PN = foreignPN "Torino" ; -- comment=src=eng status=guess
 lin torment_N = mkN "苦痛" ; -- status=guess
@@ -33412,7 +33412,8 @@ lin train_V2 = mkV2 "培养" | mkV2 "训练" | {-HSK-} mkV2 "火车" ;
 lin train_V2V = mkV2V "培养" | mkV2V "训练" | {-HSK-} mkV2V "火车" ;
 lin train_up_V2 = prepV2 OP_train_V OP_up_Prep ; -- guess-p-verb
 lin trained_A = variants {} ;
-lin trainee_N = mkN "实习生" "个" ;
+lin traineeMasc_N = mkN "实习生" "个" ;
+lin traineeFem_N = mkN "实习生" "个" ;
 lin traineeship_N = mkN "受训者津贴" | mkN "受训者的津贴" ; -- open-multilingual-wordnet
 lin trainer_N = mkN "教练" "個" | {-HSK-} mkN "训练者" ;
 lin training_N = mkN "训练" | {-HSK-} mkN "训练" "個" ;
@@ -34628,7 +34629,6 @@ lin unthinkable_A = mkA "不可想象" ;
 lin untidy_A = mkA "不整洁" | mkA "不整齐" | mkA "凌乱" | mkA "懒散" ; -- open-multilingual-wordnet
 lin untie_V = mkV "解開" | mkV "解开" ; -- status=guess, src=wikt -- status=guess, src=wikt
 lin untie_V2 = mkV2 (mkV "解開") | mkV2 (mkV "解开") ; -- status=guess, src=wikt -- status=guess, src=wikt
-lin until_Adv = mkAdv "到" ;
 lin until_Prep = mkPrep "直到" ;
 lin until_Subj = mkSubj "直到" ;
 lin untimbered_A = mkA "无支撑" ; -- open-multilingual-wordnet
@@ -35758,7 +35758,6 @@ lin whelk_N = mkN "峨螺" ; -- status=guess
 lin when_IAdv = S.when_IAdv ;
 lin when_Subj = S.when_Subj ;
 lin whenever_Adv = mkAdv "每当" ;
-lin where_Adv = mkAdv "哪兒" | mkAdv "哪儿" | mkAdv "哪裡" | mkAdv "哪里" ; -- status=guess -- status=guess -- status=guess -- status=guess
 lin where_IAdv = S.where_IAdv ;
 lin where_Subj = mkSubj "哪里" ;
 lin whereabouts_N = mkN "所在地" | mkN "所在" ; -- status=guess -- status=guess
