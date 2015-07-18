@@ -2531,8 +2531,7 @@ lin branderburgh_PN = mkPN "Branderburgh" ; -- src=eng status=guess
 lin brandy_N = mkN "brandewijn" ; -- status=guess
 lin brasilia_PN = mkPN "Brasilia" ; -- src=eng status=guess
 lin brass_N = mkN "messing" neuter | mkN "geelkoper" neuter ; -- status=guess status=guess
-lin brassiere_1_N = variants {} ; ---- sense to be split
-lin brassiere_2_N = variants {} ; ---- sense to be split
+lin brassiere_N = variants {} ;
 lin brat_N = mkN "nest" neuter ; -- status=guess
 lin bratislava_PN = mkPN "Bratislava" ; -- src=geonames status=guess
 lin bratwurst_N = mkN "braadworst" ; -- status=guess
@@ -3108,12 +3107,11 @@ lin cannes_PN = mkPN "Cannes" ; -- src=geonames status=guess
 lin cannibal_N = mkN "kannibaal" ; -- status=guess
 lin cannibalism_N = mkN "kannibalisme" neuter ; -- status=guess
 lin cannock_PN = mkPN "Cannock" ; -- src=geonames status=guess
-lin cannon_N = mkN "kanon" neuter ; -- status=guess
+lin cannon_1_N = mkN "kanon" neuter ; -- status=guess
+lin cannon_2_N = mkN "kanon" neuter ; -- status=guess
 lin cannonball_N = mkN "kanonskogel" masculine | mkN "bommetje" neuter ; -- status=guess status=guess
 lin canny_A = mkA "heel" ; -- status=guess
 lin canoe_N = mkN "kano" masculine ; -- status=guess
-lin canon_1_N = mkN "canon" masculine ; -- status=guess ---- sense to be split
-lin canon_2_N = mkN "canon" masculine ; -- status=guess ---- sense to be split
 lin canon_N = mkN "canon" masculine ; -- status=guess
 lin cant_N = mkN "helling" feminine ; -- status=guess
 lin cant_V = mkV "neigen" ; -- status=guess, src=wikt
@@ -3501,8 +3499,7 @@ lin chaotic_A = mkA "chaotisch" | mkA "wanordelijk" | mkA "onordelijk" | mkA "wa
 lin chap_N = variants {} ; --
 lin chapel_N = mkN "kapel" masculine feminine ; -- status=guess
 lin chapter_N = mkN "hoofdstuk" neuter ;
-lin charabanc_1_N = variants {} ; ---- sense to be split
-lin charabanc_2_N = variants {} ; ---- sense to be split
+lin charabanc_N = variants {} ;
 lin character_1_N = mkN "karakter" neuter | mkN "persoonlijkheid" ; --- split mkN "karakter" ; character on a show
 lin character_2_N = mkN "karakter" neuter | mkN "teken" neuter ;
 lin characteristic_A = mkA "kenmerkend" | mkA "karakteristiek" | mkA "idiosyncratisch" ; -- status=guess status=guess status=guess
@@ -5098,8 +5095,6 @@ lin curb_V2 = mkV2 (mkV "intomen") | mkV2 (mkV "beteugelen") ; -- status=guess, 
 lin curd_N = mkN "wrongel" ; -- status=guess
 lin curdle_V = mkV "klonteren" ; -- status=guess, src=wikt
 lin curdle_V2 = mkV2 (mkV "klonteren") ; -- status=guess, src=wikt
-lin cure_1_N = variants {} ; --
-lin cure_2_N = variants {} ; --
 lin cure_N = mkN "remedie" feminine ; -- status=guess
 lin cure_V = genezen_V ; -- status=guess, src=wikt
 lin cure_V2 = mkV2 (genezen_V) ; -- status=guess, src=wikt
@@ -5357,9 +5352,7 @@ lin debby_PN = mkPN "Debby" ; -- src=eng status=guess
 lin debilitate_V2 = mkV2 (mkV "verzwakken") ; -- status=guess, src=wikt
 lin debit_N = mkN "debet" ; -- status=guess
 lin deborah_PN = mkPN "Deborah" ; -- src=eng status=guess
-lin debris_1_N = mkN "gletjserpuin etc." ; -- status=guess ---- sense to be split
-lin debris_2_N = mkN "gletjserpuin etc." ; -- status=guess ---- sense to be split
-lin debris_N = mkN "gletjserpuin etc." ; -- status=guess
+lin debris_N = variants {} ;
 lin debt_N = mkN "schuld" feminine | mkN "verplichting" ;
 lin debtor_N = mkN "debiteur" ; -- status=guess
 lin debugger_N = mkN "debugger" ; -- status=guess
@@ -5367,8 +5360,7 @@ lin debunk_V2 = mkV2 (mkV "doorprikken") | mkV2 (mkV "ontmaskeren") ; -- status=
 lin debut_1_N = variants {} ; --
 lin debut_2_N = variants {} ; --
 lin debut_N = mkN "debuut" neuter ; -- status=guess
-lin debutante_1_N = variants {} ; ---- sense to be split
-lin debutante_2_N = variants {} ; ---- sense to be split
+lin debutante_N = variants {} ;
 lin dec_PN = mkPN "Dec" ; -- src=eng status=guess
 lin decade_N = mkN "decennium" neuter ;
 lin decant_V2 = mkV2 (mkV "overgieten") ; -- status=guess, src=wikt
@@ -10762,7 +10754,6 @@ lin interdict_N = mkN "interdictie" ; -- status=guess
 lin interdisciplinary_A = mkA "interdisciplinair" ; -- status=guess
 lin interest_1_N = mkN "interesse" ;
 lin interest_2_N = mkN "rente" ;
-lin interest_4_N = mkN "belang" neuter | mkN "aandeel" neuter ; -- interest, stake, legal share of something
 lin interest_N = mkN "interesse" | mkN "belangstelling" | mkN "rente" ;
 lin interest_V = mkV "interesseren" ; -- status=guess, src=wikt
 lin interest_V2 = mkV2 (mkV "interesseren") ; -- status=guess, src=wikt
@@ -13610,8 +13601,6 @@ lin nail_V2 = mkV2 (mkV (mkV "slagen") "voor") | mkV2 (mkV (mkV "voor") "elkaar 
 lin nailsea_PN = mkPN "Nailsea" ; -- src=geonames status=guess
 lin nairn_PN = mkPN "Nairn" ; -- src=geonames status=guess
 lin nairobi_PN = mkPN "Nairobi" ; -- src=geonames status=guess
-lin naive_1_A = mkA "naïef" ; -- status=guess ---- sense to be split
-lin naive_2_A = mkA "naïef" ; -- status=guess ---- sense to be split
 lin naive_A = mkA "naïef" ; -- status=guess
 lin naked_A = mkA "naakt" | mkA "onopgesmukt" ; -- status=guess status=guess
 lin name_N = L.name_N ;
@@ -17427,9 +17416,7 @@ lin roebuck_N = mkN "reebok" masculine ; -- status=guess
 lin roentgenium_N = mkN "roentgenium" neuter ; -- status=guess
 lin roger_PN = mkPN "Roger" ; -- src=eng status=guess
 lin rogue_N = mkN "schurkenstaat" masculine ; -- status=guess
-lin role_1_N = mkN "functie" | mkN "rol" ; -- function, office, part, role
-lin role_2_N = mkN "rol" ; -- character, role, part, persona
-lin role_N = role_1_N | role_2_N ;
+lin role_N = mkN "functie" | mkN "rol" ;
 lin roll_N = mkN "rol" ; -- status=guess
 lin roll_V = mkV (mkV "overkop") "gaan" ; -- status=guess, src=wikt
 lin roll_V2 = mkV2 (mkV (mkV "overkop") "gaan") ; -- status=guess, src=wikt
