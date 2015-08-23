@@ -74,6 +74,9 @@ Expr_unpack(ExprObject* self, PyObject *args);
 static PyObject*
 Expr_visit(ExprObject* self, PyObject *args);
 
+static PyObject*
+Expr_reduce_ex(ExprObject* self, PyObject *args);
+
 static int
 Expr_init(ExprObject *self, PyObject *args, PyObject *kwds)
 {
@@ -149,6 +152,9 @@ static PyMethodDef Expr_methods[] = {
      "e.visit(self) calls method self.on_f(a1,..an). "
      "If the method doesn't exist then the method self.default(e) "
      "is called."
+    },
+    {"__reduce_ex__", (PyCFunction)Expr_reduce_ex, METH_VARARGS,
+     "This method allows for transparent pickling/unpickling of expressions."
     },
     {NULL}  /* Sentinel */
 };
@@ -539,6 +545,36 @@ Expr_visit(ExprObject* self, PyObject *args)
 }
 
 static PyObject*
+Expr_reduce_ex(ExprObject* self, PyObject *args)
+{
+	int protocol;
+	if (!PyArg_ParseTuple(args, "i", &protocol))
+		return NULL;
+
+	PyObject* myModule = PyImport_ImportModule("pgf");
+	if (myModule == NULL)
+		return NULL;
+	PyObject* py_readExpr = PyObject_GetAttrString(myModule, "readExpr");
+	Py_DECREF(myModule);
+	if (py_readExpr == NULL)
+		return NULL;
+
+	PyObject* py_str = Expr_repr(self);
+	if (py_str == NULL) {
+		Py_DECREF(py_readExpr);
+		return NULL;
+	}
+
+	PyObject* py_tuple =
+		Py_BuildValue("O(O)", py_readExpr, py_str);
+
+	Py_DECREF(py_str);
+	Py_DECREF(py_readExpr);
+
+	return py_tuple;
+}
+
+static PyObject*
 Expr_getattro(ExprObject *self, PyObject *attr_name) {
 	const char* name = PyString_AsString(attr_name);
 
@@ -919,9 +955,42 @@ fail:
 	return res;
 }
 
+static PyObject*
+Type_reduce_ex(TypeObject* self, PyObject *args)
+{
+	int protocol;
+	if (!PyArg_ParseTuple(args, "i", &protocol))
+		return NULL;
+
+	PyObject* myModule = PyImport_ImportModule("pgf");
+	if (myModule == NULL)
+		return NULL;
+	PyObject* py_readType = PyObject_GetAttrString(myModule, "readType");
+	Py_DECREF(myModule);
+	if (py_readType == NULL)
+		return NULL;
+
+	PyObject* py_str = Type_repr(self);
+	if (py_str == NULL) {
+		Py_DECREF(py_readType);
+		return NULL;
+	}
+
+	PyObject* py_tuple =
+		Py_BuildValue("O(O)", py_readType, py_str);
+
+	Py_DECREF(py_str);
+	Py_DECREF(py_readType);
+
+	return py_tuple;
+}
+
 static PyMethodDef Type_methods[] = {
     {"unpack", (PyCFunction)Type_unpack, METH_VARARGS,
      "Decomposes a type into its components"
+    },
+    {"__reduce_ex__", (PyCFunction)Type_reduce_ex, METH_VARARGS,
+     "This method allows for transparent pickling/unpickling of types."
     },
     {NULL}  /* Sentinel */
 };
