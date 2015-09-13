@@ -76,6 +76,11 @@ foreign import ccall "gu/string.h gu_string_buf_freeze"
 withGuPool :: (Ptr GuPool -> IO a) -> IO a
 withGuPool f = bracket gu_new_pool gu_pool_free f
 
+newOut :: Ptr GuPool -> IO (Ptr GuStringBuf, Ptr GuOut)
+newOut pool =
+   do sb <- gu_string_buf pool
+      out <- gu_string_buf_out sb
+      return (sb,out)
 
 ------------------------------------------------------------------
 -- libpgf API
@@ -217,6 +222,8 @@ foreign import ccall "pgf/pgf.h pgf_print"
 foreign import ccall "pgf/expr.h pgf_read_expr"
   pgf_read_expr :: Ptr GuIn -> Ptr GuPool -> Ptr GuExn -> IO PgfExpr
 
+foreign import ccall "pgf/expr.h pgf_read_expr_tuple"
+  pgf_read_expr_tuple :: Ptr GuIn -> CInt -> Ptr PgfExpr -> Ptr GuPool -> Ptr GuExn -> IO CInt
 
 foreign import ccall "pgf/graphviz.h pgf_graphviz_abstract_tree"
   pgf_graphviz_abstract_tree :: Ptr PgfPGF -> PgfExpr -> Ptr GuOut -> Ptr GuExn -> IO ()

@@ -133,7 +133,7 @@ Library
 
   if flag(c-runtime)
     exposed-modules: PGF2
-    other-modules:   PGF2.FFI
+    other-modules:   PGF2.FFI PGF2.Expr
                      GF.Interactive2 GF.Command.Commands2
     hs-source-dirs:  src/runtime/haskell-bind
     build-tools:     hsc2hs
@@ -254,11 +254,11 @@ Library
     GF.Speech.SRGS_XML
     GF.Speech.VoiceXML
     GF.System.Catch
+    GF.System.Concurrency
     GF.System.Console
     GF.System.Directory
     GF.System.Process
     GF.System.Signal
---  GF.System.UseSignal
     GF.Text.Clitics
     GF.Text.Coding
     GF.Text.Lexing
