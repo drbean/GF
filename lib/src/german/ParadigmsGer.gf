@@ -286,11 +286,11 @@ mkV2 : overload {
 -- Three-place (ditransitive) verbs need two prepositions, of which
 -- the first one or both can be absent.
 
-  accdatV3 : V -> V3 ;                  -- geben + acc + dat
-  dirV3    : V -> Prep -> V3 ;          -- senden + acc + nach
+  accdatV3 : V -> V3 ;                  -- geben + dat + acc (no prepositions)
+  dirV3    : V -> Prep -> V3 ;          -- senden + acc + nach (preposition on second arg)
 
   mkV3 : overload {
-    mkV3     : V ->                 V3 ;  -- geben + acc + dat
+    mkV3     : V ->                 V3 ;  -- geben + dat + acc
     mkV3     : V -> Prep -> Prep -> V3 ;  -- sprechen + mit + über
     } ;
 
@@ -585,7 +585,7 @@ mkV2 : overload {
     } ;
 
   dirV3 v p = mkV3 v (mkPrep [] accusative) p ;
-  accdatV3 v = dirV3 v (mkPrep [] dative) ; 
+  accdatV3 v = mkV3 v (mkPrep [] dative) (mkPrep [] accusative) ; 
 
   mkVS v = v ** {lock_VS = <>} ;
   mkVQ v = v ** {lock_VQ = <>} ;

@@ -14,6 +14,7 @@ module PGF.VisualizeTree
              , graphvizDefaults
              , graphvizAbstractTree
              , graphvizParseTree
+             , graphvizParseTreeDep
              , graphvizDependencyTree
              , graphvizBracketedString
              , graphvizAlignment
@@ -44,6 +45,7 @@ import Text.PrettyPrint
 data GraphvizOptions = GraphvizOptions {noLeaves :: Bool,
                                         noFun :: Bool,
                                         noCat :: Bool,
+                                        noDep :: Bool,
                                         nodeFont :: String,
                                         leafFont :: String,
                                         nodeColor :: String,
@@ -52,7 +54,7 @@ data GraphvizOptions = GraphvizOptions {noLeaves :: Bool,
                                         leafEdgeStyle :: String
                                        }
 
-graphvizDefaults = GraphvizOptions False False False "" "" "" "" "" ""
+graphvizDefaults = GraphvizOptions False False False True "" "" "" "" "" ""
 
 
 -- | Renders abstract syntax tree in Graphviz format
@@ -208,13 +210,15 @@ graphvizDependencyTree format debug mlab ms pgf lang t = render $
 getDepLabels :: [String] -> Labels
 getDepLabels ss = Map.fromList [(mkCId f,ls) | f:ls <- map words ss]
 
-
+-- the old function, without dependencies
 graphvizParseTree :: PGF -> Language -> GraphvizOptions -> Tree -> String
-graphvizParseTree pgf lang opts = graphvizBracketedString opts . bracketedLinearize pgf lang
+graphvizParseTree = graphvizParseTreeDep Nothing
 
+graphvizParseTreeDep :: Maybe Labels -> PGF -> Language -> GraphvizOptions -> Tree -> String
+graphvizParseTreeDep mbl pgf lang opts tree = graphvizBracketedString opts mbl tree $ bracketedLinearize pgf lang tree
 
-graphvizBracketedString :: GraphvizOptions -> [BracketedString] -> String
-graphvizBracketedString opts bss = render graphviz_code
+graphvizBracketedString :: GraphvizOptions -> Maybe Labels -> Tree -> [BracketedString] -> String
+graphvizBracketedString opts mbl tree bss = render graphviz_code
     where
       graphviz_code
           = text "graph {" $$
@@ -252,8 +256,8 @@ graphvizBracketedString opts bss = render graphviz_code
       internal_nodes = [mkLevel internals |
                         internals <- getInternals (map ((,) nil) bss),
                         not (null internals)]
-      leaf_nodes = mkLevel [(parent, id, word) |
-                            (id, (parent, word)) <- zip [100000..] (concatMap (getLeaves nil) bss)]
+      leaf_nodes = mkLevel [(parent, id, mkLeafNode cat word) |
+                            (id, (parent, (cat,word))) <- zip [100000..] (concatMap (getLeaves (mkCId "?") nil) bss)]
 
       getInternals []    = []
       getInternals nodes
@@ -263,9 +267,9 @@ graphvizBracketedString opts bss = render graphviz_code
                             (_, Bracket _ fid _ _ _ children) <- nodes,
                             child <- children]
 
-      getLeaves parent (Leaf word) = [(parent, word)]
-      getLeaves parent (Bracket _ fid i _ _ children)
-          = concatMap (getLeaves fid) children
+      getLeaves cat parent (Leaf word) = [(parent, (cat, word))] -- the lowest cat before the word
+      getLeaves _ parent (Bracket cat fid i _ _ children)
+          = concatMap (getLeaves cat fid) children
 
       mkLevel nodes
           = text "subgraph {rank=same;" $$
@@ -279,8 +283,58 @@ graphvizBracketedString opts bss = render graphviz_code
                    ) $$
             text "}" $$
             -- the following is for the edges between parent and children:
-            vcat [tag pid <> text " -- " <> tag id <> semi | (pid, id, _) <- nodes, pid /= nil] $$
+            vcat [tag pid <> text " -- " <> tag id <> text (depLabel node) | node@(pid, id, _) <- nodes, pid /= nil] $$
             space
+
+      depLabel node@(parent,id,lbl) 
+        | noDep opts = ";"
+        | otherwise = case getArg id of
+            Just (fun,arg) -> mkOption "" "label" (lookLabel fun arg) 
+            _ -> ";"
+      getArg i = getArgumentPlace i (expr2numtree tree) Nothing
+
+      labels = maybe Map.empty id mbl
+
+      lookLabel fun arg = case Map.lookup fun labels of
+        Just xx | length xx > arg -> case xx !! arg of
+          "head" -> ""
+          l -> l
+        _ -> argLabel fun arg
+      argLabel fun arg = if arg==0 then "" else "dep#" ++ show arg --showCId fun ++ "#" ++ show arg
+                         -- assuming the arg is head, if no configuration is given; always true for 1-arg funs
+      mkLeafNode cat word
+       | noDep opts = word        --- || not (noCat opts) -- show POS only if intermediate nodes hidden
+       | otherwise = posCat cat ++ "\n" ++ word         -- show POS in dependency tree
+
+      posCat cat = case Map.lookup cat labels of
+        Just [p] -> p
+        _ -> showCId cat
+
+---- to restore the argument place from bracketed linearization
+data NumTree = NumTree Int CId [NumTree]
+
+getArgumentPlace :: Int -> NumTree -> Maybe (CId,Int) -> Maybe (CId,Int)
+getArgumentPlace i tree@(NumTree int fun ts) mfi
+ | i == int  = mfi
+ | otherwise = case [fj | (t,x) <- zip ts [0..], Just fj <- [getArgumentPlace i t (Just (fun,x))]] of
+     fj:_ -> Just fj
+     _ -> Nothing
+
+expr2numtree :: Expr -> NumTree
+expr2numtree = fst . renumber 0 . flatten where
+  flatten e = case e of
+    EApp f a -> case flatten f of
+      NumTree _ g ts -> NumTree 0 g (ts ++ [flatten a])
+    EFun f -> NumTree 0 f []
+  renumber i t@(NumTree _ f ts) = case renumbers i ts of
+    (ts',j) -> (NumTree j f ts', j+1)
+  renumbers i ts = case ts of
+    t:tt -> case renumber i t of
+      (t',j) -> case renumbers j tt of (tt',k) -> (t':tt',k)
+    _ -> ([],i)
+----- end this terrible stuff AR 4/11/2015
+ 
+
 
 
 type Rel = (Int,[Int])
