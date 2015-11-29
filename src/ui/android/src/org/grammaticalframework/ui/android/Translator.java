@@ -2,6 +2,7 @@ package org.grammaticalframework.ui.android;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
 import android.util.Pair;
 import android.view.inputmethod.CompletionInfo;
@@ -30,6 +31,7 @@ public class Translator {
 	//    	new Language("cmn-Hans-CN", "Chinese (Mandarin)", "AppChi", R.xml.qwerty),
         new Language("nl-NL", "Dutch", "AppDut", R.xml.qwerty),
     	new Language("en-US", "English", "AppEng", R.xml.qwerty),
+        new Language("fi-FI", "Estonian","AppEst", R.xml.nordic),
         new Language("fi-FI", "Finnish", "AppFin", R.xml.nordic),
         new Language("fr-FR", "French",  "AppFre", R.xml.qwerty), ////
         new Language("de-DE", "German",  "AppGer", R.xml.qwerty),
@@ -47,7 +49,7 @@ public class Translator {
     private ConcrLoader mSourceLoader;
     private ConcrLoader mTargetLoader;
     private ConcrLoader mOtherLoader;
-    private DBManager mDBManager;
+    private SemanticGraphManager mSGManager;
 
 	private static final String SOURCE_LANG_KEY = "source_lang";
 	private static final String TARGET_LANG_KEY = "target_lang";
@@ -98,7 +100,7 @@ public class Translator {
 
         mOtherLoader = null;
 
-        mDBManager = new DBManager(context);
+        mSGManager = new SemanticGraphManager(context);
     }
 
     public List<Language> getAvailableLanguages() {
@@ -365,27 +367,31 @@ public class Translator {
     }
 
 	public String getInflectionTable(String lemma) {
-		String def = "";
-/*		SQLiteDatabase db = mDBManager.getReadableDatabase();
-		Cursor crs = db.rawQuery("select def from defs where fun=?1", new String[] { lemma });
-		if (crs.moveToNext()) {
-			def = escapeHtml(crs.getString(0));
-		}
-		crs.close();*/
+		boolean withExample =
+			(getSourceLanguage().getLangCode().equals("en-US") ||
+             getTargetLanguage().getLangCode().equals("en-US"));
+		Expr def = 
+			mSGManager.getDefinition(Expr.readExpr(lemma), withExample);
 
 		Concr targetLang = getTargetConcr();
 		String cat = getGrammar().getFunctionType(lemma).getCategory();
 
 		if (targetLang.hasLinearization(lemma) && 
 		    targetLang.hasLinearization("Inflection"+cat)) {
-			Expr e = Expr.readExpr("MkDocument \""+def+"\" (Inflection"+cat+" "+lemma+") \"\"");
+			if (def == null)
+				def = Expr.readExpr("NoDefinition");
+
+			Expr e = new Expr("MkDocument", 
+			                  def,
+			                  Expr.readExpr("Inflection"+cat+" "+lemma),
+			                  Expr.readExpr("\"\""));
 			String html =
 				"<html><head><meta charset=\"UTF-8\"/></head><body>" +
 				targetLang.linearize(e) +
 				"</body>";
 			return html;
-		} else if (def != "") {
-			return "<p style=\"font-size:20px\">"+def+"</p>";
+		} else if (def != null) {
+			return targetLang.linearize(def);
 		} else {
 			return null;
 		}
@@ -553,5 +559,22 @@ public class Translator {
 		    	}
 		    }
 		}
+	}
+
+    public boolean isUpgraded(String key) {
+		int old_code = mSharedPref.getInt(key, 0);
+
+		int new_code = 0;
+		try {
+			new_code = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0).versionCode;
+		} catch (NameNotFoundException e) {
+			// Huh? Really?
+		}
+
+		SharedPreferences.Editor editor = mSharedPref.edit();
+		editor.putInt(key, new_code);
+		editor.commit();
+
+		return (old_code != new_code);
 	}
 }

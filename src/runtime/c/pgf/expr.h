@@ -150,11 +150,17 @@ PgfExpr
 pgf_expr_string(GuString, GuPool* pool);
 
 PgfExpr
+pgf_expr_int(int val, GuPool* pool);
+
+PgfExpr
+pgf_expr_float(double val, GuPool* pool);
+
+PgfExpr
 pgf_read_expr(GuIn* in, GuPool* pool, GuExn* err);
 
 int
 pgf_read_expr_tuple(GuIn* in,
-                    int n_exprs, PgfExpr exprs[],
+                    size_t n_exprs, PgfExpr exprs[],
                     GuPool* pool, GuExn* err);
 
 PgfType*
@@ -199,5 +205,9 @@ pgf_print_hypo(PgfHypo *hypo, PgfPrintContext* ctxt, int prec,
 void
 pgf_print_type(PgfType *type, PgfPrintContext* ctxt, int prec,
                GuOut* out, GuExn *err);
+
+void
+pgf_print_expr_tuple(size_t n_exprs, PgfExpr exprs[], PgfPrintContext* ctxt,
+                     GuOut* out, GuExn* err);
 
 #endif /* EXPR_H_ */

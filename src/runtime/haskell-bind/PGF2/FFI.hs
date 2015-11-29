@@ -204,6 +204,12 @@ foreign import ccall "pgf/pgf.h pgf_expr_apply"
 foreign import ccall "pgf/pgf.h pgf_expr_string"
   pgf_expr_string :: CString -> Ptr GuPool -> IO PgfExpr
 
+foreign import ccall "pgf/pgf.h pgf_expr_int"
+  pgf_expr_int :: CInt -> Ptr GuPool -> IO PgfExpr
+
+foreign import ccall "pgf/pgf.h pgf_expr_float"
+  pgf_expr_float :: CDouble -> Ptr GuPool -> IO PgfExpr
+
 foreign import ccall "pgf/pgf.h pgf_expr_unapply"
   pgf_expr_unapply :: PgfExpr -> Ptr GuPool -> IO (Ptr PgfApplication)
 
@@ -212,6 +218,9 @@ foreign import ccall "pgf/expr.h pgf_expr_arity"
 
 foreign import ccall "pgf/expr.h pgf_print_expr"
   pgf_print_expr :: PgfExpr -> Ptr PgfPrintContext -> CInt -> Ptr GuOut -> Ptr GuExn -> IO ()
+
+foreign import ccall "pgf/expr.h pgf_print_expr_tuple"
+  pgf_print_expr_tuple :: CInt -> Ptr PgfExpr -> Ptr PgfPrintContext -> Ptr GuOut -> Ptr GuExn -> IO ()
 
 foreign import ccall "pgf/pgf.h pgf_generate_all"
   pgf_generate_all :: Ptr PgfPGF -> CString -> Ptr GuExn -> Ptr GuPool -> Ptr GuPool -> IO (Ptr GuEnum)
