@@ -8,7 +8,10 @@ module SG( SG, openSG, closeSG
          , beginTrans, commit, rollback, inTransaction
          , SgId
          , insertExpr, getExpr
+         , updateFtsIndex
+         , queryLinearization
          , readTriple, showTriple
+         , readTriples
          , insertTriple, getTriple
          , queryTriple
          ) where
@@ -106,6 +109,36 @@ getExpr (SG sg) id = do
               return Nothing
       else do return $ Just (Expr c_expr exprFPl)
 
+updateFtsIndex :: SG -> PGF -> IO ()
+updateFtsIndex (SG sg) p = do
+  withGuPool $ \tmpPl -> do
+    exn <- gu_new_exn tmpPl
+    sg_update_fts_index sg (pgf p) exn
+    handle_sg_exn exn
+
+queryLinearization :: SG -> String -> IO [Expr]
+queryLinearization (SG sg) query = do
+  exprPl  <- gu_new_pool
+  exprFPl <- newForeignPtr gu_pool_finalizer exprPl
+  (withCString query $ \c_query ->
+   withGuPool $ \tmpPl -> do
+     exn <- gu_new_exn tmpPl
+     seq <- sg_query_linearization sg c_query tmpPl exn
+     handle_sg_exn exn
+     len <- (#peek GuSeq, len) seq
+     ids <- peekArray (fromIntegral (len :: CInt)) (seq `plusPtr` (#offset GuSeq, data))
+     getExprs exprFPl exprPl exn ids)
+  where
+    getExprs exprFPl exprPl exn []       = return []
+    getExprs exprFPl exprPl exn (id:ids) = do
+      c_expr <- sg_get_expr sg id exprPl exn
+      handle_sg_exn exn
+      if c_expr == nullPtr
+        then getExprs exprFPl exprPl exn ids
+        else do let e = Expr c_expr exprFPl
+                es <- getExprs exprFPl exprPl exn ids
+                return (e:es)
+
 -----------------------------------------------------------------------
 -- Triples
 
@@ -115,7 +148,7 @@ readTriple str =
     do exprPl <- gu_new_pool
        withGuPool $ \tmpPl ->
          withCString str $ \c_str ->
-           withTriple $ \triple -> do
+           withTriple $ \triple ->
              do guin <- gu_string_in c_str tmpPl
                 exn <- gu_new_exn tmpPl
                 ok <- pgf_read_expr_tuple guin 3 triple exprPl exn
@@ -143,6 +176,33 @@ showTriple (Expr expr1 _) (Expr expr2 _) (Expr expr3 _) =
          pgf_print_expr_tuple 3 triple printCtxt out exn
          s <- gu_string_buf_freeze sb tmpPl
          peekCString s
+
+readTriples :: String -> Maybe [(Expr,Expr,Expr)]
+readTriples str =
+  unsafePerformIO $
+    do exprPl <- gu_new_pool
+       withGuPool $ \tmpPl ->
+         withCString str $ \c_str ->
+             do guin <- gu_string_in c_str tmpPl
+                exn <- gu_new_exn tmpPl
+                seq <- pgf_read_expr_matrix guin 3 exprPl exn
+                status <- gu_exn_is_raised exn
+                if (seq /= nullPtr && not status)
+                  then do exprFPl <- newForeignPtr gu_pool_finalizer exprPl
+                          count <- (#peek GuSeq, len) seq
+                          ts <- peekTriples exprFPl (fromIntegral (count :: CInt)) (seq `plusPtr` (#offset GuSeq, data))
+                          return (Just ts)
+                  else do gu_pool_free exprPl
+                          return Nothing
+  where
+    peekTriples exprFPl count triple
+      | count == 0 = return []
+      | otherwise  = do c_expr1 <- peekElemOff triple 0
+                        c_expr2 <- peekElemOff triple 1
+                        c_expr3 <- peekElemOff triple 2
+                        let t = (Expr c_expr1 exprFPl,Expr c_expr2 exprFPl,Expr c_expr3 exprFPl)
+                        ts <- peekTriples exprFPl (count-3) (triple `plusPtr` (3*sizeOf c_expr1))
+                        return (t:ts)
 
 insertTriple :: SG -> Expr -> Expr -> Expr -> IO SgId
 insertTriple (SG sg) (Expr expr1 _) (Expr expr2 _) (Expr expr3 _) =
