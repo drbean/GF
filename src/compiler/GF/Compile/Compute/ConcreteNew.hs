@@ -1,8 +1,9 @@
 -- | Functions for computing the values of terms in the concrete syntax, in
 -- | preparation for PMCFG generation.
 module GF.Compile.Compute.ConcreteNew
-           (GlobalEnv, resourceValues, normalForm,
-           --, Value(..), Env, value2term, eval, apply
+           (GlobalEnv, GLocation, resourceValues, geLoc, geGrammar,
+            normalForm,
+            Value(..), Bind(..), Env, value2term, eval, vapply
            ) where
 
 import GF.Grammar hiding (Env, VGen, VApp, VRecType)
@@ -28,10 +29,12 @@ import Debug.Trace(trace)
 normalForm :: GlobalEnv -> L Ident -> Term -> Term
 normalForm (GE gr rv opts _) loc = err (bugloc loc) id . nfx (GE gr rv opts loc)
 
-nfx env@(GE _ _ _ loc) t = value2term loc [] # eval env t
+nfx env@(GE _ _ _ loc) t = value2term loc [] # eval env [] t
 
-eval :: GlobalEnv -> Term -> Err Value
-eval ge t = ($[]) # value (toplevel ge) t
+eval :: GlobalEnv -> Env -> Term -> Err Value
+eval (GE gr rvs opts loc) env t = ($ (map snd env)) # value cenv t
+  where
+    cenv = CE gr rvs opts loc (map fst env)
 
 --apply env = apply' env
 
@@ -49,11 +52,13 @@ type GLocation = L Ident
 type LocalScope = [Ident]
 type Stack = [Value]
 type OpenValue = Stack->Value
-                            
+
+geLoc     (GE _ _ _ loc) = loc
+geGrammar (GE gr _ _ _)  = gr
+
 ext b env = env{local=b:local env}
 extend bs env = env{local=bs++local env}
 global env = GE (srcgr env) (rvs env) (opts env) (gloc env)
-toplevel (GE gr rvs opts loc) = CE gr rvs opts loc []
 
 var :: CompleteEnv -> Ident -> Err OpenValue
 var env x = maybe unbound pick' (elemIndex x (local env))
@@ -88,7 +93,7 @@ resourceValues opts gr = env
     moduleResource m c _info = do L l t <- lookupResDefLoc gr (m,c)
                                   let loc = L l c
                                       qloc = L l (Q (m,c))
-                                  eval (GE gr rvs opts loc) (traceRes qloc t)
+                                  eval (GE gr rvs opts loc) [] (traceRes qloc t)
 
     traceRes = if flag optTrace opts
                then traceResource
@@ -109,7 +114,7 @@ traceResource (L l q) t =
 
 -- | Computing the value of a top-level term
 value0 :: CompleteEnv -> Term -> Err Value
-value0 = eval . global
+value0 env = eval (global env) []
 
 -- | Computing the value of a term
 value :: CompleteEnv -> Term -> Err OpenValue
@@ -384,7 +389,7 @@ paramValues env ty = snd # paramValues' env ty
 paramValues' env ty = paramValues'' env =<< nfx (global env) ty
 
 paramValues'' env pty = do ats <- allParamValues (srcgr env) pty
-                           pvs <- mapM (eval (global env)) ats
+                           pvs <- mapM (eval (global env) []) ats
                            return ((pty,ats),pvs)
 
 push' p bs xs = if length bs/=length xs
@@ -411,6 +416,7 @@ apply' env t vs =
                                  return $ \ svs -> vapply (gloc env) r (map ($svs) vs)
 -}
     App t1 t2              -> apply' env t1 . (:vs) =<< value env t2
+    Meta i                 -> return $ \ svs -> VMeta i (zip (local env) svs) (map ($svs) vs)
     _                      -> do fv <- value env t
                                  return $ \ svs -> vapply (gloc env) (fv svs) (map ($svs) vs)
 
