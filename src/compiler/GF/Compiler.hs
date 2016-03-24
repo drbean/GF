@@ -89,9 +89,9 @@ compileCFFiles opts fs = do
   bnfc_rules <- fmap concat $ mapM (getBNFCRules opts) fs
   let rules = bnfc2cf bnfc_rules
   startCat <- case rules of
-                (CFRule cat _ _ : _) -> return cat
-                _                    -> fail "empty CFG"
-  let pgf = cf2pgf (last fs) (uniqueFuns (mkCFG startCat Set.empty rules))
+                (Rule cat _ _ : _) -> return cat
+                _                  -> fail "empty CFG"
+  let pgf = cf2pgf (last fs) (mkCFG startCat Set.empty rules)
   unless (flag optStopAfterPhase opts == Compile) $
      do probs <- liftIO (maybe (return . defaultProbabilities) readProbabilitiesFromFile (flag optProbsFile opts) pgf)
         let pgf' = setProbabilities probs $ if flag optOptimizePGF opts then optimizePGF pgf else pgf
