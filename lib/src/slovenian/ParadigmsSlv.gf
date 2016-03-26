@@ -1,6 +1,15 @@
-resource ParadigmsSlv = open CatSlv, ResSlv in {
+resource ParadigmsSlv = open CatSlv, ResSlv, Prelude in {
 
 oper
+  nominative : Case = Nom ;
+  dative     : Case = Dat ;
+  accusative : Case = Acc ;
+  locative   : Case = Loc ;
+  instrumental:Case = Instr ;
+
+  mkPrep : Str -> Case -> Prep =
+    \s,c -> lin Prep {s=s; c=c};
+
   masculine = Masc;
   feminine  = Fem;
   neuter    = Neut;
@@ -262,5 +271,7 @@ oper
              ASuperl Neut Pl Instr => superlNPlInstr
            }
     };
+
+  mkAdv : Str -> Adv = \s -> lin Adv {s=s} ;
 
 }
