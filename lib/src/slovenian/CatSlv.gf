@@ -1,12 +1,17 @@
 concrete CatSlv of Cat = CommonX ** open ResSlv in {
 
 lincat
+  -- Verb
+  VP = ResSlv.VP ;
+
   -- Adjective
   AP = {s : Species => Gender => Case => Number => Str} ;
 
   -- Noun
   CN = {s : Species => Case => Number => Str; g : Gender} ;
   NP = {s : Case => Str ; a : Agr} ;
+
+  Pron = {s : Case => Str ; a : Agr} ;
 
   Det = {s : Case => Str; spec : Species; n : Number} ;
   Num  = {s : Case => Str ; n : Number} ;

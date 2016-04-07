@@ -3,7 +3,7 @@ concrete NounSlv of Noun = CatSlv ** open ResSlv in {
   lin
     DetCN det cn = {
       s = \\c => det.s ! c ++ cn.s ! det.spec ! c ! det.n ; 
-      a = {g=cn.g; n=det.n}
+      a = {g=cn.g; n=det.n; p=P3}
       } ;
 
     DetQuant quant num = {
@@ -23,6 +23,11 @@ concrete NounSlv of Noun = CatSlv ** open ResSlv in {
     IndefArt = {
       s    = "" ;
       spec = Indef
+      } ;
+
+    MassNP n = {
+      s = \\c => n.s ! Indef ! c ! Sg ;
+      a = {g=n.g; n=Sg; p=P3}
       } ;
 
     UseN n = {s = \\_ => n.s; g = n.g} ;
