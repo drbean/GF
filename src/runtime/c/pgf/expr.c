@@ -494,7 +494,9 @@ pgf_expr_parser_term(PgfExprParser* parser)
 	case PGF_TOKEN_FLT: {
 		char* str = 
 			gu_buf_data(parser->token_value);
-		double d = atof(str);
+		double d;
+		if (!gu_string_to_double(str,&d))
+			return gu_null_variant;
 		pgf_expr_parser_token(parser);
 		PgfLiteral lit = 
 			gu_new_variant_i(parser->expr_pool,
@@ -1187,7 +1189,7 @@ pgf_print_literal(PgfLiteral lit,
     }
 	case PGF_LITERAL_FLT: {
         PgfLiteralFlt* lit = ei.data;
-		gu_printf(out, err, "%lg", lit->val);
+		gu_double_to_string(lit->val, out, err);
         break;
     }
 	default:
