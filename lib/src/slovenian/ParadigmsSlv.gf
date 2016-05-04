@@ -70,7 +70,10 @@ oper
              VImper2 Pl        => imp2pl
            }
     };
-    
+
+  mkV2 : V -> V2 =
+    \v -> v ** {c2 = lin Prep {s=""; c=Acc}} ;
+
   mkA : (_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_ : Str) -> A =
     \positMSgNom,positMSgNomDef,positMSgGen,positMSgDat,positMSgAcc,positMSgAccIndef,positMSgAccDef,positMSgLoc,positMSgInstr,
      positMDlNom,positMDlGen,positMDlDat,positMDlAcc,positMDlLoc,positMDlInstr,
@@ -288,7 +291,20 @@ oper
                   } ;
               a = {g=g; n=n; p=p}
              } ;
-             
+
+  mkNP : (_,_,_,_,_,_ : Str) -> Gender -> Number -> NP =
+    \nom,acc,gen,dat,loc,instr,g,n ->
+    lin NP {s = table {
+                    Nom => nom;
+                    Acc => acc;
+                    Gen => gen;
+                    Dat => dat;
+                    Loc => loc;
+                    Instr=>instr
+                  } ;
+            a = {g=Neut; n=n; p=P3}
+           } ;
+
   mkInterj : Str -> Interj =
     \s -> lin Interj {s=s} ;
 
