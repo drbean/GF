@@ -3,6 +3,10 @@ concrete CatSlv of Cat = CommonX ** open ResSlv, (P=ParamX) in {
 lincat
   -- Sentence
   Cl = {s : P.Tense => P.Anteriority => P.Polarity => Str} ;
+  Imp = {s : P.Polarity => Gender => Number => Str} ;
+
+  -- Question
+  QCl = {s : P.Tense => P.Anteriority => P.Polarity => Str} ;
 
   -- Verb
   VP = ResSlv.VP ;
@@ -16,7 +20,7 @@ lincat
   CN = {s : Species => Case => Number => Str; g : Gender} ;
   NP = {s : Case => Str ; a : Agr} ;
 
-  Pron = {s : Case => Str ; a : Agr} ;
+  Pron = {s : Case => Str; poss : Str; a : Agr} ;
 
   Det = {s : Gender => Case => Str; spec : Species; n : NumAgr} ;
   Num  = {s : Gender => Case => Str ; n : NumAgr} ;

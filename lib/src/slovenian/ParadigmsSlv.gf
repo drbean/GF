@@ -71,8 +71,10 @@ oper
            }
     };
 
-  mkV2 : V -> V2 =
-    \v -> v ** {c2 = lin Prep {s=""; c=Acc}} ;
+  mkV2 = overload {
+    mkV2 : V -> V2 = \v -> v ** {c2 = lin Prep {s=""; c=Acc}} ;
+    mkV2 : V -> Case -> V2 = \v,c -> v ** {c2 = lin Prep {s=""; c=c}} ;
+  } ;
 
   mkA : (_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_ : Str) -> A =
     \positMSgNom,positMSgNomDef,positMSgGen,positMSgDat,positMSgAcc,positMSgAccIndef,positMSgAccDef,positMSgLoc,positMSgInstr,
@@ -279,8 +281,8 @@ oper
 
   mkAdV : Str -> AdV = \s -> lin AdV {s=s} ;
 
-  mkPron : (_,_,_,_,_,_ : Str) -> Gender -> Number -> Person -> Pron =
-    \nom,acc,gen,dat,loc,instr,g,n,p ->
+  mkPron : (_,_,_,_,_,_,_ : Str) -> Gender -> Number -> Person -> Pron =
+    \nom,acc,gen,dat,loc,instr,poss,g,n,p ->
     lin Pron {s = table {
                     Nom => nom;
                     Acc => acc;
@@ -289,6 +291,7 @@ oper
                     Loc => loc;
                     Instr=>instr
                   } ;
+              poss = poss ;
               a = {g=g; n=n; p=p}
              } ;
 
