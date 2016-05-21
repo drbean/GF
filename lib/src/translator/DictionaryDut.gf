@@ -244,7 +244,6 @@ lin acidotic_A = mkA "acidotisch" ; -- status=guess
 lin acknowledge_V2 = mkV2 (mkV "erkennen") ; -- status=guess, src=wikt
 lin acknowledge_VS = mkVS (mkV "erkennen") ; -- status=guess, src=wikt
 lin acknowledgement_N = mkN "erkenning" feminine ; -- status=guess
-lin acknowledgment_N = mkN "erkenning" ; -- status=guess
 lin acme_N = mkN "hoogtepunt" neuter ; -- status=guess
 lin acne_N = mkN "acne " masculine ; -- status=guess
 lin aconite_N = mkN "monnikskap" ; -- status=guess
@@ -797,7 +796,6 @@ lin anagram_N = mkN "anagram" | mkN "letterkeer" ; -- status=guess status=guess
 lin analgesic_N = mkN "pijnstiller" masculine ; -- status=guess
 lin analogous_A = mkA "analoog" | mkA "analoge" ; -- status=guess status=guess
 lin analogy_N = mkN "analogie" feminine ; -- status=guess
-lin analyse_V2 = variants {} ; --
 lin analysis_N = mkN "analyse" feminine ;
 lin analyst_N = mkN "analist" masculine | mkN "analiste" feminine ; -- status=guess status=guess
 lin analyze_V2 = mkV2 (mkV "analyseren") ; -- status=guess, src=wikt
@@ -1156,7 +1154,7 @@ lin armband_N = mkN "rouwbandje" neuter | mkN "protestbandje" neuter ; -- status
 lin armchair_N = mkN "fauteuil" masculine ; -- status=guess
 lin armed_A = mkA "gewapend" ; -- status=guess
 lin armistice_N = mkN "wapenstilstand" masculine | mkN "staakt-het-vuren" neuter ; -- status=guess status=guess
-lin armor_N = mkN "pantser" neuter | mkN "harnas" neuter ; -- status=guess status=guess
+lin armour_N = mkN "pantser" neuter | mkN "harnas" neuter ; -- status=guess status=guess
 lin armpit_N = mkN "oksel" masculine ; -- status=guess
 lin armrest_N = mkN "armleuning" ; -- status=guess
 lin army_N = mkN "leger" neuter | mkN "horde" | mkN "menigte" ;

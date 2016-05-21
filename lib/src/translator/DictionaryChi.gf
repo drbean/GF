@@ -395,8 +395,7 @@ lin ackee_N = mkN "西非荔枝果" | mkN "阿开木果" ; -- open-multilingual-
 lin acknowledge_V2 = mkV2 "承认" ;
 lin acknowledge_VS = mkVS "确认" ;
 lin acknowledgeable_A = mkA "有知识" ; -- open-multilingual-wordnet
-lin acknowledgement_N = mkN "承认" ;
-lin acknowledgment_N = mkN "感谢" | mkN "致謝" ; -- open-multilingual-wordnet
+lin acknowledgement_N = mkN "承认" | mkN "感谢" | mkN "致謝" ; -- open-multilingual-wordnet
 lin acne_N = mkN "痤疮" ;
 lin acneiform_A = mkA "痤疮样" ; -- open-multilingual-wordnet
 lin acold_A = mkA "寒冷" ; -- open-multilingual-wordnet
@@ -1412,9 +1411,8 @@ lin amber_A = mkA "棕黄色" | mkA "琥珀色" | mkA "褐黄色" | mkA "黄褐�
 lin amber_N = mkN "琥珀色" | mkN "淡黃色" ; -- status=guess -- status=guess
 lin ambergris_N = mkN "龍涎香" | mkN "龙涎香" ; -- status=guess -- status=guess -- open-multilingual-wordnet
 lin amberjack_N = mkN "大頭魚" | mkN "大头鱼" | {-mwn-} mkN "鰤" ; -- status=guess -- status=guess -- open-multilingual-wordnet
-lin ambiance_N = mkN "氣氛" | mkN "气氛" | {-mwn-} mkN "格调" | mkN "环境" ; -- status=guess -- status=guess -- open-multilingual-wordnet
 lin ambidextrous_A = mkA "雙手靈巧" | {-mwn-} mkA "双手灵巧" ; -- status=guess -- open-multilingual-wordnet
-lin ambience_N = mkN "格调" | mkN "气氛" | mkN "环境" ; -- open-multilingual-wordnet
+lin ambience_N = mkN "格调" | mkN "环境" | mkN "氣氛" ; -- open-multilingual-wordnet
 lin ambient_A = mkA "环境" | {-mwn-} mkA "四周" | mkA "环抱" ; -- open-multilingual-wordnet
 lin ambiguity_N = mkN "双关" ;
 lin ambiguous_A = mkA "模糊不清" | {-HSK-} mkA "暧昧" ;
@@ -1507,7 +1505,7 @@ lin amniote_N = mkN "羊膜动物" | mkN "羊膜的" | mkN "脊椎动物" ; -- o
 lin amniotic_A = mkA "有羊膜" | mkA "羊膜" ; -- open-multilingual-wordnet
 lin amoeba_N = mkN "變形蟲" | mkN "变形虫" | mkN "阿米巴" ; -- status=guess -- status=guess -- status=guess -- open-multilingual-wordnet
 lin amoebic_A = mkA "阿米巴" | mkA "阿米巴性" ; -- open-multilingual-wordnet
-lin amok_Adv = mkAdv "疯狂地" ;
+lin amuck_Adv = mkAdv "疯狂地" ;
 lin among_Prep = mkPrep "在" "其中" ;
 lin amongst_Prep = mkPrep "在之中" ;
 lin amoralism_N = mkN "非道德论" ; -- open-multilingual-wordnet
@@ -1612,7 +1610,6 @@ lin analogous_A = mkA "类似" ;
 lin analogy_N = mkN "比喻" ;
 lin analphabet_N = mkN "文盲" | mkN "目不识丁者" ; -- open-multilingual-wordnet
 lin analysand_N = mkN "接受精神分析的人" ; -- open-multilingual-wordnet
-lin analyse_V2 = mkV2 "分析" ;
 lin analysis_N = mkN "分析" | {-HSK-} mkN "分析" "個" ;
 lin analyst_N = mkN "分析人士" ;
 lin analytic_A = mkA "分析" ;
@@ -2116,7 +2113,6 @@ lin aoristic_A = mkA "不定过去时" ; -- open-multilingual-wordnet
 lin aorta_N = mkN "大動脈" | mkN "大动脉" ; -- status=guess -- status=guess
 lin aortal_A = mkA "主动脉" | mkA "大动脉" ; -- open-multilingual-wordnet
 lin aortitis_N = mkN "主动脉动脉炎" ; -- open-multilingual-wordnet
-lin apanage_N = mkN "俸禄" | mkN "封禄" ; -- open-multilingual-wordnet
 lin apart_Adv = mkAdv "隔开" ;
 lin apart_from_Prep = mkPrep "除了" ;
 lin apartheid_N = mkN "种族隔离" [] ;
@@ -2543,10 +2539,8 @@ lin armillary_A = mkA "手镯" ; -- open-multilingual-wordnet
 lin armistice_N = mkN "停戰協定" | mkN "停战协定" | {-mwn-} mkN "缓和" ; -- status=guess -- status=guess -- open-multilingual-wordnet
 lin armlet_N = mkN "臂环" | mkN "臂章" | mkN "袖章" ; -- open-multilingual-wordnet
 lin armoire_N = mkN "大型衣橱" ; -- open-multilingual-wordnet
-lin armor_N = mkN "鎧甲" | mkN "铠甲" ; -- status=guess -- status=guess
-lin armorer_N = mkN "武器制造者" ; -- open-multilingual-wordnet
+lin armour_N = mkN "鎧甲" | mkN "铠甲" ; -- status=guess -- status=guess
 lin armorial_A = mkA "纹章学" | mkA "纹章盾徽" ; -- open-multilingual-wordnet
-lin armory_N = mkN "兵工厂" | mkN "军械厂" | mkN "军械库" | mkN "军火库" ; -- open-multilingual-wordnet
 lin armourer_N = mkN "武器制造者" ; -- open-multilingual-wordnet
 lin armoury_N = mkN "兵工厂" | mkN "军械厂" | mkN "军械库" | mkN "军火库" ; -- open-multilingual-wordnet
 lin armpit_N = mkN "腋窝" ;

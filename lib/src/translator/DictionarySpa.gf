@@ -357,7 +357,6 @@ lin acidosis_N = mkN "acidosis" feminine ; -- status=guess
 lin acknowledge_V2 = variants {} ; --
 lin acknowledge_VS = variants {} ; --
 lin acknowledgement_N = mkN "reconocimiento" ; -- status=guess
-lin acknowledgment_N = mkN "reconocimiento" ; -- status=guess
 lin acme_N = mkN "colmo" | mkN "apogeo" | mkN "cúspide" feminine ; -- status=guess status=guess status=guess
 lin acne_N = mkN "acné" masculine ; -- status=guess
 lin acneiform_A = mkA "acneiforme" ; --UWN
@@ -1172,7 +1171,6 @@ lin ambassadorship_N = mkN "embajada" ; --UWN
 lin amber_A = mkA "ambarino" | mkA "de color ámbar" ; -- status=guess status=guess
 lin amber_N = mkN "ámbar" masculine ; -- status=guess
 lin ambergris_N = mkN "ámbar gris" ; -- status=guess
-lin ambiance_N = mkN "ambiente" | mkN "atmósfera" ; -- status=guess status=guess
 lin ambidexterity_N = mkN "ambidiestro" ; --UWN
 lin ambidextrous_A = mkA "ambidextro" ; -- status=guess
 lin ambience_N = mkN "ambiente" | mkN "atmósfera" ; --UWN
@@ -1236,7 +1234,6 @@ lin amniote_N = mkN "amniota" ; --UWN
 lin amniotic_A = mkA "amniótico" ; -- status=guess
 lin amoeba_N = mkN "ameba" ; -- status=guess
 lin amoebic_A = mkA "amebiano" ; -- status=guess
-lin amok_Adv = mkAdv "de_forma_asesina" | mkAdv "enloquecido" | mkAdv "frenéticamente" ; --UWN
 lin among_Prep = mkPrep "entre" ;
 lin amongst_Prep = variants {} ; --
 lin amora_N = mkN "amoraim" ; --UWN
@@ -1277,7 +1274,7 @@ lin ampullar_A = mkA "ampollar" ; --UWN
 lin amputate_V2 = mkV2 (mkV "amputar") ; -- status=guess, src=wikt
 lin amputation_N = mkN "amputación" feminine ; -- status=guess
 lin amsterdam_PN = mkPN "Ámsterdam" ; -- status=guess src=geonames
-lin amuck_Adv = mkAdv "de_forma_asesina" | mkAdv "enloquecido" | mkAdv "frenéticamente" ; --UWN
+lin amuck_Adv = mkAdv "de forma asesina" | mkAdv "enloquecido" | mkAdv "frenéticamente" ; --UWN
 lin amulet_N = mkN "amuleto" | mkN "talismán" masculine ; -- status=guess status=guess
 lin amuse_V2 = mkV2 (divertir_V) ; -- status=guess
 lin amusement_N = mkN "diversión" feminine ; -- status=guess
@@ -1308,7 +1305,6 @@ lin analogical_A = mkA "analógico" ; -- status=guess
 lin analogist_N = mkN "analogista" ; --UWN
 lin analogous_A = mkA "análogo" ; -- status=guess
 lin analogy_N = mkN "analogía" ; -- status=guess
-lin analyse_V2 = variants {} ; --
 lin analysis_N = mkN "análisis" masculine ;
 lin analyst_N = mkN "analista" masculine ; -- status=guess
 lin analytic_A = mkA "analítico" ; -- status=guess
@@ -1990,9 +1986,8 @@ lin arm_hole_N = mkN "sisa" ; -- status=guess
 lin armiger_N = mkN "armígero" ; -- status=guess
 lin armillary_A = mkA "armilar" ; --UWN
 lin armistice_N = mkN "armisticio" ; -- status=guess
-lin armor_N = mkN "coraza" ; -- status=guess
+lin armour_N = mkN "coraza" ; -- status=guess
 lin armored_A = mkA "blindado" | mkA "acorazado" ; -- status=guess status=guess
-lin armorer_N = mkN "armero" | mkN "armerol" ; --UWN
 lin armourer_N = mkN "armero" | mkN "armerol" ; --UWN
 lin armoury_N = mkN "armería" ; -- status=guess
 lin armpit_N = mkN "axila" | mkN "sobaco" ; -- status=guess status=guess

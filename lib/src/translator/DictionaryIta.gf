@@ -302,7 +302,6 @@ lin acidosis_N = mkN "acidosi" ; -- status=guess
 lin acknowledge_V2 = mkV2 (riconoscere_V) | mkV2 (ammettere_V) ; -- status=guess, src=wikt status=guess, src=wikt
 lin acknowledge_VS = mkVS (riconoscere_V) | mkVS (ammettere_V) ; -- status=guess, src=wikt status=guess, src=wikt
 lin acknowledgement_N = mkN "riconoscimento" ; -- status=guess
-lin acknowledgment_N = mkN "riconoscimento" ; -- status=guess
 lin acne_N = mkN "acne" feminine ; -- status=guess
 lin acolyte_N = mkN "accolito" ; -- UWN
 lin aconite_N = mkN "aconito" ; -- status=guess
@@ -1088,7 +1087,7 @@ lin analgesic_N = mkN "analgesico" ; -- status=guess
 lin analogical_A = mkA "analogico" ; -- status=guess
 lin analogue_A = mkA "analogico" ; -- UWN
 lin analogy_N = mkN "analogia" ; -- status=guess
-lin analyse_V2 = variants {} ; --
+lin analyze_V2 = variants {} ; --
 lin analysis_N = mkN "analisi" feminine ; -- status=guess
 lin analyst_N = mkN "analista" ; -- status=guess
 lin analytic_A = mkA "analitico" ; -- status=guess
@@ -1375,7 +1374,6 @@ lin aorist_N = mkN "aoristo" ; -- UWN
 lin aorta_N = mkN "aorta" ; -- status=guess
 lin aortal_A = mkA "aortico" ; -- status=guess
 lin apace_Adv = mkAdv "celermente" | mkAdv "lestamente" | mkAdv "lesto" | mkAdv "presto" | mkAdv "prontamente" | mkAdv "rapidamente" | mkAdv "ratto" | mkAdv "sollecitamente" | mkAdv "speditamente" | mkAdv "spedito" | mkAdv "sveltamente" | mkAdv "veloce" | mkAdv "velocemente" ; -- UWN
-lin apanage_N = mkN "appannaggio" ; -- UWN
 lin apart_Adv = variants {} ; --
 lin apartheid_N = mkN "apartheid" masculine ; -- status=guess
 lin apartment_N = L.apartment_N ;
@@ -1642,9 +1640,7 @@ lin arm_hole_N = mkN "giro manica" ; -- UWN
 lin armillary_A = mkA "armillare" ; -- UWN
 lin armistice_N = mkN "armistizio" ; -- status=guess
 lin armlet_N = mkN "bracciale" ; -- UWN
-lin armor_N = mkN "armatura" ; -- status=guess
-lin armorer_N = mkN "armaiolo" ; -- UWN
-lin armory_N = mkN "fabbrica_d'armi" ; -- UWN
+lin armour_N = mkN "armatura" ; -- status=guess
 lin armourer_N = mkN "armaiolo" ; -- UWN
 lin armoury_N = mkN "armeria" ; -- status=guess
 lin armpit_N = mkN "ascella" ; -- status=guess

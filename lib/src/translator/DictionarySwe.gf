@@ -543,8 +543,7 @@ lin ackee_N = variants {} ; -- status=guess
 lin acknowledge_V2 = mkV2 (mkV "erkänna" "erkände" "erkänt") ; -- comment=5
 lin acknowledge_VS = mkVS (mkV "erkänna" "erkände" "erkänt") ; -- comment=5
 lin acknowledgeable_A = variants {} ; -- status=guess
-lin acknowledgement_N = mkN "tacksägelse" "tacksägelser" ; -- comment=5
-lin acknowledgment_N = mkN "bekräftelse" "bekräftelser" ;
+lin acknowledgement_N = mkN "tacksägelse" "tacksägelser" | mkN "bekräftelse" "bekräftelser" ;
 lin acme_N = mkN "kulm" ; -- status=guess
 lin acne_N = mkN "akne" utrum | mkN "acne" utrum ; -- SaldoWN -- comment=3
 lin acned_A = variants {} ; -- status=guess
@@ -1899,7 +1898,6 @@ lin amber_A = mkA "bärnstensgul" ;
 lin amber_N = mkN "bärnsten" ;
 lin ambergris_N = mkN "ambra" ; -- status=guess
 lin amberjack_N = mkN "seriola" ; -- src=google
-lin ambiance_N = mkN "atmosfär" | mkN "stämning" | mkN "känsla" ; -- status=guess status=guess status=guess
 lin ambidexterity_N = variants {} ; -- status=guess
 lin ambidextrous_A = mkA "ambidexter" ; -- comment=4
 lin ambience_N = mkN "atmosfär" "atmosfärer" ;
@@ -2026,7 +2024,6 @@ lin amniotic_A = variants {} ; -- status=guess
 lin amobarbital_N = variants {} ; -- status=guess
 lin amoeba_N = mkN "amöba" ; -- status=guess
 lin amoebic_A = variants {} ; -- status=guess
-lin amok_Adv = mkAdv "amok" ; -- status=guess
 lin among_Prep = mkPrep "bland" ;
 lin amongst_Prep = mkPrep "bland" ; -- status=guess
 lin amora_N = variants {} ; -- status=guess
@@ -2170,7 +2167,6 @@ lin analogy_N = mkN "analogi" "analogier" ; -- SaldoWN
 lin analphabet_N = mkN "analfabet" "analfabeter" ; -- status=guess
 lin analphabetic_A = variants {} ; -- status=guess
 lin analysand_N = variants {} ; -- status=guess
-lin analyse_V2 = mkV2 "analysera" ;
 lin analysis_N = mkN "analys" "analyser" ;
 lin analyst_N = mkN "psykoanalytiker" "psykoanalytikern" "psykoanalytiker" "psykoanalytikerna" | mkN "analytiker" "analytikern" "analytiker" "analytikerna" ; -- SaldoWN
 lin analytic_A = mkA "analytisk" ; -- status=guess
@@ -2837,7 +2833,6 @@ lin aoudad_N = variants {} ; -- status=guess
 lin apace_Adv = variants {} ; -- status=guess
 lin apache_N = mkN "apache" "apacher" ;
 lin apadana_N = variants {} ; -- status=guess
-lin apanage_N = mkN "apanage" "apanaget" "apanage" "apanagen" ;
 lin apar_N = variants {} ; -- status=guess
 lin apart_Adv = mkAdv "avsides" | mkAdv "separat" ;
 lin apart_from_Prep = mkPrep "bortsett från" ;
@@ -2974,7 +2969,7 @@ lin apotropaic_A = variants {} ; -- status=guess
 lin appal_V2 = variants {} ; -- status=guess
 lin appalling_A = mkA "skrämmande" ; -- comment=4
 lin appalling_N = mkN "skrämmande" ; -- status=guess
-lin appanage_N = mkN "tillbehör" neutrum ; -- comment=3
+lin appanage_N = mkN "tillbehör" neutrum | mkN "apanage" "apanaget" "apanage" "apanagen" ;
 lin apparatchik_N = mkN "partifunktionär" ; -- status=guess
 lin apparatus_N = mkN "apparat" "apparater" ; -- SaldoWN
 lin apparel_N = mkN "dräkt" "dräkter" ; -- comment=2
@@ -3380,11 +3375,8 @@ lin armless_A = variants {} ; -- status=guess
 lin armlet_N = mkN "armbindel" ;
 lin armlike_A = variants {} ; -- status=guess
 lin armoire_N = variants {} ; -- status=guess
-lin armor_N = mkN "rustning" ; -- status=guess
 lin armored_A = variants {} ; -- status=guess
-lin armorer_N = variants {} ; -- status=guess
 lin armorial_A = variants {} ; -- status=guess
-lin armory_N = mkN "vapenförråd" ; -- src=google
 lin armour_N = mkN "pansar" neutrum ; -- comment=3
 lin armour_plate_N = mkN "pansarplåt" ;
 lin armoured_A = variants {} ; -- status=guess

@@ -548,8 +548,7 @@ lin ackee_N = variants {} ;
 lin acknowledge_V2 = mkV2 (prefixV "an" (irregV "erkennen" "erkennt" "erkannte" "erkannte" "erkannt")) ; -- status=guess, src=wikt
 lin acknowledge_VS = mkVS (prefixV "an" (irregV "erkennen" "erkennt" "erkannte" "erkannte" "erkannt")) ; -- status=guess, src=wikt
 lin acknowledgeable_A = variants {} ;
-lin acknowledgement_N = mkN "Anerkennung" ; -- status=guess
-lin acknowledgment_N = mkN "Quittung" ; -- status=guess
+lin acknowledgement_N = mkN "Anerkennung" | mkN "Quittung" ; -- status=guess
 lin acme_N = variants {} ;
 lin acne_N = mkN "Akne" "Aknen" feminine ; -- status=guess
 lin acned_A = variants {} ;
@@ -1911,10 +1910,9 @@ lin amber_A = variants {} ;
 lin amber_N = mkN "Bernsteingelb" neuter ; -- status=guess
 lin ambergris_N = mkN "Ambra" "Ambras" feminine | mkN "Amber" masculine ; -- status=guess status=guess
 lin amberjack_N = mkN "Gelbschwanzmakrele" feminine ; -- status=guess
-lin ambiance_N = mkN "Ambiente" neuter ; -- status=guess
 lin ambidexterity_N = variants {} ;
 lin ambidextrous_A = variants {} ;
-lin ambience_N = variants {} ;
+lin ambience_N = mkN "Ambiente" neuter ; -- status=guess
 lin ambient_A = variants {} ;
 lin ambiguity_N = mkN "Ambiguität" feminine | mkN "Mehrdeutigkeit" "Mehrdeutigkeiten" feminine | mkN "Doppeldeutigkeit" feminine ; -- status=guess status=guess status=guess
 lin ambiguous_A = regA "mehrdeutig" | mkA "doppeldeutig" ; -- status=guess status=guess
@@ -2038,7 +2036,6 @@ lin amniotic_A = variants {} ;
 lin amobarbital_N = variants {} ;
 lin amoeba_N = mkN "Amöbe" feminine ; -- status=guess
 lin amoebic_A = variants {} ;
-lin amok_Adv = mkAdv "Amok" ; -- status=guess
 lin among_Prep = mkPrep "unter" accusative ;
 lin amongst_Prep = variants {} ; --
 lin amora_N = variants {} ;
@@ -2109,7 +2106,7 @@ lin amputee_N = mkN "Amputierte" masculine ; -- status=guess
 lin amrinone_N = variants {} ;
 lin amsterdam_PN = mkPN "Amsterdam" ; -- src=geonames status=guess
 lin amuck_A = variants {} ;
-lin amuck_Adv = variants {} ;
+lin amuck_Adv = mkAdv "Amok" ; -- status=guess
 lin amulet_N = mkN "Amulett" "Amulette" neuter ; -- status=guess
 lin amuse_V2 = mkV2 (regV "belustigen" | mkV "erheitern") ; -- status=guess, src=wikt status=guess, src=wikt
 lin amusement_N = mkN "Amüsement" neuter | mkN "Entertainment" neuter | mkN "Unterhaltung" | mkN "Vergnügen" neuter ; -- status=guess status=guess status=guess status=guess
@@ -2182,7 +2179,6 @@ lin analogy_N = mkN "Analogie" "Analogien" feminine ; -- status=guess
 lin analphabet_N = variants {} ;
 lin analphabetic_A = variants {} ;
 lin analysand_N = variants {} ;
-lin analyse_V2 = variants {} ; --
 lin analysis_N = mkN "Analyse" ;
 lin analyst_N = mkN "Analytiker" "Analytiker" masculine ; -- status=guess
 lin analytic_A = mk3A "analytisch" "analytischer" "analytischste" ; -- status=guess
@@ -2849,7 +2845,6 @@ lin aoudad_N = variants {} ;
 lin apace_Adv = variants {} ;
 lin apache_N = variants {} ;
 lin apadana_N = variants {} ;
-lin apanage_N = variants {} ;
 lin apar_N = variants {} ;
 lin apart_Adv = mkAdv "auseinander" ;
 lin apart_from_Prep = variants {} ;
@@ -3387,12 +3382,9 @@ lin armless_A = mkA "armlos" ; -- status=guess
 lin armlet_N = variants {} ;
 lin armlike_A = variants {} ;
 lin armoire_N = variants {} ;
-lin armor_N = mkN "Panzerung" feminine ; -- status=guess
 lin armored_A = mkA "gepanzert" ; -- status=guess
-lin armorer_N = variants {} ;
 lin armorial_A = variants {} ;
-lin armory_N = variants {} ;
-lin armour_N = variants {} ;
+lin armour_N = mkN "Panzerung" feminine ; -- status=guess
 lin armour_plate_N = variants {} ;
 lin armoured_A = variants {} ;
 lin armourer_N = variants {} ;
