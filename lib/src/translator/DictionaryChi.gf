@@ -3492,7 +3492,8 @@ lin banish_V2 = mkV2 "放逐" ;
 lin banishment_N = mkN "流放" ; -- comment="充军" ;
 lin banister_N = mkN "欄杆" | mkN "栏杆" | {-mwn-} mkN "扶手" | mkN "栏杆的支柱" | mkN "楼梯栏杆小柱" ; -- status=guess -- status=guess -- open-multilingual-wordnet
 lin banjo_N = mkN "班卓琴" ; -- status=guess -- open-multilingual-wordnet
-lin bank_N = L.bank_N | {-HSK-} mkN "岸" "個" | mkN "银行" "家" ;
+lin bank_1_N = L.bank_N | {-HSK-} mkN "岸" "個" | mkN "银行" "家" ;
+lin bank_2_N = L.bank_N | {-HSK-} mkN "岸" "個" | mkN "银行" "家" ;
 lin bank_V = mkV "银行" "家" ;
 lin bank_V2 = mkV2 "将+存入银行" ;
 lin bank_book_N = mkN "银行存折" ; -- open-multilingual-wordnet
@@ -13779,7 +13780,8 @@ lin freddie_PN = foreignPN "Freddie" ; -- comment=src=eng status=guess
 lin freddy_PN = foreignPN "Freddy" ; -- comment=src=eng status=guess
 lin frederick_PN = mkPN "弗雷德里克" ; -- comment=src=geonames status=guess
 lin frederiksberg_PN = mkPN "腓特烈斯贝" ; -- comment=src=geonames status=guess
-lin free_A = mkA "免费" | mkA "自由" | {-HSK-} mkA "无偿" ;
+lin free_1_A = mkA "免费" | mkA "自由" | {-HSK-} mkA "无偿" ;
+lin free_2_A = mkA "免费" | mkA "自由" | {-HSK-} mkA "无偿" ;
 lin free_N = mkN "免费" | mkN "自由" "個" | {-HSK-} mkN "自由軟件" | mkN "自由软件" ; -- status=guess -- status=guess
 lin free_V2 = mkV2 "免费" | {-HSK-} mkV2 "放" ;
 lin free_V2V = mkV2V "免费" | {-HSK-} mkV2V "放" ;
@@ -24829,7 +24831,8 @@ lin pioneer_N = mkN "先锋" ;
 lin pioneer_V = mkV "开辟" ;
 lin pioneer_V2 = mkV2 "先锋" ;
 lin pious_A = mkA "虔诚" ;
-lin pipe_N = mkN "管子" "根" ;
+lin pipe_1_N = mkN "管子" "根" ;
+lin pipe_2_N = mkN "管子" "根" ;
 lin pipe_V = mkV "吹奏" ;
 lin pipe_V2 = mkV2 "吹奏" ;
 lin pipeclay_N = mkN "白土" | mkN "管土" ; -- open-multilingual-wordnet
@@ -28059,7 +28062,8 @@ lin robust_A = mkA "健壮" ;
 lin roc_N = mkN "鹏" | mkN "大鹏" ; -- status=guess -- status=guess
 lin rochdale_PN = foreignPN "Rochdale" ; -- comment=src=geonames status=guess
 lin rochester_PN = mkPN "羅徹斯特" ; -- comment=src=geonames status=guess
-lin rock_N = L.rock_N ;
+lin rock_1_N = L.rock_N ;
+lin rock_2_N = L.rock_N ;
 lin rock_V = mkV "摇" | {-HSK-} mkV "摇晃" ;
 lin rock_V2 = mkV2 "摇" | {-HSK-} mkV2 "摇动" ;
 lin rocker_N = mkN "摇杆" ;
@@ -31707,7 +31711,7 @@ lin subjacent_A = mkA "在下方" ; -- open-multilingual-wordnet
 lin subject_1_N = mkN "主题" ;
 lin subject_2_N = mkN "主题" ;
 lin subject_A = mkA "服从" | {-HSK-} mkA "课" | mkA "题" | mkA "题目" ;
-lin subject_A2 = mkA2 "受制于" ;
+lin subject_to_A2 = mkA2 "受制于" ;
 lin subject_N = mkN "主题" ;
 lin subject_V2 = mkV2 "主题" ;
 lin subjective_A = mkA "主观" ;

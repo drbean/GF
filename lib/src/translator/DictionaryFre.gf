@@ -2654,7 +2654,8 @@ lin banish_V2 = mkV2 (mkV "bannir") ; -- tocheck
 lin banishment_N = mkN "bannissement" | mkN "défense" | mkN "interdiction" ; -- UWN
 lin banister_N = mkN "rampe" | mkN "balustre" masculine ; -- tocheck
 lin banjo_N = mkN "banjo" masculine ; -- tocheck
-lin bank_N = L.bank_N ;
+lin bank_1_N = L.bank_N ;
+lin bank_2_N = L.bank_N ;
 lin bankable_A = mkA "bancable" ; -- tocheck
 lin banker_N = mkN "banquier" masculine ; -- tocheck
 lin banking_N = variants {} ; --
@@ -12203,7 +12204,8 @@ lin freckle_N = mkN "tache_de_rousseur" | mkN "éphélide" ; -- UWN
 lin freckleton_PN = mkPN "Freckleton" ; -- status=guess src=geonames
 lin frederick_PN = mkPN "Frederick" ; -- status=guess src=geonames
 lin frederiksberg_PN = mkPN "Frederiksberg" ; -- status=guess src=geonames
-lin free_A = mkA "libre" | mkA "gratuit" ; ---- split: free world, free lunch
+lin free_1_A = mkA "libre" ;
+lin free_2_A = mkA "gratuit" ;
 lin free_V2 = variants {} ; -- mkV2V (mkV "libérer") ; -- tocheck
 lin free_V2V = mkV2V (mkV "libérer") ; -- tocheck
 lin free_for_all_N = mkN "pagaille" feminine ; -- tocheck
@@ -22410,7 +22412,8 @@ lin pion_N = mkN "pion" masculine ; -- tocheck
 lin pioneer_N = mkN "pionnier" masculine ; -- tocheck
 lin pious_A = mkA "pieux" ; -- tocheck
 lin pip_N = mkN "pépin" masculine | mkN "top" masculine ; -- tocheck
-lin pipe_N = mkN "cornemuse" feminine | mkN "conduit" masculine ; -- tocheck
+lin pipe_1_N = mkN "cornemuse" feminine | mkN "conduit" masculine ; -- tocheck
+lin pipe_2_N = mkN "cornemuse" feminine | mkN "conduit" masculine ; -- tocheck
 lin pipefish_N = mkN "syngnathus" ; -- UWN
 lin pipeline_N = mkN "pipeline" masculine ; -- tocheck
 lin piper_N = mkN "cornemuseur" | mkN "cornemuseux" | mkN "joueur" | mkN "piper" ; -- UWN
@@ -25491,7 +25494,8 @@ lin robotics_N = mkN "robotique" ; -- UWN
 lin robustness_N = mkN "robustesse" feminine ; -- tocheck
 lin rochdale_PN = mkPN "Rochdale" ; -- status=guess src=geonames
 lin rochester_PN = mkPN "Rochester" ; -- status=guess src=geonames
-lin rock_N = L.rock_N ;
+lin rock_1_N = L.rock_N ;
+lin rock_2_N = L.rock_N ;
 lin rock_V = variants {} ; -- mkV2 (mkV "secouer") | mkV2 (mkV "remuer") | mkV2 (mkV "gérer") ; -- tocheck
 lin rock_V2 = mkV2 (mkV "secouer") | mkV2 (mkV "remuer") | mkV2 (mkV "gérer") ; -- tocheck
 lin rockabilly_N = mkN "Rockabilly" | mkN "hillbilly_rock" | mkN "rockabilly" ; -- UWN

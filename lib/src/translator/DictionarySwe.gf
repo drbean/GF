@@ -4810,7 +4810,8 @@ lin banish_V2 = variants {} ; -- status=guess
 lin banishment_N = mkN "förvisning" ;
 lin banister_N = mkN "räcke" | mkN "ledstång" "ledstänger" ; -- SaldoWN -- comment=3
 lin banjo_N = mkN "banjo" "banjor" ; -- status=guess
-lin bank_N = L.bank_N ;
+lin bank_1_N = L.bank_N ;
+lin bank_2_N = L.bank_N ;
 lin bank_V = mkV "förråda" "förrådde" "förrått" ; -- comment=9
 lin bank_V2 = dirV2 (partV (mkV "lutar")"av") ; -- comment=2
 lin bank_bill_N = variants {} ; -- status=guess
@@ -12226,7 +12227,7 @@ lin congolese_A = variants {} ; -- status=guess
 lin congolese_N = variants {} ; -- status=guess
 lin congou_N = variants {} ; -- status=guess
 lin congratulate_V2 = mkV2 (mkV "gratulerar") | mkV2 (mkV "lyckönska") | mkV2 (mkV "grattar") ;
-lin congratulation_N = mkN "gratulation" "gratulationer" | mkN "grattis" "grattis" ;
+lin congratulation_N = mkN "gratulation" "gratulationer" ;
 lin congratulatory_A = variants {} ; -- status=guess
 lin congregant_N = variants {} ; -- status=guess
 lin congregate_V = mkV "samlar" ; -- comment=2
@@ -22323,7 +22324,8 @@ lin freddie_PN = mkPN "Freddie" ; -- src=eng status=guess
 lin freddy_PN = mkPN "Freddy" ; -- src=eng status=guess
 lin frederick_PN = mkPN "Frederick" neutrum ; -- src=geonames status=guess
 lin frederiksberg_PN = mkPN "Frederiksberg" neutrum ; -- src=geonames status=guess
-lin free_A = mkA "ledig" | mkA "fri" "fritt" ;
+lin free_1_A = mkA "ledig" | mkA "fri" "fritt" ;
+lin free_2_A = mkA "kostnadsfri" "kostnadsfritt" ;
 lin free_N = mkN "fritt kassaflöde" ; -- status=guess
 lin free_V2 = mkV2 (mkV "frigöra" "frigjorde" "frigjort") | mkV2 (mkV "befriar") | mkV2 (mkV "frita" "fritar" "frita" "fritog" "fritagit" "fritagen") ; -- status=guess
 lin free_V2V = mkV2V (mkV "befriar") ; -- status=guess
@@ -24360,7 +24362,7 @@ lin gratify_V2 = variants {} ; -- status=guess
 lin gratifying_A = mkA "glädjande" ; -- comment=2
 lin grating_N = mkN "gnisslande" ; -- comment=5
 lin gratingly_Adv = variants {} ; -- status=guess
-lin gratis_A = mkA "kostnadsfri" "kostnadsfritt" ; -- comment=2
+lin gratis_A = mkA "gratis" ;
 lin gratis_Adv = mkAdv "gratis" ; -- status=guess
 lin gratitude_N = mkN "tacksamhet" "tacksamheter" ; -- status=guess
 lin gratuitous_A = compoundA (regA "ogrundad") ; -- comment=4
@@ -38866,7 +38868,7 @@ lin oracular_A = variants {} ; -- status=guess
 lin orad_Adv = variants {} ; -- status=guess
 lin oral_A = mkA "muntlig" ; -- SaldoWN
 lin oral_N = mkN "oralsex" neutrum ; -- status=guess
-lin orange_1_N = mkN "apelsin" ;
+lin orange_1_N = mkN "apelsin" "apelsiner" ;
 lin orange_2_N = mkN "orange" "oranger" ;
 lin orange_A = mkA "orange" "orange" ;
 lin orangeade_N = variants {} ; -- status=guess
@@ -42016,7 +42018,8 @@ lin pious_A = mkA "from" "fromt" "fromma" "fromma" "frommare" "frommast" "fromma
 lin pip_N = mkN "prick" ; -- comment=5
 lin pip_V2 = dirV2 (partV (mkV "kärnar")"ur") ; -- status=guess
 lin pipage_N = variants {} ; -- status=guess
-lin pipe_N = mkN "rör" neutrum | mkN "rör" neutrum ; -- SaldoWN -- comment=4
+lin pipe_1_N = mkN "pipa" utrum ;
+lin pipe_2_N = mkN "rör" neutrum ;
 lin pipe_V = mkV "röra" "rörde" "rört" ; -- comment=4
 lin pipe_V2 = variants {} ; -- status=guess
 lin pipe_down_V = mkV "röra" "rörde" "rört" ; -- comment=4
@@ -47795,7 +47798,8 @@ lin roccella_N = variants {} ; -- status=guess
 lin rochdale_PN = mkPN "Rochdale" neutrum ; -- src=geonames status=guess
 lin rochester_PN = mkPN "Rochester" neutrum ; -- src=geonames status=guess
 lin rock_'n_roll_N = variants {} ; -- status=guess
-lin rock_N = L.rock_N ;
+lin rock_1_N = L.rock_N ;
+lin rock_2_N = mkN "rock" ;
 lin rock_V = mkV "vaggar" ; -- comment=9
 lin rock_V2 = dirV2 (partV (mkV "skakar")"om") ; -- comment=2
 lin rock_bottom_N = variants {} ; -- status=guess
@@ -54808,7 +54812,7 @@ lin subjacent_A = variants {} ; -- status=guess
 lin subject_1_N = mkN "ämne" ;
 lin subject_2_N = mkN "subjekt" "subjekter" ;
 lin subject_A = mkA "underlydande" ; -- comment=3
-lin subject_A2 = variants {} ; -- status=guess
+lin subject_to_A2 = variants {} ; -- status=guess
 lin subject_N = mkN "ämne" ; ---
 lin subject_V2 = variants {} ; --
 lin subject_to_Prep = variants {} ; -- status=guess

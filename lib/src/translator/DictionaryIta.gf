@@ -2336,7 +2336,8 @@ lin banish_V2 = mkV2 (mkV "bandire") | mkV2 (mkV "esiliare") ; -- status=guess, 
 lin banishment_N = mkN "proscrizione" ; -- UWN
 lin banister_N = mkN "ringhiera" ; -- status=guess
 lin banjo_N = mkN "bangio" | mkN "banjo" ; -- status=guess status=guess
-lin bank_N = L.bank_N ;
+lin bank_1_N = L.bank_N ;
+lin bank_2_N = L.bank_N ;
 lin bank_V = mkV "depositare" ; -- status=guess, src=wikt
 lin bank_V2 = mkV2 (mkV "depositare") ; -- status=guess, src=wikt
 lin bank_book_N = mkN "libretto" | mkN "libretto_a_risparmio" | mkN "libretto_di_risparmio" ; -- UWN
@@ -10862,7 +10863,8 @@ lin freckle_N = mkN "lentiggine" ; -- status=guess
 lin freckleton_PN = mkPN "Freckleton" ; -- status=guess src=geonames
 lin frederick_PN = mkPN "Frederick" ; -- status=guess src=geonames
 lin frederiksberg_PN = mkPN "Frederiksberg" ; -- status=guess src=geonames
-lin free_A = mkA "libero" ; -- status=guess
+lin free_1_A = mkA "libero" ; -- status=guess
+lin free_2_A = mkA "libero" ; -- status=guess
 lin free_N = mkN "calcio di punizione" feminine ; -- status=guess
 lin free_V2 = mkV2 (mkV "liberare") ; -- status=guess, src=wikt
 lin free_V2V = mkV2V (mkV "liberare") ; -- status=guess, src=wikt
@@ -20012,7 +20014,8 @@ lin pion_N = mkN "pione" masculine ; -- status=guess
 lin pioneer_N = mkN "pionere" ; -- status=guess
 lin pious_A = mkA "pio" ; -- status=guess
 lin pip_N = mkN "seme" masculine ; -- status=guess
-lin pipe_N = mkN "curapipe" ; -- status=guess
+lin pipe_1_N = mkN "curapipe" ; -- status=guess
+lin pipe_2_N = mkN "curapipe" ; -- status=guess
 lin pipeful_N = mkN "pipa" | mkN "pipata" ; -- UWN
 lin piper_N = mkN "pifferaio" ; -- status=guess
 lin pipet_N = mkN "pipetta" ; -- UWN
@@ -22716,7 +22719,8 @@ lin robot_N = mkN "robot" masculine ; -- status=guess
 lin robotics_N = mkN "robotica" ; -- UWN
 lin rochdale_PN = mkPN "Rochdale" ; -- status=guess src=geonames
 lin rochester_PN = mkPN "Rochester" ; -- status=guess src=geonames
-lin rock_N = L.rock_N ;
+lin rock_1_N = L.rock_N ;
+lin rock_2_N = L.rock_N ;
 lin rock_V = mkV "cullare" ; -- status=guess, src=wikt
 lin rock_V2 = mkV2 (mkV "cullare") ; -- status=guess, src=wikt
 lin rocker_N = mkN "sedia a dondolo" ; -- status=guess

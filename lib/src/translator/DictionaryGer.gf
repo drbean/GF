@@ -4813,7 +4813,8 @@ lin banish_V2 = mkV2 (irregV "vertreiben" "vertreibt" "vertrieb" "vertriebe" "ve
 lin banishment_N = variants {} ;
 lin banister_N = mkN "Geländer" neuter ; -- status=guess
 lin banjo_N = mkN "Banjo" "Banjos" neuter ; -- status=guess
-lin bank_N = L.bank_N ;
+lin bank_1_N = L.bank_N ;
+lin bank_2_N = L.bank_N ;
 lin bank_V = variants {} ;
 lin bank_V2 = variants {} ;
 lin bank_bill_N = variants {} ;
@@ -5592,7 +5593,7 @@ lin bemoan_V2 = variants {} ;
 lin bemused_A = variants {} ;
 lin ben_N = variants {} ;
 lin ben_PN = mkPN "Ben" ; -- src=eng status=guess
-lin bench_N = bank_N ; -- status=guess
+lin bench_N = variants {} ; -- status=guess
 lin benchmark_N = mkN "Maßstab" masculine | mkN "Höhenfestpunkt" masculine | mkN "Kriterium" "Kriterien" neuter ; -- status=guess status=guess status=guess
 lin bend_N = mkN "Kurve" "Kurven" feminine ; -- status=guess
 lin bend_V = mkReflV "bücken" ; -- status=guess, src=wikt
@@ -22446,7 +22447,8 @@ lin freddie_PN = mkPN "Freddie" ; -- src=eng status=guess
 lin freddy_PN = mkPN "Freddy" ; -- src=eng status=guess
 lin frederick_PN = mkPN "Frederick" ; -- src=geonames status=guess
 lin frederiksberg_PN = mkPN "Frederiksberg Kommune" ; -- src=geonames status=guess
-lin free_A = mkA "frei" ;
+lin free_1_A = mkA "frei" ;
+lin free_2_A = mkA "frei" ;
 lin free_N = mkN "Freistoß" "Freistöße" masculine ; -- status=guess
 lin free_V2 = mkV2 (regV "befreien" | regV "freisetzen") ; -- status=guess, src=wikt status=guess, src=wikt
 lin free_V2V = mkV2V (regV "befreien" | regV "freisetzen") ; -- status=guess, src=wikt status=guess, src=wikt
@@ -42244,7 +42246,8 @@ lin pious_A = mk3A "fromm" "frommerfrömmer" "frommstenfrömmste" ; -- status=gu
 lin pip_N = mkN "Zacken" masculine ; -- status=guess
 lin pip_V2 = variants {} ;
 lin pipage_N = variants {} ;
-lin pipe_N = mkN "Rohrbombe" feminine ; -- status=guess
+lin pipe_1_N = mkN "Rohrbombe" feminine ; -- status=guess
+lin pipe_2_N = mkN "Rohrbombe" feminine ; -- status=guess
 lin pipe_V = variants {} ;
 lin pipe_V2 = variants {} ;
 lin pipe_down_V = variants {} ;
@@ -48084,7 +48087,8 @@ lin roccella_N = variants {} ;
 lin rochdale_PN = mkPN "Rochdale" ; -- src=geonames status=guess
 lin rochester_PN = mkPN "Rochester" ; -- src=geonames status=guess
 lin rock_'n_roll_N = variants {} ;
-lin rock_N = L.rock_N ;
+lin rock_1_N = L.rock_N ;
+lin rock_2_N = L.rock_N ;
 lin rock_V = mkV "auwühlen" | regV "schockieren" ; -- status=guess, src=wikt status=guess, src=wikt
 lin rock_V2 = mkV2 (mkV "auwühlen" | regV "schockieren") ; -- status=guess, src=wikt status=guess, src=wikt
 lin rock_bottom_N = variants {} ;
@@ -55180,7 +55184,7 @@ lin subjacent_A = variants {} ;
 lin subject_1_N = mkN "Gegenstand" "Gegenstand" "Gegenstand" "Gegenstands" "Gegenstände" "Gegenständen" masculine ; --- note: "subject matter" is not sufficiently clear for disambiguating meanings ; interpreted as physical matter of a subject
 lin subject_2_N = mkN "Subjekt" "Subjekt" "Subjekt" "Subjekts" "Subjekte" "Subjekten" neuter | mkN "Thema" "Thema" "Thema" "Themas" "Themen" "Themen" neuter | mkN "Fach" "Fach" "Fach" "Fachs" "Fächer" "Fächern" neuter ; --- split further: subject and object / the subject of this talk / maths is my fav subject
 lin subject_A = variants {} ; --
-lin subject_A2 = variants {} ;
+lin subject_to_A2 = variants {} ;
 lin subject_V2 = mkV2 (mkV "unterwerfen") ; -- status=guess, src=wikt
 lin subject_to_Prep = variants {} ;
 lin subjection_N = variants {} ;
