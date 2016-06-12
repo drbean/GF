@@ -16,10 +16,10 @@ module PGF.VisualizeTree
              , graphvizParseTree
              , graphvizParseTreeDep
              , graphvizDependencyTree
+             , Labels, getDepLabels
              , graphvizBracketedString
              , graphvizAlignment
              , gizaAlignment
-             , getDepLabels
              , conlls2latexDoc
              ) where
 
@@ -59,7 +59,9 @@ data GraphvizOptions = GraphvizOptions {noLeaves :: Bool,
 graphvizDefaults = GraphvizOptions False False False True "" "" "" "" "" ""
 
 
--- | Renders abstract syntax tree in Graphviz format
+-- | Renders abstract syntax tree in Graphviz format.
+-- The pair of 'Bool' @(funs,cats)@ lets you control whether function names and
+-- category names are included in the rendered tree.
 graphvizAbstractTree :: PGF -> (Bool,Bool) -> Tree -> String
 graphvizAbstractTree pgf (funs,cats) = render . tree2graph
   where
@@ -113,10 +115,20 @@ graphvizAbstractTree pgf (funs,cats) = render . tree2graph
 
 type Labels = Map.Map CId [String]
 
-graphvizDependencyTree :: String -> Bool -> Maybe Labels -> Maybe String -> PGF -> CId -> Tree -> String
+-- | Visualize word dependency tree.
+graphvizDependencyTree
+  :: String -- ^ Output format: @"latex"@, @"conll"@, @"malt_tab"@, @"malt_input"@ or @"dot"@
+  -> Bool -- ^ Include extra information (debug)
+  -> Maybe Labels -- ^ Label information obtained with 'getDepLabels'
+  -> unused -- ^ not used (was: @Maybe String@)
+  -> PGF
+  -> CId -- ^ The language of analysis
+  -> Tree
+  -> String -- ^ Rendered output in the specified format
 graphvizDependencyTree format debug mlab ms pgf lang t = 
   case format of
-    "latex"      -> conll2latex $ render $ vcat (map (hcat . intersperse (char '\t')         ) wnodes)
+    "latex"      -> render . ppLaTeX $ conll2latex' conll
+    "svg"        -> render . ppSVG . toSVG $ conll2latex' conll
     "conll"      -> render $ vcat (map (hcat . intersperse (char '\t')         ) wnodes)
     "malt_tab"   -> render $ vcat (map (hcat . intersperse (char '\t') . (\ws -> [ws !! 0,ws !! 1,ws !! 3,ws !! 6,ws !! 7])) wnodes)
     "malt_input" -> render $ vcat (map (hcat . intersperse (char '\t') . take 6) wnodes)
@@ -128,6 +140,7 @@ graphvizDependencyTree format debug mlab ms pgf lang t =
                             vcat links) $$
                     text "}"
   where
+    conll  = (map.map) render wnodes
     nodes  = map mkNode leaves
     links  = map mkLink [(fid, fromMaybe (dep_lbl,nil) (lookup fid deps)) | ((cat,fid,fun),_,w) <- tail leaves]
 
@@ -217,8 +230,10 @@ graphvizDependencyTree format debug mlab ms pgf lang t =
     root_lbl = "ROOT"
     unspec   = text "_"
 
-getDepLabels :: [String] -> Labels
-getDepLabels ss = Map.fromList [(mkCId f,ls) | f:ls <- map words ss]
+-- | Prepare lines obtained from a configuration file for labels for
+-- use with 'graphvizDependencyTree'. Format per line /fun/ /label/@*@.
+getDepLabels :: String -> Labels
+getDepLabels s = Map.fromList [(mkCId f,ls) | f:ls <- map words (lines s)]
 
 -- the old function, without dependencies
 graphvizParseTree :: PGF -> Language -> GraphvizOptions -> Tree -> String
@@ -477,17 +492,25 @@ tag i
 -- visualization with latex output. AR Nov 2015
 
 conlls2latexDoc :: [String] -> String
-conlls2latexDoc = latexDoc . intersperse "\n\\vspace{4mm}\n" . map conll2latex . filter (not . null)
+conlls2latexDoc =
+  render .
+  latexDoc .
+  vcat .
+  intersperse (text "" $+$ app "vspace" (text "4mm")) .
+  map conll2latex .
+  filter (not . null)
 
-conll2latex :: String -> String
-conll2latex = unlines . dep2latex . conll2dep
+conll2latex :: String -> Doc
+conll2latex = ppLaTeX . conll2latex' . parseCoNLL
+
+conll2latex' :: CoNLL -> [LaTeX]
+conll2latex' = dep2latex . conll2dep'
 
 data Dep = Dep {
     wordLength  :: Int -> Double        -- length of word at position int       -- was: fixed width, millimetres (>= 20.0)
   , tokens      :: [(String,String)]    -- word, pos (0..)
   , deps        :: [((Int,Int),String)] -- from, to, label
   , root        :: Int                  -- root word position
-  , pictureSize :: (Int,Int)            -- width = #words*wordlength
   }
 
 -- some general measures
@@ -502,102 +525,215 @@ wdist rwld x y = sum [wsize rwld i | i <- [min x y .. max x y - 1]]    -- distan
 labelheight h  = h + arcbase + 3    -- label just above arc; 25 would put it just below
 labelstart c   = c - 15.0           -- label starts 15u left of arc centre
 arcbase        = 30.0               -- arcs start and end 40u above the bottom
-arcfactor r    = r * 500            -- reduction of arc size from word distance
+arcfactor r    = r * 600            -- reduction of arc size from word distance
 xyratio        = 3                  -- width/height ratio of arcs
 
-putArc :: (Int -> Double) -> Int -> Int -> String -> String
-putArc frwld x y label = unlines [oval,arrowhead,labelling] where
-  oval = put ctr arcbase ("\\oval(" ++ show wdth ++ "," ++ show hght ++ ")[t]")
-  arrowhead = put endp (arcbase + 5) (app "vector(0,-1)" "5")   -- downgoing arrow 5u above the arc base
-  labelling = put (labelstart ctr) (labelheight (hght/2)) (small label)
+putArc :: (Int -> Double) -> Int -> Int -> Int -> String -> [DrawingCommand]
+putArc frwld height x y label = [oval,arrowhead,labelling] where
+  oval = Put (ctr,arcbase) (OvalTop (wdth,hght))
+  arrowhead = Put (endp,arcbase + 5) (ArrowDown 5)   -- downgoing arrow 5u above the arc base
+  labelling = Put (labelstart ctr,labelheight (hght/2)) (TinyText label)
   dxy  = wdist frwld x y             -- distance between words, >>= 20.0
-  ndxy = 100 * rwld * fromIntegral (abs (x-y))  -- distance that is indep of word length
+  ndxy = 100 * rwld * fromIntegral height  -- distance that is indep of word length
   hdxy = dxy / 2                     -- half the distance
-  wdth = dxy - (arcfactor rwld)/dxy  -- longer arcs are less wide in proportion
+  wdth = dxy - (arcfactor rwld)/dxy  -- longer arcs are wider in proportion
   hght = ndxy / (xyratio * rwld)      -- arc height is independent of word length
   begp = min x y                     -- begin position of oval
   ctr  = wpos frwld begp + hdxy + (if x < y then 20 else  10)  -- LR arcs are farther right from center of oval
   endp = (if x < y then (+) else (-)) ctr (wdth/2)            -- the point of the arrow
   rwld = 0.5 ----
 
-dep2latex :: Dep -> [String]
+dep2latex :: Dep -> [LaTeX]
 dep2latex d =
-     comment (unwords (map fst (tokens d)))
-  :  app "setlength{\\unitlength}" (show defaultUnit ++ "mm")
-  :  ("\\begin{picture}(" ++ show width ++ "," ++ show height ++ ")")
-  :  [put (wpos rwld i)  0 w | (i,w) <- zip [0..] (map fst (tokens d))]   -- words
-  ++ [put (wpos rwld i) 15 (small w) | (i,w) <- zip [0..] (map snd (tokens d))]   -- pos tags 15u above bottom
-  ++ [putArc rwld x y label | ((x,y),label) <- deps d]    -- arcs and labels
-  ++ [put (wpos rwld (root d) + 15) height (app "vector(0,-1)" (show (fromIntegral height-arcbase)))]
-  ++ [put (wpos rwld (root d) + 20) (height - 10) (small "ROOT")]
-  ++ ["\\end{picture}"]
+  [Comment (unwords (map fst (tokens d))),
+   Picture defaultUnit (width,height) (
+     [Put (wpos rwld i,0) (Text w) | (i,w) <- zip [0..] (map fst (tokens d))]   -- words
+  ++ [Put (wpos rwld i,15) (TinyText w) | (i,w) <- zip [0..] (map snd (tokens d))]   -- pos tags 15u above bottom
+  ++ concat [putArc rwld (aheight x y) x y label | ((x,y),label) <- deps d]    -- arcs and labels
+  ++ [Put (wpos rwld (root d) + 15,height) (ArrowDown (height-arcbase))]
+  ++ [Put (wpos rwld (root d) + 20,height - 10) (TinyText "ROOT")]
+  )]
  where
-   (width,height) = case pictureSize d of (w,h) -> (w, h)
    wld i  = wordLength d i  -- >= 20.0
    rwld i = (wld i) / defaultWordLength       -- >= 1.0
+   aheight x y = depth (min x y) (max x y) + 1    ---- abs (x-y)
+   arcs = [(min u v, max u v) | ((u,v),_) <- deps d]
+   depth x y = case [(u,v) | (u,v) <- arcs, (x < u && v <= y) || (x == u && v < y)] of ---- only projective arcs counted
+     [] -> 0
+     uvs -> 1 + maximum [depth u v | (u,v) <- uvs]
+   width = {-round-} (sum [wsize rwld w | (w,_) <- zip [0..] (tokens d)]) + {-round-} spaceLength * fromIntegral ((length (tokens d)) - 1)
+   height = 40 + 20 * {-round-} (maximum [aheight x y | ((x,y),_) <- deps d])
 
-  
-{-
-dep2latex :: Dep -> [String]
-dep2latex d =
-     comment (unwords (map fst (tokens d)))
-  :  app "setlength{\\unitlength}" (show defaultUnit ++ "mm")
-  :  ("\\begin{picture}(" ++ show width ++ "," ++ show height ++ ")")
-  :  [put (wpos rwld i)  0 w | (i,w) <- zip [0..] (map fst (tokens d))]   -- words
-  ++ [put (wpos rwld i) 15 (small w) | (i,w) <- zip [0..] (map snd (tokens d))]   -- pos tags 15u above bottom
-  ++ [putArc rwld x y label | ((x,y),label) <- (deps d)]    -- arcs and labels
-  ++ [put (wpos rwld (root d) + 15) height (app "vector(0,-1)" (show (fromIntegral height-arcbase)))]
-  ++ [put (wpos rwld (root d) + 20) (height - 10) (small "ROOT")]
-  ++ ["\\end{picture}"]
- where
-   (width,height) = case pictureSize d of (w,h) -> (w, h)
-   wld  = wordLength d   -- >= 20.0
-   rwld i = wld i / defaultWordLength       -- >= 1.0
+type CoNLL = [[String]]
+parseCoNLL :: String -> CoNLL
+parseCoNLL = map words . lines
 
-putArc :: (Int -> Double) -> Int -> Int -> String -> String
-putArc rwld x y label = unlines [oval,arrowhead,labelling] where
-  oval = put ctr arcbase ("\\oval(" ++ show wdth ++ "," ++ show hght ++ ")[t]")
-  arrowhead = put endp (arcbase + 5) (app "vector(0,-1)" "5")   -- downgoing arrow 5u above the arc base
-  labelling = put (labelstart ctr) (labelheight (hght/2)) (small label)
-  dxy  = wdist rwld x y              -- distance between words, >>= 20.0
-  hdxy = dxy / 2                     -- half the distance
-  wdth = dxy - (arcfactor wrwld)/dxy  -- longer arcs are less wide in proportion
-  hght = dxy / (xyratio * wrwld)      -- arc height is independent of word length
-  begp = min x y                     -- begin position of oval
-  ctr  = wpos rwld begp + hdxy + (if x < y then 20 else  10)  -- LR arcs are farther right from center of oval
-  endp = (if x < y then (+) else (-)) ctr (wdth/2)            -- the point of the arrow
-  wrwld = wdist rwld x y / defaultWordLength
--}
+--conll2dep :: String -> Dep
+--conll2dep = conll2dep' . parseCoNLL
 
-conll2dep :: String -> Dep
-conll2dep str = Dep {
+conll2dep' :: CoNLL -> Dep
+conll2dep' ls = Dep {
     wordLength = wld 
   , tokens = toks
   , deps = dps
   , root = head $ [read x-1 | x:_:_:_:_:_:"0":_ <- ls] ++ [1]
-  , pictureSize = (totallength,  60 + 16*maxdist)  -- highest arc + 60u
   }
  where
    wld i = maximum [charWidth * fromIntegral (length w) | w <- let (tok,pos) = toks !! i in [tok,pos]]
-   ls = map words (lines str)
    toks = [(w,c) | _:w:_:c:_ <- ls]
    dps = [((read y-1, read x-1),lab) | x:_:_:_:_:_:y:lab:_ <- ls, y /="0"]
-   rwld w = wld w / defaultWordLength
-   maxdist = maximum [abs (x-y) | ((x,y),_) <- dps]
-   totallength = round (sum [wsize rwld w | (w,_) <- zip [0..] toks]) + round spaceLength * ((length toks) - 1)
+   --maxdist = maximum [abs (x-y) | ((x,y),_) <- dps]
 
--- latex formatting
 
-app macro arg = "\\" ++ macro ++ "{" ++ arg ++ "}"
-put x y obj = app ("put(" ++ show x ++ "," ++ show y ++ ")") obj
-small w = "{\\tiny " ++ w ++ "}"
-comment s = "%% " ++ s
+-- * LaTeX Pictures (see https://en.wikibooks.org/wiki/LaTeX/Picture)
 
-latexDoc :: [String] -> String
-latexDoc body = unlines $
-    "\\documentclass{article}"
-  : "\\usepackage[utf8]{inputenc}"  
-  : "\\begin{document}"
-  : body
-  ++ ["\\end{document}"]
+-- We render both LaTeX and SVG from this intermediate representation of
+-- LaTeX pictures.
 
+data LaTeX = Comment String | Picture UnitLengthMM Size [DrawingCommand]
+data DrawingCommand = Put Position Object
+data Object = Text String | TinyText String | OvalTop Size | ArrowDown Length
+
+type UnitLengthMM = Double
+type Size = (Double,Double)
+type Position = (Double,Double)
+type Length = Double
+
+
+-- * latex formatting
+ppLaTeX = vcat . map ppLaTeX1
+  where
+    ppLaTeX1 el =
+      case el of
+        Comment s -> comment s
+        Picture unit size cmds ->
+          app "setlength{\\unitlength}" (text (show unit ++ "mm"))
+          $$ hang (app "begin" (text "picture")<>text (show size)) 2
+                  (vcat (map ppDrawingCommand cmds))
+          $$ app "end" (text "picture")
+          $$ text ""
+
+    ppDrawingCommand (Put pos obj) = put pos (ppObject obj)
+
+    ppObject obj =
+      case obj of
+        Text s -> text s
+        TinyText s -> small (text s)
+        OvalTop size -> text "\\oval" <> text (show size) <> text "[t]"
+        ArrowDown len -> app "vector(0,-1)" (text (show len))
+
+    put p@(_,_) = app ("put" ++ show p)
+    small w = text "{\\tiny" <+> w <> text "}"
+    comment s = text "%%" <+> text s -- line break show follow
+    
+app macro arg = text "\\" <> text macro <> text "{" <> arg <> text "}"
+
+
+latexDoc :: Doc -> Doc
+latexDoc body =
+  vcat [text "\\documentclass{article}",
+        text "\\usepackage[utf8]{inputenc}",
+        text "\\begin{document}",
+        body,
+        text "\\end{document}"]
+
+-- * SVG (see https://www.w3.org/Graphics/SVG/IG/resources/svgprimer.html)
+
+-- | Render LaTeX pictures as SVG
+toSVG = concatMap toSVG1
+  where
+    toSVG1 el =
+      case el of
+        Comment s -> []
+        Picture unit size@(w,h) cmds ->
+          [Elem "svg" ["width".=x1,"height".=y0+5,
+                       ("viewBox",unwords (map show [0,0,x1,y0+5])),
+                       ("version","1.1"),
+                       ("xmlns","http://www.w3.org/2000/svg")]
+                       (white_bg:concatMap draw cmds)]
+          where
+            white_bg =
+              Elem "rect" ["x".=0,"y".=0,"width".=x1,"height".=y0+5,
+                           ("fill","white")] []
+
+            draw (Put pos obj) = objectSVG pos obj
+
+            objectSVG pos obj =
+              case obj of
+                Text s -> [text 16 pos s]
+                TinyText s -> [text 10 pos s]
+                OvalTop size -> [ovalTop pos size]
+                ArrowDown len -> arrowDown pos len
+
+            text h (x,y) s =
+              Elem "text" ["x".=xc x,"y".=yc y-2,"font-size".=h]
+                          [CharData s]
+
+            ovalTop (x,y) (w,h) =
+              Elem "path" [("d",path),("stroke","black"),("fill","none")] []
+              where
+                x1 = x-w/2
+                x2 = min x (x1+r)
+                x3 = max x (x4-r)
+                x4 = x+w/2
+                y1 = y
+                y2 = y+r
+                r = h/2
+                sx = show . xc
+                sy = show . yc
+                path = unwords (["M",sx x1,sy y1,"Q",sx x1,sy y2,sx x2,sy y2,
+                                 "L",sx x3,sy y2,"Q",sx x4,sy y2,sx x4,sy y1])
+
+            arrowDown (x,y) len =
+                [Elem "line" ["x1".=xc x,"y1".=yc y,"x2".=xc x,"y2".=y2,
+                              ("stroke","black")] [],
+                 Elem "path" [("d",unwords arrowhead)] []]
+               where
+                 x2 = xc x
+                 y2 = yc (y-len)
+                 arrowhead = "M":map show [x2,y2,x2-3,y2-6,x2+3,y2-6]
+
+            xc x = num x+5
+            yc y = y0-num y
+            x1 = num w+10
+            y0 = num h+20
+            num x = round (scale*x)
+            scale = unit*5
+
+            infix 0 .=
+            n.=v = (n,show v)
+
+-- * SVG is XML
+
+data SVG = CharData String | Elem TagName Attrs [SVG]
+type TagName = String
+type Attrs = [(String,String)]
+
+ppSVG svg =
+  vcat [text "<?xml version=\"1.0\" standalone=\"no\"?>",
+        text "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"",
+        text "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">",
+        text "",
+        vcat (map ppSVG1 svg)] -- It should be a single <svg> element...
+  where
+    ppSVG1 svg1 =
+      case svg1 of
+        CharData s -> text (encode s)
+        Elem tag attrs [] ->
+            text "<"<>text tag<>cat (map attr attrs) <> text "/>"
+        Elem tag attrs svg ->
+            cat [text "<"<>text tag<>cat (map attr attrs) <> text ">",
+                 nest 2 (cat (map ppSVG1 svg)),
+                 text "</"<>text tag<>text ">"]
+
+    attr (n,v) = text " "<>text n<>text "=\""<>text (encode v)<>text "\""
+
+    encode s = foldr encodeEntity "" s
+
+    encodeEntity = encodeEntity' (const False)
+    encodeEntity' esc c r =
+      case c of
+        '&' -> "&amp;"++r
+        '<' -> "&lt;"++r
+        '>' -> "&gt;"++r
+        _ -> c:r

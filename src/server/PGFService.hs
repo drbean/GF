@@ -1,14 +1,15 @@
 {-# LANGUAGE CPP #-}
 module PGFService(cgiMain,cgiMain',getPath,
                   logFile,stderrToFile,
-                  newPGFCache,flushPGFCache,listPGFCache) where
+                  Caches,pgfCache,newPGFCache,flushPGFCache,listPGFCache) where
 
-import PGF (PGF)
+import PGF (PGF,Labels)
 import qualified PGF
 import PGF.Lexing
 import Cache
-import CGIUtils(outputJSONP,outputPlain,outputHTML,logError,outputBinary,
-                outputBinary',handleCGIErrors,throwCGIError,stderrToFile)
+import CGIUtils(outputJSONP,outputPlain,outputHTML,outputText,
+                outputBinary,outputBinary',
+                logError,handleCGIErrors,throwCGIError,stderrToFile)
 import CGI(CGI,readInput,getInput,getVarWithDefault,
            CGIResult,requestAcceptLanguage,handleErrors,setHeader,
            Accept(..),Language(..),negotiate,liftIO)
@@ -38,7 +39,7 @@ import Control.Monad.State(State,evalState,get,put)
 import Control.Monad.Catch(bracket_)
 import Data.Char
 --import Data.Function (on)
-import Data.List (sortBy,intersperse,mapAccumL,nub,isSuffixOf,nubBy)
+import Data.List ({-sortBy,-}intersperse,mapAccumL,nub,isSuffixOf,nubBy)
 import qualified Data.Map as Map
 import Data.Maybe
 import System.Random
@@ -47,6 +48,7 @@ import System.Exit
 import System.IO
 import System.IO.Error(isDoesNotExistError)
 import System.Directory(removeFile)
+import System.FilePath(dropExtension,takeDirectory,(</>),(<.>))
 import System.Mem(performGC)
 import Fold(fold) -- transfer function for OpenMath LaTeX
 
@@ -59,26 +61,32 @@ logFile :: FilePath
 logFile = "pgf-error.log"
 
 #ifdef C_RUNTIME
-type Caches = (Cache PGF,(Cache (C.PGF,({-MVar ParseCache-})),QSem))
+data Caches = Caches { pgfCache::Cache PGF,
+                       labelsCache::Cache Labels,
+                       cpgfCache::(Cache (C.PGF,({-MVar ParseCache-})),QSem) }
 --type Caches = (Cache PGF,Cache (C.PGF,({-MVar ParseCache-})))
 --type ParseCache = Map.Map (String,String) (ParseResult,UTCTime)
 --type ParseResult = Either String [(C.Expr,Float)]
 
 newPGFCache jobs = do pgfCache <- newCache' PGF.readPGF
+                      lblCache <- newCache' (fmap PGF.getDepLabels . readFile)
                       let n = maybe 4 id jobs
                       qsem <- newQSem n
                       cCache <- newCache' $ \ path -> do pgf <- C.readPGF path
                                                        --pc <- newMVar Map.empty
                                                          return (pgf,({-pc-}))
-                      return (pgfCache,(cCache,qsem))
-flushPGFCache (c1,(c2,_)) = flushCache c1 >> flushCache c2
-listPGFCache (c1,(c2,_)) = (,) # listCache c1 % listCache c2
+                      return $ Caches pgfCache lblCache (cCache,qsem)
+flushPGFCache c = do flushCache (pgfCache c)
+                     flushCache (labelsCache c)
+                     flushCache (fst (cpgfCache c))
+listPGFCache c = (,) # listCache (pgfCache c) % listCache (fst (cpgfCache c))
 #else
-type Caches = (Cache PGF,())
+data Caches = Caches { pgfCache::Cache PGF, labelsCache::Cache Labels}
 newPGFCache _ = do pgfCache <- newCache' PGF.readPGF
-                   return (pgfCache,())
-flushPGFCache (c1,_) = flushCache c1
-listPGFCache (c1,_) = (,) # listCache c1 % return []
+                   lblCache <- newCache' (fmap PGF.getDepLabels . readFile)
+                   return $ Caches pgfCache lblCache
+flushPGFCache c = flushCache (pgfCache c)
+listPGFCache c = (,) # listCache (pgfCache c) % return []
 #endif
 
 newCache' rd = do c <- newCache rd
@@ -103,15 +111,21 @@ cgiMain' cache path =
     do command <- liftM (maybe "grammar" (urlDecodeUnicode . UTF8.decodeString))
                         (getInput "command")
        case command of
-         "download" -> outputBinary    =<< getFile BS.readFile path
-         'c':'-':_  ->
+         "download" -> outputBinary =<< getFile BS.readFile path
+         'c':'-':_  -> optionalCpgfMain cache path command
+         _ -> do tpgf <- getFile (readCache' (pgfCache cache)) path
+                 pgfMain (labelsCache cache) path command tpgf
+
+optionalCpgfMain cache path command =
 #ifdef C_RUNTIME
-                   cpgfMain (snd (snd cache)) command
-                      =<< getFile (readCache' (fst (snd cache))) path
+    cpgfMain (snd (cpgfCache cache)) command
+       =<< getFile (readCache' (fst (cpgfCache cache))) path
 #else
-                   serverError "Server configured without C run-time support" ""
+    serverError "Server configured without C run-time support" ""
+
+serverError = throw 500
+
 #endif
-         _          -> pgfMain command =<< getFile (readCache' (fst cache)) path
 
 getFile get path =
    either failed return =<< liftIO (E.try (get path))
@@ -375,8 +389,8 @@ unlexerH = maybe (return doBind) unlexerfun =<< getInput "unlexer"
 --------------------------------------------------------------------------------
 -- * Haskell run-time functionality
 
---pgfMain :: String -> PGF -> CGI CGIResult
-pgfMain command (t,pgf) =
+--pgfMain :: Cache Labels -> FilePath -> String -> PGF -> CGI CGIResult
+pgfMain lc path command tpgf@(t,pgf) =
     case command of
       "parse"          -> o =<< doParse pgf # input % cat % limit % treeopts
       "complete"       -> o =<< doComplete pgf # input % cat % limit % full
@@ -388,10 +402,13 @@ pgfMain command (t,pgf) =
       "translate"      -> o =<< doTranslate pgf # input % cat %to%limit%treeopts
       "translategroup" -> o =<< doTranslateGroup pgf # input % cat % to % limit
       "lookupmorpho"   -> o =<< doLookupMorpho pgf # from1 % textInput
-      "grammar"        -> o =<< doGrammar t pgf # requestAcceptLanguage
+      "grammar"        -> join $ doGrammar tpgf
+                                        # liftIO (E.try (getLabels lc path pgf))
+                                        % requestAcceptLanguage
       "abstrtree"      -> outputGraphviz =<< abstrTree pgf # graphvizOptions % tree
       "alignment"      -> outputGraphviz =<< alignment pgf # tree % to
       "parsetree"      -> outputGraphviz =<< parseTree pgf # from1 % graphvizOptions % tree
+      "deptree"        -> join $ doDepTree lc path pgf # format "dot" % to1 % tree
       "abstrjson"      -> o . jsonExpr =<< tree
       "browse"         -> join $ doBrowse pgf # optId % cssClass % href % format "html" % getIncludePrintNames
       "external"       -> do cmd <- getInput "external"
@@ -461,6 +478,8 @@ pgfMain command (t,pgf) =
 
     from1 = maybe (missing "from") return =<< from
     from = getLang "from"
+
+    to1 = maybe (missing "to") return =<< getLang "to"
     to = (,) # getLangs "to" % unlexerH
 
     getLangs = getLangs' readLang
@@ -517,7 +536,6 @@ errorMissingId = badRequest "Missing identifier" ""
 
 notFound = throw 404 "Not found"
 badRequest = throw 400
-serverError = throw 500
 
 throw code msg extra =
     throwCGIError code msg [msg ++(if null extra then "" else ": "++extra)]
@@ -732,16 +750,18 @@ doGenerate pgf mcat mdepth mlimit tos =
     limit = take (fromMaybe 1 mlimit)
     depth = fromMaybe 4 mdepth
 
-doGrammar :: UTCTime -> PGF -> Maybe (Accept Language) -> JSValue
-doGrammar t pgf macc = showJSON $ makeObj
+doGrammar :: (UTCTime,PGF) -> Either IOError (UTCTime,l) -> Maybe (Accept Language) -> CGI CGIResult
+doGrammar (t1,pgf) elbls macc = out t $ showJSON $ makeObj
              ["name".=PGF.abstractName pgf,
               "lastmodified".=show t,
+              "hasDependencyLabels".=either (const False) (const True) elbls,
               "userLanguage".=selectLanguage pgf macc,
               "startcat".=PGF.showType [] (PGF.startCat pgf),
               "categories".=categories,
               "functions".=functions,
               "languages".=languages]
   where
+    t = either (const t1) (max t1 . fst) elbls
     languages =
        [makeObj ["name".= l, 
                   "languageCode".= fromMaybe "" (PGF.languageCode pgf l)]
@@ -769,6 +789,23 @@ abstrTree pgf      opts tree = PGF.graphvizAbstractTree pgf opts' tree
   where opts' = (not (PGF.noFun opts),not (PGF.noCat opts))
 
 parseTree pgf lang opts tree = PGF.graphvizParseTree pgf lang opts tree
+
+doDepTree lc path pgf fmt lang tree =
+  do (_,lbls) <- liftIO $ getLabels lc path pgf
+     let vis = PGF.graphvizDependencyTree fmt False (Just lbls) () pgf lang tree
+     if fmt `elem` ["png","gif","gv"]
+       then outputGraphviz vis
+       else if fmt=="svg"
+            then outputText "image/svg+xml" vis
+            else outputPlain vis
+
+getLabels lc path pgf =
+    msum [readCache' lc path | path<-[{-path1,-}path2,path3]]
+  where
+    dir = takeDirectory path
+  --path1 = dir</> ...labels flag from abstract syntax...
+    path2 = dir</>PGF.showCId (PGF.abstractName pgf)<.>"labels"
+    path3 = dropExtension path <.> "labels"
 
 alignment pgf tree (tos,unlex) = PGF.graphvizAlignment pgf tos' tree
   where tos' = if null tos then PGF.languages pgf else tos

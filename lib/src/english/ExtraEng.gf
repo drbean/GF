@@ -13,6 +13,11 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
       a = RAg (agrP3 nu.n)
       } ;
 
+    PiedPipingRelSlash rp slash = {
+      s = \\t,a,p,agr => 
+          slash.c2 ++ rp.s ! RPrep (fromAgr agr).g ++ slash.s ! t ! a ! p ! oDir ;
+      c = NPAcc
+      } ;
     StrandRelSlash rp slash = {
       s = \\t,a,p,ag => 
         rp.s ! RC (fromAgr ag).g NPAcc ++ slash.s ! t ! a ! p ! oDir ++ slash.c2 ;
@@ -22,6 +27,9 @@ concrete ExtraEng of ExtraEngAbs = CatEng **
       s = \\t,a,p,_ => slash.s ! t ! a ! p ! oDir ++ slash.c2 ;
       c = NPAcc
       } ;
+
+    PiedPipingQuestSlash ip slash = 
+      mkQuestion (ss (slash.c2 ++ ip.s ! NPAcc)) slash ;
 
     StrandQuestSlash ip slash = 
       {s = \\t,a,b,q => 
@@ -273,6 +281,30 @@ lin
         g = cn.g
         } ;
 
+  lincat
+    RNP     = {s : Agr => Str} ;
+    RNPList = {s1,s2 : Agr => Str} ;
+
+  lin 
+    ReflRNP vps rnp = insertObjPre (\\a => vps.c2 ++ rnp.s ! a) vps ;
+    ReflPron = {s = reflPron} ;
+    ReflPoss num cn = {s = \\a => possPron ! a ++ num.s ! Nom ++ cn.s ! num.n ! Nom} ;
+    PredetRNP predet rnp = {s = \\a => predet.s ++ rnp.s ! a} ;
+
+    ConjRNP conj rpns = conjunctDistrTable Agr conj rpns ;
+
+    Base_rr_RNP x y = twoTable Agr x y ;
+    Base_nr_RNP x y = twoTable Agr {s = \\a => x.s ! NPAcc} y ;
+    Base_rn_RNP x y = twoTable Agr x {s = \\a => y.s ! NPAcc} ;
+    Cons_rr_RNP x xs = consrTable Agr comma x xs ;
+    Cons_nr_RNP x xs = consrTable Agr comma {s = \\a => x.s ! NPAcc} xs ;
+
+    
+---- TODO: RNPList construction
+
+
+------ English-only part
+
   that_RP =
      { s = table {
         RC _ (NCase Gen) | RC _ NPNomPoss => "whose" ; 
@@ -285,6 +317,18 @@ lin
       a = RNoAg
       } ;
 
+  which_who_RP =
+     { s = table {
+        RC _ (NCase Gen) | RC _ NPNomPoss => "whose" ; 
+        RC Neutr _  => "which" ;
+        RC _ NPAcc    => "whom" ;
+        RC _ (NCase Nom)    => "who" ;
+        RPrep Neutr => "which" ;
+        RPrep _     => "whom"
+        } ;
+      a = RNoAg
+      } ;
+      
   who_RP =
      { s = table {
         RC _ (NCase Gen) | RC _ NPNomPoss => "whose" ; 

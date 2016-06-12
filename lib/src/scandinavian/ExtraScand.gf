@@ -16,9 +16,30 @@ incomplete concrete ExtraScand of ExtraScandAbs = CatScand **
       }
     } ;
 
+    emptyRP = {
+      s = \\g,n => table {
+         RAcc => [] ;
+	 c => relPron ! g ! n ! c
+         } ;
+      a = RNoAg
+      } ;
+
+    PiedPipingRelSlash rp slash = {
+      s = \\t,a,p,ag,_ => 
+        let 
+          agr = case rp.a of {
+            RNoAg => ag ;
+            RAg g n pr => {g = g ; n = n ; p = pr}
+            }
+        in
+          slash.c2.s ++ rp.s ! ag.g ! ag.n ! RPrep slash.c2.hasPrep ++  
+          slash.s ! t ! a ! p ! Sub ++ slash.n3 ! agr ;
+      c = NPAcc
+      } ;
+
     StrandRelSlash rp slash  = {
       s = \\t,a,p,ag,_ => 
-          rp.s ! ag.g ! ag.n ! RNom ++ slash.s ! t ! a ! p ! Sub ++ slash.c2.s ;
+          rp.s ! ag.g ! ag.n ! RNom ++ slash.s ! t ! a ! p ! Sub ++ slash.n3 ! ag ++ slash.c2.s ;
       c = NPAcc
       } ;
     EmptyRelSlash slash = {
@@ -31,10 +52,23 @@ incomplete concrete ExtraScand of ExtraScandAbs = CatScand **
       s = \\t,a,p => 
             let 
               cls = slash.s ! t ! a ! p ;
-              who = ip.s ! accusative
+              who = ip.s ! accusative ;
+	      agr = agrP3 ip.g ip.n ;
             in table {
-              QDir   => who ++ cls ! Inv ++ slash.c2.s ;
-              QIndir => who ++ cls ! Sub ++ slash.c2.s
+              QDir   => who ++ cls ! Inv ++ slash.n3 ! agr ++ slash.c2.s ;
+              QIndir => who ++ cls ! Sub ++ slash.n3 ! agr ++ slash.c2.s
+              }
+      } ;
+
+    PiedPipingQuestSlash ip slash = {
+      s = \\t,a,p => 
+            let 
+              agr = agrP3 ip.g ip.n ;
+              cls : Order => Str = \\o => slash.s ! t ! a ! p ! o ++ slash.n3 ! agr ;
+              who = slash.c2.s ++ ip.s ! accusative --- stranding in ExtScand 
+            in table {
+              QDir   => who ++ cls ! Inv ;
+              QIndir => who ++ cls ! Sub
               }
       } ;
 
@@ -121,5 +155,38 @@ incomplete concrete ExtraScand of ExtraScandAbs = CatScand **
       g = g ;
       isMod = True
       } ;
+
+
+  lincat
+    RNP     = {s : Agr => Str ; isPron : Bool} ;   ---- inherent Agr needed: han färgar sitt hår vitt. But also depends on subject
+    RNPList = {s1,s2 : Agr => Str} ;
+
+  lin 
+    ReflRNP vps rnp = 
+      insertObjPron
+        (andB (notB vps.c2.hasPrep) rnp.isPron)
+        rnp.s
+	(insertObj (\\a => vps.c2.s ++ vps.n3 ! a) vps) ;
+	
+    ReflPron = {s = \\a => reflPron a ; isPron = True} ; ---- agr ??
+    ReflPoss num cn = {
+      s = \\a => possPron a.n a.p num.n (ngen2gen cn.g) ++ num.s ! cn.g ++ cn.s ! num.n ! DDef Indef ! Nom ;
+      isPron = False
+      } ;
+    PredetRNP predet rnp = {
+      s = \\a => predet.s ! Utr ! Pl ++ predet.p ++ rnp.s ! a ;  ---- agr needed here as well
+----      s = \\a => predet.s ! np.a.g ! np.a.n ++ predet.p ++ np.s ! a ;
+----      a = case pred.a of {PAg n => agrP3 np.a.g n ; _ => np.a} ;
+      isPron = False
+      } ;
+
+    ConjRNP conj rpns = conjunctDistrTable Agr conj rpns ** {isPron = False} ;
+
+    Base_rr_RNP x y = twoTable Agr x y ;
+    Base_nr_RNP x y = twoTable Agr {s = \\a => x.s ! NPAcc} y ;
+    Base_rn_RNP x y = twoTable Agr x {s = \\a => y.s ! NPAcc} ;
+    Cons_rr_RNP x xs = consrTable Agr comma x xs ;
+    Cons_nr_RNP x xs = consrTable Agr comma {s = \\a => x.s ! NPAcc} xs ;
+
 
 } 
