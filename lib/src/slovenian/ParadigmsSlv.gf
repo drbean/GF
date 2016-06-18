@@ -76,6 +76,12 @@ oper
     mkV2 : V -> Case -> V2 = \v,c -> v ** {c2 = lin Prep {s=""; c=c}} ;
   } ;
 
+  mkVQ : V -> VQ ;
+  mkVQ v = v ;
+
+  mkVV : V -> VV ;
+  mkVV v = v ;
+
   mkA : (_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_ : Str) -> A =
     \positMSgNom,positMSgNomDef,positMSgGen,positMSgDat,positMSgAcc,positMSgAccIndef,positMSgAccDef,positMSgLoc,positMSgInstr,
      positMDlNom,positMDlGen,positMDlDat,positMDlAcc,positMDlLoc,positMDlInstr,
@@ -281,6 +287,8 @@ oper
 
   mkAdV : Str -> AdV = \s -> lin AdV {s=s} ;
 
+  mkAdA : Str -> AdA = \s -> lin AdA {s=s} ;
+
   mkPron : (_,_,_,_,_,_,_ : Str) -> Gender -> Number -> Person -> Pron =
     \nom,acc,gen,dat,loc,instr,poss,g,n,p ->
     lin Pron {s = table {
@@ -310,5 +318,7 @@ oper
 
   mkInterj : Str -> Interj =
     \s -> lin Interj {s=s} ;
-
+    
+  mkConj : Str -> Conj =
+    \s -> lin Conj {s=s} ;
 }

@@ -31,10 +31,13 @@ lincat
   Numeral = {s : Gender => Case => Str ; n : NumAgr} ;
 
   -- Structural
+  Conj = {s : Str} ;
   Prep = {s : Str; c : Case} ;
 
   -- Open lexical classes, e.g. Lexicon
   V  = {s : VForm => Str};
+  VQ = {s : VForm => Str};
+  VV = {s : VForm => Str};
   V2 = {s : VForm => Str; c2 : Prep};
 
   A = {s : AForm => Str};

@@ -1,4 +1,4 @@
-GF 3.x Release Notes
+GF 3.8 Release Notes
 June 2016
 
 %!style:../css/notes.css
@@ -12,7 +12,7 @@ See the [download page http://www.grammaticalframework.org/download/index.html].
 
 ==What's new==
 
-Over 350 changes have been pushed to the source repository since
+Over 380 changes have been pushed to the source repository since
 [the release of GF 3.7.1 release-3.7.1.html] in October 2015.
 
 
@@ -21,6 +21,9 @@ Over 350 changes have been pushed to the source repository since
 
 ====New features and notable changes====
 
+- GF shell: ``vd`` can now output
+  [universal dependency http://universaldependencies.org/] diagrams
+  in various formats, see ``help vd``.
 - ...
 
 
@@ -29,8 +32,9 @@ Over 350 changes have been pushed to the source repository since
 - GF shell: a simple post-processing step has been added in the ``cc`` command
   to try compute ``pre{...}`` tokens instead of leaving them uninterpreted.
 - GF shell: an argument parsing problem has been fixed in the ``cc`` command.
-  The problem prevented commands like ``cc "last"`` and ``cc "last"++"year"``
-  from working, but they should work now.
+  The problem was introduced before the release of GF 3.7.1 and prevented
+  commands like ``cc "last"`` and ``cc "last"++"year"`` from working,
+  but they should work again now.
 - Various improvements and bug fixes in the C run-time system and its bindings
   to other languages.
 
@@ -42,6 +46,11 @@ Over 350 changes have been pushed to the source repository since
 
 ===Resource Grammar Library===
 
+- New languages:
+  - Nynorsk by Stian Rødven Eide (fairly complete, supports API)
+  - Ancient Greek by Hans Leiß (partial, no API yet)
+  - Slovene by Krasimir Angelov (partial, no API yet)
+  
 - Various fixes for several languages.
   - English and Scandinavian: relative clauses and slash questions have been modernized to
     using preposition stranding by default. This also enables the use of //that// in English,
@@ -49,13 +58,17 @@ Over 350 changes have been pushed to the source repository since
     is not available. The previous defaults (//which//,//who//,//whom//, pied piping) are available
     in ``Extra`` modules.
 
-
 - Numerous fixes in the translation dictionaries.
   - two new wide-coverage languages: Estonian and Russian
 
 
 ===GF Cloud services===
 
+- Minibar can now show universal dependency diagrams for grammars that
+  support it (e.g. the ResourceDemo grammar).
+- PGF service: there is a new command ``deptree`` that can output
+  universal dependency diagrams for grammars that support it (there
+  has to be a label configuration file).
 - Wide Coverage Translation Demo:
   there is now a new button "Grammars..." which show a list where users can
   select which application grammars to use for translation, in addition to
@@ -63,11 +76,6 @@ Over 350 changes have been pushed to the source repository since
   translations in the domain they cover.
   You can change the order in which the selected grammars are tried
   by dragging them up and down in the list.
-- PGF service: there is a new command ``deptree`` that can output
-  universal dependency diagrams for grammars that support it (there
-  has to be a label configuration file).
-- Minibar can now show universal dependency diagrams for grammars that
-  support it (e.g. the ResourceDemo grammar).
 
 --------------------
 
