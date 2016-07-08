@@ -8,6 +8,11 @@ flags coding=utf8 ;
 lin
   hungry_VP = mkVP (mkV "饿") ;
   thirsty_VP = mkVP (mkA "渴") ;
+  tired_VP = mkVP (mkV "累了") ;
+  scared_VP = mkVP (mkA "惊慌") ;
+  ill_VP = mkVP (mkV "生病了") ;
+  ready_VP = mkVP L.ready_A ;
+
   has_age_VP card = mkVP (lin AdV card) (mkVP (mkV "岁")) ;
 
   have_name_Cl x y = mkCl (lin NP x) (mkV2 (mkV "叫")) (lin NP y) ;

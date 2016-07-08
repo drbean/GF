@@ -8,6 +8,11 @@ flags coding=utf8 ;
 lin
   hungry_VP = mkVP (mkA (R.thword "หิว" "ข้าว")) ;
   thirsty_VP = mkVP (mkA (R.thword "กระ" "หาย" "น้ำ")) ;
+  tired_VP = mkVP (mkA "เหนื่อย") ;
+  scared_VP = mkVP (mkA "กลัว") ;
+  ill_VP = mkVP (mkA (R.thword "เจ็บ" "ปวย")) ;
+  ready_VP = mkVP L.ready_A ;
+
   has_age_VP card = mkVP (mkNP (mkNP card L.year_N) (ParadigmsTha.mkAdv (R.thword "อา" "ยุ"))) ;
 
   have_name_Cl x y = mkCl x (mkV2 "ชื่อ") y ;

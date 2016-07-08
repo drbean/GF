@@ -8,6 +8,11 @@ flags coding=utf8 ;
 lin
   hungry_VP = mkVP (mkA "hungrig") ;
   thirsty_VP = mkVP (mkA "törstig") ;
+  tired_VP = mkVP (mkA "trött") ;
+  scared_VP = mkVP (mkA "rädd") ;
+  ill_VP = mkVP (mkA "sjuk") ;
+  ready_VP = mkVP (mkA "färdig") ;
+
   has_age_VP card = mkVP (lin AP (mkAP (lin AdA (mkUtt (mkNP <lin Card card : Card> L.year_N))) L.old_A)) ;
 
   have_name_Cl x y = mkCl (lin NP x) (mkV2 (mkV "heta" "hette" "hetat")) (lin NP y) ;
