@@ -19,7 +19,7 @@ concrete VerbGer of Verb = CatGer ** open Prelude, ResGer, Coordination in {
       insertExtrapos (comma ++ conjThat ++ s.s ! Sub) (predV v) ;
     ComplVQ v q = 
       insertExtrapos (comma ++ q.s ! QIndir) (predV v) ;
-    ComplVA v ap = insertAdj (ap.s ! APred) ap.c ap.ext (predV v) ; -- changed
+    ComplVA v ap = insertAdj (v.c2.s ++ ap.s ! APred) ap.c ap.ext (predV v) ; -- changed
 
     SlashV2a v = predV v ** {c2 = v.c2} ; 
       
@@ -64,7 +64,8 @@ concrete VerbGer of Verb = CatGer ** open Prelude, ResGer, Coordination in {
             insertObj (\\_ => appPrepNP v.c2 np) (
               predVGen v.isAux v)))) ** {c2 = v.c2} ;
 
-    UseComp comp = insertObj comp.s (predV sein_V) ; -- agr not used
+    UseComp comp =
+       insertExtrapos comp.ext (insertObj comp.s (predV sein_V)) ; -- agr not used
     -- adj slot not used here for e.g. "ich bin alt" but same behaviour as NPs?
 	-- "ich bin nicht alt" "ich bin nicht Doris" 
 

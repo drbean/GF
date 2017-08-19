@@ -1,32 +1,44 @@
-concrete NounSlv of Noun = CatSlv ** open ResSlv in {
+concrete NounSlv of Noun = CatSlv ** open ResSlv,Prelude in {
 
   lin
     DetCN det cn = {
-      s = \\c => det.s ! cn.g ! c ++ 
+      s = \\c => det.s ! agender2gender cn.g ! c ++ 
                  case det.n of {
                    UseNum n => cn.s ! det.spec ! c ! n ;
                    UseGen   => cn.s ! det.spec ! Gen ! Pl
                  } ;
-      a = {g = cn.g ;
+      a = {g = agender2gender cn.g ;
            n = case det.n of {
                  UseNum n => n ;
                  UseGen   => Pl
                } ;
            p = P3
-          }
+          } ;
+      isPron = False
       } ;
 
-    UsePron p = p ;
+    UsePN pn = {
+      s = pn.s;
+      a = {g=agender2gender pn.g; n=pn.n; p=P3};
+      isPron = False
+      } ;
+
+    UsePron p = {
+      s = p.s;
+      a = p.a;
+      isPron = True
+    } ;
 
     DetQuant quant num = {
-      s    = \\c,g => quant.s ++ num.s ! c ! g;
+      s    = \\g,c => quant.s ! g ! c ! (numAgr2num ! num.n) ++ num.s ! g ! c;
       spec = quant.spec ;
       n    = num.n ;
       } ;
 
     DetNP det = {
       s = det.s ! Masc ;
-      a = {g=Masc; n=case det.n of {UseNum n=>n; UseGen=>Pl}; p=P3};
+      a = {g=Masc; n=case det.n of {UseNum n=>n; UseGen=>Pl}; p=P3} ;
+      isPron = False
       } ;
 
     PossPron p = {
@@ -35,6 +47,7 @@ concrete NounSlv of Noun = CatSlv ** open ResSlv in {
       } ;
 
     NumSg = {s = \\_,_ => []; n = UseNum Sg} ;
+    NumDl = {s = \\_,_ => []; n = UseNum Dl} ; --not working?
     NumPl = {s = \\_,_ => []; n = UseNum Pl} ;
 
     NumCard n = n ;
@@ -42,18 +55,19 @@ concrete NounSlv of Noun = CatSlv ** open ResSlv in {
     NumNumeral numeral = {s = numeral.s; n = numeral.n} ;
 
     DefArt = {
-      s    = "" ;
+      s    = \\_,_,_ => "" ;
       spec = Def
       } ;
 
     IndefArt = {
-      s    = "" ;
+      s    = \\_,_,_ => "" ;
       spec = Indef
       } ;
 
     MassNP n = {
       s = \\c => n.s ! Indef ! c ! Sg ;
-      a = {g=n.g; n=Sg; p=P3}
+      a = {g=agender2gender n.g; n=Sg; p=P3} ;
+      isPron = False
       } ;
 
     UseN n = {s = \\_ => n.s; g = n.g} ;

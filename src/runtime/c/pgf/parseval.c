@@ -59,7 +59,7 @@ pgf_metrics_lzn_end_phrase1(PgfLinFuncs** funcs, PgfCId cat, int fid, int lin_id
 
 	int start = gu_buf_pop(state->marks, int);
 	int end   = state->pos;
-	
+
 	if (start != end) {
 		PgfPhrase* phrase = gu_new(PgfPhrase, state->pool);
 		phrase->start = start;
@@ -110,13 +110,26 @@ pgf_metrics_lzn_end_phrase2(PgfLinFuncs** funcs, PgfCId cat, int fid, int lin_id
 	}
 }
 
+static void
+pgf_metrics_lzn_symbol_meta(PgfLinFuncs** funcs, PgfMetaId meta_id)
+{
+	PgfMetricsLznState* state = gu_container(funcs, PgfMetricsLznState, funcs);
+
+	pgf_metrics_put_space(state);
+	if (state->out != NULL)
+		gu_putc('?', state->out, state->err);
+
+	state->pos += 1;
+}
+
 static PgfLinFuncs pgf_metrics_lin_funcs1 = {
 	.symbol_token = pgf_metrics_lzn_symbol_token,
 	.begin_phrase = pgf_metrics_lzn_begin_phrase,
 	.end_phrase   = pgf_metrics_lzn_end_phrase1,
 	.symbol_ne    = pgf_metrics_symbol_ne,
 	.symbol_bind  = pgf_metrics_symbol_bind,
-	.symbol_capit = NULL
+	.symbol_capit = NULL,
+	.symbol_meta  = pgf_metrics_lzn_symbol_meta
 };
 
 static PgfLinFuncs pgf_metrics_lin_funcs2 = {
@@ -125,11 +138,12 @@ static PgfLinFuncs pgf_metrics_lin_funcs2 = {
 	.end_phrase   = pgf_metrics_lzn_end_phrase2,
 	.symbol_ne    = pgf_metrics_symbol_ne,
 	.symbol_bind  = pgf_metrics_symbol_bind,
-	.symbol_capit = NULL
+	.symbol_capit = NULL,
+	.symbol_meta  = pgf_metrics_lzn_symbol_meta
 };
 
-bool
-pgf_parseval(PgfConcr* concr, PgfExpr expr, PgfCId cat, 
+PGF_API bool
+pgf_parseval(PgfConcr* concr, PgfExpr expr, PgfType* type, 
              double *precision, double *recall, double *exact)
 {
 	GuPool* pool = gu_new_pool();
@@ -150,7 +164,7 @@ pgf_parseval(PgfConcr* concr, PgfExpr expr, PgfCId cat,
 	}
 
 	GuStringBuf* sbuf =
-		gu_string_buf(pool);
+		gu_new_string_buf(pool);
 
 	PgfMetricsLznState state;
 	state.bind = true;
@@ -174,7 +188,7 @@ pgf_parseval(PgfConcr* concr, PgfExpr expr, PgfCId cat,
 		gu_string_buf_freeze(sbuf, pool);
 
 	GuEnum* en_trees =
-		pgf_parse(concr, cat, sentence,
+		pgf_parse(concr, type, sentence,
 		          state.err, pool, pool);
 	PgfExprProb* ep = gu_next(en_trees, PgfExprProb*, pool);
 	if (ep == NULL) {

@@ -234,7 +234,7 @@ pgf_match_name_lit(PgfLiteralCallback* self, PgfConcr* concr,
 		return NULL;
 
 	GuPool* tmp_pool = gu_local_pool();
-	GuStringBuf *sbuf = gu_string_buf(tmp_pool);
+	GuStringBuf *sbuf = gu_new_string_buf(tmp_pool);
 	GuOut* out = gu_string_buf_out(sbuf);
 	GuExn* err = gu_new_exn(tmp_pool);
 
@@ -334,7 +334,7 @@ pgf_match_name_lit(PgfLiteralCallback* self, PgfConcr* concr,
 	return ep;
 }
 
-PgfLiteralCallback pgf_nerc_literal_callback =
+PGF_API PgfLiteralCallback pgf_nerc_literal_callback =
   { pgf_match_name_lit, pgf_predict_empty } ;
 
 static void
@@ -361,7 +361,7 @@ pgf_match_unknown_lit(PgfLiteralCallback* self, PgfConcr* concr,
 	GuUCS ucs = gu_utf8_decode(&p);
 	if (!gu_ucs_is_upper(ucs)) {
 		GuPool* tmp_pool = gu_local_pool();
-		GuStringBuf *sbuf = gu_string_buf(tmp_pool);
+		GuStringBuf *sbuf = gu_new_string_buf(tmp_pool);
 		GuOut* out = gu_string_buf_out(sbuf);
 		GuExn* err = gu_new_exn(tmp_pool);
 
@@ -419,7 +419,7 @@ pgf_match_unknown_lit(PgfLiteralCallback* self, PgfConcr* concr,
 	return ep;
 }
 
-PgfLiteralCallback pgf_unknown_literal_callback =
+PGF_API PgfLiteralCallback pgf_unknown_literal_callback =
   { pgf_match_unknown_lit, pgf_predict_empty } ;
 
 PgfCallbacksMap*
@@ -465,7 +465,7 @@ pgf_callbacks_map_add_literal(PgfConcr* concr, PgfCallbacksMap* callbacks,
 	           PgfLiteralCallback*, callback);
 }
 
-PgfCCat*
+PGF_INTERNAL PgfCCat*
 pgf_literal_cat(PgfConcr* concr, PgfLiteral lit)
 {
 	int fid;

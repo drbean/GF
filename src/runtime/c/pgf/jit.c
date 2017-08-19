@@ -5,7 +5,7 @@
 #include <pgf/reasoner.h>
 #include <pgf/reader.h>
 #include "lightning.h"
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <malloc.h>
 #endif
 
@@ -43,7 +43,7 @@ typedef struct {
 #define JIT_VSTATE JIT_V1
 #define JIT_VCLOS  JIT_V2
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <windows.h>
 
 static int
@@ -71,7 +71,7 @@ pgf_jit_alloc_page(PgfReader* rdr)
 
 #if defined(ANDROID)
 	if ((page = memalign(page_size, page_size)) == NULL) {	
-#elif defined(__MINGW32__)
+#elif defined(__MINGW32__) || defined(_MSC_VER)
 	if ((page = malloc(page_size)) == NULL) {
 #else
 	if (posix_memalign(&page, page_size, page_size) != 0) {
@@ -87,7 +87,7 @@ pgf_jit_alloc_page(PgfReader* rdr)
 	jit_set_ip(rdr->jit_state->buf+sizeof(GuFinalizer));
 }
 
-PgfJitState*
+PGF_INTERNAL PgfJitState*
 pgf_new_jit(PgfReader* rdr)
 {
 	PgfJitState* state = gu_new(PgfJitState, rdr->tmp_pool);
@@ -134,7 +134,7 @@ pgf_jit_read_absfun(PgfReader* rdr, PgfAbstr* abstr)
 	return absfun;
 }
 
-void
+PGF_INTERNAL void
 pgf_jit_predicate(PgfReader* rdr, PgfAbstr* abstr,
                   PgfAbsCat* abscat)
 {
@@ -360,7 +360,7 @@ pgf_jit_finalize_cafs(GuFinalizer* self)
 		gu_seq_free(gates->cafs);
 }
 
-PgfEvalGates*
+PGF_INTERNAL PgfEvalGates*
 pgf_jit_gates(PgfReader* rdr)
 {
 	PgfEvalGates* gates = gu_new(PgfEvalGates, rdr->opool);
@@ -672,7 +672,7 @@ pgf_jit_gates(PgfReader* rdr)
 
 #define PGF_CAFS_DELTA 20
 
-void
+PGF_INTERNAL void
 pgf_jit_function(PgfReader* rdr, PgfAbstr* abstr,
                  PgfAbsFun* absfun)
 {
@@ -904,7 +904,7 @@ pgf_jit_function(PgfReader* rdr, PgfAbstr* abstr,
 				jit_stxi_p(curr_offset*sizeof(void*), JIT_VHEAP, JIT_R0);
 				curr_offset++;
 
-				PgfLiteral lit;
+				PgfLiteral lit = gu_null_variant;
 				switch (mod) {
 				case 0: {
 					PgfLiteralInt *lit_int =
@@ -1330,7 +1330,7 @@ pgf_jit_function(PgfReader* rdr, PgfAbstr* abstr,
 	}
 }
 
-void
+PGF_INTERNAL void
 pgf_jit_done(PgfReader* rdr, PgfAbstr* abstr)
 {
 	size_t n_patches = gu_buf_length(rdr->jit_state->call_patches);

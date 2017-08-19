@@ -170,8 +170,6 @@ reflexiveVP2 = mkUnaryCat "ReflVP" ;
 passiveVP1 = mkUnaryCat "PassV2" ; 
 passiveVP2 = \v,np -> mkCompCat ( "AdvVP" ++ "(" ++ "PassV2" ++ v.attr ++ ")" ++ "(" ++ "PrepNP" ++ "by8agent_Prep" ++ np.attr ++ ")" ) ; 
  
-passiveVP3 = \v,np -> mkCompCat ( "ComplV2" ++ "(" ++ "PassV3" ++ v.attr ++ ")" ++ "(" ++ "CompNP" ++ np.attr ++ ")" ) ;
-
 progressiveVP = mkUnaryCat "ProgrVP" ;
  
 mkComp1 = mkUnaryCat "CompAP" ; 

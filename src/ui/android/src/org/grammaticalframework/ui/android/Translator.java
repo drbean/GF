@@ -41,6 +41,7 @@ public class Translator {
         new Language("hi-IN", "Hindi",   "AppHin", R.xml.devanagari_page1, R.xml.devanagari_page2),
         new Language("it-IT", "Italian", "AppIta", R.xml.qwerty),
         new Language("ja-JP", "Japanese","AppJpn", R.xml.qwerty),
+        new Language("ru-RU", "Russian", "AppRus", R.xml.cyrillic),
         new Language("es-ES", "Spanish", "AppSpa", R.xml.qwerty),
         new Language("sv-SE", "Swedish", "AppSwe", R.xml.nordic),
         new Language("th-TH", "Thai",    "AppTha", R.xml.thai_page1, R.xml.thai_page2)
@@ -290,6 +291,28 @@ public class Translator {
         return output ;
     }
 
+    // lowercase the first word if (1) it is not in the lexicon and (2) its lowercase version is in the lexicon
+    // otherwise it will be left uppercase and treated as a name
+    private String lowercaseIfBetter(String input) {
+    	String[] words = input.split(" ") ;
+	
+	String firstword = words[0] ;
+
+	String lowerfirstword = firstword.toLowerCase() ;
+
+	if (lookupMorpho(firstword).isEmpty() && !(lookupMorpho(lowerfirstword).isEmpty())) {
+	    words[0] = lowerfirstword ;
+	    String output = "" ;
+            for (String w : words) {
+        	output = output + " " + w ; 
+	    }
+            return output ;
+	} else {
+	    return input ;
+	}
+	    
+    }
+
     /**
      * Takes a lot of time. Must not be called on the main thread.
      */
@@ -297,7 +320,9 @@ public class Translator {
         if (getSourceLanguage().getLangCode().equals("cmn-Hans-CN")) {
         	// for Chinese we need to put space after every character
         	input = explode(input);
-        }
+        } else {
+	    input = lowercaseIfBetter(input);
+	} ;
 
         String output = null;
         List<ExprProb> exprs = new ArrayList<ExprProb>();

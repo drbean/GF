@@ -176,13 +176,20 @@ pgf_aligner_lzn_symbol_capit(PgfLinFuncs** funcs, PgfCapitState capit)
 	alin->capit = capit;
 }
 
+static void
+pgf_aligner_lzn_symbol_meta(PgfLinFuncs** funcs, PgfMetaId id)
+{
+	pgf_aligner_lzn_symbol_token(funcs, "?");
+}
+
 static PgfLinFuncs pgf_file_lin_funcs = {
 	.symbol_token = pgf_aligner_lzn_symbol_token,
 	.begin_phrase = pgf_aligner_lzn_begin_phrase,
 	.end_phrase   = pgf_aligner_lzn_end_phrase,
 	.symbol_ne    = pgf_aligner_lzn_symbol_ne,
 	.symbol_bind  = pgf_aligner_lzn_symbol_bind,
-	.symbol_capit = pgf_aligner_lzn_symbol_capit
+	.symbol_capit = pgf_aligner_lzn_symbol_capit,
+	.symbol_meta  = pgf_aligner_lzn_symbol_meta
 };
 
 GuSeq*
@@ -210,7 +217,7 @@ pgf_align_words(PgfConcr* concr, PgfExpr expr,
 			.parent_current = gu_new_buf(int, tmp_pool),
 			.phrases = phrases,
 			.last_phrase = NULL,
-			.sbuf = gu_string_buf(tmp_pool),
+			.sbuf = gu_new_string_buf(tmp_pool),
 			.n_matches = 0,
 			.err = err,
 			.bind = true,

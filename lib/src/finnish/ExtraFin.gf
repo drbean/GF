@@ -65,13 +65,19 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
     MkVPS t p vp0 = let vp = vp2old_vp vp0 in
 
     { --  Temp -> Pol -> VP -> VPS ;
-      s = \\a => let vps = vp.s ! VIFin t.t ! t.a ! p.p ! a
-                 in
-                 t.s ++ p.s ++
-                 vps.fin ++ vps.inf ++
-                 vp.s2 ! True ! p.p ! a ++
-                 vp.adv ! p.p ++
-                 vp.ext ;
+      s = \\a =>
+        let
+	  agrfin = case vp.sc of {
+                     SCNom => <a,True> ;
+                     _ => <agrP3 Sg,False>      -- minun täytyy, minulla on
+                     } ;
+	  vps = vp.s ! VIFin t.t ! t.a ! p.p ! agrfin.p1
+        in
+        t.s ++ p.s ++
+        vps.fin ++ vps.inf ++
+        vp.s2 ! agrfin.p2 ! p.p ! a ++
+        vp.adv ! p.p ++
+        vp.ext ;
       sc = vp.sc ;
       h = vp.h
       } ;
@@ -129,6 +135,18 @@ concrete ExtraFin of ExtraFinAbs = CatFin **
     PartCN cn = 
       let 
         acn = DetCN (DetQuant IndefArt NumSg) cn
+      in {
+        s = table {
+          NPCase Nom | NPAcc => acn.s ! NPCase ResFin.Part ;
+          c => acn.s ! c
+          } ; 
+        a = acn.a ;
+        isPron = False ; isNeg = False
+        } ;
+	
+    PartPlCN cn = 
+      let 
+        acn = DetCN (DetQuant IndefArt NumPl) cn
       in {
         s = table {
           NPCase Nom | NPAcc => acn.s ! NPCase ResFin.Part ;

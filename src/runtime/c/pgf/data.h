@@ -20,7 +20,7 @@ typedef struct {
 
 typedef GuSeq PgfFlags;
 
-extern GuOrder pgf_flag_order[1];
+PGF_INTERNAL_DECL extern GuOrder pgf_flag_order[1];
 
 // PgfPatt
 
@@ -56,7 +56,7 @@ typedef struct {
 	PgfPatt patt;
 } PgfPattAs;
 
-typedef void PgfPattWild;
+typedef char PgfPattWild;
 
 typedef struct {
 	PgfPatt patt;
@@ -94,7 +94,7 @@ typedef struct {
 
 typedef GuSeq PgfAbsFuns;
 
-extern GuOrder pgf_absfun_order[1];
+PGF_INTERNAL_DECL extern GuOrder pgf_absfun_order[1];
 
 typedef GuMap PgfMetaChildMap;
 
@@ -109,7 +109,7 @@ typedef struct {
 
 typedef GuSeq PgfAbsCats;
 
-extern GuOrder pgf_abscat_order[1];
+PGF_INTERNAL_DECL extern GuOrder pgf_abscat_order[1];
 
 
 typedef struct PgfEvalGates PgfEvalGates;
@@ -148,7 +148,7 @@ typedef enum {
 
 typedef GuSeq PgfConcrs;
 
-extern GuOrder pgf_concr_order[1];
+PGF_INTERNAL_DECL extern GuOrder pgf_concr_order[1];
 
 struct PgfPGF {
 	uint16_t major_version;
@@ -175,7 +175,7 @@ typedef struct {
 
 typedef GuSeq PgfTokens;
 
-bool
+PGF_INTERNAL_DECL bool
 pgf_tokens_equal(PgfTokens* t1, PgfTokens* t2);
 
 typedef GuSeq PgfSymbols;
@@ -241,12 +241,15 @@ typedef struct PgfSymbolKP
 } PgfSymbolKP;
 
 typedef struct {
+	char nothing[0]; // Empty struct
 } PgfSymbolNE;
 
 typedef struct {
+	char nothing[0]; // Empty struct
 } PgfSymbolBIND;
 
 typedef struct {
+	char nothing[0]; // Empty struct
 } PgfSymbolCAPIT;
 
 typedef GuBuf PgfProductionIdx;

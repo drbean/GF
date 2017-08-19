@@ -101,7 +101,7 @@ pgf_tc_mk_print_context(PgfTypeChecker* checker, PgfContext* ctxt)
 static void
 pgf_tc_err_cannot_infer(PgfTypeChecker* checker, PgfContext* ctxt, PgfExpr e)
 {
-	GuStringBuf* sbuf = gu_string_buf(checker->tmp_pool);
+	GuStringBuf* sbuf = gu_new_string_buf(checker->tmp_pool);
     GuOut* out = gu_string_buf_out(sbuf);
     GuExn* err = gu_exn(checker->tmp_pool);
 
@@ -117,7 +117,7 @@ static void
 pgf_tc_err_exp_fun_type_1(PgfTypeChecker* checker, PgfContext* ctxt, 
                           PgfExpr e, PgfType* ty)
 {
-	GuStringBuf* sbuf = gu_string_buf(checker->tmp_pool);
+	GuStringBuf* sbuf = gu_new_string_buf(checker->tmp_pool);
     GuOut* out = gu_string_buf_out(sbuf);
     GuExn* err = gu_exn(checker->tmp_pool);
 
@@ -137,7 +137,7 @@ static void
 pgf_tc_err_exp_fun_type_2(PgfTypeChecker* checker, PgfContext* ctxt, 
                           PgfExpr e, PgfType* ty)
 {
-	GuStringBuf* sbuf = gu_string_buf(checker->tmp_pool);
+	GuStringBuf* sbuf = gu_new_string_buf(checker->tmp_pool);
     GuOut* out = gu_string_buf_out(sbuf);
     GuExn* err = gu_exn(checker->tmp_pool);
 
@@ -170,7 +170,7 @@ pgf_tc_err_type_mismatch(PgfTypeChecker* checker,
                          PgfContext* ctxt,
                          PgfExpr e, PgfCFType ty1, PgfCFType ty2)
 {
-	GuStringBuf* sbuf = gu_string_buf(checker->tmp_pool);
+	GuStringBuf* sbuf = gu_new_string_buf(checker->tmp_pool);
     GuOut* out = gu_string_buf_out(sbuf);
     GuExn* err = gu_exn(checker->tmp_pool);
 
@@ -526,7 +526,7 @@ pgf_inf_expr(PgfTypeChecker* checker, PgfContext* ctxt, PgfExpr* pe)
 	return null_cf_type;
 }
 
-void
+PGF_API void
 pgf_check_expr(PgfPGF* gr, PgfExpr* pe, PgfType* ty,
                GuExn* exn, GuPool* pool)
 {
@@ -544,7 +544,7 @@ pgf_check_expr(PgfPGF* gr, PgfExpr* pe, PgfType* ty,
 	gu_pool_free(tmp_pool);
 }
 
-PgfType*
+PGF_API PgfType*
 pgf_infer_expr(PgfPGF* gr, PgfExpr* pe,
                GuExn* exn, GuPool* pool)
 {
@@ -569,7 +569,7 @@ pgf_infer_expr(PgfPGF* gr, PgfExpr* pe,
 	return ty;
 }
 
-void
+PGF_API void
 pgf_check_type(PgfPGF* gr, PgfType** pty, 
                GuExn* exn, GuPool* pool)
 {

@@ -168,7 +168,9 @@ hDatatypeGADT gId lexical (cat, rules)
 hEqGADT :: Prefix -> (OIdent -> Bool) -> (OIdent, [(OIdent, [OIdent])]) -> [String]
 hEqGADT gId lexical (cat, rules)
   | isListCat (cat,rules) = let r = listr cat in ["(" ++ patt "x" r ++ "," ++ patt "y" r ++ ") -> " ++ listeqs] 
-  | otherwise = ["(" ++ patt "x" r ++ "," ++ patt "y" r ++ ") -> " ++ eqs r | r <- rules] 
+  | otherwise = ["(" ++ patt "x" r ++ "," ++ patt "y" r ++ ") -> " ++ eqs r | r <- nonLexicalRules (lexical cat) rules]
+          ++ if lexical cat then ["(" ++ lexicalConstructor cat +++ "x" ++ "," ++ lexicalConstructor cat +++ "y" ++ ") -> x == y"] else []
+
  where
    patt s (f,xs) = unwords (gId f : mkSVars s (length xs))
    eqs (_,xs) = unwords ("and" : "[" : intersperse "," [x ++ " == " ++ y | 
@@ -240,7 +242,7 @@ fInstance gId lexical m (cat,rules) =
     then "    " ++ gId cat ++ " (fgs t) where\n     fgs t = case unApp t of"
     else "    case unApp t of") ++++
   unlines [mkInst f xx | (f,xx) <- nonLexicalRules (lexical cat) rules] ++++
-  (if lexical cat then "      (i,[]) -> " ++ lexicalConstructor cat +++ "(prCId i)" else "") ++++
+  (if lexical cat then "      Just (i,[]) -> " ++ lexicalConstructor cat +++ "(showCId i)" else "") ++++
   "      _ -> error (\"no" +++ cat ++ " \" ++ show t)"
    where
     isList = isListCat (cat,rules)

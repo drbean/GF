@@ -154,7 +154,6 @@ lin PNeg = mkTerm "negativePol" ;
 lin PPartNP np_1 v2_2 = mkTerm "mkNP" np_1 v2_2 ;
 lin PPos = mkTerm (hide "positivePol") ;
 lin PassV2 v2_1 = mkTerm "passiveVP" v2_1 ;
-lin PassV3 v3_1 = mkTerm "passiveVP3" v3_1 ;
 lin PhrUtt pconj_1 utt_2 voc_3 = mkTerm "mkPhr" pconj_1 utt_2 voc_3 ;
 lin PositA a_1 = mkFlat (mkTerm "mkAP" a_1) ;
 lin PositAdAAdj a_1 = mkTerm "mkAdA" a_1 ;

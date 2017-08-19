@@ -83,7 +83,7 @@ pgf_graphviz_abstract_tree_(PgfExpr expr, int *pid,
 	return id;
 }
 
-void
+PGF_API void
 pgf_graphviz_abstract_tree(PgfPGF* pgf, PgfExpr expr, GuOut* out, GuExn* err)
 {
 	int id = 0;
@@ -174,13 +174,26 @@ pgf_bracket_lzn_end_phrase(PgfLinFuncs** funcs, PgfCId cat, int fid, int lindex,
 	state->parent = state->parent->parent;
 }
 
+static void
+pgf_bracket_lzn_symbol_meta(PgfLinFuncs** funcs, PgfMetaId meta_id)
+{
+	PgfBracketLznState* state = gu_container(funcs, PgfBracketLznState, funcs);
+
+	PgfParseNode* node = gu_new(PgfParseNode, state->pool);
+	node->id     = 100000 + gu_buf_length(state->leaves);
+	node->parent = state->parent;
+	node->label  = "?";
+	gu_buf_push(state->leaves, PgfParseNode*, node);
+}
+
 static PgfLinFuncs pgf_bracket_lin_funcs = {
 	.symbol_token  = pgf_bracket_lzn_symbol_token,
 	.begin_phrase  = pgf_bracket_lzn_begin_phrase,
 	.end_phrase    = pgf_bracket_lzn_end_phrase,
 	.symbol_ne     = NULL,
 	.symbol_bind   = NULL,
-	.symbol_capit  = NULL
+	.symbol_capit  = NULL,
+	.symbol_meta   = pgf_bracket_lzn_symbol_meta
 };
 
 static void
@@ -219,7 +232,7 @@ pgf_graphviz_parse_level(GuBuf* level, GuOut* out, GuExn* err)
 	}
 }
 
-void
+PGF_API void
 pgf_graphviz_parse_tree(PgfConcr* concr, PgfExpr expr, GuOut* out, GuExn* err)
 {
 	GuPool* tmp_pool = gu_local_pool();

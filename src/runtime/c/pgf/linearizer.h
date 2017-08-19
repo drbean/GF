@@ -4,34 +4,66 @@
 #include <gu/enum.h>
 
 /// Linearization of abstract syntax trees.
-/// @file
 
-/** @}
- *
- * @name Enumerating concrete syntax trees
- *
- * Because of the \c variants construct in GF, there may be several
- * possible concrete syntax trees that correspond to a given abstract
- * syntax tree. These can be enumerated with #pgf_concretize.
- *
- * @{
- */
-
+//
+// PgfCncTree
+//
 
 /// A concrete syntax tree
 typedef GuVariant PgfCncTree;
+
+#ifdef PGF_DATA_H_
+
+typedef enum {
+	PGF_CNC_TREE_APP,
+	PGF_CNC_TREE_CHUNKS,
+	PGF_CNC_TREE_LIT,
+} PgfCncTreeTag;
+
+typedef struct {
+	PgfCCat* ccat;
+	PgfCncFun* fun;
+	int fid;
+
+	size_t n_vars;
+	PgfPrintContext* context;
+
+	size_t n_args;
+	PgfCncTree args[];
+} PgfCncTreeApp;
+
+typedef struct {
+	PgfMetaId id;
+
+	size_t n_vars;
+	PgfPrintContext* context;
+
+	size_t n_args;
+	PgfCncTree args[];
+} PgfCncTreeChunks;
+
+typedef struct {
+	size_t n_vars;
+	PgfPrintContext* context;
+
+	int fid;
+	PgfLiteral lit;
+} PgfCncTreeLit;
+
+#endif
 
 /// An enumeration of #PgfCncTree trees.
 typedef GuEnum PgfCncTreeEnum;
 
 /// Begin enumerating concrete syntax variants.
-PgfCncTreeEnum*
+PGF_API_DECL PgfCncTreeEnum*
 pgf_lzr_concretize(PgfConcr* concr, PgfExpr expr, GuExn* err, GuPool* pool);
 
 typedef struct {
+	char nothing[0]; // Empty struct
 } PgfLinNonExist;
 
-PgfCncTree
+PGF_API_DECL PgfCncTree
 pgf_lzr_wrap_linref(PgfCncTree ctree, GuPool* pool);
 
 
@@ -64,27 +96,30 @@ struct PgfLinFuncs
 
 	/// capitalization
 	void (*symbol_capit)(PgfLinFuncs** self, PgfCapitState capit);
+	
+	/// meta variable
+	void (*symbol_meta)(PgfLinFuncs** self, PgfMetaId id);
 };
 
 /// Linearize a concrete syntax tree.
-void
+PGF_API_DECL void
 pgf_lzr_linearize(PgfConcr* concr, PgfCncTree ctree, size_t lin_idx, 
                   PgfLinFuncs** funcs, GuPool* tmp_pool);
 
 /// Linearize a concrete syntax tree as space-separated tokens.
-void
+PGF_API_DECL void
 pgf_lzr_linearize_simple(PgfConcr* concr, PgfCncTree ctree, size_t lin_idx, 
                          GuOut* out, GuExn* err,
                          GuPool* tmp_pool);
 
 
-void
+PGF_API_DECL void
 pgf_lzr_get_table(PgfConcr* concr, PgfCncTree ctree, 
                   size_t* n_lins, GuString** labels);
 
 #ifdef PGF_DATA_H_
 // Used internally in the parser
-GuString
+PGF_INTERNAL_DECL GuString
 pgf_get_tokens(PgfSymbols* sym, uint16_t sym_idx, GuPool* pool);
 #endif
 

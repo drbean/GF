@@ -11,7 +11,7 @@
 #define l2p(x) ((void*) (intptr_t) (x))
 #define p2l(x) ((jlong) (intptr_t) (x))
 
-jstring
+JPGF_INTERNAL jstring
 gu2j_string(JNIEnv *env, GuString s) {
 	const char* utf8 = s;
 	size_t len = strlen(s);
@@ -33,7 +33,30 @@ gu2j_string(JNIEnv *env, GuString s) {
 	return (*env)->NewString(env, utf16, dst-utf16);
 }
 
-GuString
+JPGF_INTERNAL jstring
+gu2j_string_buf(JNIEnv *env, GuStringBuf* sbuf) {
+	const char* s    = gu_string_buf_data(sbuf);
+	const char* utf8 = s;
+	size_t len = gu_string_buf_length(sbuf);
+
+	jchar* utf16 = alloca(len*sizeof(jchar));
+	jchar* dst   = utf16;
+	while (s-utf8 < len) {
+		GuUCS ucs = gu_utf8_decode((const uint8_t**) &s);
+
+		if (ucs <= 0xFFFF) {
+			*dst++ = ucs;
+		} else {
+			ucs -= 0x10000;
+			*dst++ = 0xD800+((ucs >> 10) & 0x3FF);
+			*dst++ = 0xDC00+(ucs & 0x3FF);
+		}
+	}
+
+	return (*env)->NewString(env, utf16, dst-utf16);
+}
+
+JPGF_INTERNAL GuString
 j2gu_string(JNIEnv *env, jstring s, GuPool* pool) {
 	GuString str = (*env)->GetStringUTFChars(env, s, 0);
 	GuString copy = gu_string_copy(str, pool);
@@ -41,7 +64,7 @@ j2gu_string(JNIEnv *env, jstring s, GuPool* pool) {
 	return copy;
 }
 
-size_t
+JPGF_INTERNAL size_t
 gu2j_string_offset(GuString s, size_t offset) {
 	const char* utf8 = s;
 	size_t joffset = 0;
@@ -52,7 +75,7 @@ gu2j_string_offset(GuString s, size_t offset) {
 	return joffset;
 }
 
-size_t
+JPGF_INTERNAL size_t
 j2gu_string_offset(GuString s, size_t joffset) {
 	const char* utf8 = s;
 	while (joffset > 0) {
@@ -62,13 +85,13 @@ j2gu_string_offset(GuString s, size_t joffset) {
 	return utf8-s;
 }
 
-void*
+JPGF_INTERNAL void*
 get_ref(JNIEnv *env, jobject self) {
 	jfieldID refId = (*env)->GetFieldID(env, (*env)->GetObjectClass(env, self), "ref", "J");
 	return l2p((*env)->GetLongField(env, self, refId));
 }
 
-void
+JPGF_INTERNAL void
 throw_jstring_exception(JNIEnv *env, const char* class_name, jstring msg)
 {
 	jclass exception_class = (*env)->FindClass(env, class_name);
@@ -83,7 +106,7 @@ throw_jstring_exception(JNIEnv *env, const char* class_name, jstring msg)
 	(*env)->Throw(env, exception);
 }
 
-void
+JPGF_INTERNAL void
 throw_string_exception(JNIEnv *env, const char* class_name, const char* msg)
 {
 	jstring jmsg = (*env)->NewStringUTF(env, msg);

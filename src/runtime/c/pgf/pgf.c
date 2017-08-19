@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 
-PgfPGF*
+PGF_API PgfPGF*
 pgf_read(const char* fpath,
          GuPool* pool, GuExn* err)
 {
@@ -34,7 +34,7 @@ pgf_read(const char* fpath,
 	return pgf;
 }
 
-PgfPGF*
+PGF_API PgfPGF*
 pgf_read_in(GuIn* in,
             GuPool* pool, GuPool* tmp_pool, GuExn* err)
 {
@@ -44,13 +44,13 @@ pgf_read_in(GuIn* in,
 	return pgf;
 }
 
-GuString
+PGF_API GuString
 pgf_abstract_name(PgfPGF* pgf)
 {
 	return pgf->abstract.name;
 }
 
-void
+PGF_API void
 pgf_iter_languages(PgfPGF* pgf, GuMapItor* itor, GuExn* err)
 {
 	size_t n_concrs = gu_seq_length(pgf->concretes);
@@ -62,19 +62,19 @@ pgf_iter_languages(PgfPGF* pgf, GuMapItor* itor, GuExn* err)
 	}
 }
 
-PgfConcr*
+PGF_API PgfConcr*
 pgf_get_language(PgfPGF* pgf, PgfCId lang)
 {
 	return gu_seq_binsearch(pgf->concretes, pgf_concr_order, PgfConcr, lang);
 }
 
-GuString
+PGF_API GuString
 pgf_concrete_name(PgfConcr* concr)
 {
 	return concr->name;
 }
 
-void
+PGF_API void
 pgf_iter_categories(PgfPGF* pgf, GuMapItor* itor, GuExn* err)
 {
 	size_t n_cats = gu_seq_length(pgf->abstract.cats);
@@ -86,27 +86,38 @@ pgf_iter_categories(PgfPGF* pgf, GuMapItor* itor, GuExn* err)
 	}
 }
 
-PgfCId
-pgf_start_cat(PgfPGF* pgf)
+PGF_API PgfType*
+pgf_start_cat(PgfPGF* pgf, GuPool* pool)
 {
 	PgfFlag* flag =
 		gu_seq_binsearch(pgf->abstract.aflags, pgf_flag_order, PgfFlag, "startcat");
 
-	if (flag == NULL)
-		return "S";
-
-	GuVariantInfo i = gu_variant_open(flag->value);
-	switch (i.tag) {
-	case PGF_LITERAL_STR: {
-		PgfLiteralStr *lstr = (PgfLiteralStr *) i.data;
-		return lstr->val;
+	if (flag != NULL) {
+		GuVariantInfo i = gu_variant_open(flag->value);
+		switch (i.tag) {
+		case PGF_LITERAL_STR: {
+			PgfLiteralStr *lstr = (PgfLiteralStr *) i.data;
+			
+			GuPool* tmp_pool = gu_local_pool();
+			GuIn* in = gu_string_in(lstr->val,tmp_pool);
+			GuExn* err = gu_new_exn(tmp_pool);
+			PgfType *type = pgf_read_type(in, pool, err);
+			if (!gu_ok(err))
+				break;
+			gu_pool_free(tmp_pool);
+			return type;
+		}
+		}
 	}
-	}
 
-	return "S";
+	PgfType* type = gu_new_flex(pool, PgfType, exprs, 0);
+	type->hypos   = gu_empty_seq();
+	type->cid     = "S";
+	type->n_exprs = 0;
+	return type;
 }
 
-GuString
+PGF_API GuString
 pgf_language_code(PgfConcr* concr)
 {
 	PgfFlag* flag =
@@ -126,7 +137,7 @@ pgf_language_code(PgfConcr* concr)
 	return "";
 }
 
-void
+PGF_API void
 pgf_iter_functions(PgfPGF* pgf, GuMapItor* itor, GuExn* err)
 {
 	size_t n_funs = gu_seq_length(pgf->abstract.funs);
@@ -138,7 +149,7 @@ pgf_iter_functions(PgfPGF* pgf, GuMapItor* itor, GuExn* err)
 	}
 }
 
-void
+PGF_API void
 pgf_iter_functions_by_cat(PgfPGF* pgf, PgfCId catname, 
                           GuMapItor* itor, GuExn* err) 
 {
@@ -154,7 +165,7 @@ pgf_iter_functions_by_cat(PgfPGF* pgf, PgfCId catname,
 	}
 }
 
-PgfType*
+PGF_API PgfType*
 pgf_function_type(PgfPGF* pgf, PgfCId funname) 
 {
 	PgfAbsFun* absfun =
@@ -165,7 +176,7 @@ pgf_function_type(PgfPGF* pgf, PgfCId funname)
 	return absfun->type;
 }
 
-double
+PGF_API double
 pgf_function_prob(PgfPGF* pgf, PgfCId funname) 
 {
 	PgfAbsFun* absfun =
@@ -176,17 +187,15 @@ pgf_function_prob(PgfPGF* pgf, PgfCId funname)
 	return absfun->ep.prob;
 }
 
-GuString
+PGF_API GuString
 pgf_print_name(PgfConcr* concr, PgfCId id)
 {
 	PgfCId name =
-		gu_map_get(concr->printnames, id, PgfCId);
-	if (*name == 0)
-		name = id;
+		gu_map_get(concr->printnames, id, GuString);
 	return name;
 }
 
-bool
+PGF_API bool
 pgf_has_linearization(PgfConcr* concr, PgfCId id)
 {
 	PgfCncOverloadMap* overl_table =
@@ -194,7 +203,7 @@ pgf_has_linearization(PgfConcr* concr, PgfCId id)
 	return (overl_table != NULL);
 }
 
-PgfExprProb*
+PGF_API PgfExprProb*
 pgf_fun_get_ep(void* value)
 {
 	PgfAbsFun* absfun = *((PgfAbsFun**) value);

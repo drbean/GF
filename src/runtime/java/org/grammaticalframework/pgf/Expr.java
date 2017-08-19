@@ -31,6 +31,20 @@ public class Expr implements Serializable {
 			this.ref    = initStringLit(s, pool.ref);  
 		}
 
+		/** Constructs an expression which represents an integer literal */
+		public Expr(int d) {
+			this.pool   = new Pool();
+			this.master = null;
+			this.ref    = initIntLit(d, pool.ref);  
+		}
+
+		/** Constructs an expression which represents a floating point literal */
+		public Expr(double f) {
+			this.pool   = new Pool();
+			this.master = null;
+			this.ref    = initFloatLit(f, pool.ref);  
+		}
+
 		/** Constructs an expression which is a function application
 		 * @param fun The name of the top-level function.
 		 * @param args the arguments for the function.
@@ -44,9 +58,46 @@ public class Expr implements Serializable {
 			}
 
 			this.pool   = new Pool();
-			this.master = Arrays.copyOf(args, args.length);
+			this.master = args;
 			this.ref    = initApp(fun, args, pool.ref);
 		}
+
+		/** Constructs an expression which is an application
+		 * of the first expression to a list of arguments.
+		 */
+		public static Expr apply(Expr fun, Expr... args) {
+			if (fun == null)
+				throw new IllegalArgumentException("fun == null");
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] == null)
+					throw new IllegalArgumentException("the "+(i+1)+"th argument is null");
+			}
+
+			Object[] master = new Object[args.length+1];
+			master[0] = fun;
+			for (int i = 0; i < args.length; i++) {
+				master[i+1] = args[i].master;
+			}
+
+            Pool pool = new Pool();
+			return new Expr(pool, master, initApp(fun, args, pool.ref));
+		}
+
+		/** If the method is called on an expression which is 
+		 * a function application, then it is decomposed into 
+		 * a function name and a list of arguments. If this is not 
+		 * an application then the result is null. */
+		public native ExprApplication unApply();
+
+		/** If the method is called on an expression which is 
+		 * a meta variable, then it will return the variable's id.
+		 * If this is not a meta variable then the result is -1. */
+		public native int unMeta();
+		
+		/** If the method is called on an expression which is 
+		 * a string literal, then it will return the string value.
+		 * If this is not a string literal then the result is null. */
+		public native String unStr();
 
 		/** Returns the expression as a string in the GF syntax */
 		public String toString() {
@@ -59,11 +110,16 @@ public class Expr implements Serializable {
 
 		/** Compares the current expression with another expression by value. 
 		 * @return True if the expressions are equal. */
-		public native boolean equals(Expr e);
+		public native boolean equals(Object e);
+
+		public native int hashCode();
 
 		private static native String showExpr(long ref);
 
 		private static native long initStringLit(String s, long pool);
+		private static native long initIntLit(int d, long pool);
+		private static native long initFloatLit(double f, long pool);
+		private static native long initApp(Expr   fun, Expr[] args, long pool);
 		private static native long initApp(String fun, Expr[] args, long pool);
 
 		private void writeObject(ObjectOutputStream out) throws IOException {

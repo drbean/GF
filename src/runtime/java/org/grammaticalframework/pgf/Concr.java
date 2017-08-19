@@ -39,8 +39,15 @@ public class Concr {
 		return new Completer(this, startCat, s, prefix);
 	}
 
+	public Iterable<ExprProb> lookupSentence(String startCat, String s) {
+		return new SentenceExtractor(this, startCat, s);
+	}
+
 	/** Computes the linearization of the abstract expression. */
 	public native String linearize(Expr expr);
+
+	/** Computes all linearizations of the abstract expression and returns an iterator over the alternatives. */
+	public native Iterable<String> linearizeAll(Expr expr);
 
 	/** Linearizes the expression as an inflection table.
 	 * @return a map from the name of the inflection form to its value.
@@ -75,6 +82,10 @@ public class Concr {
 	 * @param fun the name of the function
 	 */
 	public native boolean hasLinearization(String fun);
+
+	/** returns the print name for that function or category.
+	 */
+	public native String getPrintName(String id);
 
 	/** If the concrete syntaxes in the grammar are stored in external
 	 * files then this method can be used to load the current syntax

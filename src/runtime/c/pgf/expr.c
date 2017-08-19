@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 
-PgfExpr
+static PgfExpr
 pgf_expr_unwrap(PgfExpr expr)
 {
 	while (true) {
@@ -29,7 +29,7 @@ pgf_expr_unwrap(PgfExpr expr)
 	}
 }
 
-int
+PGF_API int
 pgf_expr_arity(PgfExpr expr)
 {
 	int n = 0;
@@ -51,7 +51,7 @@ pgf_expr_arity(PgfExpr expr)
 	}
 }
 
-PgfApplication*
+PGF_API PgfApplication*
 pgf_expr_unapply(PgfExpr expr, GuPool* pool)
 {
 	int arity = pgf_expr_arity(expr);
@@ -74,7 +74,7 @@ pgf_expr_unapply(PgfExpr expr, GuPool* pool)
 	return appl;
 }
 
-PgfExpr
+PGF_API PgfExpr
 pgf_expr_apply(PgfApplication* app, GuPool* pool)
 {
 	PgfExpr expr;
@@ -97,7 +97,47 @@ pgf_expr_apply(PgfApplication* app, GuPool* pool)
 	return expr;
 }
 
-PgfExpr
+PGF_API PgfExpr
+pgf_expr_abs(PgfBindType bind_type, PgfCId id, PgfExpr body, GuPool* pool)
+{
+	return gu_new_variant_i(pool, 
+				            PGF_EXPR_ABS, PgfExprAbs,
+						    .bind_type = bind_type,
+						    .id = id,
+						    .body = body);
+}
+
+PGF_API PgfExprAbs*
+pgf_expr_unabs(PgfExpr expr)
+{
+	GuVariantInfo i = gu_variant_open(expr);
+	if (i.tag == PGF_EXPR_ABS) {
+		return (PgfExprAbs*) i.data;
+	}
+
+	return NULL;
+}
+
+PGF_API PgfExpr
+pgf_expr_meta(int id, GuPool* pool)
+{
+	return gu_new_variant_i(pool, 
+				            PGF_EXPR_META, PgfExprMeta,
+						    .id = id);
+}
+
+PGF_API PgfExprMeta*
+pgf_expr_unmeta(PgfExpr expr)
+{
+	GuVariantInfo i = gu_variant_open(expr);
+	if (i.tag == PGF_EXPR_META) {
+		return (PgfExprMeta*) i.data;
+	}
+
+	return NULL;
+}
+
+PGF_API PgfExpr
 pgf_expr_string(GuString str, GuPool* pool)
 {
 	PgfLiteral lit;
@@ -113,7 +153,7 @@ pgf_expr_string(GuString str, GuPool* pool)
 	                        lit);
 }
 
-PgfExpr
+PGF_API PgfExpr
 pgf_expr_int(int val, GuPool* pool)
 {
 	PgfLiteral lit;
@@ -128,7 +168,7 @@ pgf_expr_int(int val, GuPool* pool)
 	                        lit);
 }
 
-PgfExpr
+PGF_API PgfExpr
 pgf_expr_float(double val, GuPool* pool)
 {
 	PgfLiteral lit;
@@ -141,6 +181,22 @@ pgf_expr_float(double val, GuPool* pool)
 	                        PGF_EXPR_LIT,
 	                        PgfExprLit,
 	                        lit);
+}
+
+PGF_API void*
+pgf_expr_unlit(PgfExpr expr, int lit_tag)
+{
+	expr = pgf_expr_unwrap(expr);
+	GuVariantInfo i = gu_variant_open(expr);
+	if (i.tag == PGF_EXPR_LIT) {
+		PgfExprLit* elit = i.data;
+		GuVariantInfo i2 = gu_variant_open(elit->lit);
+		if (i2.tag == lit_tag) {
+			return i2.data;
+		}
+	}
+		
+	return NULL;
 }
 
 typedef struct PgfExprParser PgfExprParser;
@@ -173,14 +229,14 @@ struct PgfExprParser {
 	GuPool* expr_pool;
 	GuPool* tmp_pool;
 	PGF_TOKEN_TAG token_tag;
-	GuBuf* token_value;
-	int ch;
+	GuStringBuf* token_value;
+	GuUCS ch;
 };
 
 static void
 pgf_expr_parser_getc(PgfExprParser* parser)
 {
-	parser->ch = gu_in_u8(parser->in, parser->err);
+	parser->ch = gu_in_utf8(parser->in, parser->err);
 	if (!gu_ok(parser->err)) {
 		gu_exn_clear(parser->err);
 		parser->ch = EOF;
@@ -294,51 +350,51 @@ pgf_expr_parser_token(PgfExprParser* parser)
 	case '\'':
 		pgf_expr_parser_getc(parser);
 
-		GuBuf* chars = gu_new_buf(char, parser->tmp_pool);
+		GuStringBuf* chars = gu_new_string_buf(parser->tmp_pool);
 		while (parser->ch != '\'' && parser->ch != EOF) {
 			if (parser->ch == '\\') {
 				pgf_expr_parser_getc(parser);
 			}
-			gu_buf_push(chars, char, parser->ch);
+			gu_out_utf8(parser->ch, gu_string_buf_out(chars), parser->err);
 			pgf_expr_parser_getc(parser);
 		}
 		if (parser->ch == '\'') {
 			pgf_expr_parser_getc(parser);
-			gu_buf_push(chars, char, 0);
+			gu_out_utf8(0, gu_string_buf_out(chars), parser->err);
 			parser->token_tag   = PGF_TOKEN_IDENT;
 			parser->token_value = chars;
 		}
 		break;
 	default: {
-		GuBuf* chars = gu_new_buf(char, parser->tmp_pool);
+		GuStringBuf* chars = gu_new_string_buf(parser->tmp_pool);
 
 		if (pgf_is_ident_first(parser->ch)) {
 			do {
-				gu_buf_push(chars, char, parser->ch);
+				gu_out_utf8(parser->ch, gu_string_buf_out(chars), parser->err);
 				pgf_expr_parser_getc(parser);
 			} while (pgf_is_ident_rest(parser->ch));
-			gu_buf_push(chars, char, 0);
+			gu_out_utf8(0, gu_string_buf_out(chars), parser->err);
 			parser->token_tag   = PGF_TOKEN_IDENT;
 			parser->token_value = chars;
 		} else if (isdigit(parser->ch)) {
 			while (isdigit(parser->ch)) {
-				gu_buf_push(chars, char, parser->ch);
+				gu_out_utf8(parser->ch, gu_string_buf_out(chars), parser->err);
 				pgf_expr_parser_getc(parser);
 			}
 			
 			if (parser->ch == '.') {
-				gu_buf_push(chars, char, parser->ch);
+				gu_out_utf8(parser->ch, gu_string_buf_out(chars), parser->err);
 				pgf_expr_parser_getc(parser);
 				
 				while (isdigit(parser->ch)) {
-					gu_buf_push(chars, char, parser->ch);
+					gu_out_utf8(parser->ch, gu_string_buf_out(chars), parser->err);
 					pgf_expr_parser_getc(parser);
 				}
-				gu_buf_push(chars, char, 0);
+				gu_out_utf8(0, gu_string_buf_out(chars), parser->err);
 				parser->token_tag   = PGF_TOKEN_FLT;
 				parser->token_value = chars;
 			} else {
-				gu_buf_push(chars, char, 0);
+				gu_out_utf8(0, gu_string_buf_out(chars), parser->err);
 				parser->token_tag   = PGF_TOKEN_INT;
 				parser->token_value = chars;
 			}
@@ -350,35 +406,35 @@ pgf_expr_parser_token(PgfExprParser* parser)
 					pgf_expr_parser_getc(parser);
 					switch (parser->ch) {
 					case '\\':
-						gu_buf_push(chars, char, '\\');
+						gu_out_utf8('\\', gu_string_buf_out(chars), parser->err);
 						break;
 					case '"':
-						gu_buf_push(chars, char, '\"');
+						gu_out_utf8('\"', gu_string_buf_out(chars), parser->err);
 						break;
 					case 'n':
-						gu_buf_push(chars, char, '\n');
+						gu_out_utf8('\n', gu_string_buf_out(chars), parser->err);
 						break;
 					case 'r':
-						gu_buf_push(chars, char, '\r');
+						gu_out_utf8('\r', gu_string_buf_out(chars), parser->err);
 						break;
 					case 'b':
-						gu_buf_push(chars, char, '\b');
+						gu_out_utf8('\b', gu_string_buf_out(chars), parser->err);
 						break;
 					case 't':
-						gu_buf_push(chars, char, '\t');
+						gu_out_utf8('\t', gu_string_buf_out(chars), parser->err);
 						break;
 					default:
 						return;
 					}
 				} else {
-					gu_buf_push(chars, char, parser->ch);
+					gu_out_utf8(parser->ch, gu_string_buf_out(chars), parser->err);
 				}
 				pgf_expr_parser_getc(parser);
 			}
 			
 			if (parser->ch == '"') {
 				pgf_expr_parser_getc(parser);
-				gu_buf_push(chars, char, 0);
+				gu_out_utf8(0, gu_string_buf_out(chars), parser->err);
 				parser->token_tag   = PGF_TOKEN_STR;
 				parser->token_value = chars;
 			}
@@ -449,7 +505,7 @@ pgf_expr_parser_term(PgfExprParser* parser)
 		PgfMetaId id = 0;
 		if (parser->token_tag == PGF_TOKEN_INT) {
 			char* str =
-				gu_buf_data(parser->token_value);
+				gu_string_buf_data(parser->token_value);
 			id = atoi(str);
 			pgf_expr_parser_token(parser);
 		}
@@ -459,7 +515,7 @@ pgf_expr_parser_term(PgfExprParser* parser)
 					            id);
 	}
 	case PGF_TOKEN_IDENT: {
-		PgfCId id = gu_buf_data(parser->token_value);
+		PgfCId id = gu_string_buf_data(parser->token_value);
 		pgf_expr_parser_token(parser);
 		PgfExpr e;
 		PgfExprFun* fun =
@@ -472,7 +528,7 @@ pgf_expr_parser_term(PgfExprParser* parser)
 	}
 	case PGF_TOKEN_INT: {
 		char* str = 
-			gu_buf_data(parser->token_value);
+			gu_string_buf_data(parser->token_value);
 		int n = atoi(str);
 		pgf_expr_parser_token(parser);
 		PgfLiteral lit = 
@@ -487,13 +543,13 @@ pgf_expr_parser_term(PgfExprParser* parser)
 	}
 	case PGF_TOKEN_STR: {
 		char* str =
-			gu_buf_data(parser->token_value);
+			gu_string_buf_data(parser->token_value);
 		pgf_expr_parser_token(parser);
 		return pgf_expr_string(str, parser->expr_pool);
 	}
 	case PGF_TOKEN_FLT: {
 		char* str = 
-			gu_buf_data(parser->token_value);
+			gu_string_buf_data(parser->token_value);
 		double d;
 		if (!gu_string_to_double(str,&d))
 			return gu_null_variant;
@@ -556,7 +612,7 @@ pgf_expr_parser_bind(PgfExprParser* parser, GuBuf* binds)
 	for (;;) {
 		if (parser->token_tag == PGF_TOKEN_IDENT) {
 			var =
-				gu_string_copy(gu_buf_data(parser->token_value), parser->expr_pool);
+				gu_string_copy(gu_string_buf_data(parser->token_value), parser->expr_pool);
 			pgf_expr_parser_token(parser);
 		} else if (parser->token_tag == PGF_TOKEN_WILD) {
 			var = "_";
@@ -677,7 +733,7 @@ pgf_expr_parser_hypos(PgfExprParser* parser, GuBuf* hypos)
 
 		if (parser->token_tag == PGF_TOKEN_IDENT) {
 			var =
-				gu_string_copy(gu_buf_data(parser->token_value), parser->expr_pool);
+				gu_string_copy(gu_string_buf_data(parser->token_value), parser->expr_pool);
 			pgf_expr_parser_token(parser);
 		} else if (parser->token_tag == PGF_TOKEN_WILD) {
 			var = "_";
@@ -717,7 +773,7 @@ pgf_expr_parser_atom(PgfExprParser* parser)
 		return NULL;
 
 	PgfCId cid =
-		gu_string_copy(gu_buf_data(parser->token_value), parser->expr_pool);
+		gu_string_copy(gu_string_buf_data(parser->token_value), parser->expr_pool);
 	pgf_expr_parser_token(parser);
 
 	GuBuf* args = gu_new_buf(PgfExpr, parser->tmp_pool);
@@ -834,7 +890,7 @@ pgf_new_parser(GuIn* in, GuPool* pool, GuPool* tmp_pool, GuExn* err)
 	return parser;
 }
 
-PgfExpr
+PGF_API PgfExpr
 pgf_read_expr(GuIn* in, GuPool* pool, GuExn* err)
 {
 	GuPool* tmp_pool = gu_new_pool();
@@ -847,7 +903,7 @@ pgf_read_expr(GuIn* in, GuPool* pool, GuExn* err)
 	return expr;
 }
 
-int
+PGF_API int
 pgf_read_expr_tuple(GuIn* in,
                     size_t n_exprs, PgfExpr exprs[],
                     GuPool* pool, GuExn* err)
@@ -883,7 +939,7 @@ fail:
 	return 0;
 }
 
-GuSeq*
+PGF_API GuSeq*
 pgf_read_expr_matrix(GuIn* in,
                      size_t n_exprs,
                      GuPool* pool, GuExn* err)
@@ -935,7 +991,7 @@ fail:
 	return NULL;
 }
 
-PgfType*
+PGF_API PgfType*
 pgf_read_type(GuIn* in, GuPool* pool, GuExn* err)
 {
 	GuPool* tmp_pool = gu_new_pool();
@@ -948,7 +1004,7 @@ pgf_read_type(GuIn* in, GuPool* pool, GuExn* err)
 	return type;
 }
 
-bool
+PGF_API bool
 pgf_literal_eq(PgfLiteral lit1, PgfLiteral lit2)
 {
 	GuVariantInfo ei1 = gu_variant_open(lit1);
@@ -980,7 +1036,7 @@ pgf_literal_eq(PgfLiteral lit1, PgfLiteral lit2)
     return false;
 }
 
-bool
+PGF_API bool
 pgf_expr_eq(PgfExpr e1, PgfExpr e2)
 {
 	GuVariantInfo ei1 = gu_variant_open(e1);
@@ -1040,7 +1096,7 @@ pgf_expr_eq(PgfExpr e1, PgfExpr e2)
 	return false;
 }
 
-GuHash
+PGF_API GuHash
 pgf_literal_hash(GuHash h, PgfLiteral lit)
 {
 	GuVariantInfo i = gu_variant_open(lit);
@@ -1068,7 +1124,7 @@ pgf_literal_hash(GuHash h, PgfLiteral lit)
 	return h;
 }
 
-GuHash
+PGF_API GuHash
 pgf_expr_hash(GuHash h, PgfExpr e)
 {
 	GuVariantInfo ei = gu_variant_open(e);
@@ -1120,7 +1176,7 @@ pgf_expr_hash(GuHash h, PgfExpr e)
 	return h;
 }
 
-void
+PGF_API void
 pgf_print_cid(PgfCId id,
 			  GuOut* out, GuExn* err)
 {
@@ -1144,7 +1200,7 @@ pgf_print_cid(PgfCId id,
 	}
 }
 
-void
+PGF_API void
 pgf_print_literal(PgfLiteral lit,
 			      GuOut* out, GuExn* err)
 {
@@ -1197,7 +1253,7 @@ pgf_print_literal(PgfLiteral lit,
     }
 }
 
-void
+PGF_API void
 pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
                GuOut* out, GuExn* err)
 {
@@ -1318,7 +1374,7 @@ pgf_print_expr(PgfExpr expr, PgfPrintContext* ctxt, int prec,
 	}
 }
 
-PgfPrintContext*
+PGF_API PgfPrintContext*
 pgf_print_hypo(PgfHypo *hypo, PgfPrintContext* ctxt, int prec,
                GuOut *out, GuExn *err)
 {
@@ -1350,7 +1406,7 @@ pgf_print_hypo(PgfHypo *hypo, PgfPrintContext* ctxt, int prec,
 	return new_ctxt;
 }
 
-void
+PGF_API void
 pgf_print_type(PgfType *type, PgfPrintContext* ctxt, int prec,
                GuOut *out, GuExn *err)
 {
@@ -1397,7 +1453,7 @@ pgf_print_type(PgfType *type, PgfPrintContext* ctxt, int prec,
 	}
 }
 
-void
+PGF_API void
 pgf_print_expr_tuple(size_t n_exprs, PgfExpr exprs[], PgfPrintContext* ctxt,
                      GuOut* out, GuExn* err)
 {
@@ -1410,7 +1466,7 @@ pgf_print_expr_tuple(size_t n_exprs, PgfExpr exprs[], PgfPrintContext* ctxt,
 	gu_putc('>', out, err);
 }
 
-bool
+PGF_API bool
 pgf_type_eq(PgfType* t1, PgfType* t2)
 {
 	if (gu_seq_length(t1->hypos) != gu_seq_length(t2->hypos))

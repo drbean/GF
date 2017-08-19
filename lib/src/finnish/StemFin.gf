@@ -5,6 +5,12 @@ resource StemFin = open MorphoFin, Prelude in {
 flags coding = utf8 ;
 
 oper
+-- other classes not treated below are POS tagged when the grammar is used with Omorfi
+
+  tagPOS : Str -> Str -> Str = \_,s -> s ;
+  tagFeature : Str -> Str -> Str -> Str = \s,_,_ -> s ;
+
+oper
   SNForm : Type = NForm ;
   SNoun : Type = Noun ;
 
@@ -51,6 +57,9 @@ oper
 
 oper
   SAdj = {s : SAForm => Str ; h : Harmony} ;
+  SAdjFull = {s : Degree => SAForm => Str ; h : Harmony} ;
+
+  sAdjFull2nforms : Degree -> SAdjFull -> NForm => Str = \d,a -> (snoun2nounSep {s = \\nc => a.s ! d ! sAN nc ; h = a.h}).s ;
 
   snoun2sadj : SNoun -> SAdj = snoun2sadjComp True ;
 
@@ -70,7 +79,7 @@ oper
    sAAdv : SAForm = AAdv ;
    sANGen : (SAForm => Str) -> Str = \a -> a ! AN (NCase Sg Gen) ;
 
-    mkAdj : (hyva,parempi,paras : SNoun) -> (hyvin,paremmin,parhaiten : Str) -> {s : Degree => SAForm => Str ; h : Harmony} = \h,p,ps,hn,pn,ph -> {
+    mkAdj : (hyva,parempi,paras : SNoun) -> (hyvin,paremmin,parhaiten : Str) -> SAdjFull = \h,p,ps,hn,pn,ph -> {
       s = table {
         Posit => table {
            AN nf => h.s ! nf ;

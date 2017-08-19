@@ -68,6 +68,7 @@ libpgf_la_SOURCES = \
 	pgf/expr.c \
 	pgf/expr.h \
 	pgf/parser.c \
+	pgf/lookup.c \
 	pgf/jit.c \
 	pgf/parseval.c \
 	pgf/literals.c \
@@ -92,27 +93,12 @@ libsg_la_SOURCES = \
 	sg/sg.c
 libsg_la_LIBADD = libgu.la libpgf.la
 
-bin_PROGRAMS = \
-	utils/pgf-print \
-	utils/pgf-translate \
-	utils/pgf-parse 
-
-utils_pgf_print_SOURCES = utils/pgf-print.c
-utils_pgf_print_LDADD = libpgf.la libgu.la 
-
-utils_pgf_translate_SOURCES = utils/pgf-translate.c
-utils_pgf_translate_LDADD = libpgf.la libgu.la
-
-utils_pgf_parse_SOURCES = utils/pgf-parse.c
-utils_pgf_parse_LDADD = libpgf.la libgu.la
+bin_PROGRAMS =
 
 AUTOMAKE_OPTIONS = foreign subdir-objects dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
-include doxygen.am
 
 EXTRA_DIST = \
-	Doxyfile \
-	DoxygenLayout.xml \
 	libgu.pc.in \
 	libpgf.pc.in \
 	libsg.pc.in

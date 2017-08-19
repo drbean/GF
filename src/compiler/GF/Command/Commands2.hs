@@ -812,7 +812,8 @@ pgfCommands = Map.fromList [
                          unlines [showFun' f ty|f<-funs,
                                                 let ty=C.functionType pgf f,
                                                 target ty == c]
-             target (C.DTyp _ c _) = c
+           --target (C.DTyp _ c _) = c
+             target t = case C.unType t of (_,c,_) -> c
 {-
          [e]         -> case H.inferExpr pgf e of
                           Left tcErr   -> error $ render (H.ppTcError tcErr)
@@ -844,7 +845,7 @@ pgfCommands = Map.fromList [
             ts = [hsExpr t|Right ts<-rs,(t,p)<-takeOptNum opts ts]
             msgs = concatMap (either err ok) rs
             err msg = ["Parse failed: "++msg]
-            ok = map (C.showExpr . fst).takeOptNum opts
+            ok = map (C.showExpr [] . fst).takeOptNum opts
 
    cLins env@(pgf,cncs) opts ts =
        [l|t<-ts,l<-[abs++": "++show t|treebank]++[l|cnc<-cncs,l<-lin cnc t]]
@@ -975,7 +976,12 @@ pgfCommands = Map.fromList [
 
    optFile opts = valStrOpts "file" "_gftmp" opts
 -}
-   optCat pgf opts = valStrOpts "cat" (C.startCat pgf) opts
+   optCat pgf opts = 
+     case listFlags "cat" opts of
+     --v:_ -> C.DTyp [] (valueString v) []
+       v:_ -> C.mkType [] (valueString v) []
+       _   -> C.startCat pgf
+
 {-
    optType pgf opts =
      let str = valStrOpts "cat" (H.showCId $ H.lookStartCat pgf) opts
@@ -1025,7 +1031,7 @@ pgfCommands = Map.fromList [
      | otherwise = return void -- TODO implement more options
 
    showFun pgf f = showFun' f (C.functionType pgf f)
-   showFun' f ty = "fun "++f++" : "++C.showType ty
+   showFun' f ty = "fun "++f++" : "++C.showType [] ty
 
 {-
    prGrammar env@(pgf,mos) opts
