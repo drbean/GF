@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#if defined(__MINGW32__) || defined(_MSC_VER)
+#include <malloc.h>
+#endif
 
 //#define PGF_LOOKUP_DEBUG
 //#define PGF_LINEARIZER_DEBUG
@@ -116,7 +119,7 @@ typedef struct {
 static PgfAbsProduction*
 pgf_lookup_new_production(PgfAbsFun* fun, GuPool *pool)
 {
-	size_t n_hypos = gu_seq_length(fun->type->hypos);
+	size_t n_hypos = fun->type->hypos ? gu_seq_length(fun->type->hypos) : 0;
 	PgfAbsProduction* prod = gu_new_flex(pool, PgfAbsProduction, args, n_hypos);
 	prod->fun = fun;
 	prod->count = 0;
@@ -696,8 +699,12 @@ pgf_lookup_tokenize(GuMap* lexicon_idx, GuString sentence, GuPool* pool)
 			break;
 
 		const uint8_t* start = p-1;
-		while (c != 0 && !gu_ucs_is_space(c)) {
+		if (strchr(".!?,:",c) != NULL)
 			c = gu_utf8_decode(&p);
+		else {
+			while (c != 0 && strchr(".!?,:",c) == NULL && !gu_ucs_is_space(c)) {
+				c = gu_utf8_decode(&p);
+			}
 		}
 		const uint8_t* end   = p-1;
 
@@ -869,7 +876,7 @@ pgf_lookup_symbol_token(PgfLinFuncs** self, PgfToken token)
 }
 
 static void
-pgf_lookup_begin_phrase(PgfLinFuncs** self, PgfCId cat, int fid, int lindex, PgfCId funname)
+pgf_lookup_begin_phrase(PgfLinFuncs** self, PgfCId cat, int fid, size_t lindex, PgfCId funname)
 {
 	PgfLookupState* st = gu_container(self, PgfLookupState, funcs);
 	
@@ -883,7 +890,7 @@ pgf_lookup_begin_phrase(PgfLinFuncs** self, PgfCId cat, int fid, int lindex, Pgf
 }
 
 static void
-pgf_lookup_end_phrase(PgfLinFuncs** self, PgfCId cat, int fid, int lindex, PgfCId fun)
+pgf_lookup_end_phrase(PgfLinFuncs** self, PgfCId cat, int fid, size_t lindex, PgfCId fun)
 {
 	PgfLookupState* st = gu_container(self, PgfLookupState, funcs);
 	st->curr_absfun = NULL;

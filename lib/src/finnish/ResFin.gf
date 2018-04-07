@@ -30,7 +30,7 @@ resource ResFin = ParamX ** open Prelude in {
 
 --- These cases are possible for subjects.
 
-    SubjCase = SCNom | SCGen | SCPart | SCElat | SCAdess | SCAblat ; 
+    SubjCase = SCNom | SCGen | SCPart | SCIness | SCElat | SCAdess | SCAblat ; 
 
 oper
   appSubjCase : SubjCase -> ResFin.NP -> Str = \sc,np -> np.s ! subjcase2npform sc ;
@@ -39,6 +39,7 @@ oper
     SCNom  => NPCase Nom ;
     SCGen  => NPCase Gen ;
     SCPart => NPCase Part ;
+    SCIness => NPCase Iness ;
     SCElat => NPCase Elat ;
     SCAdess => NPCase Adess ;
     SCAblat => NPCase Ablat
@@ -47,6 +48,7 @@ oper
   npform2subjcase : NPForm -> SubjCase = \sc -> case sc of {
     NPCase Gen => SCGen ;
     NPCase Part => SCPart ;
+    NPCase Iness => SCIness ;
     NPCase Elat => SCElat ;
     NPCase Adess => SCAdess ;
     NPCase Ablat => SCAblat ;
@@ -305,7 +307,13 @@ oper
 
   glueTok : Str -> Str = \s -> "&+" ++ s ;
 
-
+-- for pos/neg variation other than just negation word, e.g. case in "on ongelma"/"ei ole ongelmaa"
+   posNegClause : Clause -> Clause -> Clause = \pos,neg -> {
+     s = \\t,a,b,o => case b of {
+         Pos  => pos.s ! t ! a ! b ! o ;
+         _    => neg.s ! t ! a ! b ! o
+         }
+     } ;
 -- This is used for subjects of passives: therefore isFin in False.
 
   subjForm : NP -> SubjCase -> Polarity -> Str = \np,sc,b -> 

@@ -200,6 +200,7 @@ langsCoding = [
   (("afrikaans","Afr"),""),
   (("amharic",  "Amh"),""),
   (("arabic",   "Ara"),""),
+  (("basque",   "Eus"),""),
   (("bulgarian","Bul"),""),
   (("catalan",  "Cat"),""),
   (("chinese",  "Chi"),""),
@@ -227,6 +228,7 @@ langsCoding = [
   (("nynorsk",  "Nno"),""),
   (("persian",  "Pes"),""),
   (("polish",   "Pol"),""),
+  (("portuguese", "Por"), ""),
   (("punjabi",   "Pnb"),""),
   (("romanian", "Ron"),""),
   (("russian",  "Rus"),""),
@@ -248,7 +250,7 @@ langsLang = langs -- `except` ["Amh","Ara","Lat","Tur"]
 --langsLang = langs `only` ["Fin"] --test
 
 -- languagues that have notpresent marked
-langsPresent = langsLang `except` ["Afr","Chi","Gre","Heb","Ice","Jpn","Mlt","Mon","Nep","Pes","Snd","Tha","Thb","Est"]
+langsPresent = langsLang `except` ["Afr","Chi","Eus","Gre","Heb","Ice","Jpn","Mlt","Mon","Nep","Pes","Snd","Tha","Thb","Est"]
 
 -- languages for which to compile Try
 langsAPI  = langsLang `except` langsIncomplete -- ["Ina","Amh","Ara"]
@@ -256,7 +258,7 @@ langsAPI  = langsLang `except` langsIncomplete -- ["Ina","Amh","Ara"]
 langsIncomplete = ["Amh","Ara","Grc","Heb","Ina","Lat","Tur"]
 
 -- languages for which to compile Symbolic
-langsSymbolic  = langsAPI `except` ["Afr","Ice","Jpn","Mon","Nep"]
+langsSymbolic  = langsAPI `except` ["Afr","Ice","Mon","Nep"]
 
 -- languages for which to run demo test
 langsDemo = langsLang `except` ["Ara","Hin","Ina","Lav","Tha"]
@@ -270,7 +272,7 @@ langsPGF = langsLang `except` ["Ara","Hin","Ron","Tha"]
 -- languages for which Compatibility exists (to be extended)
 langsCompat = langsLang `only` ["Cat","Eng","Fin","Fre","Ita","Lav","Spa","Swe"]
 
-gfc bi modes summary files = 
+gfc bi modes summary files =
     parallel_ [gfcn bi mode summary files | mode<-modes]
 gfcn bi mode summary files = do
   let dir = getRGLBuildDir (lbi bi) mode

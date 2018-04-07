@@ -275,6 +275,7 @@ pgfCommands = Map.fromList [
        ("list","show all forms and variants, comma-separated on one line (cf. l -all)"),
        ("multi","linearize to all languages (default)"),
        ("table","show all forms labelled by parameters"),
+       ("tabtreebank","show the tree and its linearizations on a tab-separated line"),
        ("treebank","show the tree and tag linearizations with language names")
        ] ++ stringOpOptions,
      flags = [
@@ -425,8 +426,7 @@ pgfCommands = Map.fromList [
        "are type checking and semantic computation."
        ],
      examples = [
-       mkEx "pt -compute (plus one two)                               -- compute value",
-       mkEx "p \"4 dogs love 5 cats\" | pt -transfer=digits2numeral | l -- four...five..."
+       mkEx "pt -compute (plus one two)                               -- compute value"
        ],
      exec = getEnv $ \ opts arg (Env pgf mos) ->
             returnFromExprs . takeOptNum opts . treeOps pgf opts $ toExprs arg,
@@ -792,6 +792,9 @@ pgfCommands = Map.fromList [
        _ | isOpt "treebank" opts ->
          (showCId (abstractName pgf) ++ ": " ++ showExpr [] t) :
          [showCId lang ++ ": " ++ s | lang <- optLangs pgf opts, s<-linear pgf opts lang t]
+       _ | isOpt "tabtreebank" opts ->
+         return $ concat $ intersperse "\t" $ (showExpr [] t) :
+                   [s | lang <- optLangs pgf opts, s <- linear pgf opts lang t]
        _ | isOpt "chunks" opts -> map snd $ linChunks pgf opts t   
        _ -> [s | lang <- optLangs pgf opts, s<-linear pgf opts lang t]
    linChunks pgf opts t = 

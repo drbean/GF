@@ -65,6 +65,7 @@ typedef enum { BIND_NONE, BIND_HARD, BIND_SOFT } BIND_TYPE;
 typedef struct {
 	PgfProductionIdx* idx;
 	size_t offset;
+	size_t sym_idx;
 } PgfLexiconIdxEntry;
 
 typedef GuBuf PgfLexiconIdx;
@@ -238,6 +239,12 @@ pgf_extern_syms_get(PgfItem* item, GuPool* pool)
 	return syms;
 }
 
+PGF_INTERNAL void
+pgf_print_fid(int fid, GuOut* out, GuExn* err);
+
+PGF_INTERNAL_DECL void
+pgf_print_symbol(PgfSymbol sym, GuOut *out, GuExn *err);
+
 #ifdef PGF_PARSER_DEBUG
 static void
 pgf_item_symbols(PgfItem* item,
@@ -291,12 +298,13 @@ pgf_print_production_args(PgfPArgs* args,
 			size_t n_hypos = gu_seq_length(arg.hypos);
 			for (size_t k = 0; k < n_hypos; k++) {
 				PgfCCat *hypo = gu_seq_get(arg.hypos, PgfCCat*, k);
-				gu_printf(out,err,"C%d ",hypo->fid);
+				pgf_print_fid(hypo->fid, out, err);
+				gu_putc(' ',out,err);
 			}
-			gu_printf(out,err,"-> ");
+			gu_puts("-> ",out,err);
 		}
-		
-		gu_printf(out,err,"C%d",arg.ccat->fid);
+
+		pgf_print_fid(arg.ccat->fid, out, err);
 	}
 }
 
@@ -304,14 +312,20 @@ static void
 pgf_print_production(int fid, PgfProduction prod, 
                      GuOut *out, GuExn* err, GuPool* pool)
 {
-    gu_printf(out,err,"C%d -> ",fid);
+	pgf_print_fid(fid, out, err);
+    gu_puts(" -> ", out, err);
        
     GuVariantInfo i = gu_variant_open(prod);
     switch (i.tag) {
     case PGF_PRODUCTION_APPLY: {
         PgfProductionApply* papp = i.data;
         gu_printf(out,err,"F%d(",papp->fun->funid);
-        pgf_print_expr(papp->fun->ep->expr, NULL, 0, out, err);
+        if (papp->fun->ep != NULL) {
+            pgf_print_expr(papp->fun->ep->expr, NULL, 0, out, err);
+        } else {
+            PgfPArg* parg = gu_seq_index(papp->args, PgfPArg, 0);
+            gu_printf(out,err,"linref %s", parg->ccat->cnccat->abscat->name);
+        }
         gu_printf(out,err,")[");
         pgf_print_production_args(papp->args,out,err);
         gu_printf(out,err,"]\n");
@@ -319,7 +333,9 @@ pgf_print_production(int fid, PgfProduction prod,
     }
     case PGF_PRODUCTION_COERCE: {
         PgfProductionCoerce* pcoerce = i.data;
-        gu_printf(out,err,"_[C%d]\n",pcoerce->coerce->fid);
+        gu_puts("_[",out,err);
+        pgf_print_fid(pcoerce->coerce->fid, out, err);
+        gu_printf("]\n",out,err);
         break;
     }
     case PGF_PRODUCTION_EXTERN: {
@@ -333,9 +349,6 @@ pgf_print_production(int fid, PgfProduction prod,
         gu_impossible();
     }
 }
-
-PGF_INTERNAL_DECL void
-pgf_print_symbol(PgfSymbol sym, GuOut *out, GuExn *err);
 
 static void
 pgf_print_item_seq(PgfItem *item,
@@ -371,9 +384,11 @@ pgf_print_range(PgfParseState* start, PgfParseState* end, GuOut* out, GuExn* err
 static void
 pgf_print_item(PgfItem* item, PgfParseState* state, GuOut* out, GuExn* err, GuPool* pool)
 {
-    gu_printf(out, err, "[");
+    gu_putc('[', out, err);
 	pgf_print_range(item->conts->state, state, out, err);
-	gu_printf(out, err, "; C%d -> ", item->conts->ccat->fid);
+	gu_puts("; ", out, err);
+	pgf_print_fid(item->conts->ccat->fid, out, err);
+	gu_puts(" -> ", out, err);
 
 	GuVariantInfo i = gu_variant_open(item->prod);
 	switch (i.tag) {
@@ -381,15 +396,21 @@ pgf_print_item(PgfItem* item, PgfParseState* state, GuOut* out, GuExn* err, GuPo
 		PgfProductionApply* papp = i.data;
         PgfCncFun* fun = papp->fun;
         gu_printf(out, err, "F%d(", fun->funid);
-        pgf_print_expr(fun->ep->expr, NULL, 0, out, err);
+        if (fun->ep != NULL) {
+            pgf_print_expr(fun->ep->expr, NULL, 0, out, err);
+        } else {
+            PgfPArg* parg = gu_seq_index(item->args, PgfPArg, 0);
+            gu_printf(out,err,"linref %s", parg->ccat->cnccat->abscat->name);
+        }
         gu_printf(out, err, ")[");
         pgf_print_production_args(item->args, out, err);
         gu_printf(out, err, "]; ");
 		break;
 	}
 	case PGF_PRODUCTION_COERCE: {
-        gu_printf(out, err, "_[C%d]; ",
-            gu_seq_index(item->args, PgfPArg, 0)->ccat->fid);
+        gu_puts("_[", out, err);
+        pgf_print_fid(gu_seq_index(item->args, PgfPArg, 0)->ccat->fid, out, err);
+        gu_puts("]; ", out, err);
 		break;
 	}
 	case PGF_PRODUCTION_EXTERN: {
@@ -563,6 +584,7 @@ pgf_parsing_get_conts(PgfParseState* state,
 					  GuPool *pool)
 {
 	gu_require(lin_idx < ccat->cnccat->n_lins);
+
 	PgfItemContss* contss = 
 		pgf_parsing_get_contss(state, ccat, pool);
 	if (contss == NULL) {
@@ -622,7 +644,7 @@ pgf_parsing_create_completed(PgfParsing* ps, PgfParseState* state,
 	cat->fin[0].fn = gu_ccat_fini;
 	gu_pool_finally(ps->pool, cat->fin);
 
-#ifdef PGF_COUNTS_DEBUG	
+#ifdef PGF_COUNTS_DEBUG
 	state->ps->ccat_full_count++;
 #endif
 
@@ -835,13 +857,6 @@ pgf_parsing_combine(PgfParsing* ps,
                     PgfParseState* before, PgfParseState* after,
                     PgfItem* cont, PgfCCat* cat, int lin_idx)
 {
-	if (cont == NULL) {
-		if (before->end_offset == strlen(ps->sentence)) {
-			pgf_result_predict(ps, NULL, cat);
-		}
-		return;
-	}
-
 	PgfItem* item = NULL;
 	switch (gu_variant_tag(cont->curr_sym)) {
 	case PGF_SYMBOL_CAT: {
@@ -972,14 +987,24 @@ pgf_parsing_complete(PgfParsing* ps, PgfItem* item, PgfExprProb *ep)
     if (tmp_ccat == NULL) {
 	    gu_printf(out, err, "[");
 		pgf_print_range(item->conts->state, ps->before, out, err);
-		gu_printf(out, err, "; C%d; %d; C%d]\n",
-                            item->conts->ccat->fid, 
-                            item->conts->lin_idx, 
-                            ccat->fid);
+		gu_puts("; ", out, err);
+        pgf_print_fid(item->conts->ccat->fid, out, err);
+        gu_printf(out, err, "; %d; ",
+                            item->conts->lin_idx);
+        pgf_print_fid(ccat->fid, out, err);
+		gu_puts("]\n", out, err);
 	}
     pgf_print_production(ccat->fid, prod, out, err, tmp_pool);
     gu_pool_free(tmp_pool);
 #endif
+
+	if (item->conts->ccat->fid == -5) {
+		if (ps->before->end_offset == strlen(ps->sentence)) {
+			PgfPArg* parg = gu_seq_index(item->args, PgfPArg, 0);
+			pgf_result_predict(ps, NULL, parg->ccat);
+		}
+		return;
+	}
 
 	if (tmp_ccat != NULL) {
 		PgfItemContss* contss =
@@ -1036,16 +1061,16 @@ pgf_parsing_complete(PgfParsing* ps, PgfItem* item, PgfExprProb *ep)
 }
 
 static int
-pgf_symbols_cmp(GuString* psent, PgfSymbols* syms, bool case_sensitive)
+pgf_symbols_cmp(GuString* psent, PgfSymbols* syms, size_t* sym_idx, bool case_sensitive)
 {
 	size_t n_syms = gu_seq_length(syms);
-	for (size_t i = 0; i < n_syms; i++) {
-		PgfSymbol sym = gu_seq_get(syms, PgfSymbol, i);
+	while (*sym_idx < n_syms) {
+		PgfSymbol sym = gu_seq_get(syms, PgfSymbol, *sym_idx);
 
-		if (i > 0) {
+		if (*sym_idx > 0) {
 			if (!skip_space(psent)) {
 				if (**psent == 0)
-					return -1;
+					return 0;
 				return 1;
 			}
 
@@ -1061,13 +1086,13 @@ pgf_symbols_cmp(GuString* psent, PgfSymbols* syms, bool case_sensitive)
 		case PGF_SYMBOL_LIT:
 		case PGF_SYMBOL_VAR: {
 			if (**psent == 0)
-				return -1;
+				return 0;
 			return 1;
 		}
 		case PGF_SYMBOL_KS: {
 			PgfSymbolKS* pks = inf.data;
 			if (**psent == 0)
-				return -1;
+				return 0;
 
 			int cmp = cmp_string(psent, pks->token, case_sensitive);
 			if (cmp != 0)
@@ -1086,6 +1111,8 @@ pgf_symbols_cmp(GuString* psent, PgfSymbols* syms, bool case_sensitive)
 		default:
 			gu_impossible();
 		}
+
+		(*sym_idx)++;
 	}
 
 	return 0;
@@ -1106,7 +1133,8 @@ pgf_parsing_lookahead(PgfParsing *ps, PgfParseState* state,
 
 		GuString start   = ps->sentence + state->end_offset;
 		GuString current = start;
-		int cmp = pgf_symbols_cmp(&current, seq->syms, ps->case_sensitive);
+		size_t sym_idx = 0;
+		int cmp = pgf_symbols_cmp(&current, seq->syms, &sym_idx, ps->case_sensitive);
 		if (cmp < 0) {
 			j = k-1;
 		} else if (cmp > 0) {
@@ -1127,8 +1155,9 @@ pgf_parsing_lookahead(PgfParsing *ps, PgfParseState* state,
 
 			if (seq->idx != NULL) {
 				PgfLexiconIdxEntry* entry = gu_buf_extend(state->lexicon_idx);
-				entry->idx       = seq->idx;
-				entry->offset    = (size_t) (current - ps->sentence);
+				entry->idx        = seq->idx;
+				entry->offset     = (size_t) (current - ps->sentence);
+				entry->sym_idx    = sym_idx;
 			}
 
 			if (len+1 <= max)
@@ -1230,9 +1259,12 @@ pgf_parsing_add_transition(PgfParsing* ps, PgfToken tok, PgfItem* item)
 
 	if (ps->prefix != NULL && *current == 0) {
 		if (gu_string_is_prefix(ps->prefix, tok)) {
+			PgfProductionApply* papp = gu_variant_data(item->prod);
+
 			ps->tp = gu_new(PgfTokenProb, ps->out_pool);
 			ps->tp->tok  = tok;
 			ps->tp->cat  = item->conts->ccat->cnccat->abscat->name;
+			ps->tp->fun  = papp->fun->absfun->name;
 			ps->tp->prob = item->inside_prob + item->conts->outside_prob;
 		}
 	} else {
@@ -1251,14 +1283,15 @@ pgf_parsing_add_transition(PgfParsing* ps, PgfToken tok, PgfItem* item)
 static void
 pgf_parsing_predict_lexeme(PgfParsing* ps, PgfItemConts* conts,
                            PgfProductionIdxEntry* entry,
-                           size_t offset)
+                           size_t offset, size_t sym_idx)
 {
 	GuVariantInfo i = { PGF_PRODUCTION_APPLY, entry->papp };
 	PgfProduction prod = gu_variant_close(i);
 	PgfItem* item =
 		pgf_new_item(ps, conts, prod);
 	PgfSymbols* syms = entry->papp->fun->lins[conts->lin_idx]->syms;
-	item->sym_idx = gu_seq_length(syms);
+	item->sym_idx = sym_idx;
+	pgf_item_set_curr_symbol(item, ps->pool);
 	prob_t prob = item->inside_prob+item->conts->outside_prob;
 	PgfParseState* state =
 		pgf_new_parse_state(ps, offset, BIND_NONE, prob);
@@ -1275,6 +1308,7 @@ pgf_parsing_td_predict(PgfParsing* ps,
 	PgfItemConts* conts = 
 		pgf_parsing_get_conts(ps->before, ccat, lin_idx, ps->pool);
 	gu_buf_push(conts->items, PgfItem*, item);
+
 	if (gu_buf_length(conts->items) == 1) {
 		/* First time we encounter this linearization
 		 * of this category at the current position,
@@ -1330,7 +1364,7 @@ pgf_parsing_td_predict(PgfParsing* ps,
 									 PgfProductionIdxEntry, &key);
 
 				if (value != NULL) {
-					pgf_parsing_predict_lexeme(ps, conts, value, lentry->offset);
+					pgf_parsing_predict_lexeme(ps, conts, value, lentry->offset, lentry->sym_idx);
 
 					PgfProductionIdxEntry* start =
 						gu_buf_data(lentry->idx);
@@ -1341,7 +1375,7 @@ pgf_parsing_td_predict(PgfParsing* ps,
 					while (left >= start &&
 						   value->ccat->fid == left->ccat->fid &&
 						   value->lin_idx   == left->lin_idx) {
-						pgf_parsing_predict_lexeme(ps, conts, left, lentry->offset);
+						pgf_parsing_predict_lexeme(ps, conts, left, lentry->offset, lentry->sym_idx);
 						left--;
 					}
 
@@ -1349,7 +1383,7 @@ pgf_parsing_td_predict(PgfParsing* ps,
 					while (right <= end &&
 						   value->ccat->fid == right->ccat->fid &&
 						   value->lin_idx   == right->lin_idx) {
-						pgf_parsing_predict_lexeme(ps, conts, right, lentry->offset);
+						pgf_parsing_predict_lexeme(ps, conts, right, lentry->offset, lentry->sym_idx);
 						right++;
 					}
 				}
@@ -1885,9 +1919,8 @@ pgf_parse_result_is_new(PgfExprState* st)
 	return true;
 }
 
-// TODO: s/CId/Cat, add the cid to Cat, make Cat the key to CncCat
 static PgfParsing*
-pgf_parsing_init(PgfConcr* concr, PgfCId cat, size_t lin_idx, 
+pgf_parsing_init(PgfConcr* concr, PgfCId cat, 
                  GuString sentence,
                  double heuristic_factor,
                  PgfCallbacksMap* callbacks, PgfOracleCallback* oracle,
@@ -1901,8 +1934,6 @@ pgf_parsing_init(PgfConcr* concr, PgfCId cat, size_t lin_idx,
 		return NULL;
 	}
 
-	gu_assert(lin_idx < cnccat->n_lins);
-
 	PgfParsing* ps =
 		pgf_new_parsing(concr, sentence, callbacks, oracle, pool, out_pool);
 
@@ -1913,31 +1944,68 @@ pgf_parsing_init(PgfConcr* concr, PgfCId cat, size_t lin_idx,
 	PgfParseState* state =
 		pgf_new_parse_state(ps, 0, BIND_SOFT, 0);
 
+	int fidString = -1;
+	PgfCCat* start_ccat = gu_new(PgfCCat, ps->pool);
+	start_ccat->cnccat = gu_map_get(concr->ccats, &fidString, PgfCCat*)->cnccat;
+	start_ccat->lindefs = NULL;
+	start_ccat->linrefs = NULL;
+	start_ccat->viterbi_prob = 0;
+	start_ccat->fid = -5;
+	start_ccat->conts = NULL;
+	start_ccat->answers = NULL;
+	start_ccat->prods = NULL;
+	start_ccat->n_synprods = 0;
+
+#ifdef PGF_COUNTS_DEBUG
+	state->ps->ccat_full_count++;
+#endif
+
+	PgfItemConts* conts =
+		pgf_parsing_get_conts(state, start_ccat, 0, ps->pool);
+    gu_buf_push(conts->items, PgfItem*, NULL);
+
+#ifdef PGF_COUNTS_DEBUG
+	ps->cont_full_count++;
+#endif
+
 	size_t n_ccats = gu_seq_length(cnccat->cats);
 	for (size_t i = 0; i < n_ccats; i++) {
 		PgfCCat* ccat = gu_seq_get(cnccat->cats, PgfCCat*, i);
 		if (ccat != NULL) {
-            if (ccat->prods == NULL) {
-                // Empty category
-                continue;
-            }
+			PgfPArgs* args = gu_new_seq(PgfPArg, 1, ps->pool);
+			gu_seq_set(args, PgfPArg, 0, ((PgfPArg) { .hypos = NULL, .ccat = ccat }));
 
-			PgfItemConts* conts =
-				pgf_parsing_get_conts(state, ccat, lin_idx, ps->pool);
-            gu_buf_push(conts->items, PgfItem*, NULL);
+			size_t n_funs = gu_seq_length(ccat->linrefs);
+			for (size_t j = 0; j < n_funs; j++) {
+				PgfProduction prod = gu_null_variant;
+				PgfProductionApply* new_papp =
+					gu_new_variant(PGF_PRODUCTION_APPLY,
+						PgfProductionApply,
+						&prod, pool);
+				new_papp->fun  = gu_seq_get(ccat->linrefs, PgfCncFun*, j);
+				new_papp->args = args;
+
+                PgfItem* item = gu_new(PgfItem, ps->pool);
+				item->args = args;
+				item->inside_prob += ccat->viterbi_prob;
+				item->conts = conts;
+				item->prod  = prod;
+				item->curr_sym = gu_null_variant;
+				item->sym_idx = 0;
+				item->alt_idx = 0;
+				item->alt = 0;
+
+				conts->ref_count++;
+
+				pgf_item_set_curr_symbol(item, ps->pool);
 
 #ifdef PGF_COUNTS_DEBUG
-			ps->cont_full_count++;
+				ps->item_full_count++;
+				ps->item_real_count++;
 #endif
 
-            size_t n_prods = gu_seq_length(ccat->prods);
-            for (size_t i = 0; i < n_prods; i++) {
-                PgfProduction prod =
-                    gu_seq_get(ccat->prods, PgfProduction, i);
-                PgfItem* item = 
-                    pgf_new_item(ps, conts, prod);
                 gu_buf_heap_push(state->agenda, pgf_item_prob_order, &item);
-            }
+			}
 		}
 	}
 
@@ -2080,30 +2148,37 @@ pgf_parse_result_enum_next(GuEnum* self, void* to, GuPool* pool)
 	*(PgfExprProb**)to = pgf_parse_result_next(ps);
 }
 
-static GuString
-pgf_parsing_last_token(PgfParsing* ps, GuPool* pool)
+static PgfParseError*
+pgf_parsing_new_exception(PgfParsing* ps, GuPool* pool)
 {
-	if (ps->before == NULL)
-		return "";
+	const uint8_t* p   = (uint8_t*) ps->sentence;
+	const uint8_t* end = p + (ps->before ? ps->before->end_offset : 0);
 
-	const uint8_t* start = (uint8_t*) ps->sentence;
-	const uint8_t* end   = (uint8_t*) ps->sentence + ps->before->end_offset;
+	PgfParseError* err = gu_new(PgfParseError, pool);
+	err->incomplete= (*end == 0);
+	err->offset    = 0;
+	err->token_ptr = (char*) p;
 
-	const uint8_t* p = start;
 	while (p < end) {
 		if (gu_ucs_is_space(gu_utf8_decode(&p))) {
-			start = p;
+			err->token_ptr = (char*) p;
 		}
+		err->offset++;
+	}
+
+	if (err->incomplete) {
+		err->token_ptr = NULL;
+		err->token_len = 0;
+		return err;
 	}
 
 	while (*p && !gu_ucs_is_space(gu_utf8_decode(&p))) {
 		end = p;
 	}
 
-	char* tok = gu_malloc(pool, end-start+1);
-	memcpy(tok, start, (end-start));
-	tok[end-start] = 0;
-	return tok;
+	err->token_len = ((char*)end)-err->token_ptr;
+
+	return err;
 }
 
 PGF_API GuEnum*
@@ -2133,7 +2208,7 @@ pgf_parse_with_heuristics(PgfConcr* concr, PgfType* typ, GuString sentence,
 
 	// Begin parsing a sentence with the specified category
 	PgfParsing* ps =
-		pgf_parsing_init(concr, typ->cid, 0, sentence, heuristics, callbacks, NULL, err, pool, out_pool);
+		pgf_parsing_init(concr, typ->cid, sentence, heuristics, callbacks, NULL, err, pool, out_pool);
 	if (ps == NULL) {
 		return NULL;
 	}
@@ -2145,7 +2220,7 @@ pgf_parse_with_heuristics(PgfConcr* concr, PgfType* typ, GuString sentence,
 	while (gu_buf_length(ps->expr_queue) == 0) {
 		if (!pgf_parsing_proceed(ps)) {
 			GuExnData* exn = gu_raise(err, PgfParseError);
-			exn->data = (void*) pgf_parsing_last_token(ps, exn->pool);
+			exn->data = (void*) pgf_parsing_new_exception(ps, exn->pool);
 			return NULL;
 		}
 
@@ -2178,7 +2253,7 @@ pgf_parse_with_oracle(PgfConcr* concr, PgfType* typ,
 	// Begin parsing a sentence with the specified category
 	PgfCallbacksMap* callbacks = pgf_new_callbacks_map(concr, out_pool); 
 	PgfParsing* ps =
-		pgf_parsing_init(concr, typ->cid, 0, sentence, -1, callbacks, oracle, err, pool, out_pool);
+		pgf_parsing_init(concr, typ->cid, sentence, -1, callbacks, oracle, err, pool, out_pool);
 	if (ps == NULL) {
 		return NULL;
 	}
@@ -2190,7 +2265,7 @@ pgf_parse_with_oracle(PgfConcr* concr, PgfType* typ,
 	while (gu_buf_length(ps->expr_queue) == 0) {
 		if (!pgf_parsing_proceed(ps)) {
 			GuExnData* exn = gu_raise(err, PgfParseError);
-			exn->data = (void*) pgf_parsing_last_token(ps, exn->pool);
+			exn->data = (void*) pgf_parsing_new_exception(ps, exn->pool);
 			return NULL;
 		}
 
@@ -2240,7 +2315,7 @@ pgf_complete(PgfConcr* concr, PgfType* type, GuString sentence,
 	PgfCallbacksMap* callbacks =
 		pgf_new_callbacks_map(concr, pool);
 	PgfParsing* ps =
-		pgf_parsing_init(concr, type->cid, 0, sentence, -1.0, callbacks, NULL, err, pool, pool);
+		pgf_parsing_init(concr, type->cid, sentence, -1.0, callbacks, NULL, err, pool, pool);
 	if (ps == NULL) {
 		return NULL;
 	}
@@ -2253,7 +2328,7 @@ pgf_complete(PgfConcr* concr, PgfType* type, GuString sentence,
 	while (ps->before->end_offset < len) {
 		if (!pgf_parsing_proceed(ps)) {
 			GuExnData* exn = gu_raise(err, PgfParseError);
-			exn->data = (void*) pgf_parsing_last_token(ps, exn->pool);
+			exn->data = (void*) pgf_parsing_new_exception(ps, exn->pool);
 			return NULL;
 		}
 
@@ -2303,8 +2378,9 @@ pgf_sequence_cmp_fn(GuOrder* order, const void* p1, const void* p2)
 	GuString sent = (GuString) p1;
 	const PgfSequence* sp2 = p2;
 
-	int res = pgf_symbols_cmp(&sent, sp2->syms, self->case_sensitive);
-	if (res == 0 && *sent != 0) {
+	size_t sym_idx = 0;
+	int res = pgf_symbols_cmp(&sent, sp2->syms, &sym_idx, self->case_sensitive);
+	if (res == 0 && (*sent != 0 || sym_idx != gu_seq_length(sp2->syms))) {
 		res = 1;
 	}
 
@@ -2435,7 +2511,7 @@ pgf_lookup_word_prefix(PgfConcr *concr, GuString prefix,
 	return &state->en;
 }
 
-PGF_INTERNAL void
+PGF_API void
 pgf_parser_index(PgfConcr* concr, 
                  PgfCCat* ccat, PgfProduction prod,
                  bool is_lexical,

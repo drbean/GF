@@ -65,7 +65,7 @@ lin
   in_Prep = mkPrep "en" ;
   it_Pron = 
     mkPronoun
-      "él" "lo" "le" "él"
+      "eso" "lo" "le" "eso"
       "su" "su" "sus" "sus"
       Masc Sg P3 ;
   less_CAdv = X.mkCAdv "menos" conjThan ; ----
@@ -139,8 +139,8 @@ lin
   when_Subj = ss "cuando" ** {m = Indic} ;
   where_IAdv = ss "dónde" ;
   which_IQuant = {s = table {
-    Sg => \\g,c => prepCase c ++ "qué" ; --- cual
-    Pl => \\g,c => prepCase c ++ "qué" 
+    Sg => \\g,c => prepCase c ++ "cual" ; 
+    Pl => \\g,c => prepCase c ++ "cuales" 
     }
    } ;
   whoPl_IP = {s = \\c => prepCase c ++ "quién" ; a = aagr Masc Pl} ;

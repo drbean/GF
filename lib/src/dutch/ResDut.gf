@@ -19,7 +19,7 @@ resource ResDut = ParamX ** open Prelude, Predef in {
 
     NPCase = NPNom | NPAcc ;
 
-  oper 
+  oper     
     Noun = {s : NForm => Str ; g : Gender} ;
 
     mkNoun : (_,_ : Str) -> Gender -> Noun = \sg,pl,g -> {
@@ -34,16 +34,18 @@ resource ResDut = ParamX ** open Prelude, Predef in {
 
     regNoun : Str -> Noun = \s -> case s of {
       _ + ("a" | "o" | "y" | "u" | "oe" | "é") => mkNoun s (s + "'s") Utr ;
-      _ + ("oir" | "ion" | "je") => mkNoun s (s + "s") Neutr ;
+      _ + ("oir" | "ion" | "je" | "c") => mkNoun s (s + "s") Neutr ;
       ? + ? + ? + _ + 
         ("el" | "em" | "en" | "er" | "erd" | "aar" | "aard" | "ie") => -- unstressed
                                             mkNoun s (s + "s") Utr ;
       _ +                     ("i"|"u")  => mkNoun s (endCons s + "en") Utr ;
       b + v@("aa"|"ee"|"oo"|"uu") + c@?  => mkNoun s (b + shortVoc v c + "en") Utr ; 
       b + ("ei"|"eu"|"oe"|"ou"|"ie"|"ij"|"ui") + ? => mkNoun s (endCons s + "en") Utr ;
-      _ + "ie" => mkNoun s (s + "ën") Utr ;
-      b + v@("a"|"e"|"i"|"o"|"u" ) + c@? => mkNoun s (b + v + c + c + "en") Utr ;
-      _ => mkNoun s (endCons s + "en") Utr
+      _ + ("ie"|"ee") => mkNoun s (s + "ën") Utr ; -- zee→zeeën, knie→knieën. 
+                                                   -- olie→oliën, industrie→industrieën with 2-arg constructor.
+      b + v@("a"|"e"|"i"|"o"|"u") + c@? => mkNoun s (b + v + c + c + "en") Utr ;
+      _ + "e" => mkNoun s (s + "s") Utr ; -- vrede→vredes. Might not be a good generalisation though. /IL2018
+      _       => mkNoun s (endCons s + "en") Utr
       } ;
 
     regNounG : Str -> Gender -> Noun = \s,g -> {
@@ -101,6 +103,7 @@ resource ResDut = ParamX ** open Prelude, Predef in {
           _ + ("i"|"u"|"ij") => endCons s + "e" ;
           b + v@("aa"|"ee"|"oo"|"uu") + c@?             => b + shortVoc v c + "e" ;
           b + ("ei"|"eu"|"oe"|"ou"|"ie"|"ij"|"ui") + ?  => endCons s + "e" ;
+          b + v@("a"|"e"|"i"|"o"|"u" )            + "w" => s + "e" ; -- to prevent *blauwwe -- does this happen to other end consonants?
           b + v@("a"|"e"|"i"|"o"|"u" )            + c@? => b + v + c + c + "e" ;
           _ => endCons s + "e"
           } ;
@@ -129,7 +132,7 @@ param
   oper
     Verb : Type = {s: VForm => Str};
     
-  mkVerb : (_,_,_,_,_,_,_ : Str) -> Verb =
+  mkVerb : (x1,_,_,_,_,_,x7 : Str) -> Verb =
     \aai, aait, aaien, aaide, aaidet, aaiden, geaaid ->
 	  mkVerb8 aai aait aait aaien aaide aaidet aaiden geaaid ;
 
@@ -179,17 +182,22 @@ param
      } ;
 
 	-- Pattern matching verbs
+  -- Checking if the verb starts with "ver" is due to a bugfix in mkStem regarding ≥2-syllable verbs. /IL2018
     smartVerb : (_,_:Str) -> Verb = \verb,stem ->
     	let raw = Predef.tk 2 verb;
+          vg : {ver : Str ; geet : Str } = case verb of { 
+            "ver" + geten => {ver = "ver" ; geet = mkStem geten } ;
+            _             => {ver = []    ; geet = stem } } ;
+          vergeten : Str = verb ;
+          vergeet : Str = vg.ver + vg.geet ;
     	in
     	case raw of {
-    	 _+ ("k"|"f"|"s"|"c"|"h"|"p") => t_regVerb verb stem;
-    	 _+ "v" => v_regVerb verb;
-    	 _+ "z" => z_regVerb verb;
-    	 _+ ("t" | "tt") => t_end_regVerb verb;
-    	 _+ "d" => d_end_regVerb verb;
-    	 
-    	 _ => d_regVerb verb stem
+    	 _+ ("k"|"f"|"s"|"c"|"h"|"p") => t_regVerb vergeten vergeet ;
+    	 _+ "v" => v_regVerb vergeten vergeet ;
+    	 _+ "z" => z_regVerb vergeten vergeet ;
+    	 _+ ("t" | "tt") => t_end_regVerb vergeten vergeet ;
+    	 _+ "d" => d_end_regVerb vergeten vergeet ;    	 
+    	 _ => d_regVerb vergeten vergeet 
     	 
     	};
      consonant : pattern Str = #("b"|"c"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"m"|"n"|"p"|"q"|"r"|"s"|"t"|"v"|"w"|"x"|"y"|"z") ;
@@ -199,9 +207,9 @@ param
     -- If a stem ends in a 'z' then the 'z' changes into an 's'
     -- If a stem ends on a double consonant then one of them disappears
     -- If a stem ends on a consonant but that consonant has exactly 1 vowel before it
-    -- then we have to double this vowel
-    mkStem : Str -> Str =\lopen -> 
-    let 
+    -- then we have to double this vowel (but only if it's a monosyllable stem!)
+    mkStem : Str -> Str = \lopen -> 
+    let
       lop  = tk 2 lopen ;    --drop the -en
       lo   = init lop ;
       o    = last lo  ;
@@ -217,8 +225,14 @@ param
       
     in
     case lop of {
-        #vowel + #consonant => loop ;
-    	_+ #consonant + #vowel + #consonant => loop ; 
+                                                    -- Penultimate is vowel, but it doesn't double: either because
+      _+ #vowel + _ + #vowel + #consonant => kerf ; -- a) ≥2 syllables, e.g. ademen, rekenen, schakelen
+                                                    -- b) diphthong, e.g. vriezen  (ij + #consonant falls into the default case!)
+                                                    -- OBS. will do the wrong thing, if you use it on prefix verbs
+
+      _ + #vowel + ("w"|"j")  => werk ; -- Don't double a vowel before a w or j (are there other consonants?)
+
+      _ + #vowel + #consonant => loop ; -- In other cases, a single penultimate vowel doubles.
     	_+ ("bb" | "dd" | "ff" | "gg" | "kk" | "ll" | "mm" | "nn" | "pp" | 
             "rr" | "ss" | "tt")    => zeg ;
     	_+ #consonant + ("v"|"z")  => kerf ;
@@ -235,55 +249,40 @@ param
     
     -- For regular verbs with past tense 'd'
     d_regVerb : (_,_ :Str) -> Verb = \geeuwen,geeuw ->
-    	let stem = geeuw --- mkStem geeuwen
-    	in
-    	mkVerb stem (stem + "t") geeuwen 
-    	  (stem + "de") (stem + "de") (stem + "den") 
-    	  ("ge" + stem + "d");	
+      mkVerb geeuw (geeuw + "t") geeuwen 
+            (geeuw + "de") (geeuw + "de") (geeuw + "den")
+            ("ge" + geeuw + "d");	
 
 	-- For regular verbs with past tense 't'
    	t_regVerb : (_,_ :Str) -> Verb = \botsen,bots ->
-   		let bots = mkStem botsen
-   		in
    		mkVerb bots (bots + "t") botsen 
    		  (bots + "te") (bots + "te") (bots + "ten")
    		  ("ge" + bots + "t");
      
  	-- For verbs that dont need an extra 't' at the end
-    t_end_regVerb : Str -> Verb = \achten ->
-   		let acht = mkStem achten
-   		in
+    t_end_regVerb : (_,_ : Str) -> Verb = \achten,acht ->
       	mkVerb acht (acht) achten
      		(acht + "te") (acht +"te") (acht+"ten") ("ge"+acht);
     
     -- For verbs that dont need an extra 'd' at the end
-    d_end_regVerb : Str -> Verb = \aarden ->
-   		let aard = mkStem aarden
-   		in
+    d_end_regVerb : (_,_ : Str) -> Verb = \aarden,aard ->
       	mkVerb aard (aard+"t") aarden
      		(aard + "de") (aard +"de") (aard+"den") ("ge"+aard);
   
 	-- For verbs that need a vowel doubled in singular
-	 add_vowel_regVerb : Str -> Verb = \absorberen ->
-		let stem = mkStem absorberen 
-		in
+	 add_vowel_regVerb : (_,_ : Str) -> Verb = \absorberen,stem ->
 		case stem of {
 			_+ ("t"|"k"|"f"|"s"|"c"|"h"|"p") => t_regVerb absorberen stem;
 			_ => d_regVerb absorberen stem
 		};
 
 	-- For verbs that have their stem ending with a 'z'
-	z_regVerb : Str -> Verb = \omhelzen ->
-	let stem = mkStem omhelzen
-	in
-	d_regVerb omhelzen stem;
+	z_regVerb : (_,_ : Str) -> Verb = \omhelzen,stem ->
+    d_regVerb omhelzen stem;
 	
 	-- For verbs that have their stem ending with a 'v'
-	v_regVerb : Str -> Verb = \hoeven ->
-	let hoef = mkStem hoeven
-	in
-	mkVerb hoef (hoef +"t") hoeven (hoef+"de") (hoef+"de") (hoef+"den")
-		("ge"+hoef+"d");  
+	v_regVerb : (_,_ : Str) -> Verb = \hoeven,hoef ->
+    mkVerb hoef (hoef +"t") hoeven (hoef+"de") (hoef+"de") (hoef+"den") ("ge"+hoef+"d");  
 
   zijn_V : VVerb = {
     s = table {
@@ -365,7 +364,7 @@ param
        VPastSg   => "kon" ; --# notpresent
        VPastPl   => "konden" ; --# notpresent
        VImp2     => "kan" ;  ---- not used
-       VImp3     => "kant" ;
+       VImp3     => "kan" ;
        VImpPl    => "kunnen" ; ----
        VPerf     => "gekund" ;
        VPresPart => "kunnende" ;
@@ -380,23 +379,25 @@ param
   worden_V = irregVerb2 "worden" "werd" "werden" "geworden" ** {
     aux = VZijn ; prefix = [] ; particle = [] ; vtype = VAct} ; 
 
-    Pronoun : Type = {
+    Pronoun : Type = MergesWithPrep ** {
       unstressed,stressed : {nom, acc, poss : Str} ;
-      substposs : Str ;
-      a : Agr
+      substposs : Number => Str ;
+      a : Agr ;
       } ; 
 
     mkPronoun : (x1,_,_,_,_,x6,x7 : Str) -> Gender -> Number -> Person -> Pronoun = 
-      \ik,me,mn,Ik,mij,mijn,mijne,g,n,p -> {
+      \ik,me,mn,Ik,mij,mijn,mijne,g,n,p -> noMerge ** {
          unstressed = {nom = ik ; acc = me  ; poss = mn} ;
          stressed   = {nom = Ik ; acc = mij ; poss = mijn} ;
-         substposs  = mijne ;
+         substposs  = table {Sg => mijne ; Pl => mijne + "n" } ; --overgenerates *jullien /IL2018
          a = {g = g ; n = n ; p = p}
          } ;
 
     het_Pron : Pronoun = mkPronoun "het" "het" "ze" "hij" "hem" "zijn" "zijne" Neutr Sg P3 ; -- cunger: 't -> het 
 
 
+    MergesWithPrep : Type = { mergesWithPrep : Bool ; mergeForm : Str } ;
+    noMerge : MergesWithPrep = { mergesWithPrep = False ; mergeForm = [] } ;
 -- Complex $CN$s, like adjectives, have strong and weak forms.
 
 param
@@ -422,9 +423,22 @@ param
 ---- The order of sentence is depends on whether it is used as a main
 ---- clause, inverted, or subordinate.
 
-  oper 
-    Preposition = Str ; 
-    appPrep : Preposition -> (NPCase => Str) -> Str = \p,np -> p ++ np ! NPAcc ; ----
+  oper
+    Preposition : Type = MergesWithPrep ** { s : Str } ;
+
+    -- This is a hack for appPrep: sometimes we don't really need a full NP
+    NPLite : Type = MergesWithPrep ** { s : NPCase => Str } ;
+    npLite : (NPCase => Str) -> NPLite = \nplite -> noMerge ** {s = nplite} ;
+
+    -- Applying a preposition to a noun phrase
+    -- In order to decide whether to merge, have to check both NP and Prep:
+    -- e.g. met + deze -> hiermee , but zonder + deze -> "zonder deze"
+    appPrep : Preposition -> NPLite -> Str 
+     = \prep,np -> 
+          case <np.mergesWithPrep,prep.mergesWithPrep> of {
+            <True,True> => glue np.mergeForm prep.mergeForm ;
+            _           => prep.s ++ np.s ! NPAcc } ;
+
 
   param  
     Order = Main | Inv | Sub ;
@@ -465,11 +479,16 @@ param
 
 --2 Transformations between parameter types
 
-  oper Agr : Type = {g : Gender ; n : Number ; p : Person} ;
+  -- IL2018-02: a whole lot of times we only need number and person, not gender
+  -- maybe switch to PersAgr at some point and halve the number of fields
+  oper PersAgr : Type = {n : Number ; p : Person} ;
+  oper Agr : Type = PersAgr ** {g : Gender} ; 
 
   oper
-    agrP3 : Number -> Agr = agrgP3 Neutr ;
+    pagr : Agr -> PersAgr = \agr -> { p = agr.p ; n = agr.n } ;
+    pagrP3 : Number -> PersAgr = \num -> {p = P3; n = num } ;
 
+    agrP3 : Number -> Agr = agrgP3 Neutr ;
     agrgP3 : Gender -> Number -> Agr = \g,n -> 
       {g = g ; n = n ; p = P3} ;
 
@@ -663,12 +682,12 @@ param
     vpi.p1 ! agrP3 Sg ++ vpi.p2 ++ vpi.p3 ; -- TODO
 
   reflPron : Agr => Str = table {
-    {n = Sg ; p = P1} => "me" ;
-    {n = Sg ; p = P2} => "je" ;
-    {n = Sg ; p = P3} => "zich" ;
-    {n = Pl ; p = P1} => "ons" ;
-    {n = Pl ; p = P2} => "je" ;
-    {n = Pl ; p = P3} => "zich"
+    {n = Sg ; p = P1} => "mijzelf" ;
+    {n = Sg ; p = P2} => "jezelf" ;
+    {n = Sg ; p = P3} => "zichzelf" ;
+    {n = Pl ; p = P1} => "onszelf" ;
+    {n = Pl ; p = P2} => "jezelf" ;
+    {n = Pl ; p = P3} => "zichzelf"
     } ;
 
   conjThat : Str = "dat" ;
@@ -685,20 +704,35 @@ param
  
   infPart : Bool -> Str = \b -> if_then_Str b [] "te" ;
 
-  mkDet : Str -> Str -> Number -> {s,sp : Gender => Str ; n : Number ; a : Adjf} =
-    \deze,dit,n -> {
-      s  = \\g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze} ;
-      sp = \\g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze} ;
-      n = n ;
-      a = Weak
-      } ;
+  Determiner : Type = MergesWithPrep ** {s,sp : Gender => Str ; n : Number ; a : Adjf} ;
 
-  mkQuant : Str -> Str -> {
-    s  : Bool => Number => Gender => Str ; 
-    sp : Number => Gender => Str ; 
-    a  : Adjf
-    } = 
-    \deze,dit -> {
+  mkDet2 : Str -> Str -> Number -> Determiner =
+    \deze,dit,n -> noMerge ** {
+        s  = \\g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze} ;
+        sp = \\g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze} ;
+        n = n ;
+        a = Weak } ;
+
+  mkDet = overload {
+    mkDet : Str -> Str -> Number -> Determiner = mkDet2 ;
+
+       -- NB: this function has 3 arguments to separate it from the previous one
+       -- where the independent NP form is the same as the attribute form
+       -- ("deze mensen" and "deze").
+       -- In contrast, here we have a different NP form: 
+       -- "er zijn veel/weinig mensen" 
+       -- "velen zijn geroepen, maar weinigen uitverkoren."
+    mkDet : Str -> Str -> Str -> Number -> Determiner =
+      \weinig,_,weinigen,n -> 
+        mkDet2 weinig weinig n ** { sp = \\g => weinigen } 
+   } ;
+  Quantifier : Type = MergesWithPrep ** {
+      s  : Bool => Number => Gender => Str ; 
+      sp : Number => Gender => Str ; 
+      a  : Adjf
+      } ;
+  mkQuant : Str -> Str -> Quantifier = 
+    \deze,dit -> noMerge ** {
       s  = \\_ ,n,g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze} ;
       sp = \\   n,g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze} ;
       a = Weak
@@ -709,16 +743,15 @@ param
       s  = \\n,g => case <n,g> of {<Sg,Neutr> => dit ; _ => deze}
       } ;
 
-  mkNP : Str -> Gender -> Number -> {s : NPCase => Str ; a : Agr ; isPron : Bool} = 
-    \s,g,n -> heavyNP {
-      s = \\_ => s ;
-      a = agrgP3 g n ;
-      } ;
+  NounPhrase : Type = MergesWithPrep ** {s : NPCase => Str ; a : Agr ; isPron : Bool } ;
+
+  mkNP : Str -> Gender -> Number -> NounPhrase = 
+    \s,g,n -> heavyNP { s = \\_ => s ;
+                        a = agrgP3 g n } ;
 
   auxVV : VVerb -> VVerb ** {isAux : Bool} = \v -> v ** {isAux = True} ;
 
-  heavyNP : 
-    {s : NPCase => Str ; a : Agr} -> {s : NPCase => Str ; a : Agr ; isPron : Bool} = \np ->
-    np ** {isPron = False} ;
+  heavyNP : {s : NPCase => Str ; a : Agr} -> NounPhrase = \np ->
+    noMerge ** { isPron = False ; s = np.s ; a = np.a } ;
 
 }

@@ -10,12 +10,15 @@ resource ResTur = ParamX ** open Prelude, Predef, HarmonyTur in {
   param
     Case = Nom | Acc | Dat | Gen | Loc | Ablat | Abess Polarity ;
     Species = Indef | Def ;
-    Contiguity = Con | Sep ; --Concatanate or Separate
+    Contiguity = Con | Sep ; --Concatenate or Separate
 
   oper
     Agr = {n : Number ; p : Person} ;
-    Compl = {s : Str; c : Case} ;
-    Noun = {s : Number => Case => Str; gen : Number => Agr => Str; harmony : Harmony} ;
+    Noun = {
+      s   : Number => Case => Str ;
+      gen : Number => Agr => Str  ;
+      harmony : Harmony
+    } ;
     Pron = {s : Case => Str; a : Agr} ;
 
     agrP3 : Number -> Agr ;
@@ -33,7 +36,10 @@ resource ResTur = ParamX ** open Prelude, Predef, HarmonyTur in {
      | VAorist    Agr
      | VImperative
      | VInfinitive
+     | Gerund Number Case
      ;
+
+    UseGen = NoGen | YesGen Agr | UseIndef ;
 
   oper
     Verb : Type = {
@@ -45,9 +51,7 @@ resource ResTur = ParamX ** open Prelude, Predef, HarmonyTur in {
     DForm = unit | ten ;
     CardOrd = NCard | NOrd ;
 
--- For $Numeral$.
   oper
-
     mkPron : (ben,beni,bana,banin,bende,benden,benli,bensiz:Str) -> Number -> Person -> Pron =
      \ben,beni,bana,benim,bende,benden,benli,bensiz,n,p -> {
      s = table {
@@ -63,9 +67,22 @@ resource ResTur = ParamX ** open Prelude, Predef, HarmonyTur in {
      a = {n=n; p=p} ;
      } ;
 
-
---Prep
-
+    -- Prep
     no_Prep = mkPrep [] Acc;
-    mkPrep : Str -> Case -> {s : Str; c : Case} = \s,c -> {s=s; c=c};
+
+    mkPrep : Str -> Case -> {s : Str; c : Case; lock_Prep : {}} =
+      \s, c -> lin Prep {s=s; c=c};
+
+    mkClause : Str -> Agr -> Verb -> {s : Str} =
+      \np, a, v -> ss (np ++ v.s ! VProg a) ;
+
+    attachMe : Verb -> {s : Str} =
+      \v ->
+        let
+          s : Str = v.s ! VImperative
+        in
+          case s of {
+            (_ + #vowel + _ )* + (_ + #frontVowel + _) => ss (s ++ "me") ;
+            (_ + #vowel + _)*  + (_ + #backVowel  + _) => ss (s ++ "ma")
+          } ;
 }

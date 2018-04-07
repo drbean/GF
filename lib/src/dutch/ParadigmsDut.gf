@@ -115,7 +115,6 @@ oper
   van_Prep : Prep ;
   te_Prep  : Prep ;
 
-
 --
 --2 Verbs
 
@@ -231,11 +230,11 @@ oper
 
   mkN2 = overload {
     mkN2 : N -> N2 
-    = \n -> lin N2 (n ** {c2 = "van"}) ; 
+    = \n -> lin N2 (n ** {c2 = van_Prep}) ; 
     mkN2 : N -> Prep -> N2 
-    = \n,p -> lin N2 (n ** {c2 = p.s}) ; 
+    = \n,p -> lin N2 (n ** {c2 = p}) ; 
     } ;   
-  mkN3 n p q = lin N3 (n ** {c2 = p.s ; c3 = q.s}) ; 
+  mkN3 n p q = lin N3 (n ** {c2 = p ; c3 = q}) ;
 
   mkPN = overload {
     mkPN : Str -> PN = \s -> lin PN {s = \\_ => s} ;
@@ -255,7 +254,10 @@ oper
     mkA : (goed,goede,goeds,beter,best : Str) -> A = \a,b,c,d,e -> lin A (mkAdjective a b c d e) ;
     } ;
 
-  mkPrep s = lin Prep (ss s) ;
+  mkPrep s = lin Prep { s, mergeForm = s ; mergesWithPrep = True } ;
+
+  nomergePrep : Str -> Prep = \s -> lin Prep (noMerge ** ss s); 
+
   van_Prep = mkPrep "van" ;
   te_Prep = mkPrep "te" ;
 
@@ -305,9 +307,9 @@ oper
   hebben_V : V = lin V ResDut.hebben_V ;
 
   mkV2 = overload {
-    mkV2 : Str -> V2 = \s -> lin V2 (v2vv (regVerb s) ** {c2 = <[],False>}) ;
-    mkV2 : V -> V2 = \s -> lin V2 (s ** {c2 = <[],False>}) ;
-    mkV2 : V -> Prep -> V2  = \s,p -> lin V2 (s ** {c2 = <p.s,True>}) ;
+    mkV2 : Str -> V2 = \s -> lin V2 (v2vv (regVerb s) ** {c2 = <noPrep,False>}) ;
+    mkV2 : V -> V2 = \s -> lin V2 (s ** {c2 = <noPrep,False>}) ;
+    mkV2 : V -> Prep -> V2  = \s,p -> lin V2 (s ** {c2 = <p,True>}) ;
     } ;
 
 
@@ -320,10 +322,10 @@ oper
     } ;
   mkV3 = overload {
     mkV3 : V -> Prep -> Prep -> V3 = mkmaxV3 ;
-    mkV3 : V -> Prep -> V3 = \v,p -> mkmaxV3 v (mkPrep []) p ; 
-    mkV3 : V -> V3 = \v -> mkmaxV3 v (mkPrep []) (mkPrep []) ; 
+    mkV3 : V -> Prep -> V3 = \v,p -> mkmaxV3 v noPrep p ;
+    mkV3 : V -> V3 = \v -> mkmaxV3 v noPrep noPrep ;
     } ;
-  mkmaxV3 : V -> Prep -> Prep -> V3 = \v,c,d -> lin V3 (v ** {c2 = <c.s,True> ; c3 = <d.s,True>}) ;
+  mkmaxV3 : V -> Prep -> Prep -> V3 = \v,c,d -> lin V3 (v ** {c2 = <c,True> ; c3 = <d,True>}) ;
 
 
 
@@ -427,12 +429,12 @@ oper
 
   invarA = \s -> lin A {s = \\_,_ => s} ; ---- comparison
 
-  mkA2 = \a,p -> lin A2 (a ** {c2 = p.s}) ;
+  mkA2 = \a,p -> lin A2 (a ** {c2 = p}) ;
 
   mkAdv s = {s = s ; lock_Adv = <>} ;
 --
 --  mkPrep s c = {s = s ; c = c ; lock_Prep = <>} ;
-  noPrep = mkPrep [] ;
+  noPrep = nomergePrep [] ;
 --  datPrep = mkPrep [] dative ;
 --  genPrep = mkPrep [] genitive ;
 --  von_Prep = mkPrep "von" dative ;
@@ -489,10 +491,10 @@ oper
 --  werden_V = MorphoDut.werden_V ** {lock_V = <>} ;
 --
   prepV2 : V -> Prep -> V2 ;
-  prepV2 v c = lin V2 (v ** {c2 = <c.s,True>}) ; --if it has prep, needed for word order (place of negation)
+  prepV2 v c = lin V2 (v ** {c2 = <c,True>}) ; --if it has prep, needed for word order (place of negation)
 
   noprepV2 : V -> V2 ;
-  noprepV2 v = lin V2 (v ** {c2 = <[],False>}) ; 
+  noprepV2 v = lin V2 (v ** {c2 = <noPrep,False>}) ; 
 --  dirV2 v = prepV2 v (mkPrep [] accusative) ;
 --  datV2 v = prepV2 v (mkPrep [] dative) ;
 --

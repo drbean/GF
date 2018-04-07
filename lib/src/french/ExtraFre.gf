@@ -20,6 +20,10 @@ concrete ExtraFre of ExtraFreAbs = ExtraRomanceFre **
       a = aagr Fem Pl
       } ;
 
+    EstcequeCl cl = {
+      s = \\t,a,p,q => "est-ce" ++ elisQue ++ cl.s ! DDir ! t ! a ! p ! Indic
+      } ;
+
     i8fem_Pron = mkPronoun
       (elision "j") (elision "m") (elision "m") "moi" "mon" (elisPoss "m") "mes"
       Fem Sg P1 ;
@@ -91,12 +95,32 @@ concrete ExtraFre of ExtraFreAbs = ExtraRomanceFre **
               QIndir => subjIf ++ cls ! Indic
               }
       } ;
+    EstcequeQuestIAdvCl iadv cl = 
+    {s = \\t,a,p =>                             -- est-ce qu'il dort ?
+            let cls = cl.s ! DDir ! t ! a ! p 
+            in table {
+              QDir   => iadv.s ++ "est-ce" ++ elisQue ++ cls ! Indic ;
+              QIndir => iadv.s ++ cls ! Indic
+              }
+      } ;
     InvQuestCl cl = {s = \\t,a,p =>                             -- dort-il ?
             let cls = cl.s ! DInv ! t ! a ! p 
             in table {
               QDir   => cls ! Indic ;
-              QIndir => subjIf ++ cls ! Indic
+              QIndir => subjIf ++ cl.s ! DDir ! t ! a ! p ! Indic
               }
+      } ;
+    InvQuestIAdvCl iadv cl = {s = \\t,a,p =>                             -- dort-il ?
+            let cls = cl.s ! DInv ! t ! a ! p 
+            in table {
+              QDir   => iadv.s ++ cls ! Indic ;
+              QIndir => iadv.s ++ cl.s ! DDir ! t ! a ! p ! Indic
+              }
+      } ;
+
+    quel_IComp = {
+      s = aagrForms "quel" "quelle" "quels" "quelles" ;
+      cop = <> ;
       } ;
 
 --- in ExtraRomance

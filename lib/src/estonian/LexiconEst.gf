@@ -248,7 +248,7 @@ lin
   bark_N = mkN "koor" "koore" "koort" "koorde" "koorte" "koori" ;
   belly_N = mkN "kõht" "kõhu" "kõhtu" ;
   blood_N = mkN "veri" "vere" "verd" "verre" "verede" "veresid" ;
-  bone_N = mkN "luu" ;
+  bone_N = mkN "kont" "kondi" "konti" ;
   breast_N = mkN "rind" "rinna" "rinda" ;
   cloud_N = mkN "pilv" "pilve" "pilve" "pilvi" ;
   day_N = mkN "päev" "päeva" "päeva" ;
@@ -330,7 +330,7 @@ lin
   push_V2 = mkV2 (mkV "suruma") ;
   rub_V2 = mkV2 (mkV "hõõruma") cpartitive ;
   scratch_V2 = mkV2 (mkV "kraapima" "kraapida" "kraabib") cpartitive ;
-  sew_V = mkV "külvama" "külvata" ;
+  sew_V = mkV "õmblema" ;
   sing_V = mkV "laulma" "laulda" "laulab" "lauldakse" ;
   sit_V = mkV "istuma" ;
   smell_V = mk2V "haistma" "haista";

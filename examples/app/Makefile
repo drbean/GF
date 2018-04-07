@@ -17,6 +17,7 @@ APP13=$(APP12) AppJpn.pgf
 APP14=$(APP13) AppTha.pgf
 APP15=$(APP14) AppEst.pgf
 APP16=$(APP15) AppRus.pgf
+APP17=$(APP16) AppUrd.pgf
 
 # With dependencies:
 App11.pgf: $(APP11)
@@ -31,6 +32,9 @@ App15.pgf: $(APP15)
 	$(GFMKT) -name=App15 $(APP15) +RTS -K200M
 App16.pgf: $(APP16)
 	$(GFMKT) -name=App16 $(APP16) +RTS -K200M
+
+App17.pgf: $(APP17)
+	$(GFMKT) -name=App16 $(APP17) +RTS -K200M
 
 # Without dependencies:
 App11:
@@ -56,6 +60,7 @@ AppEst.pgf:: ; $(GFMKT) -name=AppEst AppEst.gf +RTS -K64M
 AppFin.pgf:: ; $(GFMKT) -name=AppFin AppFin.gf +RTS -K64M
 AppGer.pgf:: ; $(GFMKT) -name=AppGer AppGer.gf +RTS -K64M
 AppHin.pgf:: ; $(GFMKT) -name=AppHin AppHin.gf
+AppUrd.pgf:: ; $(GFMKT) -name=AppUrd AppUrd.gf
 AppFre.pgf:: ; $(GFMKT) -name=AppFre AppFre.gf +RTS -K64M
 AppIta.pgf:: ; $(GFMKT) -name=AppIta AppIta.gf +RTS -K64M
 AppJpn.pgf:: ; $(GFMKT) -name=AppJpn AppJpn.gf +RTS -K64M
