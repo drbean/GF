@@ -11,31 +11,12 @@ concrete ExtraDut of ExtraDutAbs = CatDut **
     BaseVPI = twoTable Bool ;
     ConsVPI = consrTable Bool comma ;
 
-    MkVPI vp = {s = \\b => useInfVP b vp} ;
+    MkVPI vp = {s = \\b => useInfVP b vp ! agrP3 Sg } ;
     ConjVPI = conjunctDistrTable Bool ;
 
     ComplVPIVV v vpi = 
         insertInf (vpi.s ! v.isAux) (
            predVGen v.isAux BeforeObjs v) ; ----
---{-
---      insertExtrapos vpi.p3 (
---        insertInf vpi.p2 (
---          insertObj vpi.p1 (
---            predVGen v.isAux vpi.negPos v))) ;
----}
---
---    PPzuAdv cn = {s = case cn.g of {
---      Masc | Neutr => "zum" ;
---      Fem => "zur"
---      } ++ cn.s ! adjfCase Weak Dat ! Sg ! Dat 
---    } ;
---
---    TImpfSubj  = {s = [] ; t = Past ; m = MConjunct} ;   --# notpresent
---
---    moegen_VV = auxVV mögen_V ;
---
---} 
-
 
 lin
     ICompAP ap = {s = \\agr => "hoe" ++ ap.s ! agr ! APred} ; 
@@ -77,7 +58,7 @@ lin
           b = p.p ;
           vform = vForm t agr.g agr.n agr.p o ;
           auxv = (auxVerb vp.s.aux).s ;
-          vperf = vp.s.s ! VPerf ;
+          vperf = vp.s.s ! VPerf APred ;
           verb : Str * Str = case <t,a> of {
             <Fut|Cond,Simul>  => <zullen_V.s ! vform, vp.s.s ! VInf> ; --# notpresent
             <Fut|Cond,Anter>  => <zullen_V.s ! vform, vperf ++ auxv ! VInf> ; --# notpresent
@@ -115,9 +96,9 @@ lin
     ConjVPS = conjunctDistrTable2 Order Agr ;
 
     PassVPSlash vps = 
-      insertInf (vps.s.s ! VPerf) (predV ResDut.worden_V) ;
+      insertInf (vps.s.s ! VPerf APred) (predV ResDut.worden_V) ;
     PassAgentVPSlash vps np = 
-      insertAdv (appPrep (P.mkPrep "door") np) (insertInf (vps.s.s ! VPerf) (predV ResDut.worden_V)) ;
+      insertAdv (appPrep (P.mkPrep "door") np) (insertInf (vps.s.s ! VPerf APred) (predV ResDut.worden_V)) ;
 
 lin
  NominalizeVPSlashNP vpslash np =

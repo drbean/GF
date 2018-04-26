@@ -10,15 +10,8 @@ concrete VerbDut of Verb = CatDut ** open Prelude, ResDut in {
         vpv = predVGen v.isAux vp.negPos (v2v v) ;
         vpi = infVP v.isAux vp ;
       in
-      vpv ** {n2 = vpi.p1 ; inf = <vpi.p2, True> ; ext = vpi.p3} ; ----
+      vpv ** {n2 = vpi.obj ; inf = <vpi.inf, True> ; ext = vpi.ext} ; ---- Why replace and not use insertInfVP? TODO find out
 
-{-
-      in
-      insertInf vpi.p3 (
-        insertInf vpi.p2 (
-          insertObj vpi.p1 (
-            predVGen v.isAux vp.negPos (v2v v)))) ; ---- subtyp
--}
     ComplVS v s = 
       insertExtrapos (conjThat ++ s.s ! Sub) (predV v) ;
     ComplVQ v q = 
@@ -32,46 +25,47 @@ concrete VerbDut of Verb = CatDut ** open Prelude, ResDut in {
       insertObj (\\_ => appPrep v.c2.p1 np) (predVv v) ** {c2 = v.c3} ;
     Slash3V3 v np =
       insertObj (\\_ => appPrep v.c3.p1 np) (predVv v) ** {c2 = v.c2} ;
-
     SlashV2S v s = 
       insertExtrapos (conjThat ++ s.s ! Sub) (predVv v) ** {c2 = v.c2} ;
     SlashV2Q v q = 
       insertExtrapos (q.s ! QIndir) (predVv v) ** {c2 = v.c2} ;
-    SlashV2V v vp = 
-      let 
-        vpi = infVP v.isAux vp 
-      in
-      insertExtrapos vpi.p3 (
-        insertInf vpi.p2 (
-          insertObj vpi.p1 ((predVGen v.isAux vp.negPos v)))) ** {c2 = v.c2} ;
+    SlashV2V v vp =
+      insertInfVP v.isAux vp (predVGen v.isAux vp.negPos v) ** {c2 = v.c2} ;
     SlashV2A v ap = 
       insertObj (\\agr => ap.s ! agr ! APred) 
                 (predVGen False BetweenObjs (v2v v)) ** {c2 = v.c2} ;
 
-    --vp.c2.p2: if the verb has a preposition or not
-    ComplSlash vp np = insertObjNP np.isPron (case vp.c2.p2 of {True => BeforeObjs; False => vp.negPos}) (\\_ => appPrep vp.c2.p1 np) vp ;
-    SlashVV v vp = 
-      let 
-        vpi = infVP v.isAux vp 
-      in
-      insertExtrapos vpi.p3 (
-        insertInf vpi.p2 (
-          insertObj vpi.p1 (
-            predVGen v.isAux vp.negPos (v2v v)))) ** {c2 = vp.c2} ;
+    ComplSlash vp np =
+      let hasInf = vp.inf.p2 ;
+          hasPrep = vp.c2.p2 ;
+          obj : Str = appPrep vp.c2.p1 np ;
 
-    SlashV2VNP v np vp = 
-      let 
-        vpi = infVP v.isAux vp 
-      in
-      insertExtrapos vpi.p3 (
-        insertInf vpi.p2 (
-          insertObj vpi.p1 (
-            insertObj (\\_ => appPrep v.c2.p1 np) (
-              predVGen v.isAux vp.negPos v)))) ** {c2 = v.c2} ;
+          -- If the verb has a preposition, insert the new object as an Adv.
+          insertArg = case hasPrep of {
+	              True => insertAdv obj ;
+                      False => insertObjNP np.isPron vp.negPos (\\_ => obj) } ;
 
-    -- BeforeObjs, because negation comes before copula complement 
-    -- "ik ben niet groot" but "ik begrijp hem niet"
-    UseComp comp = insertObjNP False BeforeObjs comp.s (predV zijn_V) ; -- agr not used
+	  -- If there is an infinitive, put old object before the infinitive
+          -- and choose its agreement based on the new object.
+	  -- Otherwise, keep the old VP.
+	  newVP : VP = case hasInf of {
+                         True  => let emptyObjVP : VP = vp ** {n0, n2 = \\_ => [] } ;
+                                      infCompl = vp.n0 ! np.a ++ vp.n2 ! np.a ;
+                                   in insertInf infCompl emptyObjVP ;
+                         _     => vp } ;
+
+       in insertArg newVP ;
+
+    SlashVV v vp =
+      insertInfVP v.isAux vp (predVGen v.isAux vp.negPos v) ** {c2 = vp.c2} ;
+
+    SlashV2VNP v np vp =
+      insertInfVP v.isAux vp (
+        insertObj (\\_ => appPrep v.c2.p1 np)
+                  (predVGen v.isAux vp.negPos v))
+      ** {c2 = v.c2} ;
+
+    UseComp comp = insertObj comp.s (compV zijn_V) ;
 
     UseCopula = predV zijn_V; 
 
@@ -91,7 +85,7 @@ concrete VerbDut of Verb = CatDut ** open Prelude, ResDut in {
                                           (npLite (\\_ => reflPron ! a))
                           ) vp ;
 
-    PassV2 v = insertInf (v.s ! VPerf) (predV worden_V) ;
+    PassV2 v = insertInf (v.s ! VPerf APred) (predV worden_V) ;
 
     VPSlashPrep vp prep = vp ** {c2 = <prep,True>} ;
 

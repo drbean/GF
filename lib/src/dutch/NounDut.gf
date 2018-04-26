@@ -20,7 +20,7 @@ concrete NounDut of Noun = CatDut ** open ResDut, Prelude in {
     UsePN pn = noMerge ** {s = pn.s ; a = agrP3 Sg ; isPron = False} ;
 
     UsePron pron = {
-      s = table {NPNom => pron.unstressed.nom ; NPAcc => pron.unstressed.acc} ;
+      s = table {NPNom => pron.stressed.nom ; NPAcc => pron.stressed.acc} ;
       a = pron.a ;
       isPron = True ;
       mergesWithPrep = pron.mergesWithPrep ;
@@ -34,7 +34,7 @@ concrete NounDut of Noun = CatDut ** open ResDut, Prelude in {
       } ;
 
     PPartNP np v2 = heavyNP {
-      s = \\c => np.s ! c ++ v2.s ! VPerf ; -- invar part
+      s = \\c => np.s ! c ++ v2.s ! VPerf APred ; -- invar part
       a = np.a ;
       } ;
 
@@ -80,7 +80,7 @@ concrete NounDut of Noun = CatDut ** open ResDut, Prelude in {
         } ;
 
     PossPron p = noMerge ** {
-      s  = \\_,n,g => p.unstressed.poss ;
+      s  = \\_,n,g => p.stressed.poss ;
       sp = \\n,g => DefArt.s ! True ! n ! g ++ p.substposs ! n ;
       a = Weak
       } ;
@@ -161,10 +161,14 @@ concrete NounDut of Noun = CatDut ** open ResDut, Prelude in {
       let 
         g = cn.g 
       in {
-        s = \\a,n => 
-               preOrPost ap.isPre
-                 (ap.s ! agrP3 Sg ! agrAdj g a n)
-                 (cn.s ! a ! n) ;
+        s = \\a,n =>
+               let gan : Gender*Adjf*NForm = case ap.isPre of {
+                    True  => <g,a,n> ;
+                    False => <Neutr,Strong,NF Sg Nom> } ;
+                   af = agrAdj gan.p1 gan.p2 gan.p3 ;
+               in preOrPost ap.isPre
+                    (ap.s ! agrP3 Sg ! af)
+                    (cn.s ! a ! n) ;
         g = g
         } ;
 
