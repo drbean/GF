@@ -219,16 +219,20 @@ oper
                   } ;
                 isPre = a.isPre ; lock_A = <>} ;
 
+  mkNonInflectA : A -> Str -> A ;
+  mkNonInflectA = \blanco,hueso -> blanco ** {s = \\x,y => blanco.s ! x ! y ++ hueso } ;
 
   mkA = overload {
 
 -- For regular adjectives, all forms are derived from the masculine
 -- singular. The types of adjectives that are recognized are "alto",
 -- "fuerte", "util". Comparison is formed by "mas".
-    mkA : (bobo : Str) -> A  = regA ; -- predictable adjective
+    mkA : (bobo : Str) -> A
+      = regA ; -- predictable adjective
 
 -- Some adjectives need the feminine form separately.
-    mkA : (espanhol,espanhola : Str) -> A  = mk2A ;
+    mkA : (espanhol,espanhola : Str) -> A
+      = mk2A ;
 
 -- One-place adjectives compared with "mais" need five forms in the
 -- worst case (masc and fem singular, masc plural, adverbial).
@@ -237,7 +241,11 @@ oper
 -- In the worst case, two separate adjectives are given: the positive
 -- ("bueno"), and the comparative ("mejor").
     -- special comparison with "mais" as default
-    mkA : (bom : A) -> (melhor : A) -> A = mkADeg ;
+    mkA : (bom : A) -> (melhor : A) -> A
+      = mkADeg ;
+
+    mkA : (blanco : A) -> (hueso : Str) -> A  -- noninflecting component after the adjective
+    = mkNonInflectA ;
     } ;
 
 -- The functions above create postfix adjectives. To switch them to
@@ -281,42 +289,38 @@ oper
 --2 Verbs
 
   regV : Str -> V ;
-  regV v = -- cortar actuar cazar guiar pagar sacar
+  regV v =
     let
       xr = Predef.dp 2 v ; -- -ar
       z  = Predef.dp 1 (Predef.tk 2 v) ; -- i in -iar
-      verb = case xr of {
+      paradigm = case xr of {
         "ir" => case z of {
-          "g" => redigir_52 v ;
-          "a" => sair_68 v ;
-          "u" => distribuir_73 v ;
-          _ => garantir_6 v
+          "g" => redigir_Besch ;
+          "a" => sair_Besch ;
+          "u" => distribuir_Besch ;
+          _ => garantir_Besch
           } ;
         "er" => case z of {
-          "c" => aquecer_25 v ;
-          _ => vender_5 v
+          "c" => aquecer_Besch ;
+          "g" => proteger_Besch ;
+          "o" => moer_Besch ;
+          _ => vender_Besch
             } ;
         "ar" => case z of {
-          "e" => recear_15 v ;
-          "i" => anunciar_16 v ;
-          "o" => perdoar_20 v ;
-          "u" => averiguar_21 v ;
-          _ => comprar_4 v
+          "c" => ficar_Besch ;
+          "ç" => começar_Besch ;
+          "e" => recear_Besch ;
+          "g" => chegar_Besch ;
+          "i" => anunciar_Besch ;
+          "j" => viajar_Besch ;
+          "o" => perdoar_Besch ;
+          "u" => suar_Besch ;
+          _ => comprar_Besch
           } ;
-        "or" => pôr_45 v ;
-        _ => comprar_4 v -- hole
+        "or" | "ôr" => pôr_Besch ;
+        _ => comprar_Besch -- hole
         }
-    in verboV verb ;
-
-{-  regAltV : (mostrar,muestro : Str) -> V ;
-  regAltV x y = case x of {
-    _ + "ar" => verboV (regAlternV x y) ;
-    _  => verboV (regAlternVEr x y)
-    } ;
--}
-  verboV : Verbum -> V ;
-  verboV ve = verbBesch ve ** {vtyp = VHabere ; p = [] ;
-                               lock_V = <>} ;
+    in verboV (paradigm v) ;
 
   mkV = overload {
 --- [ ] update
